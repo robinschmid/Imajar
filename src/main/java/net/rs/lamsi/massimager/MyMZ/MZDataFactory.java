@@ -16,9 +16,10 @@ public class MZDataFactory {
 	// get Scan next to retentiontime rt
 	public static Scan getNearestSpectrumAtRT(RawDataFile raw, double rt) {   
 		//
-		for(int i=1; i<=raw.getNumOfScans()-1; i++) {
-			Scan spec0 = raw.getScan(i);
-			Scan spec1 = raw.getScan(i+1);
+		int[] scani = raw.getScanNumbers();
+		for(int i=0; i<scani.length-1; i++) { 
+			Scan spec0 = raw.getScan(scani[i]);
+			Scan spec1 = raw.getScan(scani[i+1]);
 			double rt0 = spec0.getRetentionTime();
 			double rt1 = spec1.getRetentionTime(); 
 			//
@@ -28,15 +29,16 @@ public class MZDataFactory {
 			if(rt0<=rt1) return spec0;
 		}
 		// ansonsten last Element
-		return raw.getScan(raw.getNumOfScans());
+		return raw.getScan(scani[scani.length-1]);
 	}
 	// get Scan index next to retentiontime rt
 	public static int getNearestSpectrumIndexAtRT(RawDataFile raw, double rt) { 
 		if(raw==null || raw.getNumOfScans()<=0) return 0;
 		//
-		for(int i=1; i<=raw.getNumOfScans()-1; i++) {
-			Scan spec0 = raw.getScan(i);
-			Scan spec1 = raw.getScan(i+1);
+		int[] scani = raw.getScanNumbers();
+		for(int i=0; i<scani.length-1; i++) { 
+			Scan spec0 = raw.getScan(scani[i]);
+			Scan spec1 = raw.getScan(scani[i+1]);
 			double rt0 = spec0.getRetentionTime();
 			double rt1 = spec1.getRetentionTime();
 			//
@@ -46,7 +48,7 @@ public class MZDataFactory {
 			if(rt0<=rt1) return i;
 		}
 		// ansonsten last Element
-		return (raw.getNumOfScans());
+		return (scani[scani.length-1]);
 	}
 	
 	// From to
@@ -118,8 +120,9 @@ public class MZDataFactory {
 		// TODO Auto-generated method stub
 		MZChromatogram chrom = new MZChromatogram("TIC");
 		// Alle spektren durchgehen nach chromType entscheiden wie die Intensität ist
-		for(int i=1; i<=raw.getNumOfScans(); i++) {
-			Scan spec = raw.getScan(i);
+		int[] scani = raw.getScanNumbers();
+		for(int i=0; i<scani.length; i++) {
+			Scan spec = raw.getScan(scani[i]);
 			// time bekommen
 			double rt = spec.getRetentionTime();
 			// intensity bekommen 
@@ -136,8 +139,9 @@ public class MZDataFactory {
 		MZChromatogram chrom = new MZChromatogram(mzIon.getMz());
 		chrom.setDescription(mzIon.getName());
 		// Alle spektren durchgehen nach chromType entscheiden wie die Intensität ist
-		for(int i=1; i<=raw.getNumOfScans(); i++) {
-			Scan spec = raw.getScan(i);
+		int[] scani = raw.getScanNumbers();
+		for(int i=0; i<scani.length; i++) {
+			Scan spec = raw.getScan(scani[i]);
 			// time bekommen
 			double rt = spec.getRetentionTime();
 			// intensity bekommen 

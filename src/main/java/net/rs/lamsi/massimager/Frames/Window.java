@@ -864,8 +864,8 @@ public class Window {
     
 	// Send image2d to Imageeditor for further work
 	// will be inserted in ImageList
-	public void sendImage2DToImageEditor(Image2D image) {
-		imageEditorWnd.getLogicRunner().addImage(image);
+	public void sendImage2DToImageEditor(Image2D image, String id) {
+		imageEditorWnd.getLogicRunner().addImage(image, id);
 	}
     // OBERFLÄCHEN LOGIC ENDE
 	//###############################################################################  

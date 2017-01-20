@@ -870,7 +870,7 @@ public class LogicRunner {
 	public Image2D generateImageCon(SettingsMSImage setMSICon) { 
 		// pass options to reader. 
 		// TODO nicht immer SUM_PEAKS
-		MZChromatogram mzChrom = MZDataFactory.getMZChrom(listSpecFiles.get(selectedFileIndex), setMSICon.getMZIon(), ChromGenType.SUM_PEAKS); 
+		MZChromatogram mzChrom = MZDataFactory.getMZChrom(getSelectedFile(), setMSICon.getMZIon(), ChromGenType.SUM_PEAKS); 
         // Panel as ChartViewer 
 		if(mzChrom!=null) {
 			// set title 
@@ -974,6 +974,10 @@ public class LogicRunner {
 	public void setSelectedFileIndex(int selectedFileIndex) {
 		this.selectedFileIndex = selectedFileIndex;
 	} 
+	
+	public RawDataFile getSelectedFile() {
+		return listSpecFiles.get(selectedFileIndex);
+	}
 
 	public Vector<PeakList> getPeakLists() {
 		return listPeakList;

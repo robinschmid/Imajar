@@ -27,37 +27,38 @@ public class TestQuantifier {
 					//
 					rand = new Random(System.currentTimeMillis());
 					// load data ThermoMP17 Image
+					String s = "sample", ss = "sample2", cal = "cal", cal2 = "cal2";
 					// create sample and sample IS
 					Image2D[]  sample = createImage(1, 5, 500);
-					window.getLogicRunner().addImage(sample[0]);
-					window.getLogicRunner().addImage(sample[1]);
-					window.getLogicRunner().addImage(sample[2]);
+					window.getLogicRunner().addImage(sample[0], s);
+					window.getLogicRunner().addImage(sample[1], s);
+					window.getLogicRunner().addImage(sample[2], s);
 					
 
 					// create sample and sample IS   with blank in front
 					Image2D[]  sample2 = createImageWithBlank(1, 5, 500);
-					window.getLogicRunner().addImage(sample2[0]);
-					window.getLogicRunner().addImage(sample2[1]);
-					window.getLogicRunner().addImage(sample2[2]);
+					window.getLogicRunner().addImage(sample2[0], ss);
+					window.getLogicRunner().addImage(sample2[1], ss);
+					window.getLogicRunner().addImage(sample2[2], ss);
 
 					// create kali and kali IS
 					Image2D[]  kali = createStandards(1, 5, 500);
-					window.getLogicRunner().addImage(kali[0]);
-					window.getLogicRunner().addImage(kali[1]);
-					window.getLogicRunner().addImage(kali[2]);
+					window.getLogicRunner().addImage(kali[0], cal);
+					window.getLogicRunner().addImage(kali[1], cal);
+					window.getLogicRunner().addImage(kali[2], cal);
 					
 
 					// create kali and kali IS
 					kali = createStandardsWithBlank(1, 5, 500);
-					window.getLogicRunner().addImage(kali[0]);
-					window.getLogicRunner().addImage(kali[1]);
-					window.getLogicRunner().addImage(kali[2]);
+					window.getLogicRunner().addImage(kali[0],cal2);
+					window.getLogicRunner().addImage(kali[1],cal2);
+					window.getLogicRunner().addImage(kali[2],cal2);
 					
 					// create kali and kali IS
 					kali = createStandardsOne(10, 5, 500);
-					window.getLogicRunner().addImage(kali[0]);
-					window.getLogicRunner().addImage(kali[1]);
-					window.getLogicRunner().addImage(kali[2]);
+					window.getLogicRunner().addImage(kali[0],"c3");
+					window.getLogicRunner().addImage(kali[1],"c3");
+					window.getLogicRunner().addImage(kali[2],"c3");
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}

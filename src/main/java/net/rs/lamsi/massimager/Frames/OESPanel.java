@@ -147,7 +147,7 @@ public class OESPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				//TODO
 				if(currentImage2D!=null && selectedElementLine!=-1) {
-					window.sendImage2DToImageEditor(currentImage2D);
+					window.sendImage2DToImageEditor(currentImage2D, "OES");
 				}
 			}
 		});

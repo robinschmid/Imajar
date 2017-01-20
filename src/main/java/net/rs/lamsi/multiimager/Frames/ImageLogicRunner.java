@@ -1,6 +1,7 @@
 package net.rs.lamsi.multiimager.Frames;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -56,6 +57,8 @@ public class ImageLogicRunner {
 	private FileTypeFilter fileTFImage2D, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
 	// List of Images
 	private ModuleTree<Image2D> treeImg;
+	// get parent IconNode by String keys (parent only)
+	private HashMap<String, IconNode> mapNodes;
 	// private Vector<Image2D> listImages = new Vector<Image2D>();
 	private Image2D selectedImage = null;
 	private Heatmap currentHeat = null;
@@ -66,6 +69,7 @@ public class ImageLogicRunner {
 	public ImageLogicRunner(ImageEditorWindow wnd) {
 		this.window = wnd;
 		diaRunner = new DirectImageLogicRunner(this);
+		mapNodes = new HashMap<String, IconNode>();
 		treeImg = wnd.getModuleTreeImages();
 		treeImg.getTree().addTreeSelectionListener(new TreeSelectionListener() {
 			
@@ -113,35 +117,63 @@ public class ImageLogicRunner {
 	// Add, select, renew, delete images 
 	/**
 	 *  add and remove image from jList gets automatically removed from vector<Image2D>
-	 * @param image
+	 * @param id parent node id
 	 */
-	public void addImage(Image2D i) {  
-		//
-		treeImg.getRoot().add(new IconNode(i, false, i.getIcon(60)));
-	}
-	public void addImage(Image2D i, IconNode node) {  
-		//
-		node.add(new IconNode(i, false, i.getIcon(60)));
-	}
-	public IconNode[] addCollection2D(Image2D[] img, IconNode node, SettingsImageDataImportTxt sett) { 
-		// create subnode with image name
-		DefaultMutableTreeNode sub = null;
-		String last = null;
-		IconNode[] nodes = new IconNode[img.length];
-		int c = 0;
-		// create img nodes
-		for(Image2D i : img) {
-			if(sub==null || !last.equals(i.getSettImage().getRAWFilepath())) {
-				sub = new IconNode(i.getSettImage().getRAWFileName()+"; "+i.getSettImage().getRAWFilepath());
-				node.add(sub);
-				last = i.getSettImage().getRAWFilepath(); 
-			}
-			IconNode inode = new IconNode(i, false, i.getIcon(60));
-			nodes[c] = inode;
-			sub.add(inode);
-			c++;
+	public IconNode addImage(Image2D i, String id) {  
+		// TODO 
+		// test for existing parent node
+		if(mapNodes.containsKey(id)){
+			IconNode node = addImage(i, mapNodes.get(id)); 
+			treeImg.getTreeModel().reload();
+			return node;
 		}
-		return nodes;
+		else { 
+			IconNode parent = new IconNode(id);
+			mapNodes.put(id, parent);
+			IconNode node = addImage(i, parent);
+			treeImg.addNodeToRoot(parent);
+			return node;
+		}
+	}
+		/**
+		 * adds an image to a parent node
+		 * @param i
+		 * @param parent
+		 */
+	public IconNode addImage(Image2D i, IconNode parent) {  
+		//
+		IconNode node = new IconNode(i, false, i.getIcon(60));
+		parent.add(node);
+		return node;
+	}
+	public IconNode[] addCollection2D(Image2D[] img, IconNode parent, SettingsImageDataImportTxt sett) { 
+		// only one image? do not create subnodes
+		if(img==null || img.length==0) {
+			return null;
+		}
+		else if(img.length==1) {
+			return new IconNode[]{addImage(img[0], parent)};
+		}
+		else {
+			// create subnode with image name
+			DefaultMutableTreeNode sub = null;
+			String last = null;
+			IconNode[] nodes = new IconNode[img.length];
+			int c = 0;
+			// create img nodes
+			for(Image2D i : img) {
+				if(sub==null || !last.equals(i.getSettImage().getRAWFilepath())) {
+					sub = new IconNode(i.getSettImage().getRAWFileName()+"; "+i.getSettImage().getRAWFilepath());
+					parent.add(sub);
+					last = i.getSettImage().getRAWFilepath(); 
+				}
+				IconNode inode = new IconNode(i, false, i.getIcon(60));
+				nodes[c] = inode;
+				sub.add(inode);
+				c++;
+			}
+			return nodes;
+		}
 	}
 
 	public void removeAllImage() {
@@ -267,7 +299,7 @@ public class ImageLogicRunner {
 										// load image from file with binary read
 										Image2D img = (Image2D) binaryWriter.readFromFile(f);
 										binaryWriter.closeIn();
-										if(img!=null) addImage(img);
+										if(img!=null) addImage(img, f.getAbsolutePath());
 									}catch(Exception ex) {
 										ex.printStackTrace();
 										// Dialog
@@ -328,8 +360,8 @@ public class ImageLogicRunner {
 	public void importTextDataToImage(SettingsImageDataImportTxt settingsDataImport, File[] files) { 
 		// load image
 		try { 
-			// folder or files?
 			if(files.length>0) {
+				// folder or files?
 				if(files[0].isDirectory()) {
 					// go into sub folders to find data 
 					// load each folder as one set of images

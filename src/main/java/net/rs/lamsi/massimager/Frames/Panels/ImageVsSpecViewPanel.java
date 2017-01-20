@@ -588,7 +588,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				
 						pnSettImageCon = new JPanel();
 						pnWestImageSettings.getPnContent().add(pnSettImageCon, BorderLayout.CENTER);
-						pnSettImageCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][][top][]"));
+						pnSettImageCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][][top][][][][][][][][][][][]"));
 						
 								lbDisconCon = new JLabel("Discontinuos");
 								pnSettImageCon.add(lbDisconCon, "cell 0 0 2 1");
@@ -635,18 +635,28 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																										rbScanPerLine = new JRadioButton("scans per line");
 																										buttonGroup_1.add(rbScanPerLine);
 																										pnImgCon.add(rbScanPerLine, "cell 0 2 2 1");
-																										
-																												btnSendImage = new JButton("Send Image");
-																												btnSendImage.addActionListener(new ActionListener() {
-																													public void actionPerformed(ActionEvent arg0) {
-																														// send image to imageeditor
-																														if(currentHeat!=null && currentHeat.getImage()!=null) {
-																															window.sendImage2DToImageEditor(currentHeat.getImage());
-																														}
-																													}
-																												});
-																												btnSendImage.setToolTipText("Sends image to image editor");
-																												pnSettImageCon.add(btnSendImage, "cell 1 5");
+																												
+																														btnSendImage = new JButton("Send Image");
+																														btnSendImage.addActionListener(new ActionListener() {
+																															public void actionPerformed(ActionEvent arg0) {
+																																// send image to imageeditor // TODO
+																																if(currentHeat!=null && currentHeat.getImage()!=null) {
+																																	// TODO txtID.getText()
+																																	window.sendImage2DToImageEditor(currentHeat.getImage(), getTxtImgGroupID().getText());
+																																}
+																															}
+																														});
+																														
+																														lblId = new JLabel("ID:");
+																														pnSettImageCon.add(lblId, "flowx,cell 0 5");
+																														
+																														txtImgGroupID = new JTextField();
+																														txtImgGroupID.setToolTipText("ID for grouping in ImageEditor");
+																														txtImgGroupID.setText("RAW");
+																														pnSettImageCon.add(txtImgGroupID, "cell 1 5,growx");
+																														txtImgGroupID.setColumns(10);
+																														btnSendImage.setToolTipText("Sends image to image editor");
+																														pnSettImageCon.add(btnSendImage, "cell 1 6");
 																												
 																												pnPeakList = new ModuleListWithOptions("PeakLists", true, wnd.getLogicRunner().getPeakLists());
 																												pnPeakList.getList().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -672,11 +682,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																												lbSelectedPeakList = new JLabel("");
 																												pnPeakList.getPnOptions().add(lbSelectedPeakList, "cell 0 1");
 		//
-		initMZMineListeners();
+		//initMZMineListeners();
 		//
-		setKeyBindings();
+		//setKeyBindings();
 		// init dialogs
-		initDialogs();
+		//initDialogs();
 	}  
 	
 	private void initDialogs() {
@@ -1641,6 +1651,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private ModuleListWithOptions pnPeakList;
 	private JButton btnApplyPeakList;
 	private JLabel lbSelectedPeakList;
+	private JTextField txtImgGroupID;
+	private JLabel lblId;
 	public void startImageUpdater() {
 		if(startTime == -1){
 			startTime = System.currentTimeMillis();
@@ -1774,4 +1786,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	public JPanel getMenuTop() {
 		return menuTop;
 	} 
+	public JTextField getTxtImgGroupID() {
+		return txtImgGroupID;
+	}
 }
