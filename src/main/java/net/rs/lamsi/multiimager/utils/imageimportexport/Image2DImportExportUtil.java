@@ -252,23 +252,17 @@ public class Image2DImportExportUtil {
 						// create all new Images
 						iList = new Vector[sep.length-1]; 
 						x = new Vector<Float>(); 
-						// Image creation
-						try {
+						// Image creation 
 							for(int img=0; img<iList.length; img++) {
 								iList[img] = new Vector<Double>(); 
-							}
-						}catch(Exception ex) {
-							ex.printStackTrace();
-						}
+							} 
 					}
 
-					// add Datapoints to all images
-					if(iList==null)
-						iList = null;
+					x.add(Float.valueOf(sep[0]));
+					// add Datapoints to all images 
 					for(int img=0; img<iList.length; img++) {
 						// add Datapoint
 						iList[img].add(Double.valueOf(sep[img+1]));
-						x.add(Float.valueOf(sep[0]));
 					}
 				}
 				// or metadata

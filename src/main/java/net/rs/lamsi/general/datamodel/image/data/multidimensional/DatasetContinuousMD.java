@@ -92,7 +92,7 @@ public class DatasetContinuousMD implements ImageDataset {
 	@Override
 	public int getLinesCount() { 
 		if(sett.getSplitMode()==XUNIT.s)
-			return (int)Math.floor((line.getXWidth()-sett.getStartX())/sett.getSplitAfterX());
+			return (int)Math.ceil((line.getXWidth()-sett.getStartX())/sett.getSplitAfterX());
 		else return (int)(line.getDPCount()-sett.getStartX())/sett.getSplitAfterDP();
 	}
 
