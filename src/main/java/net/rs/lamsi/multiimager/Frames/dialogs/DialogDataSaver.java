@@ -26,7 +26,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;

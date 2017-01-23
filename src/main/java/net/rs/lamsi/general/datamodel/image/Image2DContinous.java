@@ -1,9 +1,9 @@
-package net.rs.lamsi.massimager.Image;
+package net.rs.lamsi.general.datamodel.image;
 
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Image.data.DataPoint2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsImage;
 import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;

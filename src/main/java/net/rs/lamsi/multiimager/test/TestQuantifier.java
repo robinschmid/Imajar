@@ -7,9 +7,10 @@ import java.util.Random;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.data.DataPoint2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.Dataset2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -105,11 +106,11 @@ public class TestQuantifier {
 		}
 		// 
 		Image2D img[] = new Image2D[3];
-		img[2] = new Image2D(lines);
+		img[2] = new Image2D(new Dataset2D(lines));
 		img[2].getSettImage().setTitle("sample");
-		img[1] = new Image2D(linesIS);
+		img[1] = new Image2D(new Dataset2D(linesIS));
 		img[1].getSettImage().setTitle("sample IS");
-		img[0] = new Image2D(linesBlank);
+		img[0] = new Image2D(new Dataset2D(linesBlank));
 		img[0].getSettImage().setTitle("sample blank");
 		return img;
 	}
@@ -162,11 +163,11 @@ public class TestQuantifier {
 		}
 		// 
 		Image2D img[] = new Image2D[3];
-		img[2] = new Image2D(lines);
+		img[2] = new Image2D(new Dataset2D(lines));
 		img[2].getSettImage().setTitle("sample");
-		img[1] = new Image2D(linesIS);
+		img[1] = new Image2D(new Dataset2D(linesIS));
 		img[1].getSettImage().setTitle("sample IS");
-		img[0] = new Image2D(linesBlank);
+		img[0] = new Image2D(new Dataset2D(linesBlank));
 		img[0].getSettImage().setTitle("sample blank");
 		return img;
 	}
@@ -207,12 +208,12 @@ public class TestQuantifier {
 		}
 		// 
 		Image2D img[] = new Image2D[3];
-		img[2] = new Image2D(lines);
 		img[2].getSettImage().setTitle("kali");
-		img[1] = new Image2D(linesIS);
 		img[1].getSettImage().setTitle("kali IS");
-		img[0] = new Image2D(linesBlank);
 		img[0].getSettImage().setTitle("kali blank");
+		img[2] = new Image2D(new Dataset2D(lines));
+		img[1] = new Image2D(new Dataset2D(linesIS));
+		img[0] = new Image2D(new Dataset2D(linesBlank));
 		return img;
 	}
 	
@@ -253,12 +254,12 @@ public class TestQuantifier {
 		}
 		// 
 		Image2D img[] = new Image2D[3];
-		img[2] = new Image2D(lines);
 		img[2].getSettImage().setTitle("kali");
-		img[1] = new Image2D(linesIS);
 		img[1].getSettImage().setTitle("kali IS");
-		img[0] = new Image2D(linesBlank);
 		img[0].getSettImage().setTitle("kali blank");
+		img[2] = new Image2D(new Dataset2D(lines));
+		img[1] = new Image2D(new Dataset2D(linesIS));
+		img[0] = new Image2D(new Dataset2D(linesBlank));
 		return img;
 	}
 	
@@ -299,12 +300,12 @@ public class TestQuantifier {
 		}
 		// 
 		Image2D img[] = new Image2D[3];
-		img[2] = new Image2D(lines);
 		img[2].getSettImage().setTitle("Ex");
-		img[1] = new Image2D(linesIS);
 		img[1].getSettImage().setTitle("Ex IS");
-		img[0] = new Image2D(linesBlank);
 		img[0].getSettImage().setTitle("Ex blank");
+		img[2] = new Image2D(new Dataset2D(lines));
+		img[1] = new Image2D(new Dataset2D(linesIS));
+		img[0] = new Image2D(new Dataset2D(linesBlank));
 		return img;
 	}
 }

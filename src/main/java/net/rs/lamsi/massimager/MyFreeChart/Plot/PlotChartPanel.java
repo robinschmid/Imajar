@@ -10,8 +10,8 @@ import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
-import net.rs.lamsi.massimager.Image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 

@@ -41,6 +41,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.ChargeCalculatorSettingsDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.SelectMZDirectDialog;
@@ -50,7 +51,6 @@ import net.rs.lamsi.massimager.Frames.Menu.MenuChartActions;
 import net.rs.lamsi.massimager.Frames.Menu.MenuTableActions;
 import net.rs.lamsi.massimager.Frames.Panels.peaktable.PnTableMZPick;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.spectra.PlotSpectraLabelGenerator;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.spectra.PlotSpectraLineAndShapeRenderer;

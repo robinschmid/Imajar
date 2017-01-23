@@ -1,10 +1,10 @@
-package net.rs.lamsi.massimager.Image;
+package net.rs.lamsi.general.datamodel.image;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 
 public class Collection2D extends Vector<Collectable2D> implements Serializable { 
 	private static final long serialVersionUID = 1L;

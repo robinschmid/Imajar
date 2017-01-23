@@ -54,6 +54,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.batik.gvt.ImageNode;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
@@ -65,7 +66,6 @@ import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;

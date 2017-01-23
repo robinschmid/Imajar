@@ -2,8 +2,8 @@ package net.rs.lamsi.massimager.Settings.image.operations.quantifier;
 
 import java.io.Serializable;
 
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
 import net.rs.lamsi.massimager.Settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;

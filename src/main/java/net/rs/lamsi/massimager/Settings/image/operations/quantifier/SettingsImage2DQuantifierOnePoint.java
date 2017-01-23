@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.utils.FileAndPathUtil;
 

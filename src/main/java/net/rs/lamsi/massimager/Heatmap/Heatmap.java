@@ -4,7 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.multiimager.FrameModules.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;

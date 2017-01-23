@@ -8,8 +8,8 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog; 
-import net.rs.lamsi.massimager.Image.Image2D;
 import net.rs.lamsi.massimager.MyException.NoFileSelectedException;
 import net.rs.lamsi.massimager.MyMZ.ChromGenType;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;

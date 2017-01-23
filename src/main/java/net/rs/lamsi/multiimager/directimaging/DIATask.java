@@ -2,9 +2,9 @@ package net.rs.lamsi.multiimager.directimaging;
 
 import java.util.Vector;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;

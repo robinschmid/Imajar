@@ -3,7 +3,7 @@ package net.rs.lamsi.massimager.Settings;
 import java.io.File;
 import java.io.Serializable;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 public abstract class Settings implements Serializable {  

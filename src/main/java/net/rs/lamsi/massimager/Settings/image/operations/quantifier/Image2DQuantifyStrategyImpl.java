@@ -1,6 +1,6 @@
 package net.rs.lamsi.massimager.Settings.image.operations.quantifier;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 
 public interface Image2DQuantifyStrategyImpl {
 	

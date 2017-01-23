@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.ProgressMonitor;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport.FileType;

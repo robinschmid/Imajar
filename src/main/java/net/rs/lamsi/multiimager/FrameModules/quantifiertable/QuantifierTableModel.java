@@ -6,7 +6,7 @@ import java.util.Vector;
 
 import javax.swing.table.AbstractTableModel;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.Quantifier;
 import net.sf.mzmine.datamodel.PeakList;
  

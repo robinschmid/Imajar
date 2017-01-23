@@ -42,6 +42,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.ChargeCalculatorSettingsDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ColorPickerDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.DataSaverFrame;
@@ -50,7 +51,6 @@ import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.GeneralSettingsFrame;
 import net.rs.lamsi.massimager.Frames.Panels.ImageVsSpecViewPanel;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
-import net.rs.lamsi.massimager.Image.Image2D;
 import net.rs.lamsi.massimager.MyException.NoFileSelectedException;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.MyMZ.MZIon;

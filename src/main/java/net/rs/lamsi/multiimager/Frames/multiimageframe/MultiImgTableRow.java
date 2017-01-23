@@ -4,7 +4,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 
 import org.jfree.data.Range;
 import org.jfree.data.xy.XYSeries;

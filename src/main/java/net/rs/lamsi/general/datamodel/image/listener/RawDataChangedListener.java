@@ -1,6 +1,6 @@
-package net.rs.lamsi.massimager.Image.listener;
+package net.rs.lamsi.general.datamodel.image.listener;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 
 /**
  * changes in raw data for example by direct imaging analysis

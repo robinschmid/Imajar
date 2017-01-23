@@ -1,4 +1,4 @@
-package net.rs.lamsi.massimager.Image;
+package net.rs.lamsi.general.datamodel.image;
 
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -11,12 +11,14 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.Dataset2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.data.XYIData2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
-import net.rs.lamsi.massimager.Image.data.DataPoint2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
-import net.rs.lamsi.massimager.Image.data.XYIData2D;
-import net.rs.lamsi.massimager.Image.interf.Collectable2D;
-import net.rs.lamsi.massimager.Image.listener.RawDataChangedListener;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyOES.OESElementLine;
 import net.rs.lamsi.massimager.MyOES.OESScan;
@@ -31,6 +33,8 @@ import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImag
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
 import net.rs.lamsi.massimager.Settings.visualization.plots.SettingsThemes;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.DataMinMaxAvg;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
@@ -69,7 +73,8 @@ public class Image2D implements Serializable, Collectable2D {
 
 	//############################################################
 	// data
-	protected ScanLine[] lines; 
+	protected ImageDataset data;
+
 
 	// are getting calculated only once or after processing changed
 	// max and min z (intensity)
@@ -101,16 +106,15 @@ public class Image2D implements Serializable, Collectable2D {
 			e.printStackTrace();
 		}
 	} 
-	public Image2D(ScanLine[] listLines, SettingsPaintScale settPaintScale, SettingsImage setImage) { 
-		this(settPaintScale, setImage);
-		lines = listLines;
+
+	public Image2D(ImageDataset data) {
+		this();
+		data = this.data; 
 	}
-	public Image2D(Vector<ScanLine> scanLines, SettingsPaintScale settPaintScale, SettingsImage setImage) {
+	public Image2D(ImageDataset data, SettingsPaintScale settPaintScale, SettingsImage setImage) { 
 		this(settPaintScale, setImage);
-		lines = new ScanLine[scanLines.size()];
-		for(int i=0; i<lines.length; i++)
-			lines[i] = scanLines.get(i); 
-	}
+		data = this.data;
+	} 
 
 	public Image2D() { 
 		settPaintScale = new SettingsPaintScale();
@@ -122,11 +126,6 @@ public class Image2D implements Serializable, Collectable2D {
 		//
 		this.quantifier = new SettingsImage2DQuantifierLinear();
 		this.operations = new SettingsImage2DOperations();
-	}
-
-	public Image2D(ScanLine[] lines) {
-		this();
-		this.lines = lines; 
 	}
 	//#####################################################################################################
 	// Generators STATIC
@@ -152,11 +151,10 @@ public class Image2D implements Serializable, Collectable2D {
 			listLines[i] = new ScanLine(dp);
 		}
 		// Image erstellen 
-		return  new Image2D(listLines, settPaintScale, setImage); 
+		return  new Image2D(new Dataset2D(listLines), settPaintScale, setImage); 
 	}
 
 	// Discontinous MS-Image
-
 	// Generate Heatmap with Continous Data WIDHTOUT Triggerin every Line
 	public static Image2D generateImage2DFromCon(SettingsPaintScale settPaintScale, SettingsMSImage setMSICon, MZChromatogram mzchrom) {  
 		// usesTime = false --> scansPerLine
@@ -199,7 +197,7 @@ public class Image2D implements Serializable, Collectable2D {
 			z[i] = mzchrom.getY(i).doubleValue();
 		}
 		// generate Image
-		return new Image2D(scanLines, settPaintScale, setMSICon);
+		return new Image2D(new Dataset2D(scanLines), settPaintScale, setMSICon);
 	}
 
 	//
@@ -227,7 +225,7 @@ public class Image2D implements Serializable, Collectable2D {
 			listLines[i] = new ScanLine(dp);
 		}
 		// Image erstellen 
-		return  new Image2D(listLines, settPaintScale, setImage); 
+		return  new Image2D(new Dataset2D(listLines), settPaintScale, setImage); 
 	}
 
 
@@ -244,8 +242,8 @@ public class Image2D implements Serializable, Collectable2D {
 		else {
 			// count scan points
 			int scanpoints = 0;
-			for(int i=0; i<lines.length; i++) {
-				scanpoints += lines[i].getData().length;
+			for(int i=0; i<data.getLinesCount(); i++) {
+				scanpoints += data.getLineLength(i);
 			}
 			// create data
 			double[] x = new double[scanpoints];
@@ -257,7 +255,7 @@ public class Image2D implements Serializable, Collectable2D {
 			int realy, realx;
 			double height = getMaxYProcessed();
 			// for all lines
-			for(int iy=0; iy<lines.length; iy++) {
+			for(int iy=0; iy<data.getLinesCount(); iy++) {
 				// width  
 				double width = getMaxXProcessed(iy);
 				//
@@ -330,7 +328,7 @@ public class Image2D implements Serializable, Collectable2D {
 		ScanLine[] lines = this.lines;
 		// Erst Messpunkteanzahl ausrechnen 
 		int scanpoints = 0;
-		for(int i=0; i<lines.length; i++) {
+		for(int i=0; i<data.getLinesCount(); i++) {
 			scanpoints += lines[i].getData().length;
 		}
 		// Datenerstellen
@@ -341,7 +339,7 @@ public class Image2D implements Serializable, Collectable2D {
 		ScanLine line; 
 		int currentdp = 0;
 		//
-		for(int iy=0; iy<lines.length; iy++) {
+		for(int iy=0; iy<data.getLinesCount(); iy++) {
 			line = lines[iy];
 			//
 			for(int ix=0; ix<line.getData().length; ix++) {
@@ -359,7 +357,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public XYIData2D toXYIArrayRaw() {
 		// Erst Messpunkteanzahl ausrechnen 
 		int scanpoints = 0;
-		for(int i=0; i<lines.length; i++) {
+		for(int i=0; i<data.getLinesCount(); i++) {
 			scanpoints += lines[i].getData().length;
 		}
 		// Datenerstellen
@@ -370,7 +368,7 @@ public class Image2D implements Serializable, Collectable2D {
 		ScanLine line; 
 		int currentdp = 0;
 		//
-		for(int iy=0; iy<lines.length; iy++) {
+		for(int iy=0; iy<data.getLinesCount(); iy++) {
 			line = lines[iy];
 			//
 			for(int ix=0; ix<line.getData().length; ix++) {
@@ -392,7 +390,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public double[] toIArray() {
 		// calc count of points
 		int scanpoints = 0;
-		for(int i=0; i<lines.length; i++) {
+		for(int i=0; i<data.getLinesCount(); i++) {
 			scanpoints += lines[i].getData().length;
 		} 
 		double[] z = new double[scanpoints];
@@ -400,7 +398,7 @@ public class Image2D implements Serializable, Collectable2D {
 		ScanLine line; 
 		int currentdp = 0;
 		//
-		for(int iy=0; iy<lines.length; iy++) {
+		for(int iy=0; iy<data.getLinesCount(); iy++) {
 			line = lines[iy];
 			//
 			for(int ix=0; ix<line.getData().length; ix++) {
@@ -447,8 +445,8 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public Object[][] toDataArrayRaw(SettingsImage2DDataExport sett) {
 		// time only once?
-		int cols = sett.isWriteTimeOnlyOnce()? lines.length +1 :  lines.length*2;
-		if(sett.isWriteNoX()) cols = lines.length;
+		int cols = sett.isWriteTimeOnlyOnce()? data.getLinesCount() +1 :  data.getLinesCount()*2;
+		if(sett.isWriteNoX()) cols = data.getLinesCount();
 		int rows = getMaxDP();
 		Object[][] data = new Object[rows][cols];
 		int l = 0;
@@ -476,7 +474,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public Object[][] toIArrayProcessed() {
 		// time only once?
-		int cols = lines.length;
+		int cols = data.getLinesCount();
 		int rows = getMaxDP();
 		Object[][] data = new Object[rows][cols]; 
 		for(int c=0; c<cols; c++) {
@@ -497,7 +495,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public Object[][] toIArrayProcessed(boolean[][] map) {
 		// time only once?
-		int rows = lines.length;
+		int rows = data.getLinesCount();
 		int cols = getMaxDP();
 		Object[][] data = new Object[rows][cols]; 
 		for(int r = 0; r<rows; r++) {
@@ -518,8 +516,8 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public Object[][] toDataArrayProcessed(SettingsImage2DDataExport sett) {
 		// time only once?
-		int cols = sett.isWriteTimeOnlyOnce()? lines.length +1 :  lines.length*2;
-		if(sett.isWriteNoX()) cols = lines.length;
+		int cols = sett.isWriteTimeOnlyOnce()? data.getLinesCount() +1 :  data.getLinesCount()*2;
+		if(sett.isWriteNoX()) cols = data.getLinesCount();
 		int rows = getMaxDP();
 		Object[][] data = new Object[rows][cols];
 		int l = 0;
@@ -547,40 +545,40 @@ public class Image2D implements Serializable, Collectable2D {
 	public Object[][] toDataArrayProcessed(SettingsImage2DDataExport sett, boolean blank, boolean IS, boolean quantifier) {
 		// all lines are full? or is the first/last one only half
 		int startLine = 0;
-		int lcount = lines.length;
+		int lcount = data.getLinesCount();
 		if(sett.isCuttingDataToMin()) {
-			int avglength = getAvgDP();
+			int avglength = data.getAvgDP();
 			// have a look at the first and last line
-			if(lines[0].getDPCount()<avglength*0.80) {
+			if(data.getLineLength(0)<avglength*0.80) {
 				startLine = 1;
 				lcount--;
 			}
-			if(lines[lines.length-1].getDPCount()<avglength*0.80)
+			if(data.getLineLength(data.getLinesCount()-1)<avglength*0.80)
 				lcount--;
 		}
 		// time only once?
 		int cols = sett.isWriteTimeOnlyOnce()? lcount +1 :  lcount*2;
 		if(sett.isWriteNoX()) cols = lcount;
 		// how many rows? maximum or cutting to minimum
-		int rows = getMinDP();
-		if(rows<=1 || !sett.isCuttingDataToMin()) rows = getMaxDP();
-		Object[][] data = new Object[rows][cols];
+		int minDP = data.getMinDP();
+		int rows = !sett.isCuttingDataToMin() || minDP<=1? data.getMaxDP() : minDP;
+		
+		Object[][] dataRes = new Object[rows][cols];
 		int l = startLine;
 		for(int c=0; c<cols; c++) {
-			ScanLine line = lines[l];
 			// increment l
 			if((sett.isWriteTimeOnlyOnce() && c!=0) || (!sett.isWriteTimeOnlyOnce() && c%2==1) || (sett.isWriteNoX())) {
 				for(int r = 0; r<rows; r++) {
 					// only if not null: write Intensity
-					data[r][c] = r<line.getDPCount()? getIProcessed(l,r, blank, IS, quantifier) : "";
+					dataRes[r][c] = r<data.getLineLength(l)? getIProcessed(l,r, blank, IS, quantifier) : "";
 				}
 				l++;
 			}
 			else //write X
 				for(int r = 0; r<rows; r++) 
-					data[r][c] = r<line.getDPCount()? getXProcessed(l, r) : "";
+					dataRes[r][c] = r<data.getLineLength(l)? getXProcessed(l, r) : "";
 		}
-		return data;
+		return dataRes;
 	}
 
 	/**
@@ -594,7 +592,7 @@ public class Image2D implements Serializable, Collectable2D {
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
 		// TODO prozess intinsity
-		double i = getDP(l, dp).getI();
+		double i = data.getI(l, dp);
 		// subtract blank and apply IS
 		if(operations!=null) {
 			i = operations.calcIntensity(this, l, dp, i);
@@ -619,7 +617,7 @@ public class Image2D implements Serializable, Collectable2D {
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
 		// TODO prozess intinsity
-		double i = getDP(l, dp).getI();
+		double i = data.getI(l, dp);
 		// subtract blank and apply IS
 		if(operations!=null) {
 			i = operations.calcIntensity(this, l, dp, i, blank, IS);
@@ -640,12 +638,17 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public float getXProcessed(int l, int dp) { 
-		int line = l<lines.length? l:lines.length-1;
-		if(dp<getLine(line).getDPCount())
-			return ((getDP(line, dp).getX())) * settImage.getVelocity();
+		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
+		if(dp<data.getLineLength(line))
+			return data.getX(line, dp) * settImage.getVelocity();
 		else {
-			int overMax = (getLine(line).getDPCount()-dp+1);
-			return (((getDP(line, getLine(line).getDPCount()-1).getX() + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
+			// TODO WHAT?! Cant understand this
+			// is the program ending at this poitn? at any time?
+			int overMax = (data.getLineLength(line)-dp+1);
+			ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
+			//return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
+			// tmp change
+			return (((data.getX(line, data.getLineLength(line)-1)) * settImage.getVelocity()));
 		}
 	}
 	/**
@@ -668,7 +671,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public int getYAsIndex(double y) {
 		if(y<0) return 0;
 		int l = (int)(y/settImage.getSpotsize());
-		return l<getLines().length? l : getLines().length-1;
+		return l<data.getLinesCount()? l : data.getLinesCount()-1;
 	} 
 	/**
 	 * returns the index of the data point in the given line 
@@ -678,12 +681,11 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public int getXAsIndex(int line, double x) {
 		double rx = x/settImage.getVelocity();
-		ScanLine l = getLine(line);
-		for(int i=1; i<l.getDPCount(); i++) {
-			if(l.getPoint(i).getX()>=rx)
+		for(int i=1; i<data.getLineLength(line); i++) {
+			if(data.getX(line, i)>=rx)
 				return i-1;
 		}
-		return l.getDPCount()-1;
+		return data.getLineLength(line)-1;
 	}
 	/**
 	 * returns the index of the data point at x / y
@@ -692,53 +694,9 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public int getXAsIndex(double y, double x) {
-		double rx = x/settImage.getVelocity();
-		ScanLine l = getLine(getYAsIndex(y));
-		for(int i=1; i<l.getDPCount(); i++) {
-			if(l.getPoint(i).getX()>=rx)
-				return i-1;
-		}
-		return l.getDPCount()-1;
+		return getXAsIndex(getYAsIndex(y), x);
 	}
 
-
-	/**
-	 * The maximum datapoints of the longest line
-	 * @return
-	 */
-	public int getMaxDP() {
-		int max = Integer.MIN_VALUE;
-		for(ScanLine l : lines) {
-			if(l.getDPCount()>max) max = l.getDPCount();
-		}
-		return max;
-	}
-	/**
-	 * The maximum datapoints of the longest line
-	 * does not uses the first and last line! for calculation
-	 * @return
-	 */
-	public int getMinDP() {
-		int min = Integer.MAX_VALUE;
-		for(int i=1; i<lines.length-1; i++) {
-			ScanLine l = lines[i];
-			if(l.getDPCount()<min) min = l.getDPCount();
-		}
-		return min;
-	}
-	/**
-	 * The average datapoints of all lines
-	 * does not uses the first and last line! for calculation
-	 * @return
-	 */
-	public int getAvgDP() {
-		int avg = 0;
-		for(int i=1; i<lines.length-1; i++) {
-			ScanLine l = lines[i];
-			avg += l.getDPCount();
-		}
-		return Math.round((avg/(lines.length-2)));
-	}
 
 	// a name for lists
 	public String toListName() { 
@@ -833,9 +791,8 @@ public class Image2D implements Serializable, Collectable2D {
 		if(onlySelected) {
 			double min =  Double.POSITIVE_INFINITY;
 
-			for(int l=0; l<lines.length; l++) {
-				ScanLine line = lines[l];
-				for(int dp = 0; dp<line.getDPCount(); dp++) {
+			for(int l=0; l<data.getLinesCount(); l++) {
+				for(int dp = 0; dp<data.getLineLength(l); dp++) {
 					double tmp;
 					if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getIProcessed(l, dp))<min)) {
 						min = tmp;
@@ -850,8 +807,8 @@ public class Image2D implements Serializable, Collectable2D {
 				// calc min z
 				minZ = Double.POSITIVE_INFINITY;
 				double pi;
-				for(int line=0; line<getLines().length; line++)
-					for(int dp=0; dp<getLine(line).getDPCount(); dp++)
+				for(int line=0; line<data.getLinesCount(); line++)
+					for(int dp=0; dp<data.getLineLength(line); dp++)
 						if((pi=getIProcessed(line, dp))<minZ)
 							minZ = pi;
 			}
@@ -868,9 +825,8 @@ public class Image2D implements Serializable, Collectable2D {
 		if(onlySelected) { 
 			double max =  Double.NEGATIVE_INFINITY;
 
-			for(int l=0; l<lines.length; l++) {
-				ScanLine line = lines[l];
-				for(int dp = 0; dp<line.getDPCount(); dp++) {
+			for(int l=0; l<data.getLinesCount(); l++) {
+				for(int dp = 0; dp<data.getLineLength(l); dp++) {
 					double tmp;
 					if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getIProcessed(l, dp))>max)) {
 						max = tmp;
@@ -887,8 +843,8 @@ public class Image2D implements Serializable, Collectable2D {
 				// calc min z
 				maxZ = Double.NEGATIVE_INFINITY;
 				double pi;
-				for(int line=0; line<getLines().length; line++)
-					for(int dp=0; dp<getLine(line).getDPCount(); dp++)
+				for(int line=0; line<data.getLinesCount(); line++)
+					for(int dp=0; dp<data.getLineLength(line); dp++)
 						if((pi=getIProcessed(line, dp))>maxZ)
 							maxZ = pi; 
 			}
@@ -909,9 +865,8 @@ public class Image2D implements Serializable, Collectable2D {
 		checkForUpdateInParentIProcessing();
 		
 		double maxZ = Double.NEGATIVE_INFINITY;
-		double pi;
-		ScanLine line = getLine(l);
-			for(int dp=0; dp<line.getDPCount(); dp++)
+		double pi; 
+			for(int dp=0; dp<data.getLineLength(l); dp++)
 				if((pi=getIProcessed(l, dp))>maxZ)
 					maxZ = pi; 
 		return maxZ!=Double.NEGATIVE_INFINITY? maxZ : -1;
@@ -919,10 +874,10 @@ public class Image2D implements Serializable, Collectable2D {
 
 
 	public float getMaxXProcessed(int line) {
-		return getXProcessed(line, getLine(line).getDPCount());
+		return getXProcessed(line, data.getLineLength(line));
 	} 
 	public float getMaxYProcessed() {
-		return getYProcessed(lines.length);
+		return getYProcessed(data.getLinesCount());
 	}
 
 	/**
@@ -933,18 +888,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public double getMaxBlockWidth(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockHeight(0);
 		else {
-			// calc min x
-			double maxW = Double.NEGATIVE_INFINITY;
-			for(ScanLine l : lines) {
-				for(int i=0; i<l.getData().length-2; i++) {
-					DataPoint2D dp1 = l.getPoint(i);
-					DataPoint2D dp2 = l.getPoint(i+1);
-					double width = Math.abs(dp2.getX() -dp1.getX());
-					if(width>maxW)
-						maxW = width;
-				}
-			}
-			return maxW*getSettImage().getVelocity();
+			return data.getMaxXWidth()*getSettImage().getVelocity();
 		}
 	}
 	/**
@@ -954,8 +898,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public double getMaxBlockHeight(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockWidth(0);
-		else {
-			//
+		else { 
 			return getSettImage().getSpotsize();
 		}
 	}
@@ -1022,39 +965,12 @@ public class Image2D implements Serializable, Collectable2D {
 	public void setSettTheme(SettingsThemes settTheme) {
 		this.settTheme = settTheme;
 	}
-	public Vector<ScanLine> getLinesAsVector() {
-		Vector<ScanLine> vl = new Vector<ScanLine>();
-		for(ScanLine l : lines) {
-			vl.add(l);
-		}
-		return vl;
-	}
-	public ScanLine[] getLines() {
-		return lines;
-	} 
-	/**
-	 * fires raw data changed event
-	 * fires intensity processing changed event
-	 * @param lines
-	 */
-	public void setLines(ScanLine[] lines) {
-		this.lines = lines;
-		fireIntensityProcessingChanged();
-		fireRawDataChangedEvent();
-	}
 	public double getMinZFiltered() {
 		return minZFiltered;
 	}
 	public double getMaxZFiltered() {
 		return maxZFiltered;
-	}
-
-	public DataPoint2D getDP(int line, int dp) {
-		return lines[line].getPoint(dp);
-	}
-	public ScanLine getLine(int line) {
-		return lines[line];
-	}
+	} 
 
 	// if something changes - change the averageI
 	public SettingsImage2DQuantifier getQuantifier() {
@@ -1087,8 +1003,8 @@ public class Image2D implements Serializable, Collectable2D {
 		if(averageIProcessed==-1) { 
 			int counter = 0;
 			averageIProcessed = 0;
-			for(int line=0; line<getLines().length; line++) {
-				for(int dp=0; dp<getLine(line).getDPCount(); dp++) {
+			for(int line=0; line<data.getLinesCount(); line++) {
+				for(int dp=0; dp<data.getLineLength(line); dp++) {
 					averageIProcessed += getIProcessed(line, dp);
 					counter++;
 				}
@@ -1109,12 +1025,12 @@ public class Image2D implements Serializable, Collectable2D {
 		checkForUpdateInParentIProcessing();
 		//
 		if(averageIProcessedForLine==null) {
-			averageIProcessedForLine = new double[lines.length];
-			for(int i=0; i<lines.length; i++) {
+			averageIProcessedForLine = new double[data.getLinesCount()];
+			for(int i=0; i<data.getLinesCount(); i++) {
 				averageIProcessedForLine[i] = 0;
-				for(int dp=0; dp<lines[i].getDPCount(); dp++)  
+				for(int dp=0; dp<data.getLineLength(i); dp++)  
 					averageIProcessedForLine[i] += getIProcessed(i, dp);
-				averageIProcessedForLine[i] = averageIProcessedForLine[i]/lines[i].getDPCount();
+				averageIProcessedForLine[i] = averageIProcessedForLine[i]/data.getLineLength(i);
 			}
 		}
 		return averageIProcessedForLine[line];
@@ -1202,14 +1118,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public int getTotalDPCount() { 
-		if(totalDPCount == -1) {
-			// calc
-			totalDPCount = 0;
-			for(ScanLine l : lines) {
-				totalDPCount += l.getDPCount();
-			}
-		}
-		return totalDPCount;
+		return data.getTotalDPCount();
 	}
 	/**
 	 * Sums up all the selected data with optional exclusion
@@ -1218,9 +1127,8 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public int getSelectedDPCount(boolean excluded) {
 		int counter = 0;
-		for(int l=0; l<lines.length; l++) {
-			ScanLine line = lines[l];
-			for(int dp = 0; dp<line.getDPCount(); dp++) {
+		for(int l=0; l<data.getLinesCount(); l++) { 
+			for(int dp = 0; dp<data.getLineLength(l); dp++) {
 				if((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) 
 					counter++;
 			}
@@ -1233,18 +1141,17 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public double[] getSelectedDataAsArray(boolean excluded) {
-		double[] data = new double[getSelectedDPCount(true)];
+		double[] datasel = new double[getSelectedDPCount(true)];
 		int counter = 0;
-		for(int l=0; l<lines.length; l++) {
-			ScanLine line = lines[l];
-			for(int dp = 0; dp<line.getDPCount(); dp++) {
+		for(int l=0; l<data.getLinesCount(); l++) {
+			for(int dp = 0; dp<data.getLineLength(l); dp++) {
 				if((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp))  {
-					data[counter] = getIProcessed(l, dp);
+					datasel[counter] = getIProcessed(l, dp);
 					counter++;
 				} 
 			}
 		}
-		return data;
+		return datasel;
 	}
 
 	/**
@@ -1417,8 +1324,8 @@ public class Image2D implements Serializable, Collectable2D {
 		return BinaryWriterReader.deepCopy(this);  
 	}
 	public boolean isAllLinesSameLength() { 
-		for(int i=1; i<lines.length; i++) 
-			if(lines[i-1].getDPCount()!=lines[i].getDPCount())
+		for(int i=1; i<data.getLinesCount(); i++) 
+			if(data.getLineLength(i-1)!=data.getLineLength(i))
 				return false;
 		
 		return true;
@@ -1446,14 +1353,15 @@ public class Image2D implements Serializable, Collectable2D {
 			
 			// scale in x
 			float sx = 1;
-			int w = this.getMinDP();
+			int w = data.getMinDP();
 			if(w>maxw) {
 				sx = w/maxw;
 				w = maxw;
 			}
 			
 			float sy = 1;
-			int h = this.getLines().length;
+			int lines = data.getLinesCount();
+			int h = lines;
 			if(h>maxh) { 
 				sy = h/maxh;
 				h = maxh;
@@ -1462,8 +1370,7 @@ public class Image2D implements Serializable, Collectable2D {
 			for(int x=0; x<w; x++) {
 				for(int y=0; y<h; y++) {
 					// fill rects
-					int lines = getLines().length;
-					int dp = getLine((int)(y*sy)).getDPCount();
+					int dp = data.getLineLength((int)(y*sy));
 					if((int)(y*sy)<lines && (int)(x*sx)<dp) {
 						Paint c = scale.getPaint(getIProcessed((int)(y*sy), (int)(x*sx)));
 						g.setPaint(c);
@@ -1479,7 +1386,7 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 	}
 	public int getLineCount() {
-		return lines.length;
+		return data.getLinesCount();
 	}
 	
 	/**
@@ -1500,7 +1407,8 @@ public class Image2D implements Serializable, Collectable2D {
 			}
 			lines[l] = new ScanLine(dp);
 		}
-		return new Image2D(lines);
+		Dataset2D data = new Dataset2D(lines);
+		return new Image2D(data);
 	}
 	
 	//########################################################################

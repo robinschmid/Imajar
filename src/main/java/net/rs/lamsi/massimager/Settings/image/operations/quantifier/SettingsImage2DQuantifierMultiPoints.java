@@ -7,9 +7,10 @@ import java.util.Vector;
 
 
 
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 

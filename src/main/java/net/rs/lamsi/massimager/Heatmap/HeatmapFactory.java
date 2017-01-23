@@ -1,8 +1,8 @@
 package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
 
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.data.XYIData2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.data.XYIData2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.massimager.Settings.SettingsImage;

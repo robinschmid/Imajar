@@ -1,4 +1,4 @@
-package net.rs.lamsi.massimager.Image.data;
+package net.rs.lamsi.general.datamodel.image.data;
 
 import java.io.Serializable;
 import java.util.Vector;

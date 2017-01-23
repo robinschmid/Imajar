@@ -16,15 +16,17 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2DContinous;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.Image2DContinous;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit; 
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+
 import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
 
 public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImageContinousSplit> {

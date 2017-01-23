@@ -4,10 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.Image2DContinous;
-import net.rs.lamsi.massimager.Image.data.DataPoint2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2DContinous;
+import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.Dataset2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
 import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
@@ -448,7 +449,7 @@ public class Image2DImportExportUtil {
 		if(continous) 
 			return new Image2DContinous(scanLines.get(0), paint, general);
 		// else just add it as normal matrix-data image
-		else return new Image2D(scanLines, paint, general);
+		else return new Image2D(new Dataset2D(scanLines), paint, general);
 	}
 
 	/**

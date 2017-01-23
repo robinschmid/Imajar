@@ -2,7 +2,7 @@ package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
 import java.awt.Color;
 
-import net.rs.lamsi.massimager.Image.Image2D;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
 
 import org.jfree.chart.ChartFactory;

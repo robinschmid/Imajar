@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Image.Image2D;
-import net.rs.lamsi.massimager.Image.data.DataPoint2D;
-import net.rs.lamsi.massimager.Image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.Dataset2D;
+import net.rs.lamsi.general.datamodel.image.data.ScanLine;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
@@ -118,7 +119,7 @@ public class ImageGeneratorRunner implements Runnable {
 			}
 			lines[l] = new ScanLine(dp);
 		}
-		return new Image2D(lines);
+		return new Image2D(new Dataset2D(lines));
 	}
 	/**
 	 * creating standards
@@ -137,7 +138,7 @@ public class ImageGeneratorRunner implements Runnable {
 			}
 			lines[l] = new ScanLine(dp);
 		}
-		return new Image2D(lines);
+		return new Image2D(new Dataset2D(lines));
 	}
 
 	public void stopImage() {
