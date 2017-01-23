@@ -337,7 +337,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 	 */
 	protected void addMultiStandard(Image2D img) { 
 		// search for multiple images in one standard
-		if(getCbSplitQuantifierData().isSelected() && img.getLines().length>2){
+		if(getCbSplitQuantifierData().isSelected() && img.getLineCount()>2){
 			Quantifier q = new Quantifier();
 			q.setImg(img);
 			q.setMode(Quantifier.MODE_AVERAGE_PER_LINE);
@@ -348,7 +348,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 			double minD = (lineAv[1]-lineAv[0]);
 			double avD = (lineAv[1]-lineAv[0]);
 			double minAvgValue = lineAv[0]<lineAv[1]? lineAv[0] : lineAv[1];
-			for(int i=2; i<img.getLines().length; i++) {
+			for(int i=2; i<img.getLineCount(); i++) {
 				double dif = Math.abs(lineAv[i]-lineAv[i-1]);
 				if(dif<minD) minD = dif;
 				if(dif>maxD) maxD = dif;
@@ -356,10 +356,10 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 				// min value as blank
 				if(lineAv[i]<minAvgValue) minAvgValue = lineAv[i];
 			}
-			avD = avD/img.getLines().length-1;
+			avD = avD/img.getLineCount()-1;
 			// search for contrast
 			int lastSplit = 0;
-			for(int i=1; i<img.getLines().length; i++) {
+			for(int i=1; i<img.getLineCount(); i++) {
 				double dif = Math.abs(lineAv[i]-lineAv[i-1]);
 				if(dif>maxD*0.1 ) {
 					// split image here i-1  
@@ -368,8 +368,8 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 						Image2D copy = img.getCopyChild();
 						// set area: exclude all but not lastSplit to i-1
 						if(lastSplit!=0)
-							copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getMaxDP()-1,lastSplit-1)); 
-						copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,i, copy.getMaxDP()-1, copy.getLines().length-1));
+							copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
+						copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,i, copy.getData().getMaxDP()-1, copy.getLineCount()-1));
 						// add
 						getPnTable().addQuantifier(copy);
 						// 						
@@ -393,7 +393,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 					// copy and set parent
 					Image2D copy = img.getCopyChild();
 					// set area: exclude all but not lastSplit to i-1
-					copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getMaxDP()-1,lastSplit-1)); 
+					copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
 					// add
 					getPnTable().addQuantifier(copy);
 				} catch (Exception e) { 

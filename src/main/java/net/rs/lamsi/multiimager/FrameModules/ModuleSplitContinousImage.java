@@ -7,27 +7,24 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.Image2DContinous;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit; 
+import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
-
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
 
 public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImageContinousSplit> {
 	private final ButtonGroup buttonGroup = new ButtonGroup();
@@ -203,8 +200,8 @@ public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImage
 				}
 				
 				// update image
-				if(changed && currentImage!=null && Image2DContinous.class.isInstance(currentImage)) {
-					((Image2DContinous)currentImage).resplitData();
+				if(changed && currentImage!=null && isContinuousData(currentImage)) {
+					((DatasetContinuousMD)currentImage.getData()).setSplitSettings(sett);
 				}
 				
 			} catch(Exception ex) {
@@ -217,9 +214,18 @@ public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImage
 	@Override
 	public void setCurrentImage(Image2D img) { 
 		super.setCurrentImage(img);
-		this.setVisible(Image2DContinous.class.isInstance(img));
+		this.setVisible(isContinuousData(img));
 	}
 	
+	/**
+	 * continuous data set?
+	 * @param img
+	 * @return
+	 */
+	private boolean isContinuousData(Image2D img) {
+		return DatasetContinuousMD.class.isInstance(img.getData());
+	}
+
 	//################################################################################################
 	// GETTERS AND SETTERS  
 	public JTextField getTxtSplitValue() {

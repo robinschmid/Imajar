@@ -1,6 +1,6 @@
 package net.rs.lamsi.general.datamodel.image.interf;
 
-import net.rs.lamsi.general.datamodel.image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 
 /**
  * Basic methods of a imaging data set
@@ -32,11 +32,12 @@ public interface ImageDataset {
 	
 	/**
 	 * returns the raw intensity (I) value of a data point in a line
+	 * @param index index of image / dimension
 	 * @param line index of the line
 	 * @param dpi index of the data point
 	 * @return
 	 */
-	public double getI(int line, int dpi);
+	public double getI(int index, int line, int dpi);
 
 	/**
 	 * raw distance between two data points (dTime or delta data point number)

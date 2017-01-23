@@ -422,10 +422,10 @@ LOOKUP_TABLE default
 		xwriter.writeToCell(sheetStats, 0, 5, "DP per line:");
 		xwriter.writeToCell(sheetStats, 1, 0, (img.getTitle()));
 		xwriter.writeToCell(sheetStats, 1, 1, (img.getSettImage().getRAWFilepath()));
-		xwriter.writeToCell(sheetStats, 1, 2, (img.getLines().length));
+		xwriter.writeToCell(sheetStats, 1, 2, (img.getLineCount()));
 		xwriter.writeToCell(sheetStats, 1, 3, (img.getTotalDPCount()));
 		xwriter.writeToCell(sheetStats, 1, 4, (img.isAllLinesSameLength()));
-		xwriter.writeToCell(sheetStats, 1, 5, (img.getTotalDPCount()/img.getLines().length));
+		xwriter.writeToCell(sheetStats, 1, 5, (img.getTotalDPCount()/img.getLineCount()));
 		//write data: RAW
 		XSSFSheet sheet = xwriter.getSheet(wb, classifier+"RAW"); 
 		Object[][] data = img.toDataArrayProcessed(sett, false, false, false);
@@ -433,7 +433,7 @@ LOOKUP_TABLE default
 		xwriter.writeToCell(sheet, 0, 1, "Lines:");
 		xwriter.writeToCell(sheet, 0, 2, "Datapoints:");
 		xwriter.writeToCell(sheet, 0, 3, "All lines same length:");
-		xwriter.writeToCell(sheet, 1, 1, (img.getLines().length));
+		xwriter.writeToCell(sheet, 1, 1, (img.getLineCount()));
 		xwriter.writeToCell(sheet, 1, 2, (img.getTotalDPCount()));
 		xwriter.writeToCell(sheet, 1, 3, (img.isAllLinesSameLength()));
 		xwriter.writeDataArrayToSheet(sheet, data,1,5); 
@@ -449,7 +449,7 @@ LOOKUP_TABLE default
 			double av = bl.getAverageIntensity(0, 0);
 			// avperline
 			bl.setMode(SettingsImage2DBlankSubtraction.MODE_AVERAGE_PER_LINE);
-			Object[] avperline = new Object[img.getLines().length];
+			Object[] avperline = new Object[img.getLineCount()];
 			for(int i=0; i<avperline.length; i++ ) {
 				avperline[i] = bl.getAverageIntensity(i, 0);
 			}

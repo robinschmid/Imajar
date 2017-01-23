@@ -312,7 +312,7 @@ public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperati
 			getTxtBlankTitle().setText(img.getTitle());
 			getTxtBlankPath().setText(img.getSettImage().getRAWFilepath());
 			
-			if(getRbBlankActualDataPoint().isSelected() && (img.getLines().length!=currentImage.getLines().length || img.getLines()[0].getDPCount()!=currentImage.getLines()[0].getDPCount()))
+			if(getRbBlankActualDataPoint().isSelected() && (img.getLineCount()!=currentImage.getLineCount() || img.getData().getAvgDP()!=currentImage.getData().getAvgDP()))
 				getRbBlankAveragePerLine().setSelected(true);
 		}
 		// update settings
@@ -388,7 +388,7 @@ public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperati
 		try {
 			// apply to sliders
 			if(imgBlank!=null) {
-				int max = imgBlank.getMaxDP();
+				int max = imgBlank.getData().getMaxDP();
 				getSliderBlankLowerB().setMaximum(max);
 				getSliderBlankUpperB().setMaximum(max); 
 			}
@@ -477,7 +477,7 @@ public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperati
 	public void setCurrentImage(Image2D img) { 
 		super.setCurrentImage(img);
 		// apply to sliders
-		int max = img.getMaxDP();
+		int max = img.getData().getMaxDP();
 		getSliderBlankLowerB().setMaximum(max);
 		getSliderBlankUpperB().setMaximum(max); 
 	}

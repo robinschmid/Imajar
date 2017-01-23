@@ -11,12 +11,12 @@ public class IconNode extends DefaultMutableTreeNode {
 		this(null);
 	}
 
-	public IconNode(Object userObject) {
-		this(userObject, true, null);
+	public IconNode(Object image) {
+		this(image, true, null);
 	}
 
-	public IconNode(Object userObject, boolean allowsChildren, Icon icon) {
-		super(userObject, allowsChildren);
+	public IconNode(Object image, boolean allowsChildren, Icon icon) {
+		super(image, allowsChildren);
 		this.icon = icon;
 	}
 

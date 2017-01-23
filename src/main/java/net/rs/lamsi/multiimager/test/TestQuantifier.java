@@ -8,9 +8,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.Dataset2D;
-import net.rs.lamsi.general.datamodel.image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.Dataset2D;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -79,9 +79,9 @@ public class TestQuantifier {
 	 */
 	public static Image2D[] createImage(double factorSample, double factorBG, double signalIS) {
 		
-		ScanLine[] lines = new ScanLine[100];
-		ScanLine[] linesIS = new ScanLine[100];
-		ScanLine[] linesBlank = new ScanLine[100];
+		ScanLine2D[] lines = new ScanLine2D[100];
+		ScanLine2D[] linesIS = new ScanLine2D[100];
+		ScanLine2D[] linesBlank = new ScanLine2D[100];
 		
 		for(int l=0; l<lines.length; l++) {
 			DataPoint2D[] dp = new DataPoint2D[500];
@@ -100,9 +100,9 @@ public class TestQuantifier {
 				dpIS[d] = new DataPoint2D(d*0.1, bg+ (signalIS+noise));
 				dp[d] = new DataPoint2D(d*0.1, bg+ signal+(noise)*factorSample);
 			}
-			lines[l] = new ScanLine(dp);
-			linesIS[l] = new ScanLine(dpIS);
-			linesBlank[l] = new ScanLine(dpBlank);
+			lines[l] = new ScanLine2D(dp);
+			linesIS[l] = new ScanLine2D(dpIS);
+			linesBlank[l] = new ScanLine2D(dpBlank);
 		}
 		// 
 		Image2D img[] = new Image2D[3];
@@ -125,9 +125,9 @@ public class TestQuantifier {
 	 */
 	public static Image2D[] createImageWithBlank(double factorSample, double factorBG, double signalIS) {
 		
-		ScanLine[] lines = new ScanLine[100];
-		ScanLine[] linesIS = new ScanLine[100];
-		ScanLine[] linesBlank = new ScanLine[100];
+		ScanLine2D[] lines = new ScanLine2D[100];
+		ScanLine2D[] linesIS = new ScanLine2D[100];
+		ScanLine2D[] linesBlank = new ScanLine2D[100];
 		
 		for(int l=0; l<lines.length; l++) {
 			DataPoint2D[] dp = new DataPoint2D[700];
@@ -157,9 +157,9 @@ public class TestQuantifier {
 				dpIS[d+100] = new DataPoint2D((d+100)*0.1, bg+ (signalIS+noise));
 				dp[d+100] = new DataPoint2D((d+100)*0.1, bg+ signal+(noise)*factorSample);
 			}
-			lines[l] = new ScanLine(dp);
-			linesIS[l] = new ScanLine(dpIS);
-			linesBlank[l] = new ScanLine(dpBlank);
+			lines[l] = new ScanLine2D(dp);
+			linesIS[l] = new ScanLine2D(dpIS);
+			linesBlank[l] = new ScanLine2D(dpBlank);
 		}
 		// 
 		Image2D img[] = new Image2D[3];
@@ -180,9 +180,9 @@ public class TestQuantifier {
 	 * 0 - 800
 	 */
 	public static Image2D[] createStandards(double factorSample, double factorBG, double signalIS) {
-		ScanLine[] lines = new ScanLine[24];
-		ScanLine[] linesIS = new ScanLine[24];
-		ScanLine[] linesBlank = new ScanLine[24];
+		ScanLine2D[] lines = new ScanLine2D[24];
+		ScanLine2D[] linesIS = new ScanLine2D[24];
+		ScanLine2D[] linesBlank = new ScanLine2D[24];
 		
 		for(int l=0; l<lines.length; l++) {
 			DataPoint2D[] dp = new DataPoint2D[500];
@@ -202,9 +202,9 @@ public class TestQuantifier {
 				dpIS[d] = new DataPoint2D(d*0.1, bg+ (signalIS+noise));
 				dp[d] = new DataPoint2D(d*0.1, bg+ signal+(noise)*factorSample);
 			}
-			lines[l] = new ScanLine(dp);
-			linesIS[l] = new ScanLine(dpIS);
-			linesBlank[l] = new ScanLine(dpBlank);
+			lines[l] = new ScanLine2D(dp);
+			linesIS[l] = new ScanLine2D(dpIS);
+			linesBlank[l] = new ScanLine2D(dpBlank);
 		}
 		// 
 		Image2D img[] = new Image2D[3];
@@ -226,9 +226,9 @@ public class TestQuantifier {
 	 * 0 - 800
 	 */
 	public static Image2D[] createStandardsWithBlank(double factorSample, double factorBG, double signalIS) {
-		ScanLine[] lines = new ScanLine[24];
-		ScanLine[] linesIS = new ScanLine[24];
-		ScanLine[] linesBlank = new ScanLine[24];
+		ScanLine2D[] lines = new ScanLine2D[24];
+		ScanLine2D[] linesIS = new ScanLine2D[24];
+		ScanLine2D[] linesBlank = new ScanLine2D[24];
 		
 		for(int l=0; l<lines.length; l++) {
 			DataPoint2D[] dp = new DataPoint2D[700];
@@ -248,9 +248,9 @@ public class TestQuantifier {
 				dpIS[d] = new DataPoint2D(d*0.1, d<100 || d>=600? bg+noise : bg+ (signalIS+noise));
 				dp[d] = new DataPoint2D(d*0.1,  d<100 || d>=600? bg+noise*factorSample : bg+ signal+(noise)*factorSample);
 			}
-			lines[l] = new ScanLine(dp);
-			linesIS[l] = new ScanLine(dpIS);
-			linesBlank[l] = new ScanLine(dpBlank);
+			lines[l] = new ScanLine2D(dp);
+			linesIS[l] = new ScanLine2D(dpIS);
+			linesBlank[l] = new ScanLine2D(dpBlank);
 		}
 		// 
 		Image2D img[] = new Image2D[3];
@@ -272,9 +272,9 @@ public class TestQuantifier {
 	 * 0 - 800
 	 */
 	public static Image2D[] createStandardsOne(double factorSample, double factorBG, double signalIS) {
-		ScanLine[] lines = new ScanLine[6];
-		ScanLine[] linesIS = new ScanLine[6];
-		ScanLine[] linesBlank = new ScanLine[6];
+		ScanLine2D[] lines = new ScanLine2D[6];
+		ScanLine2D[] linesIS = new ScanLine2D[6];
+		ScanLine2D[] linesBlank = new ScanLine2D[6];
 		
 		for(int l=0; l<lines.length; l++) {
 			DataPoint2D[] dp = new DataPoint2D[500];
@@ -294,9 +294,9 @@ public class TestQuantifier {
 				dpIS[d] = new DataPoint2D(d*0.1, bg+ (signalIS+noise));
 				dp[d] = new DataPoint2D(d*0.1, bg+ signal+(noise)*factorSample);
 			}
-			lines[l] = new ScanLine(dp);
-			linesIS[l] = new ScanLine(dpIS);
-			linesBlank[l] = new ScanLine(dpBlank);
+			lines[l] = new ScanLine2D(dp);
+			linesIS[l] = new ScanLine2D(dpIS);
+			linesBlank[l] = new ScanLine2D(dpBlank);
 		}
 		// 
 		Image2D img[] = new Image2D[3];

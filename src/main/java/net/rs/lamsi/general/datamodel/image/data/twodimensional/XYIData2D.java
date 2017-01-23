@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.datamodel.image.data;
+package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
 /*
  * Class for HeatmapFactory (JFreeChart)

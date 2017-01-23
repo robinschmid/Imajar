@@ -65,7 +65,7 @@ public class MultiImgTableRow {
 		if(isUseRange() && (max!=upper || min != lower)) {
 			// lines
 			for(int l = 0; l<map.length && l<img.getLineCount(); l++) {
-				for(int d = 0; d<map[l].length && d<img.getLine(l).getDPCount(); d++) {
+				for(int d = 0; d<map[l].length && d<img.getLineLength(l); d++) {
 					// check if img.intensity out of range
 					if(!inRange(img.getIProcessed(l, d)))
 						map[l][d] = false;
@@ -83,7 +83,7 @@ public class MultiImgTableRow {
 		if(isUseRange() && (max!=upper || min != lower)) {
 			// lines
 			for(int l = 0; l<map.length && l<img.getLineCount(); l++) {
-				for(int d = 0; d<map[l].length && d<img.getLine(l).getDPCount(); d++) {
+				for(int d = 0; d<map[l].length && d<img.getLineLength(l); d++) {
 					// check if img.intensity out of range
 					if(inRange(img.getIProcessed(l, d)))
 						map[l][d] += (int)Math.pow(2, i);

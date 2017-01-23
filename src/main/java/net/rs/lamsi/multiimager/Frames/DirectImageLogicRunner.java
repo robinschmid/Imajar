@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
@@ -74,208 +75,209 @@ public class DirectImageLogicRunner implements Runnable {
 	 */
 	@Override
 	public void run() {
-		SettingsImageDataImportTxt sett = (SettingsImageDataImportTxt) settings;
-		IconNode parent = null, sumNode = null;
-		while(!isPaused()) { 
-			long time1 = System.currentTimeMillis();
-			// files will be stored in files in each task			
-			Vector<File[]> sub = FileAndPathUtil.findFilesInDir(dir, sett.getFilter(), true, sett.isFilesInSeparateFolders());
-			
-			if(sub!=null && sub.size()>0) {
-				// first run
-				if(isFirstRun) {
-					// clear tree
-					runner.getTree().removeAllElements();
-					// create Images totally new
-					tasks = new Vector<DIATask>(); 
-					try {
-						// create parent node for tree
-						parent = new IconNode(dir.getName()+"; "+dir.getAbsolutePath()); 
-						// each i[] is a task with one data origin and multiple images
-						for(int i = 0; i< sub.size(); i++) {  
-							DIATask task = createTask(sub.get(i), parent, i);
-							if(task!=null)
-								tasks.add(task);
-						}
-						// add parent to tree 
-						runner.getTree().addNodeToRoot(parent); 
-						isFirstRun=false;
-					} catch (Exception e) { 
-						e.printStackTrace();
-					} 
-				}
-				else {
-					// just add new lines 
-					// read data:
-					try {
-						// first: new task or still same amount
-						if(sub.size()>tasks.size()) {
-							// new tasks! which one?
-							int newi;
-							for(int i=0; i<sub.size(); i++) {
-								boolean isNew = true;
-								for(int t=0; t<tasks.size(); t++) {
-									// same?
-									String idT = tasks.get(t).getIdentifier();
-									File p = sub.get(i)[0].getParentFile();
-									if(sett.isFilesInSeparateFolders() && !p.getParent().equals(dir.getAbsolutePath())) 
-										p = p.getParentFile();
-									String idS = p.getAbsolutePath();
-									
-									ImageEditorWindow.log("Compare "+idT + "  #  "+idS, LOG.DEBUG);
-									// compare
-									if(idT.equals(idS)) {
-										isNew = false;
-										tasks.get(t).setIndex(i);
-										break;
-									}
-								}
-								// spot found?
-								if(isNew) {
-									ImageEditorWindow.log("Task added to "+i+" position", LOG.MESSAGE);
-									// add new task at i
-									DIATask task = createTask(sub.get(i), parent, i);
-									if(task!=null) {
-										tasks.add(task);
-										runner.getTree().getTreeModel().nodeStructureChanged(parent);
-									}
-								}
-							} 
-							
-						}
-						
-						// Update all tasks
-						for(int t = 0; t<tasks.size(); t++) {
-							DIATask tsk = tasks.get(t);
-							File[] files = sub.get(tsk.getIndex());
-							// get all filedimensions like lines/length... for later comparison 
-							FileDim[] dim = writer.getFileDim(files);
-							// compare to calc newFileIndex
-							tsk.compareNewAndOldFiles(dim);
-							// where to start importing?
-							int newFileIndex = tsk.getNewFileIndex();
-							
-							// create new files array
-							File[] newFiles = new File[files.length-newFileIndex]; 
-							for(int nf=newFileIndex; nf<files.length; nf++) {
-								newFiles[nf-newFileIndex] = files[nf];
-							}
-							// only load data if there are new lines
-							if(newFiles.length>0) {
-								// create new Vector<ScanLine> [] (kind of Image2D without settings)
-								Vector<ScanLine>[] newLines = Image2DImportExportUtil.importTextFilesToScanLines(newFiles, settings, ((SettingsImageDataImportTxt)settings).getSeparation(), false);
-		
-								// try and add new lines to tasks images
-								try{
-									tsk.addNewLines(newLines, autoScale, scaleFactor);
-								} catch(Exception ex) {
-									ex.printStackTrace();
-									ImageEditorWindow.log("restarting dia", LOG.WARNING);
-									// restart dia!
-									startDIA(dir, sett);
-								}
-							}
-						}   
-						//
-					} catch (Exception e) { 
-						e.printStackTrace();
-					} 
-					// send update to 
-					runner.renewImage2DView();
-					// on error the loop will skip this section 
-					try {
-						thread.sleep(sleepSec*1000);
-					} catch(Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				
-				// sum all tasks to one 
-				if(sumTasks) {
-					// more than one task?
-					if(tasks.size()>1) {
-						// create new TODO
-						if(sumimages==null) {
-							// new  
-							sumimages = new Vector<Image2D>();
-							// add images to tree later    
-							sumNode = new IconNode("Sum task"); 
-							parent.add(sumNode);
-							runner.getTree().getTreeModel().nodeStructureChanged(parent); 
-						}
-						// go through all images of all tasks
-						Vector<ScanLine[]> list = new Vector<ScanLine[]>(); 
-						// init
-						for(int i=0; i<sumimages.size(); i++) {
-							list.add(new ScanLine[0]);
-						}
-						
-						// sum all tasks
-						for(DIATask tsk : tasks) {
-							for(Image2D img : tsk.getImg()) {
-								boolean added = false;
-								// check if image is already in list
-								for(int i=0; i<sumimages.size(); i++) {
-										ScanLine[] old = list.get(i);
-										if(sumimages.get(i).getTitle().equals(img.getTitle())) {
-											added = true;
-											// add lines on top
-											int aLen = old.length;
-											int bLen = img.getLineCount();
-											ScanLine[] lines = new ScanLine[aLen+bLen];
-											System.arraycopy(old, 0, lines, 0, aLen);
-											System.arraycopy(img.getLines(), 0, lines, aLen, bLen);
-											
-											list.add(i, lines);
-											list.remove(i+1);
-										}
-								}
-								// not added? create new image copy
-								if(!added) {
-									try {
-										Image2D copy = img.getCopy();
-										sumimages.add(copy);
-										list.add(copy.getLines());
-										runner.addImage(copy, sumNode);
-										runner.getTree().getTreeModel().nodeStructureChanged(sumNode); 
-									} catch (Exception e) { 
-										e.printStackTrace();
-									}
-								}
-							}
-						}
-						
-						// setting the lines
-						for(int i=0; i<sumimages.size() && i<list.size(); i++) {
-							sumimages.get(i).setLines(list.get(i));
-						}
-						
-						// settings Max for better range in paintscale
-						if(autoScale) {
-							for(Image2D old : sumimages) {
-								// change max of paintscale to fit last full line
-								int l = old.getLines().length-2;
-								if(l<0) l=0;
-								double min = old.getMinIntensity(false);
-								double max = old.getMaxIntensity(l, false);
-								
-								if(min<max) {
-									max = max + (max-min)*scaleFactor;
-									// max higher than max of image?
-									double maxall = old.getMaxIntensity(false);
-									if(max>maxall) max = maxall;
-									// set wider range
-									old.getSettPaintScale().setUsesMinMax(true);
-									old.getSettPaintScale().setUsesMaxValues(true);
-									old.getSettPaintScale().setMax(max);
-								}
-							}
-						}
-					}
-				}
-				
-			}
-		}
+		// TODO commented out for test. this is the actual version
+//		SettingsImageDataImportTxt sett = (SettingsImageDataImportTxt) settings;
+//		IconNode parent = null, sumNode = null;
+//		while(!isPaused()) { 
+//			long time1 = System.currentTimeMillis();
+//			// files will be stored in files in each task			
+//			Vector<File[]> sub = FileAndPathUtil.findFilesInDir(dir, sett.getFilter(), true, sett.isFilesInSeparateFolders());
+//			
+//			if(sub!=null && sub.size()>0) {
+//				// first run
+//				if(isFirstRun) {
+//					// clear tree
+//					runner.getTree().removeAllElements();
+//					// create Images totally new
+//					tasks = new Vector<DIATask>(); 
+//					try {
+//						// create parent node for tree
+//						parent = new IconNode(dir.getName()+"; "+dir.getAbsolutePath()); 
+//						// each i[] is a task with one data origin and multiple images
+//						for(int i = 0; i< sub.size(); i++) {  
+//							DIATask task = createTask(sub.get(i), parent, i);
+//							if(task!=null)
+//								tasks.add(task);
+//						}
+//						// add parent to tree 
+//						runner.getTree().addNodeToRoot(parent); 
+//						isFirstRun=false;
+//					} catch (Exception e) { 
+//						e.printStackTrace();
+//					} 
+//				}
+//				else {
+//					// just add new lines 
+//					// read data:
+//					try {
+//						// first: new task or still same amount
+//						if(sub.size()>tasks.size()) {
+//							// new tasks! which one?
+//							int newi;
+//							for(int i=0; i<sub.size(); i++) {
+//								boolean isNew = true;
+//								for(int t=0; t<tasks.size(); t++) {
+//									// same?
+//									String idT = tasks.get(t).getIdentifier();
+//									File p = sub.get(i)[0].getParentFile();
+//									if(sett.isFilesInSeparateFolders() && !p.getParent().equals(dir.getAbsolutePath())) 
+//										p = p.getParentFile();
+//									String idS = p.getAbsolutePath();
+//									
+//									ImageEditorWindow.log("Compare "+idT + "  #  "+idS, LOG.DEBUG);
+//									// compare
+//									if(idT.equals(idS)) {
+//										isNew = false;
+//										tasks.get(t).setIndex(i);
+//										break;
+//									}
+//								}
+//								// spot found?
+//								if(isNew) {
+//									ImageEditorWindow.log("Task added to "+i+" position", LOG.MESSAGE);
+//									// add new task at i
+//									DIATask task = createTask(sub.get(i), parent, i);
+//									if(task!=null) {
+//										tasks.add(task);
+//										runner.getTree().getTreeModel().nodeStructureChanged(parent);
+//									}
+//								}
+//							} 
+//							
+//						}
+//						
+//						// Update all tasks
+//						for(int t = 0; t<tasks.size(); t++) {
+//							DIATask tsk = tasks.get(t);
+//							File[] files = sub.get(tsk.getIndex());
+//							// get all filedimensions like lines/length... for later comparison 
+//							FileDim[] dim = writer.getFileDim(files);
+//							// compare to calc newFileIndex
+//							tsk.compareNewAndOldFiles(dim);
+//							// where to start importing?
+//							int newFileIndex = tsk.getNewFileIndex();
+//							
+//							// create new files array
+//							File[] newFiles = new File[files.length-newFileIndex]; 
+//							for(int nf=newFileIndex; nf<files.length; nf++) {
+//								newFiles[nf-newFileIndex] = files[nf];
+//							}
+//							// only load data if there are new lines
+//							if(newFiles.length>0) {
+//								// create new Vector<ScanLine> [] (kind of Image2D without settings)
+//								Vector<ScanLineMD> newLines = Image2DImportExportUtil.importTextFilesToScanLines(newFiles, settings, ((SettingsImageDataImportTxt)settings).getSeparation(), false);
+//		
+//								// try and add new lines to tasks images
+//								try{
+//									tsk.addNewLines(newLines, autoScale, scaleFactor);
+//								} catch(Exception ex) {
+//									ex.printStackTrace();
+//									ImageEditorWindow.log("restarting dia", LOG.WARNING);
+//									// restart dia!
+//									startDIA(dir, sett);
+//								}
+//							}
+//						}   
+//						//
+//					} catch (Exception e) { 
+//						e.printStackTrace();
+//					} 
+//					// send update to 
+//					runner.renewImage2DView();
+//					// on error the loop will skip this section 
+//					try {
+//						thread.sleep(sleepSec*1000);
+//					} catch(Exception ex) {
+//						ex.printStackTrace();
+//					}
+//				}
+//				
+//				// sum all tasks to one 
+//				if(sumTasks) {
+//					// more than one task?
+//					if(tasks.size()>1) {
+//						// create new TODO
+//						if(sumimages==null) {
+//							// new  
+//							sumimages = new Vector<Image2D>();
+//							// add images to tree later    
+//							sumNode = new IconNode("Sum task"); 
+//							parent.add(sumNode);
+//							runner.getTree().getTreeModel().nodeStructureChanged(parent); 
+//						}
+//						// go through all images of all tasks
+//						Vector<ScanLine2D[]> list = new Vector<ScanLine2D[]>(); 
+//						// init
+//						for(int i=0; i<sumimages.size(); i++) {
+//							list.add(new ScanLine2D[0]);
+//						}
+//						
+//						// sum all tasks
+//						for(DIATask tsk : tasks) {
+//							for(Image2D img : tsk.getImg()) {
+//								boolean added = false;
+//								// check if image is already in list
+//								for(int i=0; i<sumimages.size(); i++) {
+//										ScanLine2D[] old = list.get(i);
+//										if(sumimages.get(i).getTitle().equals(img.getTitle())) {
+//											added = true;
+//											// add lines on top
+//											int aLen = old.length;
+//											int bLen = img.getLineCount();
+//											ScanLine2D[] lines = new ScanLine2D[aLen+bLen];
+//											System.arraycopy(old, 0, lines, 0, aLen);
+//											System.arraycopy(img.getLines(), 0, lines, aLen, bLen);
+//											
+//											list.add(i, lines);
+//											list.remove(i+1);
+//										}
+//								}
+//								// not added? create new image copy
+//								if(!added) {
+//									try {
+//										Image2D copy = img.getCopy();
+//										sumimages.add(copy);
+//										list.add(copy.getLines());
+//										runner.addImage(copy, sumNode);
+//										runner.getTree().getTreeModel().nodeStructureChanged(sumNode); 
+//									} catch (Exception e) { 
+//										e.printStackTrace();
+//									}
+//								}
+//							}
+//						}
+//						
+//						// setting the lines
+//						for(int i=0; i<sumimages.size() && i<list.size(); i++) {
+//							sumimages.get(i).setLines(list.get(i));
+//						}
+//						
+//						// settings Max for better range in paintscale
+//						if(autoScale) {
+//							for(Image2D old : sumimages) {
+//								// change max of paintscale to fit last full line
+//								int l = old.getLines().length-2;
+//								if(l<0) l=0;
+//								double min = old.getMinIntensity(false);
+//								double max = old.getMaxIntensity(l, false);
+//								
+//								if(min<max) {
+//									max = max + (max-min)*scaleFactor;
+//									// max higher than max of image?
+//									double maxall = old.getMaxIntensity(false);
+//									if(max>maxall) max = maxall;
+//									// set wider range
+//									old.getSettPaintScale().setUsesMinMax(true);
+//									old.getSettPaintScale().setUsesMaxValues(true);
+//									old.getSettPaintScale().setMax(max);
+//								}
+//							}
+//						}
+//					}
+//				}
+//				
+//			}
+//		}
 	}
 	
 	

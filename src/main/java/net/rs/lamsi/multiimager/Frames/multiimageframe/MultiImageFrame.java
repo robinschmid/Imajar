@@ -408,13 +408,13 @@ public class MultiImageFrame extends JFrame {
 		boolean different = first.getLineCount()!=map.length;
 		if(!different) {
 			for(int r = 0; r<map.length && !different; r++)
-				if(map[r].length!=first.getLine(r).getDPCount())
+				if(map[r].length!=first.getLineLength(r))
 					different = true;
 		}
 		if(different) {
 			map = new boolean[first.getLineCount()][];
 			for(int r = 0; r<first.getLineCount(); r++)
-				map = new boolean[r][first.getLine(r).getDPCount()];  
+				map = new boolean[r][first.getLineLength(r)];  
 		}
 		updateMap();
 
@@ -431,7 +431,7 @@ public class MultiImageFrame extends JFrame {
 			if(map == null) {
 				map = new boolean[first.getLineCount()][];
 				for(int r = 0; r<first.getLineCount(); r++)
-					map = new boolean[r][first.getLine(r).getDPCount()]; 
+					map = new boolean[r][first.getLineLength(r)]; 
 			}
 			// init as true
 			for(int r = 0; r<map.length; r++)
@@ -753,7 +753,7 @@ public class MultiImageFrame extends JFrame {
 		Image2D first = img[0];
 		Integer[][] bmap = new Integer[first.getLineCount()][];
 		for(int r = 0; r<first.getLineCount(); r++)
-			bmap = new Integer[r][first.getLine(r).getDPCount()];  
+			bmap = new Integer[r][first.getLineLength(r)];  
 
 		// init as 0
 		for(int r = 0; r<bmap.length; r++)

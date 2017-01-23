@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.datamodel.image.data;
+package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
 import java.util.Vector;
 
@@ -14,14 +14,15 @@ import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
 public class Dataset2D implements ImageDataset {
 
 	protected float maxXWidth = -1;
-	protected int totalDPCount = -1;
-	protected ScanLine[] lines; 
+	protected int totalDPCount = -1, minDP=-1, maxDP=-1, avgDP=-1;
+	protected ScanLine2D[] lines; 
 	
-	public Dataset2D(ScanLine[] listLines) { 
+	
+	public Dataset2D(ScanLine2D[] listLines) { 
 		lines = listLines;
 	}
-	public Dataset2D(Vector<ScanLine> scanLines) {
-		lines = new ScanLine[scanLines.size()];
+	public Dataset2D(Vector<ScanLine2D> scanLines) {
+		lines = new ScanLine2D[scanLines.size()];
 		for(int i=0; i<lines.length; i++)
 			lines[i] = scanLines.get(i); 
 	}
@@ -32,57 +33,45 @@ public class Dataset2D implements ImageDataset {
 	public void reset() {
 		maxXWidth = -1;
 		totalDPCount = -1;
+		minDP=-1; 
+		maxDP=-1; 
+		avgDP=-1;
 	}
 	
 	
 	@Override
 	public int getLinesCount() {
 		// TODO Auto-generated method stub
-		return 0;
+		return lines.length;
 	}
 	@Override
 	public int getLineLength(int i) {
-		// TODO Auto-generated method stub
-		return 0;
+		return lines[i].getDPCount();
 	}
 	@Override
-	public float getX(int line, int dpi) {
-		// TODO Auto-generated method stub
-		return 0;
+	public float getX(int line, int idp) {
+		return lines[line].getPoint(idp).getX();
 	}
 	@Override
-	public double getI(int line, int dpi) {
+	public double getI(int index, int line, int idp) {
 		// TODO Auto-generated method stub
-		return 0;
+		return lines[line].getPoint(idp).getI();
 	}
-	@Override
-	public int getTotalDPCount() {
-		if(totalDPCount == -1) {
-			// calc
-			totalDPCount = 0;
-			for(ScanLine l : lines) {
-				totalDPCount += l.getDPCount();
-			}
-		}
-		return totalDPCount;
-	}
-	
-
 
 	public DataPoint2D getDP(int line, int dp) {
 		return lines[line].getPoint(dp);
 	}
-	public ScanLine getLine(int line) {
+	public ScanLine2D getLine(int line) {
 		return lines[line];
 	}
-	public Vector<ScanLine> getLinesAsVector() {
-		Vector<ScanLine> vl = new Vector<ScanLine>();
-		for(ScanLine l : lines) {
+	public Vector<ScanLine2D> getLinesAsVector() {
+		Vector<ScanLine2D> vl = new Vector<ScanLine2D>();
+		for(ScanLine2D l : lines) {
 			vl.add(l);
 		}
 		return vl;
 	}
-	public ScanLine[] getLines() {
+	public ScanLine2D[] getLines() {
 		return lines;
 	} 
 	/**
@@ -90,7 +79,7 @@ public class Dataset2D implements ImageDataset {
 	 * fires intensity processing changed event
 	 * @param lines
 	 */
-	public void setLines(ScanLine[] lines) {
+	public void setLines(ScanLine2D[] lines) {
 		this.lines = lines;
 		reset();
 		//fireIntensityProcessingChanged();
@@ -99,16 +88,29 @@ public class Dataset2D implements ImageDataset {
 	
 
 
+	@Override
+	public int getTotalDPCount() {
+		if(totalDPCount == -1) {
+			// calc
+			totalDPCount = 0;
+			for(ScanLine2D l : lines) {
+				totalDPCount += l.getDPCount();
+			}
+		}
+		return totalDPCount;
+	}
 	/**
 	 * The maximum datapoints of the longest line
 	 * @return
 	 */
 	public int getMaxDP() {
-		int max = Integer.MIN_VALUE;
-		for(ScanLine l : lines) {
-			if(l.getDPCount()>max) max = l.getDPCount();
+		if(maxDP==-1) {
+		maxDP = Integer.MIN_VALUE;
+		for(ScanLine2D l : lines) {
+			if(l.getDPCount()>maxDP) maxDP = l.getDPCount();
 		}
-		return max;
+		}
+		return maxDP;
 	}
 	/**
 	 * The maximum datapoints of the longest line
@@ -116,12 +118,14 @@ public class Dataset2D implements ImageDataset {
 	 * @return
 	 */
 	public int getMinDP() {
-		int min = Integer.MAX_VALUE;
+		if(minDP==-1) {
+		minDP = Integer.MAX_VALUE;
 		for(int i=1; i<lines.length-1; i++) {
-			ScanLine l = lines[i];
-			if(l.getDPCount()<min) min = l.getDPCount();
+			ScanLine2D l = lines[i];
+			if(l.getDPCount()<minDP) minDP = l.getDPCount();
 		}
-		return min;
+		}
+		return minDP;
 	}
 	/**
 	 * The average datapoints of all lines
@@ -129,12 +133,15 @@ public class Dataset2D implements ImageDataset {
 	 * @return
 	 */
 	public int getAvgDP() {
+		if(avgDP==-1) {
 		int avg = 0;
 		for(int i=1; i<lines.length-1; i++) {
-			ScanLine l = lines[i];
+			ScanLine2D l = lines[i];
 			avg += l.getDPCount();
 		}
-		return Math.round((avg/(lines.length-2)));
+		avgDP = Math.round((avg/(lines.length-2)));
+		}
+		return avgDP;
 	}
 	
 	@Override
@@ -142,7 +149,7 @@ public class Dataset2D implements ImageDataset {
 		if(maxXWidth==-1) {
 			// calc min x
 			maxXWidth = Float.NEGATIVE_INFINITY;
-			for(ScanLine l : lines) {
+			for(ScanLine2D l : lines) {
 				for(int i=0; i<l.getData().length-2; i++) {
 					DataPoint2D dp1 = l.getPoint(i);
 					DataPoint2D dp2 = l.getPoint(i+1);

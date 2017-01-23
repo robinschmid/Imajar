@@ -11,9 +11,14 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	public static enum IMPORT {
 		MULTIPLE_FILES_LINES_TXT_CSV, ONE_FILE_2D_INTENSITY, CONTINOUS_DATA_TXT_CSV, PRESETS_THERMO_MP17, PRESETS_THERMO_NEPTUNE;
 	} 
+	public static enum ModeData {
+		// mode of data: onlyY, one X, alternating
+		ONLY_Y, XYYY, XYXY_ALTERN
+	} 
 	
 	protected String sSeparation = ",";
 	protected IMPORT modeImport = IMPORT.MULTIPLE_FILES_LINES_TXT_CSV;
+	protected ModeData modeData = ModeData.ONLY_Y;
 	protected FileNameExtFilter filter;
 	protected boolean isFilesInSeparateFolders = false;
 	
@@ -49,6 +54,7 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	public void resetAll() { 
 		isSearchingForMetaData = true;
 		sSeparation = ",";
+		modeData = ModeData.ONLY_Y;
 	}
 
 
@@ -82,4 +88,10 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	}
 
 
+	public ModeData getModeData() {
+		return modeData;
+	} 
+	public void setModeData(ModeData modeData) {
+		this.modeData = modeData;
+	} 
 }

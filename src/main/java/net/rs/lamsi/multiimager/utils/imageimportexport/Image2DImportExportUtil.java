@@ -2,18 +2,21 @@ package net.rs.lamsi.multiimager.utils.imageimportexport;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.Image2DContinous;
-import net.rs.lamsi.general.datamodel.image.data.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.Dataset2D;
-import net.rs.lamsi.general.datamodel.image.data.ScanLine;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
@@ -68,48 +71,96 @@ public class Image2DImportExportUtil {
 	// txt /csv / Excel
 	// I0	i1	i2	i3	i4
 	// i5	i6	i7	i8	i9 ...
-	public static Image2D[] import2DIntensityToImage(File[] file, SettingsImageDataImportTxt sett, String separation) throws Exception { 
-		Image2D[] img = new Image2D[file.length];
-		for(int i=0; i<file.length; i++)
-			img[i] = import2DIntensityToImage(file[i], sett, separation);
-		return img;
-	}
-	public static Image2D import2DIntensityToImage(File file, SettingsImageDataImportTxt sett, String separation) throws Exception { 
-		// store data in Vector
-		Vector<ScanLine> scanLines = new Vector<ScanLine>();  
-		// for metadata collection if selected in settings
-		String metadata = "";
-		String title = "";
+	public static Image2D[] import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 
 
-		// read text file 
-		// line by line
-		BufferedReader br = txtWriter.getBufferedReader(file);
-		String s;
-		int k = 0;
-		while ((s = br.readLine()) != null) {
-			// try to separate by separation
-			String[] sep = s.split(separation);
-			// data
-			if(sep.length>1 && TextAnalyzer.isNumberValues(sep)) { 
-				// scan line found: add scan line
-				DataPoint2D[] line = new DataPoint2D[sep.length];
-				for(int i=0; i<sep.length; i++) 
-					line[i] = new DataPoint2D(i, Double.valueOf(sep[i])); 
-				// 
-				scanLines.add(new ScanLine(line)); 
-			}
-			// or metadata
-			else {
-				// title
-				if(k==0 && s.length()<=30) {
-					title = s;
+		Image2D[] img = new Image2D[files.length];
+		// store data in Vector
+		// x[line].get(dp)
+		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>();  
+		// read x only once
+		Vector<Float>[] x = null; 
+		int xcol = -1;
+		
+		// one file is one dimension (image) of scanLines
+		for(int f=0; f<files.length; f++) {
+			File file = files[f];
+			Vector<Double>[] y = null;  
+			ModeData mode = sett.getModeData();
+			// for metadata collection if selected in settings
+			String metadata = "";
+			String title = "";
+	
+			// read text file 
+			// line by line
+			BufferedReader br = txtWriter.getBufferedReader(file);
+			String s;
+			int k = 0;
+			while ((s = br.readLine()) != null) {
+				// try to separate by separation
+				String[] sep = s.split(separation);
+				// data
+				if(sep.length>1 && TextAnalyzer.isNumberValues(sep)) { 
+					// create data lists
+					if(xcol==-1) {
+						xcol = mode==ModeData.ONLY_Y? 0 : 1;
+						if(mode==ModeData.XYXY_ALTERN)
+							xcol = sep.length/2;
+					}
+					if(y==null) {
+						if(mode!=ModeData.ONLY_Y && x==null) x = new Vector[xcol];  
+						y = new Vector[sep.length-xcol]; 
+					}
+					
+					// add data
+					for(int i=0; i<sep.length; i++) {
+						// x is only added in f==0 (first file)
+						switch(mode) {
+						case ONLY_Y:
+							y[i].addElement(Double.valueOf(sep[i]));
+							break;
+						case XYXY_ALTERN:
+							if(i%2==1) y[(i-1)/2].addElement(Double.valueOf(sep[i]));
+							else if(f==0) x[i/2].addElement(Float.valueOf(sep[i]));
+							break;
+						case XYYY:
+							if(i>0) y[(i-1)].addElement(Double.valueOf(sep[i]));
+							else if(f==0 && i==0) x[0].addElement(Float.valueOf(sep[i]));
+							break;
+						}
+					} 
 				}
-				metadata += s+"\n"; 
+				// or metadata
+				else {
+					// title
+					if(k==0 && s.length()<=30) {
+						title = s;
+					}
+					metadata += s+"\n"; 
+				}
+				k++;
 			}
-			k++;
+			// Generate Lines
+			for(int i=0; i<y.length; i++) {
+				// create lines
+				if(scanLines.size()<=i)
+					scanLines.add(new ScanLineMD());
+				// add data
+				scanLines.get(i).addDimension(y[i]);
+				switch(mode) { 
+				case XYXY_ALTERN:
+					scanLines.get(i).setX(x[i]);
+					break;
+				case XYYY:
+					scanLines.get(i).setX(x[0]);
+					break;
+				}
+					
+			}
+			
+			// Generate Image2D from scanLines
+			Image2D image = createImage2D(file, title, metadata, scanLines, f, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
+			img[f] = image;
 		}
-		// Generate Image2D from scanLines
-		Image2D img = createImage2D(file, title, metadata, scanLines, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
 		//return image 
 		return img;
 	}
@@ -121,12 +172,11 @@ public class Image2DImportExportUtil {
 	// new try the first is not good
 	public static Image2D[] importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 
-		Vector<ScanLine>[] images;
+		Vector<ScanLineMD> lines;
 		if(sett.getModeImport()==IMPORT.PRESETS_THERMO_NEPTUNE)
-			images = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles);
-		else images = importTextFilesToScanLines(files, sett, separation, sortFiles);
+			lines = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles);
+		else lines = importTextFilesToScanLines(files, sett, separation, sortFiles);
 
-		Image2D realImages[] = new Image2D[images.length];
 		// parent directory as raw file path 
 		File parent = files[0].getParentFile();
 		if(SettingsImageDataImportTxt.class.isInstance(sett)) {
@@ -136,12 +186,13 @@ public class Image2DImportExportUtil {
 				parent = files[0];
 		}
 		// for all images
+		Image2D realImages[] = new Image2D[lines.firstElement().getImageCount()];
 		for(int i=0; i<realImages.length; i++) {   
-			realImages[i] = createImage2D(parent, title, metadata, images[i], sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)); 
+			realImages[i] = createImage2D(parent, title, metadata, lines, i, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)); 
 		}
 
 		// set titles if a title line was found
-		if(titleLine!=null && titleLine.length>=images.length+1) {
+		if(titleLine!=null && titleLine.length>=realImages.length+1) {
 			for(int t=0; t<realImages.length; t++)
 				realImages[t].getSettImage().setTitle(titleLine[t+1]);
 		}
@@ -151,6 +202,7 @@ public class Image2DImportExportUtil {
 	}
 
 	// needed for image creation from Vector<ScanLine>
+	// titleline is always X y1 y2 y3 y4 (titles)
 	private static String[] titleLine = null;
 	private static String metadata = "";
 	private static String title = "";
@@ -162,21 +214,24 @@ public class Image2DImportExportUtil {
 	 * @return an array of vector<ScanLine> that can be converted to images
 	 * @throws Exception
 	 */
-	public static Vector<ScanLine>[] importTextFilesToScanLines(File[] files, SettingsImageDataImport sett, String separation, boolean sortFiles) throws Exception { 
+	public static Vector<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImport sett, String separation, boolean sortFiles) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
 			files = FileAndPathUtil.sortFilesByNumber(files);
 		// images (getting created at first data reading)
-		Vector<ScanLine>[] images=null; 
-		Vector<DataPoint2D>[] dpList=null;
-		// more than one intensity column? then extract all colls (if true)
-		boolean dataFound = false; 
-		// for metadata collection if selected in settings
-		String[] lastLine = null;
+		Vector<ScanLineMD> lines=null; 
 
 		// file after file open text file
 		for(int i=0; i<files.length; i++) {
+			// data of one line
+			Vector<Float> x  = null;
+			// iList[dimension].get(dp)
+			Vector<Double>[] iList=null;
+			// more than one intensity column? then extract all cols (if true)
+			boolean dataFound = false; 
+			// for metadata collection if selected in settings
+			String[] lastLine = null;
 			// read file
 			File f = files[i]; 
 			// line by line add datapoints to current Scanlines
@@ -195,19 +250,25 @@ public class Image2DImportExportUtil {
 							titleLine = lastLine;
 
 						// create all new Images
-						images = new Vector[sep.length-1]; 
-						dpList = new Vector[sep.length-1]; 
+						iList = new Vector[sep.length-1]; 
+						x = new Vector<Float>(); 
 						// Image creation
-						for(int img=0; img<images.length; img++) {
-							images[img] = new Vector<ScanLine>();
-							dpList[img] = new Vector<DataPoint2D>();
+						try {
+							for(int img=0; img<iList.length; img++) {
+								iList[img] = new Vector<Double>(); 
+							}
+						}catch(Exception ex) {
+							ex.printStackTrace();
 						}
 					}
 
 					// add Datapoints to all images
-					for(int img=0; img<images.length; img++) {
+					if(iList==null)
+						iList = null;
+					for(int img=0; img<iList.length; img++) {
 						// add Datapoint
-						dpList[img].add(new DataPoint2D(Float.valueOf(sep[0]), Double.valueOf(sep[img+1])));
+						iList[img].add(Double.valueOf(sep[img+1]));
+						x.add(Float.valueOf(sep[0]));
 					}
 				}
 				// or metadata
@@ -223,19 +284,20 @@ public class Image2DImportExportUtil {
 				k++;
 			} 
 
-			// for all images
-			for(int img=0; img<dpList.length; img++) { 
-				// add new lines to each list 
-				images[img].addElement(new ScanLine(dpList[img]));
-
-				if(i+1<files.length) {
-					// create new dpLists for next file
-					dpList[img] = new Vector<DataPoint2D>();
-				}
+			if(lines==null)
+				lines = new Vector<ScanLineMD>(); 
+			
+			// add new line
+			lines.add(new ScanLineMD()); 
+			lines.lastElement().setX(x);
+			// for all dimensions
+			for(int img=0; img<iList.length; img++) {  
+				// add data
+				lines.lastElement().addDimension(iList[img]);
 			} 
 		}
 		//return image
-		return images;
+		return lines;
 	}
 
 	//################################################################################
@@ -266,13 +328,18 @@ public class Image2DImportExportUtil {
 	private static void importFromThermoMP17FileToImage(Vector<Image2D> images, File file, SettingsImageDataImportTxt sett) throws Exception { 
 		// images
 		// store data in Vector
-		Vector<ScanLine> scanLines = new Vector<ScanLine>(); 
+		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>(); 
+		Vector<String> titles = new Vector<String>();
+		Vector<Float>[] x = null;
+		boolean hasTimeAlready = false;
+		// scan line count is known but number data points is unknown
+		// iList[line].get(dp)
+		Vector<Double>[] iList = null;
 		// for metadata collection if selected in settings
 		String metadata = "";
 		String title = "";  
 		// save where values are starting
 		int valueindex = -1;
-		int lineCounter = 0;
 		// separation 
 		String separation = sett.getSeparation();
 		// separation for UTF-8 space 
@@ -283,7 +350,7 @@ public class Image2DImportExportUtil {
 		BufferedReader br = txtWriter.getBufferedReader(file);
 		String s;
 		while ((s = br.readLine()) != null) {
-			// try to seperate by seperation
+			// try to separate by separation
 			String[] sep = s.split(separation);
 			// if sep.size==1 try and split symbol=space try utf8 space
 			if(separation.equals(" ") && sep.length<=1) {
@@ -292,42 +359,102 @@ public class Image2DImportExportUtil {
 					separation = splitUTF8; 
 			}
 			// is dataline? Y in col3? or col2
-			if(sep.length>4 && ((valueindex!=5 && sep[3].equalsIgnoreCase("Y") && TextAnalyzer.isNumberValue(sep[4])) || (valueindex!=4 && sep[4].equalsIgnoreCase("Y") && TextAnalyzer.isNumberValue(sep[5])))) {
+			if(sep.length>4 && ((valueindex!=5 && sep[3].equalsIgnoreCase("Y") && TextAnalyzer.isNumberValue(sep[4])) 
+					|| (valueindex!=4 && sep[4].equalsIgnoreCase("Y") && TextAnalyzer.isNumberValue(sep[5])))) {
 				if(valueindex==-1) {
 					valueindex = TextAnalyzer.isNumberValue(sep[4])? 4:5;
 				}
 				// title in col2
-				if(title=="") title = sep[2];
+				if(title=="") {
+					title = sep[2]; 
+				}
 				else if(!title.equals(sep[2])) { 
 					// a new element was found
-					// Generate Image2D from scanLines
-					images.add(createImage2D(file, title, metadata, scanLines, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)));
+					titles.add(title);
 					// set to start values
-					title = "";
-					lineCounter = 0;
-					scanLines.removeAllElements();
+					title = sep[2];
+					// generate scan lines
+					if(scanLines.size()==0) 
+						for(Vector<Double> in : iList) 
+							scanLines.addElement(new ScanLineMD());
+					// add i dimension (image)
+					for (int i = 0; i < iList.length; i++) {
+						scanLines.get(i).addDimension(iList[i]);
+					} 
+					// reset
+					iList = null;
 				}
-				// add Dataline to current image (element)
-				DataPoint2D[] dpLine = new DataPoint2D[sep.length-valueindex];
-				// add all DataPoints
-				for(int i=valueindex; i<sep.length; i++) {
-					try {
-						dpLine[i-valueindex] = new DataPoint2D(i-valueindex, Double.valueOf(sep[i]));
-					}catch(Exception ex) { 
-						dpLine[i-valueindex] = new DataPoint2D(i-valueindex, -1);
+				// generate new list
+				if(iList==null) {
+					iList = new Vector[sep.length-valueindex];
+					for(int i=0; i<iList.length; i++) {
+						iList[i] = new Vector<Double>();
 					}
 				}
-				scanLines.add(new ScanLine(dpLine));
-				lineCounter++;
-			}
-			// or metadata
-			else {
-				metadata += s+"\n"; 
-			}
+				// add all intensities
+				for(int i=valueindex; i<sep.length; i++) {
+					try {
+						iList[i-valueindex].addElement(Double.valueOf(sep[i]));
+					}catch(Exception ex) { 
+						iList[i-valueindex].addElement(-1.0);
+					}
+				}
+			} 
+			// is dataline? Time in col3? or col2
+			else if(!hasTimeAlready && sep.length>4 && ((valueindex!=5 && sep[3].equalsIgnoreCase("Time") && TextAnalyzer.isNumberValue(sep[4])) 
+						|| (valueindex!=4 && sep[4].equalsIgnoreCase("Time") && TextAnalyzer.isNumberValue(sep[5])))) {
+					if(valueindex==-1) {
+						valueindex = TextAnalyzer.isNumberValue(sep[4])? 4:5;
+					}
+					// title in col2
+					if(title=="") title = sep[2];
+					else if(!title.equals(sep[2])) { 
+						// a new element was found
+						// stop search for time values
+						title = "";
+						hasTimeAlready = true;
+						// generate scan lines
+						if(scanLines.size()==0) 
+							for(Vector<Float> in : x) 
+								scanLines.addElement(new ScanLineMD());
+						// add x to all scan lines
+						for (int i = 0; i < x.length; i++) {
+							scanLines.get(i).setX(x[i]);
+						} 
+					}
+					// generate new list
+					if(x==null) {
+						x = new Vector[sep.length-valueindex];
+						for(int i=0; i<x.length; i++) 
+							x[i] = new Vector<Float>();
+					}
+					// add all intensities
+					for(int i=valueindex; i<sep.length; i++) {
+						try {
+							x[i].addElement(Float.valueOf(sep[i]));
+						}catch(Exception ex) { 
+							x[i].addElement(-1.f);
+						}
+					}
+				} 
 		}
 		// 
-		if(lineCounter>1) 
-			images.add(createImage2D(file, title, metadata, scanLines, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)));
+		if(iList!=null) {
+			// a new element was found
+			titles.add(title);
+			// generate scan lines
+			if(scanLines.size()==0) 
+				for(Vector<Double> in : iList) 
+					scanLines.addElement(new ScanLineMD());
+			// add i dimension (image)
+			for (int i = 0; i < iList.length; i++) {
+				scanLines.get(i).addDimension(iList[i]);
+			} 
+		}
+
+		// Generate Image2D from scanLines
+		for(int i=0; i<titles.size(); i++) 
+			images.add(createImage2D(file, titles.get(i), metadata, scanLines, i, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)));
 	}
 
 	/**
@@ -340,14 +467,13 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Vector<ScanLine>[] importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImport sett, String separation, boolean sortFiles) throws Exception { 
+	public static Vector<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImport sett, String separation, boolean sortFiles) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
 			files = FileAndPathUtil.sortFilesByNumber(files);
 		// images (getting created at first data reading)
-		Vector<ScanLine>[] images=null; 
-		Vector<DataPoint2D>[] dpList=null;
+		Vector<ScanLineMD> lines= new Vector<ScanLineMD>(); 
 		// more than one intensity column? then extract all colls (if true)
 		boolean dataFound = false; 
 		// for metadata collection if selected in settings
@@ -355,6 +481,9 @@ public class Image2DImportExportUtil {
 
 		// file after file open text file
 		for(int i=0; i<files.length; i++) {
+			Vector<Float> xList = null; 
+			// iList[dimension].get(dp)
+			Vector<Double>[] iList = null;
 			// read file
 			File f = files[i]; 
 			// start time
@@ -371,30 +500,29 @@ public class Image2DImportExportUtil {
 					// titleLine could be written one line before data lines
 					if(!dataFound) {
 						dataFound = true;  // call this only once 
-						if(lastLine!=null && lastLine.length==sep.length)
-							titleLine = lastLine;
+						if(lastLine!=null && lastLine.length==sep.length) {
+							// titlerow to: time y1 y2 y3
+							titleLine = Arrays.copyOfRange(lastLine, 1, lastLine.length);
+						}
 
 						// create all new Images
-						images = new Vector[sep.length-2];
-						dpList = new Vector[sep.length-2]; 
+						iList = new Vector[sep.length-2];
+						xList = new Vector<Float>();
 						// Image creation
-						for(int img=0; img<images.length; img++) {
-							images[img] = new Vector<ScanLine>();
-							dpList[img] = new Vector<DataPoint2D>();
-						}
+						for(int img=0; img<iList.length; img++)
+							iList[img] = new Vector<Double>(); 
 					}
 
 					// x 
 					if(xstart==-1) 
 						xstart = timeToSeconds(sep[1]);
 					float x = timeToSeconds(sep[1])-xstart;  
+					xList.add(x);
 					// add Datapoints to all images
-					for(int img=0; img<images.length; img++) {
+					for(int img=0; img<iList.length; img++) {
 						double y = Double.valueOf(sep[img+2]);
 						// add Datapoint
-						dpList[img].add(new DataPoint2D(x, y)); 
-						//
-						System.out.println(x+"  "+y);
+						iList[img].add(y); 
 					}
 				}
 				// or metadata
@@ -410,19 +538,16 @@ public class Image2DImportExportUtil {
 				k++;
 			} 
 
+			lines.addElement(new ScanLineMD());
+			lines.lastElement().setX(xList);
 			// for all images
-			for(int img=0; img<dpList.length; img++) { 
+			for(int img=0; img<iList.length; img++) { 
 				// add new lines to each list 
-				images[img].addElement(new ScanLine(dpList[img]));
-
-				if(i+1<files.length) {
-					// create new dpLists for next file
-					dpList[img] = new Vector<DataPoint2D>();
-				}
+				lines.lastElement().addDimension(iList[img]);
 			} 
 		}
 		//return image
-		return images;
+		return lines;
 	}
 
 	/**
@@ -431,13 +556,13 @@ public class Image2DImportExportUtil {
 	 * @param title
 	 * @param metadata
 	 * @param scanLines
+	 * @param index 
 	 * @return
 	 */
-	private static Image2D createImage2D(File file, String title, String metadata, Vector<ScanLine> scanLines, boolean continous) {
+	private static Image2D createImage2D(File file, String title, String metadata, Vector<ScanLineMD> scanLines, int index, boolean continous) {
 		// Generate Image2D from scanLines
-		SettingsPaintScale paint = new SettingsPaintScale();
+		SettingsPaintScale paint = SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE);
 		SettingsGeneralImage general = new SettingsGeneralImage();
-		paint.resetAll();
 		general.resetAll();
 		// Metadata 
 		if(title=="") title = file.getName();
@@ -447,9 +572,9 @@ public class Image2DImportExportUtil {
 		// Image creation
 		// if only one line was found it is a Image2DContinous with one data line
 		if(continous) 
-			return new Image2DContinous(scanLines.get(0), paint, general);
+			return new Image2D(new DatasetContinuousMD(scanLines.firstElement()), index, paint, general);
 		// else just add it as normal matrix-data image
-		else return new Image2D(new Dataset2D(scanLines), paint, general);
+		else return new Image2D(new DatasetMD(scanLines), index, paint, general);
 	}
 
 	/**

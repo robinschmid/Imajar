@@ -7,8 +7,8 @@ public class SettingsImageContinousSplit extends Settings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     // 
-	protected int splitAfterDP = 10;
-	protected float splitAfterX = 1, startX=0;
+	protected int splitAfterDP = 100;
+	protected float splitAfterX = 10, startX=0;
 	protected XUNIT splitMode = XUNIT.DP;
 	  
 	
@@ -18,11 +18,16 @@ public class SettingsImageContinousSplit extends Settings {
 		resetAll();
 	}
 
+	public SettingsImageContinousSplit(int splitAfterDP) {
+		this();
+		this.splitAfterDP = splitAfterDP;
+	}
+
 
 	@Override
 	public void resetAll() { 
-		splitAfterDP = 10;
-		splitAfterX = 1;
+		splitAfterDP = 100;
+		splitAfterX = 10;
 		splitMode = XUNIT.DP;
 		startX = 0;
 	}
