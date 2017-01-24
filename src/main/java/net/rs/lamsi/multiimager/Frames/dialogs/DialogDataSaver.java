@@ -213,6 +213,7 @@ public class DialogDataSaver extends JFrame {
 					}
 				} catch(Exception ex) { 
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Not saved", ex);
+					ex.printStackTrace();
 				}
 			}
 		});

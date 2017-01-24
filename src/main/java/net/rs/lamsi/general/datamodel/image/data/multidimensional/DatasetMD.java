@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
@@ -11,8 +12,11 @@ import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
  * @author Robin Schmid
  *
  */
-public class DatasetMD implements ImageDataset {
-
+public class DatasetMD implements ImageDataset, Serializable  {
+	// do not change the version!
+    private static final long serialVersionUID = 1L;
+    
+    
 	protected float maxXWidth = -1;
 	protected int totalDPCount = -1, minDP=-1, maxDP=-1, avgDP=-1;
 	protected ScanLineMD[] lines; 

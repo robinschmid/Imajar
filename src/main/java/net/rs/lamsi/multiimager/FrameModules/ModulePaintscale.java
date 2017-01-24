@@ -638,7 +638,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 						getBtnMinColor().getBackground(), getBtnMaxColor().getBackground(),
 						getSliderBrightness().getValue()/100.f,
 						floatFromTxt(getTxtMinFilter()),
-						floatFromTxt(getTxtMaxFilter()),
+						floatFromTxt(getTxtMaxFilter()), 
 						getCbGreyScale().isSelected(),
 						getCbOnlyUseSelectedMinMax().isSelected(), 
 						getCbLODMonochrome().isSelected(), doubleFromTxt(getTxtLOD()));

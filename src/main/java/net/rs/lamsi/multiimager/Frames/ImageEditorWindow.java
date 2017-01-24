@@ -139,6 +139,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private JCheckBox cbSumTasks;
 	private JCheckBoxMenuItem cbDebug;
 	private JCheckBoxMenuItem cbKeepAspectRatio;
+	private JCheckBoxMenuItem cbCreateImageIcons;
 	private JPanel pnChartAspectRatio;
 	private JTextField txtDirectAutoScale;
 	private JCheckBox cbDirectAutoScale;
@@ -270,6 +271,16 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JMenu mnAction = new JMenu("Action");
 		menuBar.add(mnAction);
 		
+		JMenuItem btnCrop = new JMenuItem("Crop images");
+		btnCrop.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				
+			}
+		});
+		mnAction.add(btnCrop);
+		
 		JMenuItem mntmCombineImages = new JMenuItem("Combine images");
 		mnAction.add(mntmCombineImages);
 		
@@ -347,10 +358,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JSeparator separator_2 = new JSeparator();
 		mnWindow.add(separator_2);
 		
+		cbCreateImageIcons = new JCheckBoxMenuItem("Create image icons");
+		cbCreateImageIcons.setToolTipText("Creating image icons for the tree view uses RAM");
+		cbCreateImageIcons.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) { 
+				// TODO
+			}
+		});
+		cbCreateImageIcons.setSelected(true);
+		mnWindow.add(cbCreateImageIcons);
+		
 		cbKeepAspectRatio = new JCheckBoxMenuItem("Keep aspect ratio");
 		cbKeepAspectRatio.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) { 
-				// TODO
+				logicRunner.renewImage2DView();
 			}
 		});
 		cbKeepAspectRatio.setSelected(true);
@@ -1020,5 +1041,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	}
 	public JCheckBox getCbDirectAutoScale() {
 		return cbDirectAutoScale;
+	}
+
+	public boolean isCreatingImageIcons() {
+		return cbCreateImageIcons.isSelected();
 	}
 }

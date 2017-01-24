@@ -20,6 +20,7 @@ public class SettingsPaintScale extends Settings {
 	private double min, max;
 	// in percentage
 	private float minFilter, maxFilter;
+	private boolean usesMinFilter, usesMaxFilter;
 	
 	// LOD monochrome
 	private boolean isLODMonochrome = false;
@@ -59,7 +60,7 @@ public class SettingsPaintScale extends Settings {
 		this.isGrey = isGrey;
 		this.usesMinMaxFromSelection = usesMinMaxFromSelection;
 		this.isLODMonochrome = isLODMonochrome;
-		this.LOD = LOD;
+		this.LOD = LOD; 
 	}
 
 
@@ -72,7 +73,7 @@ public class SettingsPaintScale extends Settings {
 		this.isInverted = false;
 		this.usesWAsMin = true;
 		this.usesBAsMax = true;
-		this.usesMinMax = false;
+		this.usesMinMax = true;
 		this.usesMinAsInvisible = false;
 		this.min = 0;
 		this.max = 0;
@@ -80,10 +81,10 @@ public class SettingsPaintScale extends Settings {
 		this.maxColor = Color.RED;
 		brightnessFactor = 4;
 		this.minFilter = 2.5f;
-		this.maxFilter = 2.5f;
-		this.usesMaxValues = true;
-		this.usesMinValues = true;
-		usesMinMaxFromSelection = true;
+		this.maxFilter = 0.2f; 
+		this.usesMaxValues = false;
+		this.usesMinValues = false;
+		usesMinMaxFromSelection = false;
 	}
 
 	//##############################################################################################
@@ -345,5 +346,21 @@ public class SettingsPaintScale extends Settings {
 
 	public void setLOD(double lOD) {
 		LOD = lOD;
+	}
+
+	public boolean isUsesMinFilter() {
+		return usesMinFilter;
+	}
+
+	public void setUsesMinFilter(boolean usesMinFilter) {
+		this.usesMinFilter = usesMinFilter;
+	}
+
+	public boolean isUsesMaxFilter() {
+		return usesMaxFilter;
+	}
+
+	public void setUsesMaxFilter(boolean usesMaxFilter) {
+		this.usesMaxFilter = usesMaxFilter;
 	}
 }

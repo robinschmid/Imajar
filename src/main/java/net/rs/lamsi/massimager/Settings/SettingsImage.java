@@ -120,6 +120,13 @@ public class SettingsImage extends Settings {
 		return filepath;
 	}
 
+	public String getRAWFolderPath() {
+		return new File(filepath).getParent();
+	}
+	public String getRAWFolderName() {
+		return new File(filepath).getParentFile().getName();
+	}
+
 	public void setRAWFilepath(String filepath) {
 		this.filepath = filepath;
 	}

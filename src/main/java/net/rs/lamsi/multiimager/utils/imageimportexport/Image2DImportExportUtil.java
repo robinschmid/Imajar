@@ -107,8 +107,14 @@ public class Image2DImportExportUtil {
 							xcol = sep.length/2;
 					}
 					if(y==null) {
-						if(mode!=ModeData.ONLY_Y && x==null) x = new Vector[xcol];  
+						if(mode!=ModeData.ONLY_Y && x==null) {
+							x = new Vector[xcol];  
+							for(int i=0; i<x.length; i++)
+								x[i] = new Vector<Float>();
+						}
 						y = new Vector[sep.length-xcol]; 
+						for(int i=0; i<y.length; i++)
+							y[i] = new Vector<Double>();
 					}
 					
 					// add data

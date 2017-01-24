@@ -36,8 +36,14 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
+
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 
 public class ImportDataDialog extends JDialog {
 	//
@@ -52,21 +58,10 @@ public class ImportDataDialog extends JDialog {
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JPanel tabTXT;
 	private JPanel panEXCEL;
-	private JRadioButton rbAutomatic;
-	private JRadioButton rbSeperationTab;
-	private JRadioButton rbSeperationSpace;
-	private JRadioButton rbSeperationComma;
-	private JRadioButton rdbtnUseOwnSeperation;
 	private JCheckBox chckbxSearchForMeta;
 	private JPanel panel;
 	private JPanel tab2DIntensity;
 	private JLabel lblLoadAnImage;
-	private JRadioButton rb2DAuto;
-	private JLabel label;
-	private JRadioButton rb2DTab;
-	private JRadioButton rb2DSpace;
-	private JRadioButton rb2DComma;
-	private JRadioButton rb2DOwn;
 	private JTextField txt2DOwn;
 	private JCheckBox cb2DMetadata;
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
@@ -88,6 +83,11 @@ public class ImportDataDialog extends JDialog {
 	private JRadioButton rbNeptune;
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private JTextField txtThermoSeparation;
+	private JComboBox combo2DDataMode;
+	private JLabel lblData;
+	private JComboBox comboSep;
+	private JLabel lblSeparation;
+	private JComboBox comboSepLines;
 
 	/**
 	 * Launch the application.
@@ -180,124 +180,92 @@ public class ImportDataDialog extends JDialog {
 				{
 					tab2DIntensity = new JPanel();
 					panel.add(tab2DIntensity);
-					tab2DIntensity.setLayout(new MigLayout("", "[][][]", "[][][][][][][][][]"));
+					tab2DIntensity.setLayout(new MigLayout("", "[][][]", "[][][][][][][]"));
 					{
 						lblLoadAnImage = new JLabel("Load an image from one 2D intensity matrix file (.txt or .csv)");
 						tab2DIntensity.add(lblLoadAnImage, "cell 0 0 3 1");
 					}
 					{
-						label = new JLabel("Data seperation by:");
-						tab2DIntensity.add(label, "cell 0 2");
+						lblData = new JLabel("Data:");
+						tab2DIntensity.add(lblData, "cell 0 2,alignx trailing");
 					}
 					{
-						rb2DAuto = new JRadioButton("automatic");
-						buttonGroup_1.add(rb2DAuto);
-						rb2DAuto.setToolTipText("Not always right!");
-						tab2DIntensity.add(rb2DAuto, "cell 1 2");
+						combo2DDataMode = new JComboBox();
+						combo2DDataMode.setModel(new DefaultComboBoxModel(ModeData.values()));
+						combo2DDataMode.setSelectedIndex(0);
+						tab2DIntensity.add(combo2DDataMode, "cell 1 2,growx");
 					}
 					{
-						rb2DTab = new JRadioButton("tab \"intensity    intensity\"");
-						buttonGroup_1.add(rb2DTab);
-						rb2DTab.setSelected(true);
-						tab2DIntensity.add(rb2DTab, "cell 1 3");
+						lblSeparation = new JLabel("Separation:");
+						tab2DIntensity.add(lblSeparation, "cell 0 3,alignx trailing");
 					}
 					{
-						rb2DSpace = new JRadioButton("space \"intensity intensity\"");
-						buttonGroup_1.add(rb2DSpace);
-						tab2DIntensity.add(rb2DSpace, "cell 1 4");
-					}
-					{
-						rb2DComma = new JRadioButton("comma \"intensity,intensity\"");
-						buttonGroup_1.add(rb2DComma);
-						tab2DIntensity.add(rb2DComma, "cell 1 5");
-					}
-					{
-						rb2DOwn = new JRadioButton("use own seperation:");
-						rb2DOwn.addChangeListener(new ChangeListener() {
-							public void stateChanged(ChangeEvent e) {
-								JRadioButton rb = (JRadioButton)e.getSource();
-				        		// monochrom panel off/on
-								getTxt2DOwn().setEditable(rb.isSelected()); 
-							}
+						comboSep = new JComboBox();
+						comboSep.setModel(new DefaultComboBoxModel(new String[] {"COMMA", "SPACE", "TAB", "SEMICOLON", "OWN"}));
+						comboSep.setSelectedIndex(0);
+						tab2DIntensity.add(comboSep, "cell 1 3,growx");
+						comboSep.addItemListener(new ItemListener() {
+								@Override
+							    public void itemStateChanged(ItemEvent event) {
+							       if (event.getStateChange() == ItemEvent.SELECTED) {
+							    	   getTxt2DOwnSeparation().setEditable(comboSep.getSelectedItem().equals("OWN"));
+							       }
+							    }
 						});
-						buttonGroup_1.add(rb2DOwn);
-						rb2DOwn.setToolTipText("Define own seperation text. (one or more characters)");
-						tab2DIntensity.add(rb2DOwn, "cell 1 6");
 					}
 					{
 						txt2DOwn = new JTextField();
 						txt2DOwn.setToolTipText("Own seperation");
 						txt2DOwn.setEditable(false);
 						txt2DOwn.setColumns(10);
-						tab2DIntensity.add(txt2DOwn, "cell 2 6,growx");
+						tab2DIntensity.add(txt2DOwn, "cell 2 3,growx");
 					}
 					{
 						cb2DMetadata = new JCheckBox("Search for meta data");
 						cb2DMetadata.setToolTipText("Tries to search for meta data (non XI-paired data)");
 						cb2DMetadata.setSelected(true);
-						tab2DIntensity.add(cb2DMetadata, "cell 1 8");
+						tab2DIntensity.add(cb2DMetadata, "cell 1 5");
 					}
 				}
 			}
 			{
 				tabTXT = new JPanel();
 				tabbedPane.addTab("Lines", null, tabTXT, null);
-				tabTXT.setLayout(new MigLayout("", "[][grow][grow]", "[][][][][][][][][][][]"));
+				tabTXT.setLayout(new MigLayout("", "[][][grow]", "[][][][][][][]"));
 				{
 					JLabel lblImportFromText = new JLabel("Import from text files. Select all files containing scan lines");
 					tabTXT.add(lblImportFromText, "cell 0 0 3 1");
 				}
 				{
-					JLabel lblDataSeperationBy = new JLabel("Data seperation by:");
+					JLabel lblDataSeperationBy = new JLabel("Separation:");
 					tabTXT.add(lblDataSeperationBy, "cell 0 2");
 				}
 				{
-					rbAutomatic = new JRadioButton("automatic");
-					buttonGroup.add(rbAutomatic);
-					rbAutomatic.setToolTipText("Not always right!");
-					tabTXT.add(rbAutomatic, "cell 1 2");
-				}
-				{
-					rbSeperationTab = new JRadioButton("tab \"time    intensity\"");
-					rbSeperationTab.setSelected(true);
-					buttonGroup.add(rbSeperationTab);
-					tabTXT.add(rbSeperationTab, "cell 1 3");
-				}
-				{
-					rbSeperationSpace = new JRadioButton("space \"time intensity\"");
-					buttonGroup.add(rbSeperationSpace);
-					tabTXT.add(rbSeperationSpace, "cell 1 4");
-				}
-				{
-					rbSeperationComma = new JRadioButton("comma \"time,intensity\"");
-					buttonGroup.add(rbSeperationComma);
-					tabTXT.add(rbSeperationComma, "cell 1 5");
-				}
-				{
-					rdbtnUseOwnSeperation = new JRadioButton("use own seperation:");
-					rdbtnUseOwnSeperation.addChangeListener(new ChangeListener() {
-						public void stateChanged(ChangeEvent e) {
-							JRadioButton rb = (JRadioButton)e.getSource();
-			        		// monochrom panel off/on
-							getTxtOwnSeparation().setEditable(rb.isSelected()); 
-						}
-					});
-					buttonGroup.add(rdbtnUseOwnSeperation);
-					rdbtnUseOwnSeperation.setToolTipText("Define own seperation text. (one or more characters)");
-					tabTXT.add(rdbtnUseOwnSeperation, "cell 1 6");
+					comboSepLines = new JComboBox();
+					comboSepLines.setModel(new DefaultComboBoxModel(new String[] {"COMMA", "SPACE", "TAB", "SEMICOLON", "OWN"}));
+					comboSepLines.setSelectedIndex(0);
+					tabTXT.add(comboSepLines, "cell 1 2,growx");
+					comboSepLines.addItemListener(new ItemListener() {
+						@Override
+					    public void itemStateChanged(ItemEvent event) {
+					       if (event.getStateChange() == ItemEvent.SELECTED) {
+					    	   getTxtOwnSeparation().setEditable(comboSepLines.getSelectedItem().equals("OWN"));
+					       }
+					    }
+				});
 				}
 				{
 					txtOwnSeperation = new JTextField();
 					txtOwnSeperation.setEditable(false);
 					txtOwnSeperation.setToolTipText("Own seperation");
-					tabTXT.add(txtOwnSeperation, "cell 2 6,alignx left");
+					tabTXT.add(txtOwnSeperation, "cell 2 2,alignx left");
 					txtOwnSeperation.setColumns(10);
 				}
 				{
 					chckbxSearchForMeta = new JCheckBox("Search for meta data");
 					chckbxSearchForMeta.setToolTipText("Tries to search for meta data (non XI-paired data)");
 					chckbxSearchForMeta.setSelected(true);
-					tabTXT.add(chckbxSearchForMeta, "cell 1 8");
+					tabTXT.add(chckbxSearchForMeta, "cell 1 4");
 				}
 				{
 					cbContinousData = new JCheckBox("Continous data (one file=one image)");
@@ -306,12 +274,12 @@ public class ImportDataDialog extends JDialog {
 							getCbFilesInSeparateFolders().setVisible(!((JCheckBox)e.getSource()).isSelected());
 						}
 					});
-					tabTXT.add(cbContinousData, "cell 1 9 2 1");
+					tabTXT.add(cbContinousData, "cell 1 5 2 1");
 				}
 				{
 					cbFilesInSeparateFolders = new JCheckBox("Files in separate folders");
 					cbFilesInSeparateFolders.setToolTipText("Unchecked: All files are in one folder. Checked: Each file has its own sub folder");
-					tabTXT.add(cbFilesInSeparateFolders, "cell 1 10");
+					tabTXT.add(cbFilesInSeparateFolders, "cell 1 6");
 				}
 			}
 			{
@@ -428,15 +396,15 @@ public class ImportDataDialog extends JDialog {
 			switch(mode) {
 			case ONE_FILE_2D_INTENSITY:
 				getTabbedPane().setSelectedComponent(getTab2DIntensity());
-
+				//"COMMA", "SPACE", "TAB", "SEMICOLON", "OWN"
 				// seperation  
-				if(sep.equals("AUTO")) getRb2DAuto().setSelected(true);
-				else if(sep.equals(",")) getRb2DComma().setSelected(true);
-				else if(sep.equals(" ")) getRb2DSpace().setSelected(true);
-				else if(sep.equals("\t")) getRb2DTab().setSelected(true);
+				if(sep.equals(",")) getComboSep().setSelectedIndex(0);
+				else if(sep.equals(" ")) getComboSep().setSelectedIndex(1);
+				else if(sep.equals("	")) getComboSep().setSelectedIndex(2);
+				else if(sep.equals(";")) getComboSep().setSelectedIndex(3);
 				else { 
-					getRb2DOwn().setSelected(true);
-					getTxt2DOwn().setText(sep);
+					getComboSep().setSelectedIndex(4);
+					getTxt2DOwnSeparation().setText(sep);
 				} 
 
 				// check for meta  
@@ -448,12 +416,12 @@ public class ImportDataDialog extends JDialog {
 				getTabbedPane().setSelectedComponent(getTabTXT());
 				
 				// seperation   
-				if(sep.equals("AUTO")) getRbAutomatic().setSelected(true);
-				else if(sep.equals(",")) getRbSeperationComma().setSelected(true);
-				else if(sep.equals(" ")) getRbSeperationSpace().setSelected(true);
-				else if(sep.equals("\t")) getRbSeperationTab().setSelected(true);
+				if(sep.equals(",")) getComboSepLines().setSelectedIndex(0);
+				else if(sep.equals(" ")) getComboSepLines().setSelectedIndex(1);
+				else if(sep.equals("	")) getComboSepLines().setSelectedIndex(2);
+				else if(sep.equals(";")) getComboSepLines().setSelectedIndex(3);
 				else { 
-					getRdbtnUseOwnSeperation().setSelected(true);
+					getComboSepLines().setSelectedIndex(4);
 					getTxtOwnSeparation().setText(sep);
 				} 
 
@@ -529,12 +497,7 @@ public class ImportDataDialog extends JDialog {
 		// text file
 		if(getTabbedPane().getSelectedComponent().equals(getTabTXT())) {
 			// seperation
-			String separation = "";
-			if(getRbAutomatic().isSelected()) separation = "AUTO";
-			else if(getRbSeperationComma().isSelected()) separation = ",";
-			else if(getRbSeperationSpace().isSelected()) separation = " ";
-			else if(getRbSeperationTab().isSelected()) separation = "	";
-			else if(getRdbtnUseOwnSeperation().isSelected()) separation = getTxtOwnSeparation().getText();
+			String separation = getSeparationChar(getComboSepLines().getSelectedItem(), false);
 			// check for meta
 			boolean checkformeta = getChckbxSearchForMeta().isSelected();
 			boolean isContinousData = getCbContinousData().isSelected();
@@ -544,16 +507,14 @@ public class ImportDataDialog extends JDialog {
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTab2DIntensity())) {
 			// seperation
-			String seperation = "";
-			if(getRb2DAuto().isSelected()) seperation = "AUTO";
-			else if(getRb2DComma().isSelected()) seperation = ",";
-			else if(getRb2DSpace().isSelected()) seperation = " ";
-			else if(getRb2DTab().isSelected()) seperation = "	";
-			else if(getRb2DOwn().isSelected()) seperation = getTxt2DOwn().getText();
+			String separation = getSeparationChar(getComboSep().getSelectedItem(), true);
+			// mode of data:
+			ModeData mode = (ModeData) getCombo2DDataMode().getSelectedItem();
+			
 			// check for meta
 			boolean checkformeta = getCb2DMetadata().isSelected();
 			// create settings
-			settingsDataImport = new SettingsImageDataImportTxt(IMPORT.ONE_FILE_2D_INTENSITY, checkformeta, seperation, filter, false);
+			settingsDataImport = new SettingsImageDataImportTxt(IMPORT.ONE_FILE_2D_INTENSITY, checkformeta, separation, mode, filter, false);
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTabMSPresets())) {
 			String separation = "	";
@@ -572,30 +533,35 @@ public class ImportDataDialog extends JDialog {
 		return settingsDataImport;
 	}
 
+	/**
+	 * 
+	 * @param s
+	 * @param for2DMatrix
+	 * @return separation character
+	 */
+	private String getSeparationChar(Object s, boolean for2DMatrix) {
+		if(s.equals("COMMA")) return ",";
+		else if(s.equals("TAB")) return "	";
+		else if(s.equals("SPACE")) return " ";
+		else if(s.equals("SEMICOLON")) return ";";
+		else if(s.equals("OWN")) {
+			if(for2DMatrix) return getTxt2DOwnSeparation().getText();
+			else return getTxtOwnSeparation().getText();
+		} 
+		else return ",";
+	}
 	public JTextField getTxtOwnSeparation() {
 		return txtOwnSeperation;
+	}
+	public JTextField getTxt2DOwnSeparation() {
+		return txt2DOwn;
 	}
 	public JPanel getTabTXT() {
 		return tabTXT;
 	}
 	public JPanel getPanEXCEL() {
 		return panEXCEL;
-	}
-	public JRadioButton getRbAutomatic() {
-		return rbAutomatic;
-	}
-	public JRadioButton getRbSeperationTab() {
-		return rbSeperationTab;
-	}
-	public JRadioButton getRbSeperationSpace() {
-		return rbSeperationSpace;
-	}
-	public JRadioButton getRbSeperationComma() {
-		return rbSeperationComma;
-	}
-	public JRadioButton getRdbtnUseOwnSeperation() {
-		return rdbtnUseOwnSeperation;
-	}
+	} 
 	public JCheckBox getChckbxSearchForMeta() {
 		return chckbxSearchForMeta;
 	} 
@@ -604,25 +570,7 @@ public class ImportDataDialog extends JDialog {
 	}  
 	public JCheckBox getCb2DMetadata() {
 		return cb2DMetadata;
-	}
-	public JRadioButton getRb2DOwn() {
-		return rb2DOwn;
-	}
-	public JRadioButton getRb2DComma() {
-		return rb2DComma;
-	}
-	public JTextField getTxt2DOwn() {
-		return txt2DOwn;
-	}
-	public JRadioButton getRb2DSpace() {
-		return rb2DSpace;
-	}
-	public JRadioButton getRb2DTab() {
-		return rb2DTab;
-	}
-	public JRadioButton getRb2DAuto() {
-		return rb2DAuto;
-	}
+	} 
 	public JPanel getTab2DIntensity() {
 		return panel;
 	}
@@ -652,5 +600,14 @@ public class ImportDataDialog extends JDialog {
 	}
 	public JTextField getTxtThermoSeparation() {
 		return txtThermoSeparation;
+	}
+	public JComboBox getComboSep() {
+		return comboSep;
+	}
+	public JComboBox getCombo2DDataMode() {
+		return combo2DDataMode;
+	}
+	public JComboBox getComboSepLines() {
+		return comboSepLines;
 	}
 }

@@ -142,7 +142,7 @@ public class ImageLogicRunner {
 		 */
 	public IconNode addImage(Image2D i, IconNode parent) {  
 		//
-		IconNode node = new IconNode(i, false, i.getIcon(60));
+		IconNode node = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(80) : null);
 		parent.add(node);
 		return node;
 	}
@@ -162,12 +162,12 @@ public class ImageLogicRunner {
 			int c = 0;
 			// create img nodes
 			for(Image2D i : img) {
-				if(sub==null || !last.equals(i.getSettImage().getRAWFilepath())) {
-					sub = new IconNode(i.getSettImage().getRAWFileName()+"; "+i.getSettImage().getRAWFilepath());
+				if(sub==null || (!last.equals(i.getSettImage().getRAWFolderPath()))) {
+					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolderPath());
 					parent.add(sub);
-					last = i.getSettImage().getRAWFilepath(); 
+					last = i.getSettImage().getRAWFolderPath(); 
 				}
-				IconNode inode = new IconNode(i, false, i.getIcon(60));
+				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(80) : null);
 				nodes[c] = inode;
 				sub.add(inode);
 				c++;
@@ -351,6 +351,8 @@ public class ImageLogicRunner {
 						startDirectImagingAnalysis(sett, files);
 					}
 				}
+				// run garbage collection 
+				System.gc();
 			}
 		}
 		// import xlsx

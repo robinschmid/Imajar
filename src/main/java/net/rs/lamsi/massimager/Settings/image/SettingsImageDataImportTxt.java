@@ -1,5 +1,7 @@
 package net.rs.lamsi.massimager.Settings.image;
 
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 public class SettingsImageDataImportTxt extends SettingsImageDataImport {
@@ -47,6 +49,14 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	}
 	public SettingsImageDataImportTxt(IMPORT modeImport, boolean isSearchingForMetaData, String sSeparation, boolean isFilesInSeparateFolders) {
 		this(modeImport, isSearchingForMetaData, sSeparation, new FileNameExtFilter("", ""), isFilesInSeparateFolders);
+	}
+
+
+	public SettingsImageDataImportTxt(IMPORT oneFile2dIntensity,
+			boolean checkformeta, String separation, ModeData mode,
+			FileNameExtFilter filter2, boolean isFilesInSeparateFolders) { 
+		this(oneFile2dIntensity, checkformeta, separation, filter2, isFilesInSeparateFolders);
+		modeData = mode;
 	}
 
 

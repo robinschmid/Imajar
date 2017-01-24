@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
@@ -13,7 +14,9 @@ import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
  * @author Robin Schmid
  *
  */
-public class DatasetContinuousMD implements ImageDataset {
+public class DatasetContinuousMD implements ImageDataset, Serializable  {
+	// do not change the version!
+    private static final long serialVersionUID = 1L;
 	
 	protected SettingsImageContinousSplit sett;
 
@@ -71,7 +74,7 @@ public class DatasetContinuousMD implements ImageDataset {
 		int best = 0;
 		// i lines
 		// break if line length<line count
-		for(int i=5; i<=150 && total/i<i; i++) {
+		for(int i=5; i<=700 && total/i<i; i++) {
 			// save as best
 			if(total%i==0) {
 				best = i;
@@ -93,7 +96,7 @@ public class DatasetContinuousMD implements ImageDataset {
 	public int getLinesCount() { 
 		if(sett.getSplitMode()==XUNIT.s)
 			return (int)Math.ceil((line.getXWidth()-sett.getStartX())/sett.getSplitAfterX());
-		else return (int)(line.getDPCount()-sett.getStartX())/sett.getSplitAfterDP();
+		else return (int)Math.ceil((line.getDPCount()-sett.getStartX())/sett.getSplitAfterDP());
 	}
 
 	@Override

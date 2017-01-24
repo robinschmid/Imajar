@@ -446,13 +446,14 @@ public class Image2D implements Serializable, Collectable2D {
 			if((sett.isWriteTimeOnlyOnce() && c!=0) || (!sett.isWriteTimeOnlyOnce() && c%2==1) || (sett.isWriteNoX())) {
 				for(int r = 0; r<rows; r++) {
 					// only if not null
-					dataExp[r][c] = r<data.getLineLength(l)? getIRaw(l,c) : "";
+					dataExp[r][c] = r<data.getLineLength(l)? getIRaw(l,r) : "";
 				}
 				l++;
 			}
 			else //write X
-				for(int r = 0; r<rows; r++) 
-					dataExp[r][c] = r<data.getLineLength(l)? getXRaw(l,c) : "";
+				for(int r = 0; r<rows; r++) {
+					dataExp[r][c] = r<data.getLineLength(l)? getXRaw(l,r) : "";
+				}
 		}
 		return dataExp;
 	}
@@ -1367,8 +1368,10 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public Icon getIcon(int maxw) {
 		try {
+			applyCutFilterMin(2.5);
+			applyCutFilterMax(0.2);
 			int maxh = 18;
-	        PaintScale scale = PaintScaleGenerator.generateStepPaintScale(getMinIntensity(false), getMaxIntensity(false), getSettPaintScale()); 
+	        PaintScale scale = PaintScaleGenerator.generateStepPaintScale(minZFiltered, maxZFiltered, getSettPaintScale()); 
 			BufferedImage img = new BufferedImage(maxw, maxh, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = img.createGraphics();
 			

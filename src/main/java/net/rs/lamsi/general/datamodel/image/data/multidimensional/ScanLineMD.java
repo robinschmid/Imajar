@@ -107,7 +107,7 @@ public class ScanLineMD  implements Serializable  {
 	 * @return
 	 */
 	public float getXWidth() { 
-		return getX(getDPCount())-getX(0);
+		return getX(getDPCount()-1)-getX(0);
 	}
 	/**
 	 * 
