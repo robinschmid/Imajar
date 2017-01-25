@@ -26,6 +26,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
@@ -45,6 +46,14 @@ import javax.swing.DefaultComboBoxModel;
 
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 
+import javax.swing.SwingConstants;
+
+import java.awt.Font;
+
+import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import javax.swing.BoxLayout;
+import java.awt.Component;
+
 public class ImportDataDialog extends JDialog {
 	//
 	protected SettingsImageDataImport settingsDataImport = null;
@@ -52,8 +61,6 @@ public class ImportDataDialog extends JDialog {
 	private final ImportDataDialog thisframe;
 	// presets
 	private Vector<SettingsImageDataImport> presets;
-	//
-	private final JPanel contentPanel = new JPanel();
 	private JTextField txtOwnSeperation;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JPanel tabTXT;
@@ -69,7 +76,6 @@ public class ImportDataDialog extends JDialog {
 	private JPanel panel_1;
 	private JRadioButton rbMP17Thermo;
 	private JCheckBox cbContinousData;
-	private JPanel pnCenterPermSettings;
 	private JLabel lblStartsWith;
 	private JTextField txtStartsWith;
 	private JLabel lblEndsWith;
@@ -88,6 +94,30 @@ public class ImportDataDialog extends JDialog {
 	private JComboBox comboSep;
 	private JLabel lblSeparation;
 	private JComboBox comboSepLines;
+	private JPanel panel_2;
+	private JPanel panel_3;
+	private JLabel lblFilter;
+	private JLabel lblScanLines;
+	private JLabel lblDataPoints;
+	private JTextField txtFirstLine;
+	private JTextField txtFirstDP;
+	private JLabel lblTo;
+	private JLabel lblTo_1;
+	private JTextField txtLastLine;
+	private JTextField txtLastDP;
+	private JLabel lblFirst;
+	private JLabel lblLast;
+	private JPanel pnContinuousSplit;
+	private JCheckBox cbHardSplit;
+	private JLabel lblsp1;
+	private JTextField txtSplitAfter;
+	private JComboBox comboSplitXUnit;
+	private JLabel lblStartX;
+	private JTextField txtSplitStart;
+	private JPanel south;
+	private JLabel lblExcludeColumns;
+	private JTextField txtExcludeColumns;
+	private JCheckBox cbNoXData;
 
 	/**
 	 * Launch the application.
@@ -108,14 +138,11 @@ public class ImportDataDialog extends JDialog {
 	public ImportDataDialog(ImageLogicRunner runner2) {
 		this.runner = runner2;
 		thisframe = this;
-		setBounds(100, 100, 470, 441);
+		setBounds(100, 100, 573, 637);
 		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new BorderLayout(0, 0));
 		{
 			tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-			getContentPane().add(tabbedPane, BorderLayout.NORTH);
+			getContentPane().add(tabbedPane, BorderLayout.CENTER);
 			{
 				tabMSPresets = new JPanel();
 				tabbedPane.addTab("MS presets", null, tabMSPresets, null);
@@ -231,14 +258,14 @@ public class ImportDataDialog extends JDialog {
 			{
 				tabTXT = new JPanel();
 				tabbedPane.addTab("Lines", null, tabTXT, null);
-				tabTXT.setLayout(new MigLayout("", "[][][grow]", "[][][][][][][]"));
+				tabTXT.setLayout(new MigLayout("", "[][][]", "[][][][][][][][][][][]"));
 				{
 					JLabel lblImportFromText = new JLabel("Import from text files. Select all files containing scan lines");
 					tabTXT.add(lblImportFromText, "cell 0 0 3 1");
 				}
 				{
 					JLabel lblDataSeperationBy = new JLabel("Separation:");
-					tabTXT.add(lblDataSeperationBy, "cell 0 2");
+					tabTXT.add(lblDataSeperationBy, "cell 0 2,alignx trailing");
 				}
 				{
 					comboSepLines = new JComboBox();
@@ -262,24 +289,80 @@ public class ImportDataDialog extends JDialog {
 					txtOwnSeperation.setColumns(10);
 				}
 				{
+					lblExcludeColumns = new JLabel("Exclude columns:");
+					tabTXT.add(lblExcludeColumns, "cell 0 4,alignx trailing");
+				}
+				{
+					txtExcludeColumns = new JTextField();
+					txtExcludeColumns.setToolTipText("Input: 1,2,3 or 1-3,5... Exclude columns from data import (if x-data is in column 2, exclude column 1)");
+					tabTXT.add(txtExcludeColumns, "cell 1 4 2 1,growx");
+					txtExcludeColumns.setColumns(10);
+				}
+				{
+					cbNoXData = new JCheckBox("No X-data");
+					cbNoXData.setToolTipText("All columns are imported as intensities.");
+					tabTXT.add(cbNoXData, "cell 1 5");
+				}
+				{
 					chckbxSearchForMeta = new JCheckBox("Search for meta data");
 					chckbxSearchForMeta.setToolTipText("Tries to search for meta data (non XI-paired data)");
 					chckbxSearchForMeta.setSelected(true);
-					tabTXT.add(chckbxSearchForMeta, "cell 1 4");
+					tabTXT.add(chckbxSearchForMeta, "cell 1 7 2 1");
 				}
 				{
-					cbContinousData = new JCheckBox("Continous data (one file=one image)");
-					cbContinousData.addItemListener(new ItemListener() {
-						public void itemStateChanged(ItemEvent e) {
-							getCbFilesInSeparateFolders().setVisible(!((JCheckBox)e.getSource()).isSelected());
-						}
-					});
-					tabTXT.add(cbContinousData, "cell 1 5 2 1");
+					{
+						cbFilesInSeparateFolders = new JCheckBox("Files in separate folders");
+						cbFilesInSeparateFolders.setToolTipText("Unchecked: All files are in one folder. Checked: Each file has its own sub folder");
+						tabTXT.add(cbFilesInSeparateFolders, "cell 1 8 2 1");
+					}
 				}
+				cbContinousData = new JCheckBox("Continous data (one file=one image)");
+				cbContinousData.addItemListener(new ItemListener() {
+					public void itemStateChanged(ItemEvent e) {
+						getCbFilesInSeparateFolders().setVisible(!((JCheckBox)e.getSource()).isSelected());
+						getPnContinuousSplit().setVisible(((JCheckBox)e.getSource()).isSelected());
+					}
+				});
+				tabTXT.add(cbContinousData, "cell 1 9 2 1");
 				{
-					cbFilesInSeparateFolders = new JCheckBox("Files in separate folders");
-					cbFilesInSeparateFolders.setToolTipText("Unchecked: All files are in one folder. Checked: Each file has its own sub folder");
-					tabTXT.add(cbFilesInSeparateFolders, "cell 1 6");
+					pnContinuousSplit = new JPanel();
+					tabTXT.add(pnContinuousSplit, "cell 1 10 2 1,grow");
+					pnContinuousSplit.setLayout(new MigLayout("", "[][][]", "[][][]"));
+					{
+						cbHardSplit = new JCheckBox("Hard split");
+						cbHardSplit.setToolTipText("Performs a hard split with the splitting settings. This is recommended if the correct splitting settings are known.");
+						cbHardSplit.setSelected(true);
+						pnContinuousSplit.add(cbHardSplit, "cell 0 0 2 1");
+					}
+					{
+						lblsp1 = new JLabel("Split after:");
+						pnContinuousSplit.add(lblsp1, "flowx,cell 0 1");
+					}
+					{
+						txtSplitAfter = new JTextField();
+						txtSplitAfter.setToolTipText("Split all lines after X data points (DP) or time units. (Leave empty for automatic estimation)");
+						txtSplitAfter.setHorizontalAlignment(SwingConstants.RIGHT);
+						pnContinuousSplit.add(txtSplitAfter, "cell 1 1");
+						txtSplitAfter.setColumns(6);
+					}
+					{
+						comboSplitXUnit = new JComboBox();
+						comboSplitXUnit.setModel(new DefaultComboBoxModel(XUNIT.values()));
+						comboSplitXUnit.setSelectedIndex(0);
+						pnContinuousSplit.add(comboSplitXUnit, "cell 2 1,growx");
+					}
+					{
+						lblStartX = new JLabel("Start x:");
+						pnContinuousSplit.add(lblStartX, "cell 0 2,alignx trailing");
+					}
+					{
+						txtSplitStart = new JTextField();
+						txtSplitStart.setToolTipText("Start x (time or data points) to be removed from the data. (relative to x0 the start time/DP)");
+						txtSplitStart.setHorizontalAlignment(SwingConstants.RIGHT);
+						txtSplitStart.setText("0");
+						pnContinuousSplit.add(txtSplitStart, "cell 1 2,growx");
+						txtSplitStart.setColumns(6);
+					}
 				}
 			}
 			{
@@ -289,88 +372,160 @@ public class ImportDataDialog extends JDialog {
 			}
 		}
 		{
-			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			getContentPane().add(buttonPane, BorderLayout.SOUTH);
+			south = new JPanel();
+			getContentPane().add(south, BorderLayout.SOUTH);
+			south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
 			{
-				JButton okButton = new JButton("Open");
-				okButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// create settings
-						createSettingsForImport();
-						// open data with settings but first open filechoose
-						runner.importDataToImage(settingsDataImport);
-					}
-				});
+				panel_2 = new JPanel();
+				panel_2.setAlignmentX(Component.RIGHT_ALIGNMENT);
+				south.add(panel_2);
+				panel_2.setLayout(new MigLayout("", "[][][][]", "[][][]"));
 				{
-					btnSavePreset = new JButton("Save Preset");
-					btnSavePreset.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) { 
-							try {
-								SettingsImageDataImport sett = createSettingsForImport();
-								File file = SettingsHolder.getSettings().saveSettingsToFile(null, sett);
-								if(file!=null)
-									addPreset(sett, FileAndPathUtil.eraseFormat(file.getName()));
-							} catch (Exception e1) {
-								e1.printStackTrace();
-								ImageEditorWindow.log("Cannot save preset "+e1.getMessage(), LOG.ERROR);
-							}
-						}
-					});
-					buttonPane.add(btnSavePreset);
+					lblFilter = new JLabel("Filter:");
+					lblFilter.setFont(new Font("Tahoma", Font.BOLD, 11));
+					panel_2.add(lblFilter, "cell 0 0,alignx left");
 				}
 				{
-					btnLoadPreset = new JButton("Load Preset");
-					btnLoadPreset.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) { 
-							try {
-								Settings sett = createSettingsForImport();
-								sett = SettingsHolder.getSettings().loadSettingsFromFile(thisframe, sett);
-							} catch (Exception e1) { 
-								e1.printStackTrace();
-								ImageEditorWindow.log("Cannot load preset "+e1.getMessage(), LOG.ERROR);
-							}
+					lblFirst = new JLabel("first");
+					panel_2.add(lblFirst, "cell 1 0,alignx center");
+				}
+				{
+					lblLast = new JLabel("last");
+					panel_2.add(lblLast, "cell 3 0,alignx center");
+				}
+				{
+					lblScanLines = new JLabel("Scan lines:");
+					lblScanLines.setHorizontalAlignment(SwingConstants.TRAILING);
+					panel_2.add(lblScanLines, "cell 0 1,alignx trailing");
+				}
+				{
+					txtFirstLine = new JTextField();
+					txtFirstLine.setHorizontalAlignment(SwingConstants.RIGHT);
+					txtFirstLine.setToolTipText("First scan line to import (use 0 or no input for no filtering)");
+					txtFirstLine.setText("0");
+					panel_2.add(txtFirstLine, "cell 1 1,growx");
+					txtFirstLine.setColumns(5);
+				}
+				{
+					lblTo = new JLabel("to");
+					panel_2.add(lblTo, "cell 2 1,alignx trailing");
+				}
+				{
+					txtLastLine = new JTextField();
+					txtLastLine.setToolTipText("Last scan line to import (use no input for no filtering)");
+					txtLastLine.setHorizontalAlignment(SwingConstants.RIGHT);
+					txtLastLine.setColumns(5);
+					panel_2.add(txtLastLine, "cell 3 1,growx");
+				}
+				{
+					lblDataPoints = new JLabel("Data points:");
+					lblDataPoints.setHorizontalAlignment(SwingConstants.TRAILING);
+					panel_2.add(lblDataPoints, "cell 0 2,alignx trailing");
+				}
+				{
+					txtFirstDP = new JTextField();
+					txtFirstDP.setHorizontalAlignment(SwingConstants.RIGHT);
+					txtFirstDP.setToolTipText("First data point in a scan line to import (use 0 or no input for no filtering)");
+					txtFirstDP.setText("0");
+					panel_2.add(txtFirstDP, "cell 1 2,growx");
+					txtFirstDP.setColumns(5);
+				}
+				{
+					lblTo_1 = new JLabel("to");
+					panel_2.add(lblTo_1, "cell 2 2,alignx trailing");
+				}
+				{
+					txtLastDP = new JTextField();
+					txtLastDP.setHorizontalAlignment(SwingConstants.RIGHT);
+					txtLastDP.setToolTipText("Last data point in a scan line to import (use no input for no filtering)");
+					txtLastDP.setColumns(5);
+					panel_2.add(txtLastDP, "cell 3 2,growx");
+				}
+			}
+			{
+				panel_3 = new JPanel();
+				south.add(panel_3);
+				{
+					lblStartsWith = new JLabel("Starts with:");
+					panel_3.add(lblStartsWith);
+				}
+				{
+					txtStartsWith = new JTextField();
+					panel_3.add(txtStartsWith);
+					txtStartsWith.setColumns(10);
+				}
+				{
+					lblEndsWith = new JLabel("Ends with:");
+					panel_3.add(lblEndsWith);
+				}
+				{
+					txtEndsWith = new JTextField();
+					panel_3.add(txtEndsWith);
+					txtEndsWith.setText("csv");
+					txtEndsWith.setColumns(10);
+				}
+			}
+			{
+				JPanel buttonPane = new JPanel();
+				south.add(buttonPane);
+				buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+				{
+					JButton okButton = new JButton("Open");
+					okButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							// create settings
+							createSettingsForImport();
+							// open data with settings but first open filechoose
+							runner.importDataToImage(settingsDataImport);
 						}
 					});
-					buttonPane.add(btnLoadPreset);
-				}
-				okButton.setActionCommand("OK");
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// close
-						setVisible(false);
+					{
+						btnSavePreset = new JButton("Save Preset");
+						btnSavePreset.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) { 
+								try {
+									SettingsImageDataImport sett = createSettingsForImport();
+									File file = SettingsHolder.getSettings().saveSettingsToFile(null, sett);
+									if(file!=null)
+										addPreset(sett, FileAndPathUtil.eraseFormat(file.getName()));
+								} catch (Exception e1) {
+									e1.printStackTrace();
+									ImageEditorWindow.log("Cannot save preset "+e1.getMessage(), LOG.ERROR);
+								}
+							}
+						});
+						buttonPane.add(btnSavePreset);
 					}
-				});
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
-			}
-		}
-		{
-			pnCenterPermSettings = new JPanel();
-			getContentPane().add(pnCenterPermSettings, BorderLayout.CENTER);
-			{
-				lblStartsWith = new JLabel("Starts with:");
-				pnCenterPermSettings.add(lblStartsWith);
-			}
-			{
-				txtStartsWith = new JTextField();
-				pnCenterPermSettings.add(txtStartsWith);
-				txtStartsWith.setColumns(10);
-			}
-			{
-				lblEndsWith = new JLabel("Ends with:");
-				pnCenterPermSettings.add(lblEndsWith);
-			}
-			{
-				txtEndsWith = new JTextField();
-				txtEndsWith.setText("csv");
-				pnCenterPermSettings.add(txtEndsWith);
-				txtEndsWith.setColumns(10);
+					{
+						btnLoadPreset = new JButton("Load Preset");
+						btnLoadPreset.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) { 
+								try {
+									Settings sett = createSettingsForImport();
+									sett = SettingsHolder.getSettings().loadSettingsFromFile(thisframe, sett);
+								} catch (Exception e1) { 
+									e1.printStackTrace();
+									ImageEditorWindow.log("Cannot load preset "+e1.getMessage(), LOG.ERROR);
+								}
+							}
+						});
+						buttonPane.add(btnLoadPreset);
+					}
+					okButton.setActionCommand("OK");
+					buttonPane.add(okButton);
+					getRootPane().setDefaultButton(okButton);
+				}
+				{
+					JButton cancelButton = new JButton("Cancel");
+					cancelButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							// close
+							setVisible(false);
+						}
+					});
+					cancelButton.setActionCommand("Cancel");
+					buttonPane.add(cancelButton);
+				}
 			}
 		}
 		
@@ -391,6 +546,11 @@ public class ImportDataDialog extends JDialog {
 			// sep
 			String sep = s.getSeparation();
 			// txt
+			// line dp limits
+			getTxtFirstLine().setText(String.valueOf(s.getStartLine()));
+			getTxtLastLine().setText(String.valueOf(s.getEndLine()));
+			getTxtFirstDP().setText(String.valueOf(s.getStartDP()));
+			getTxtLastDP().setText(String.valueOf(s.getEndDP()));
 			// mode = tab
 			IMPORT mode = s.getModeImport();
 			switch(mode) {
@@ -424,6 +584,16 @@ public class ImportDataDialog extends JDialog {
 					getComboSepLines().setSelectedIndex(4);
 					getTxtOwnSeparation().setText(sep);
 				} 
+				
+				// no x and exclusion
+				getTxtExcludeColumns().setText(s.getExcludeColumns());
+				getCbNoXData().setSelected(s.isNoXData());
+				
+				// split
+				getTxtSplitAfter().setText(String.valueOf(s.getSplitAfter()));
+				getTxtSplitStart().setText(String.valueOf(s.getSplitStart()));
+				getComboSplitXUnit().setSelectedItem(s.getSplitUnit());
+				getCbHardSplit().setSelected(s.isUseHardSplit());
 
 				// check for meta 
 				getChckbxSearchForMeta().setSelected(sett.isSearchingForMetaData());
@@ -494,6 +664,12 @@ public class ImportDataDialog extends JDialog {
 	protected SettingsImageDataImport createSettingsForImport() {
 		// fileformatfilter
 		FileNameExtFilter filter = new FileNameExtFilter(getTxtStartsWith().getText(), getTxtEndsWith().getText());
+		// line/dp  start/end (0 for no filter)
+		int startLine = Module.intFromTxt(getTxtFirstLine());
+		int endLine = Module.intFromTxt(getTxtLastLine());
+		int startDP = Module.intFromTxt(getTxtFirstDP());
+		int endDP = Module.intFromTxt(getTxtLastDP());
+		
 		// text file
 		if(getTabbedPane().getSelectedComponent().equals(getTabTXT())) {
 			// seperation
@@ -502,8 +678,21 @@ public class ImportDataDialog extends JDialog {
 			boolean checkformeta = getChckbxSearchForMeta().isSelected();
 			boolean isContinousData = getCbContinousData().isSelected();
 			boolean isFilesInSeparateFolders = isContinousData? false : getCbFilesInSeparateFolders().isSelected();
+			// continuous split
+			float startSplitX = Module.floatFromTxt(getTxtSplitStart());
+			float splitAfter = Module.floatFromTxt(getTxtSplitAfter());
+			XUNIT unit = (XUNIT) comboSplitXUnit.getSelectedItem();
+			boolean useHardSplit = getCbHardSplit().isSelected();
+			
+			// no X data and exclude columns
+			String excludeColumns = getTxtExcludeColumns().getText();
+			boolean usesXData = getCbNoXData().isSelected();
 			// create settings
-			settingsDataImport = new SettingsImageDataImportTxt(isContinousData? IMPORT.CONTINOUS_DATA_TXT_CSV : IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, checkformeta, separation, filter, isFilesInSeparateFolders);
+			settingsDataImport = new SettingsImageDataImportTxt(isContinousData? IMPORT.CONTINOUS_DATA_TXT_CSV : IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, 
+					checkformeta, separation, null, filter, isFilesInSeparateFolders,
+					startLine, endLine, startDP, endDP,
+					unit, startSplitX, splitAfter, useHardSplit,
+					excludeColumns, usesXData);
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTab2DIntensity())) {
 			// seperation
@@ -514,7 +703,9 @@ public class ImportDataDialog extends JDialog {
 			// check for meta
 			boolean checkformeta = getCb2DMetadata().isSelected();
 			// create settings
-			settingsDataImport = new SettingsImageDataImportTxt(IMPORT.ONE_FILE_2D_INTENSITY, checkformeta, separation, mode, filter, false);
+			settingsDataImport = new SettingsImageDataImportTxt(IMPORT.ONE_FILE_2D_INTENSITY, 
+					checkformeta, separation, mode, filter, false,
+					startLine, endLine, startDP, endDP);
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTabMSPresets())) {
 			String separation = "	";
@@ -523,11 +714,13 @@ public class ImportDataDialog extends JDialog {
 				if(getTxtThermoSeparation().getText().length()>0)
 					separation = getTxtThermoSeparation().getText();
 				IMPORT importMode = IMPORT.PRESETS_THERMO_MP17; 
-				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, filter, false);
+				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, null, filter, false,
+						startLine, endLine, startDP, endDP);
 			}
 			else if(rbNeptune.isSelected()) {
 				IMPORT importMode = IMPORT.PRESETS_THERMO_NEPTUNE; 
-				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, filter, false);
+				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, null, filter, false,
+						startLine, endLine, startDP, endDP);
 			}
 		}
 		return settingsDataImport;
@@ -609,5 +802,38 @@ public class ImportDataDialog extends JDialog {
 	}
 	public JComboBox getComboSepLines() {
 		return comboSepLines;
+	}
+	public JTextField getTxtFirstDP() {
+		return txtFirstDP;
+	}
+	public JTextField getTxtFirstLine() {
+		return txtFirstLine;
+	}
+	public JTextField getTxtLastLine() {
+		return txtLastLine;
+	}
+	public JTextField getTxtLastDP() {
+		return txtLastDP;
+	}
+	public JPanel getPnContinuousSplit() {
+		return pnContinuousSplit;
+	}
+	public JComboBox getComboSplitXUnit() {
+		return comboSplitXUnit;
+	}
+	public JTextField getTxtSplitAfter() {
+		return txtSplitAfter;
+	}
+	public JTextField getTxtSplitStart() {
+		return txtSplitStart;
+	}
+	public JCheckBox getCbHardSplit() {
+		return cbHardSplit;
+	}
+	public JCheckBox getCbNoXData() {
+		return cbNoXData;
+	}
+	public JTextField getTxtExcludeColumns() {
+		return txtExcludeColumns;
 	}
 }

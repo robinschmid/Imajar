@@ -153,21 +153,21 @@ public class Module extends JPanel {
 			showListener = listener;
 	}
 	
-	public double doubleFromTxt(JTextField txt) {
+	public static double doubleFromTxt(JTextField txt) {
 		try {
 			return Double.valueOf(txt.getText());
 		} catch(Exception ex) {
 			return 0;
 		}
 	}
-	public float floatFromTxt(JTextField txt) {
+	public static float floatFromTxt(JTextField txt) {
 		try {
 			return Float.valueOf(txt.getText());
 		} catch(Exception ex) {
 			return 0;
 		}
 	}
-	public int intFromTxt(JTextField txt) {
+	public static int intFromTxt(JTextField txt) {
 		try {
 			return Integer.valueOf(txt.getText());
 		} catch(Exception ex) {

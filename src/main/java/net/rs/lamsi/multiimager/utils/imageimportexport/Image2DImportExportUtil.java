@@ -13,6 +13,8 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
@@ -71,7 +73,7 @@ public class Image2DImportExportUtil {
 	// txt /csv / Excel
 	// I0	i1	i2	i3	i4
 	// i5	i6	i7	i8	i9 ...
-	public static Image2D[] import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 
+	public static Image2D[] import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 		
 
 		Image2D[] img = new Image2D[files.length];
 		// store data in Vector
@@ -79,8 +81,10 @@ public class Image2DImportExportUtil {
 		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>();  
 		// read x only once
 		Vector<Float>[] x = null; 
-		int xcol = -1;
-		
+		float[] startXValue = null;
+		int xcol = -1, ycol=-1; 
+
+
 		// one file is one dimension (image) of scanLines
 		for(int f=0; f<files.length; f++) {
 			File file = files[f];
@@ -89,51 +93,107 @@ public class Image2DImportExportUtil {
 			// for metadata collection if selected in settings
 			String metadata = "";
 			String title = "";
-	
+
 			// read text file 
 			// line by line
 			BufferedReader br = txtWriter.getBufferedReader(file);
 			String s;
 			int k = 0;
+			int line = 0;
+			int dp = 0;
 			while ((s = br.readLine()) != null) {
 				// try to separate by separation
 				String[] sep = s.split(separation);
 				// data
 				if(sep.length>1 && TextAnalyzer.isNumberValues(sep)) { 
-					// create data lists
+					// increment dp 
+					dp++;
+					// 
+					line = 0;
+					// initialise data lists
 					if(xcol==-1) {
-						xcol = mode==ModeData.ONLY_Y? 0 : 1;
-						if(mode==ModeData.XYXY_ALTERN)
+						if(mode==ModeData.XYXY_ALTERN) {
 							xcol = sep.length/2;
+							// limits
+							if(sett.getEndLine()!=0 && xcol>sett.getEndLine()) xcol = sett.getEndLine();
+							if(sett.getStartLine()!=0) xcol = xcol+1-sett.getStartLine();
+							ycol = xcol;
+						}
+						else {
+							xcol = mode==ModeData.ONLY_Y? 0 : 1; 
+							ycol = (sep.length-xcol);
+							// limits
+							if(sett.getEndLine()!=0 && ycol>sett.getEndLine()) ycol = sett.getEndLine();
+							if(sett.getStartLine()!=0) ycol = ycol+1-sett.getStartLine();
+						}
 					}
 					if(y==null) {
 						if(mode!=ModeData.ONLY_Y && x==null) {
+							startXValue = new float[xcol];
 							x = new Vector[xcol];  
 							for(int i=0; i<x.length; i++)
 								x[i] = new Vector<Float>();
 						}
-						y = new Vector[sep.length-xcol]; 
+						y = new Vector[ycol]; 
 						for(int i=0; i<y.length; i++)
 							y[i] = new Vector<Double>();
 					}
-					
-					// add data
-					for(int i=0; i<sep.length; i++) {
-						// x is only added in f==0 (first file)
-						switch(mode) {
-						case ONLY_Y:
-							y[i].addElement(Double.valueOf(sep[i]));
-							break;
-						case XYXY_ALTERN:
-							if(i%2==1) y[(i-1)/2].addElement(Double.valueOf(sep[i]));
-							else if(f==0) x[i/2].addElement(Float.valueOf(sep[i]));
-							break;
-						case XYYY:
-							if(i>0) y[(i-1)].addElement(Double.valueOf(sep[i]));
-							else if(f==0 && i==0) x[0].addElement(Float.valueOf(sep[i]));
-							break;
-						}
-					} 
+					// add data if dp is not excluded
+					if(sett.getStartDP()==0 || dp>=sett.getStartDP()) {
+						// add data if line is not excluded
+						for(int i=0; i<sep.length && (sett.getEndLine()==0 || line<sett.getMaxLines()); i++) {
+							// x is only added in f==0 (first file)
+							switch(mode) {
+							case ONLY_Y:
+								if((sett.getStartLine()==0 || i+1>=sett.getStartLine())) {
+									if(line==187)
+										System.out.println("");
+									y[line].addElement(Double.valueOf(sep[i]));
+									line++;
+								}
+								break;
+							case XYXY_ALTERN:
+								if(sett.getStartLine()==0 || i/2+1>=sett.getStartLine()) {
+									if(i%2==1) {
+										y[line].addElement(Double.valueOf(sep[i]));
+										line++;
+									}
+									else if(f==0) {
+										// first as 0
+										if(x[line].size()==0) {
+											x[line].addElement(0.f);
+											startXValue[line] = Float.valueOf(sep[i]);
+										}
+										// relative to startX
+										else x[line].addElement(Float.valueOf(sep[i])-startXValue[line]);
+									}
+								}
+								break;
+							case XYYY: 
+								// add x once
+								if(f==0 && i==0) {
+									// first as 0
+									if(x[0].size()==0) {
+										x[0].addElement(0.f);
+										startXValue[0] = Float.valueOf(sep[i]);
+									}
+									// relative to startX
+									else x[0].addElement(Float.valueOf(sep[i])-startXValue[0]);
+								}
+								// add y
+								if(i!=0){
+									if(sett.getStartLine()==0 || i>=sett.getStartLine()) {
+										y[line].addElement(Double.valueOf(sep[i]));
+										line++;
+									}
+								}
+								break;
+							} 
+						}  
+					}
+					// last dp added?
+					if(sett.getEndDP()!=0 && dp>=sett.getEndDP())
+						break;
 				}
 				// or metadata
 				else {
@@ -160,9 +220,9 @@ public class Image2DImportExportUtil {
 					scanLines.get(i).setX(x[0]);
 					break;
 				}
-					
+
 			}
-			
+
 			// Generate Image2D from scanLines
 			Image2D image = createImage2D(file, title, metadata, scanLines, f, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
 			img[f] = image;
@@ -177,7 +237,9 @@ public class Image2DImportExportUtil {
 	// time  SEPARATION   intensity
 	// new try the first is not good
 	public static Image2D[] importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
-
+		// reset title line
+		titleLine = null;
+		
 		Vector<ScanLineMD> lines;
 		if(sett.getModeImport()==IMPORT.PRESETS_THERMO_NEPTUNE)
 			lines = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles);
@@ -192,9 +254,17 @@ public class Image2DImportExportUtil {
 				parent = files[0];
 		}
 		// for all images
+		boolean continuous = sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV);
+		boolean hardsplit = continuous && sett.isUseHardSplit() && !(sett.getSplitAfter()==0 || sett.getSplitAfter()==-1);
+		
 		Image2D realImages[] = new Image2D[lines.firstElement().getImageCount()];
 		for(int i=0; i<realImages.length; i++) {   
-			realImages[i] = createImage2D(parent, title, metadata, lines, i, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)); 
+			realImages[i] = createImage2D(parent, title, metadata, lines, i, continuous && !hardsplit);  
+			// continuous?
+			if(continuous && !hardsplit) {
+				DatasetContinuousMD data = ((DatasetContinuousMD)realImages[i].getData());
+				data.setSplitSettings(new SettingsImageContinousSplit(sett.getSplitAfter(), sett.getSplitStart(), sett.getSplitUnit()));
+			}
 		}
 
 		// set titles if a title line was found
@@ -220,16 +290,36 @@ public class Image2DImportExportUtil {
 	 * @return an array of vector<ScanLine> that can be converted to images
 	 * @throws Exception
 	 */
-	public static Vector<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImport sett, String separation, boolean sortFiles) throws Exception { 
+	public static Vector<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
 			files = FileAndPathUtil.sortFilesByNumber(files);
 		// images (getting created at first data reading)
 		Vector<ScanLineMD> lines=null; 
-
+		
+		// excluded columns
+		Vector<Integer> excludedCol = sett.getExcludeColumnsArray();
+		// calc fist used column
+		int firstCol = 0;
+		if(excludedCol!=null) {
+			for(int ex : excludedCol) {
+				if(ex==firstCol) firstCol++;
+				else break;
+			}
+		}
+		
+		// perform hardsplit
+		boolean continuous = sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV);
+		boolean hardsplit = continuous && sett.isUseHardSplit() && !(sett.getSplitAfter()==0 || sett.getSplitAfter()==-1);
+		boolean wasStartErased = !hardsplit; 
+		boolean scanLinesSkipped = !hardsplit;
+		float startX = 0;
+		int cDP = 0;
+		
 		// file after file open text file
-		for(int i=0; i<files.length; i++) {
+		// start with starting line
+		for(int i=(sett.getStartLine()==0 || continuous? 0 : sett.getStartLine()-1); i<files.length && (sett.getEndLine()==0 || i<=sett.getEndLine()); i++) {
 			// data of one line
 			Vector<Float> x  = null;
 			// iList[dimension].get(dp)
@@ -238,63 +328,208 @@ public class Image2DImportExportUtil {
 			boolean dataFound = false; 
 			// for metadata collection if selected in settings
 			String[] lastLine = null;
+			// track data points
+			int dp = 0;
+			// starting data points for splitting of continuous data
+			if(continuous && hardsplit && sett.getSplitUnit().equals(XUNIT.DP)) {
+				dp -= sett.getSplitStartDP();
+			}
 			// read file
 			File f = files[i]; 
 			// line by line add datapoints to current Scanlines
 			BufferedReader br = txtWriter.getBufferedReader(f);
-			String s;
+			String sline;
 			int k = 0;
-			while ((s = br.readLine()) != null) {
+			while ((sline = br.readLine()) != null) {
 				// try to seperate by seperation
-				String[] sep = s.split(separation);
+				String[] sep = sline.split(separation);
 				// data
 				if(sep.length>1 && TextAnalyzer.isNumberValues(sep)) {
+					// increment
+					dp++;
+					// initialise
 					// titleLine could be written one line before data lines
 					if(!dataFound) {
 						dataFound = true;  // call this only once 
-						if(lastLine!=null && lastLine.length==sep.length)
-							titleLine = lastLine;
 
 						// create all new Images
-						iList = new Vector[sep.length-1]; 
-						x = new Vector<Float>(); 
+						int colCount = sep.length;
+						if(excludedCol!=null) {
+							for(int ex = excludedCol.size()-1; ex>=0; ex--)
+								if(excludedCol.get(ex)<colCount) colCount--;
+								else break;
+						}
+						colCount +=  -(sett.isNoXData()? 0:1);
+						iList = new Vector[colCount]; 
+						
+						// set titles only once
+						if(titleLine==null && lastLine!=null && lastLine.length==sep.length) {
+							int img = 1;
+							int ex = 0; 
+							titleLine = new String[colCount+1]; 
+							titleLine[0] = "x";
+							for(int s= (sett.isNoXData()? firstCol : firstCol+1); s<lastLine.length; s++) {
+								boolean isExcluded = false;
+								// add title if not excluded
+								if(excludedCol!=null) {
+									for( ; ex<excludedCol.size(); ex++) {
+										if(excludedCol.get(ex)==s) {
+											isExcluded= true;
+											break;
+										}
+										if(excludedCol.get(ex)>s)
+											break;
+									}
+								}
+								if(!isExcluded) {
+									titleLine[img] = lastLine[s];
+									img++;
+								}
+							}
+						}
+						
+						// has X data?
+						if(!sett.isNoXData()) {
+							x = new Vector<Float>(); 
+							// startX for hardsplit
+							startX = Float.valueOf(sep[firstCol]);
+						}
 						// Image creation 
-							for(int img=0; img<iList.length; img++) {
-								iList[img] = new Vector<Double>(); 
-							} 
+						for(int img=0; img<iList.length; img++) {
+							iList[img] = new Vector<Double>(); 
+						} 
 					}
-
-					x.add(Float.valueOf(sep[0]));
-					// add Datapoints to all images 
-					for(int img=0; img<iList.length; img++) {
-						// add Datapoint
-						iList[img].add(Double.valueOf(sep[img+1]));
+					// hardsplit jumps over first datapoints
+					if(hardsplit) {
+						// hardsplit continuous with time data: erase startX
+						if(!wasStartErased && XUNIT.s.equals(sett.getSplitUnit()) && ((int)(sett.getSplitStart()*1000))!=0) {
+							float cx = Float.valueOf(sep[firstCol]);
+							// x still < than start time?
+							if(cx-startX<sett.getSplitStart())
+								dp = 0;
+							else {
+								wasStartErased = true;
+								startX = cx;
+							}
+						}
+						else if(!scanLinesSkipped) {
+							cDP++;
+							if(XUNIT.s.equals(sett.getSplitUnit())) {
+								float cx = Float.valueOf(sep[firstCol]);
+								scanLinesSkipped = (cx-startX)>=sett.getSplitAfter()*(sett.getStartLine()-1);
+							}
+							else {
+								scanLinesSkipped = cDP>=sett.getSplitAfterDP()*(sett.getStartLine()-1);
+							}
+							// still not?
+							if(!scanLinesSkipped)
+								dp = 0;
+						}							
+					}
+					// add data if DP is in range of start/end dp
+					if(dp>=sett.getStartDP() && dp>0 && (sett.getEndDP()==0 || dp<=sett.getEndDP())) { 
+						// has X data?
+						if(!sett.isNoXData()) {
+							if(x.size()==0) startX = Float.valueOf(sep[firstCol]);
+							x.add(Float.valueOf(sep[firstCol])-startX);
+						}
+						// add Data Points to all images 
+						int img = 0;
+						int ex = 0;
+						for(int s= (sett.isNoXData()? firstCol : firstCol+1); s<sep.length; s++) {
+							boolean isExcluded = false;
+							// add Datapoint if not excluded
+							if(excludedCol!=null) {
+								for( ; ex<excludedCol.size(); ex++) {
+									if(excludedCol.get(ex)==s) {
+										isExcluded= true;
+										break;
+									}
+									if(excludedCol.get(ex)>s)
+										break;
+								}
+							}
+							if(!isExcluded) {
+								iList[img].add(Double.valueOf(sep[s]));
+								img++;
+							}
+						}
+					}
+					
+					// hardsplit continuous data
+					if(hardsplit && (x==null || x.size()>1)) {
+						// split after DP   / split after time
+						boolean endOfLine = false;
+						if(XUNIT.DP.equals(sett.getSplitUnit())) 
+							endOfLine = dp>=sett.getSplitAfterDP();
+						else {
+							float xstart = x.firstElement();
+							float cx = x.lastElement();
+							int currentLine = lines==null? 1 : lines.size()+1;
+							endOfLine = (cx-xstart)>=sett.getSplitAfter()*currentLine;
+						}  
+						// has reached end of line
+						if(endOfLine) {
+							// add line
+							// init lines vector
+							if(lines==null)
+								lines = new Vector<ScanLineMD>(); 
+				
+							// add new line
+							lines.add(new ScanLineMD()); 
+							// add data to line
+							// has X data?
+							if(!sett.isNoXData())
+								lines.lastElement().setX(x);
+							// add all dimensions
+							for(int img=0; img<iList.length; img++) {  
+								// add data
+								lines.lastElement().addDimension(iList[img]);
+								//reset iList
+								iList[img].removeAllElements();
+							} 
+							// set dp = 0
+							dp=0;
+							// reset lists
+							if(x!=null)
+								x.removeAllElements();
+							
+							// enough lines?
+							if(lines.size()>=sett.getEndLine() && sett.getEndLine()!=0)
+								return lines;
+						}
 					}
 				}
 				// or metadata
 				else {
 					// title
-					if(i==0 && k==0 && s.length()<=30) {
-						title = s;
+					if(i==0 && k==0 && sline.length()<=30) {
+						title = sline;
 					}
-					metadata += s+"\n"; 
+					metadata += sline+"\n"; 
 				}
 				// last line
 				lastLine = sep;
 				k++;
 			} 
 
-			if(lines==null)
-				lines = new Vector<ScanLineMD>(); 
-			
-			// add new line
-			lines.add(new ScanLineMD()); 
-			lines.lastElement().setX(x);
-			// for all dimensions
-			for(int img=0; img<iList.length; img++) {  
-				// add data
-				lines.lastElement().addDimension(iList[img]);
-			} 
+			if(!hardsplit) {
+				// init lines vector
+				if(lines==null)
+					lines = new Vector<ScanLineMD>(); 
+	
+				// add new line
+				lines.add(new ScanLineMD()); 
+				// add data to line
+				// has X data?
+				if(!sett.isNoXData())
+					lines.lastElement().setX(x);
+				// add all dimensions
+				for(int img=0; img<iList.length; img++) {  
+					// add data
+					lines.lastElement().addDimension(iList[img]);
+				} 
+			}
 		}
 		//return image
 		return lines;
@@ -345,7 +580,8 @@ public class Image2DImportExportUtil {
 		// separation for UTF-8 space 
 		char splitc = 0;
 		String splitUTF8 = String.valueOf(splitc);
-		//
+		// count data points
+		int dp = 0;
 		// line by line
 		BufferedReader br = txtWriter.getBufferedReader(file);
 		String s;
@@ -383,60 +619,73 @@ public class Image2DImportExportUtil {
 					} 
 					// reset
 					iList = null;
+					dp = 0;
 				}
 				// generate new list
 				if(iList==null) {
-					iList = new Vector[sep.length-valueindex];
+					int lineCount = sep.length-valueindex;
+					if(sett.getEndLine()!=0 && lineCount>sett.getEndLine()) lineCount = sett.getEndLine();
+					lineCount -= sett.getStartLine();
+					
+					iList = new Vector[lineCount];
 					for(int i=0; i<iList.length; i++) {
 						iList[i] = new Vector<Double>();
 					}
 				}
-				// add all intensities
-				for(int i=valueindex; i<sep.length; i++) {
-					try {
-						iList[i-valueindex].addElement(Double.valueOf(sep[i]));
-					}catch(Exception ex) { 
-						iList[i-valueindex].addElement(-1.0);
+				// dp increment
+				dp++;
+				// add all data points of this line (if inside start/end limits)
+				if((dp>=sett.getStartDP()) && (sett.getEndDP()==0 || dp<=sett.getEndDP())) {
+					for(int i=valueindex+sett.getStartLine(); i<sep.length && (sett.getEndLine()==0 || i-valueindex<sett.getEndLine()); i++) {
+						try {
+							iList[i-valueindex-sett.getStartLine()].addElement(Double.valueOf(sep[i]));
+						}catch(Exception ex) { 
+							iList[i-valueindex-sett.getStartLine()].addElement(-1.0);
+						}
 					}
 				}
 			} 
 			// is dataline? Time in col3? or col2
 			else if(!hasTimeAlready && sep.length>4 && ((valueindex!=5 && sep[3].equalsIgnoreCase("Time") && TextAnalyzer.isNumberValue(sep[4])) 
-						|| (valueindex!=4 && sep[4].equalsIgnoreCase("Time") && TextAnalyzer.isNumberValue(sep[5])))) {
-					if(valueindex==-1) {
-						valueindex = TextAnalyzer.isNumberValue(sep[4])? 4:5;
-					}
-					// title in col2
-					if(title=="") title = sep[2];
-					else if(!title.equals(sep[2])) { 
-						// a new element was found
-						// stop search for time values
-						title = "";
-						hasTimeAlready = true;
-						// generate scan lines
-						if(scanLines.size()==0) 
-							for(Vector<Float> in : x) 
-								scanLines.addElement(new ScanLineMD());
-						// add x to all scan lines
-						for (int i = 0; i < x.length; i++) {
-							scanLines.get(i).setX(x[i]);
-						} 
-					}
-					// generate new list
-					if(x==null) {
-						x = new Vector[sep.length-valueindex];
-						for(int i=0; i<x.length; i++) 
-							x[i] = new Vector<Float>();
-					}
-					// add all intensities
-					for(int i=valueindex; i<sep.length; i++) {
+					|| (valueindex!=4 && sep[4].equalsIgnoreCase("Time") && TextAnalyzer.isNumberValue(sep[5])))) {
+				if(valueindex==-1) {
+					valueindex = TextAnalyzer.isNumberValue(sep[4])? 4:5;
+				}
+				// title in col2
+				if(title=="") title = sep[2];
+				else if(!title.equals(sep[2])) { 
+					// a new element was found
+					// stop search for time values
+					title = "";
+					hasTimeAlready = true;
+					// generate scan lines
+					if(scanLines.size()==0) 
+						for(Vector<Float> in : x) 
+							scanLines.addElement(new ScanLineMD());
+					// add x to all scan lines
+					for (int i = 0; i < x.length; i++) {
+						scanLines.get(i).setX(x[i]);
+					} 
+					//
+					dp=0;
+				}
+				// generate new list
+				if(x==null) {
+					x = new Vector[sep.length-valueindex];
+					for(int i=0; i<x.length; i++) 
+						x[i] = new Vector<Float>();
+				}
+				// add all intensities
+				if((dp>=sett.getStartDP()) && (sett.getEndDP()==0 || dp<=sett.getEndDP())) {
+					for(int i=valueindex+sett.getStartLine(); i<sep.length && (sett.getEndLine()==0 || i-valueindex<sett.getEndLine()); i++) {
 						try {
-							x[i].addElement(Float.valueOf(sep[i]));
+							x[i-valueindex-sett.getStartLine()].addElement(Float.valueOf(sep[i]));
 						}catch(Exception ex) { 
-							x[i].addElement(-1.f);
+							x[i-valueindex-sett.getStartLine()].addElement(-1.f);
 						}
 					}
-				} 
+				}
+			} 
 		}
 		// 
 		if(iList!=null) {
