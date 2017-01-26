@@ -1,5 +1,7 @@
 package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
+import java.io.Serializable;
+
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 
 /**
@@ -7,7 +9,9 @@ import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
  * @author Robin Schmid
  *
  */
-public class DatasetIMatrix implements ImageDataset {
+public class DatasetIMatrix  extends ImageDataset  implements Serializable  {
+	// do not change the version!
+    private static final long serialVersionUID = 1L;
 
 	// data[lines][dp]
 	protected double[][] data;

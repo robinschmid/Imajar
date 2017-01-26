@@ -30,17 +30,11 @@ public class TestImagerWithData {
 					ImageEditorWindow window = new ImageEditorWindow();
 					window.setVisible(true);
 					// load data ThermoMP17 Image qtofwerk.csv 
-					String s = FileAndPathUtil.getPathOfJar().getParent()+"/data/qtofwerk.csv";
+					String s = "C:\\DATA\\Agilent ICP\\Mstd2\\";
 					File[] files = {new File(s)};
 					
-					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.CONTINOUS_DATA_TXT_CSV, true, ",", false);
+					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, ",", false);
 					window.getLogicRunner().importTextDataToImage(settingsDataImport, files);
-					
-					s = FileAndPathUtil.getPathOfJar().getParent()+"/data/thermomp17.csv";
-					File[] files2 = {new File(s)};
-					
-					settingsDataImport = new SettingsImageDataImportTxt(IMPORT.PRESETS_THERMO_MP17, true, "	", false);
-					window.getLogicRunner().importTextDataToImage(settingsDataImport, files2);
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}

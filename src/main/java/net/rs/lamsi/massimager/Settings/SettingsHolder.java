@@ -9,11 +9,16 @@ import javax.swing.filechooser.FileFilter;
 
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.Settings.image.SettingsExportGraphics;
+import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
+import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
+import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
 import net.rs.lamsi.massimager.Settings.visualization.SettingsPlotSpectraLabelGenerator;
 import net.rs.lamsi.massimager.Settings.visualization.plots.SettingsThemes;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -32,6 +37,8 @@ public class SettingsHolder extends Settings {
 	// save of super classes
 	private Class[] classList;
 
+	// general pref
+	private SettingsGeneralPreferences setGeneralPreferences;
 	private SettingsGeneralValueFormatting setGeneralValueFormatting;
 	private SettingsConverterRAW setConvertRAW;
 	private SettingsDataSaver setDataSaver;
@@ -59,6 +66,8 @@ public class SettingsHolder extends Settings {
 
 	// for splitting data in image2dContinous
 	private SettingsImageContinousSplit setSplitImgCon;
+	
+	
 
 
 	public SettingsHolder() {
@@ -102,11 +111,19 @@ public class SettingsHolder extends Settings {
 		// image2dContinous
 		setSplitImgCon = new SettingsImageContinousSplit();
 		settList.add(setSplitImgCon); 
+		
+		// general preferences 
+		setSplitImgCon = new SettingsImageContinousSplit();
+		settList.add(setSplitImgCon); 
+		
+		setGeneralPreferences = new SettingsGeneralPreferences();
+		settList.add(setGeneralPreferences);
 
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
 				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
-				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class};
+				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
+				SettingsGeneralPreferences.class};
 		classList = cl;
 	}
 
@@ -293,7 +310,16 @@ public class SettingsHolder extends Settings {
 	}
 
 	public SettingsImage2DDataExport getSetImage2DDataExport() {
-		// TODO Auto-generated method stub
 		return setImage2DDataExport;
 	}
+
+	public SettingsGeneralPreferences getSetGeneralPreferences() {
+		return setGeneralPreferences;
+	}
+
+	public void setSetGeneralPreferences(
+			SettingsGeneralPreferences setGeneralPreferences) {
+		this.setGeneralPreferences = setGeneralPreferences;
+	}
+	
 }

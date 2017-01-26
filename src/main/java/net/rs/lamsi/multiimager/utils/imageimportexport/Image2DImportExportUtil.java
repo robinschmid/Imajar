@@ -5,18 +5,20 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Vector;
 
+import ucar.nc2.stream.NcStreamProto.Group;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
-import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -85,6 +87,7 @@ public class Image2DImportExportUtil {
 		int xcol = -1, ycol=-1; 
 
 
+		ImageGroupMD group = new ImageGroupMD();
 		// one file is one dimension (image) of scanLines
 		for(int f=0; f<files.length; f++) {
 			File file = files[f];
@@ -226,6 +229,7 @@ public class Image2DImportExportUtil {
 			// Generate Image2D from scanLines
 			Image2D image = createImage2D(file, title, metadata, scanLines, f, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
 			img[f] = image;
+			group.add(img[f]);
 		}
 		//return image 
 		return img;
@@ -257,20 +261,23 @@ public class Image2DImportExportUtil {
 		boolean continuous = sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV);
 		boolean hardsplit = continuous && sett.isUseHardSplit() && !(sett.getSplitAfter()==0 || sett.getSplitAfter()==-1);
 		
+		ImageGroupMD group = new ImageGroupMD();
 		Image2D realImages[] = new Image2D[lines.firstElement().getImageCount()];
 		for(int i=0; i<realImages.length; i++) {   
 			realImages[i] = createImage2D(parent, title, metadata, lines, i, continuous && !hardsplit);  
 			// continuous?
 			if(continuous && !hardsplit) {
+				// set split settings for continuous data (non hardsplit)
 				DatasetContinuousMD data = ((DatasetContinuousMD)realImages[i].getData());
 				data.setSplitSettings(new SettingsImageContinousSplit(sett.getSplitAfter(), sett.getSplitStart(), sett.getSplitUnit()));
 			}
-		}
 
-		// set titles if a title line was found
-		if(titleLine!=null && titleLine.length>=realImages.length+1) {
-			for(int t=0; t<realImages.length; t++)
-				realImages[t].getSettImage().setTitle(titleLine[t+1]);
+			// set titles if a title line was found
+			if(titleLine!=null && titleLine.length>=realImages.length+1) 
+				realImages[i].getSettImage().setTitle(titleLine[i+1]);
+			
+			// add to group (also sets the group for this image)
+			group.add(realImages[i]);
 		}
 
 		//return image
@@ -278,7 +285,7 @@ public class Image2DImportExportUtil {
 	}
 
 	// needed for image creation from Vector<ScanLine>
-	// titleline is always X y1 y2 y3 y4 (titles)
+	// titleline is always X y1 y2 y3 y4 (titles) and size = dimension+1
 	private static String[] titleLine = null;
 	private static String metadata = "";
 	private static String title = "";
@@ -702,8 +709,12 @@ public class Image2DImportExportUtil {
 		}
 
 		// Generate Image2D from scanLines
-		for(int i=0; i<titles.size(); i++) 
-			images.add(createImage2D(file, titles.get(i), metadata, scanLines, i, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV)));
+		ImageGroupMD group = new ImageGroupMD();
+		for(int i=0; i<titles.size(); i++) {
+			Image2D img = createImage2D(file, titles.get(i), metadata, scanLines, i, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
+			images.add(img);
+			group.add(img);
+		}
 	}
 
 	/**

@@ -1,7 +1,9 @@
-package net.rs.lamsi.massimager.Settings;
+package net.rs.lamsi.massimager.Settings.preferences;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
+import net.rs.lamsi.massimager.Settings.Settings;
 
 public class SettingsGeneralValueFormatting extends Settings {
 	// do not change the version!

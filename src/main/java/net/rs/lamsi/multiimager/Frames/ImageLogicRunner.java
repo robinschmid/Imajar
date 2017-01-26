@@ -20,8 +20,10 @@ import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
+import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
@@ -142,7 +144,8 @@ public class ImageLogicRunner {
 		 */
 	public IconNode addImage(Image2D i, IconNode parent) {  
 		//
-		IconNode node = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(80) : null);
+		SettingsGeneralPreferences sett = SettingsHolder.getSettings().getSetGeneralPreferences();
+		IconNode node = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(sett.getIconWidth(), sett.getIconHeight()) : null);
 		parent.add(node);
 		return node;
 	}
@@ -155,6 +158,7 @@ public class ImageLogicRunner {
 			return new IconNode[]{addImage(img[0], parent)};
 		}
 		else {
+			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
 			// create subnode with image name
 			DefaultMutableTreeNode sub = null;
 			String last = null;
@@ -167,7 +171,7 @@ public class ImageLogicRunner {
 					parent.add(sub);
 					last = i.getSettImage().getRAWFolderPath(); 
 				}
-				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(80) : null);
+				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
 				nodes[c] = inode;
 				sub.add(inode);
 				c++;

@@ -33,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.RangeSliderColumn;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
@@ -368,8 +369,8 @@ public class MultiImageFrame extends JFrame {
 		// add raw data changed listener for direct imaging 
 		img[img.length-1].addRawDataChangedListener(new RawDataChangedListener() { 
 			@Override
-			public void rawDataChangedEvent(Image2D img) {
-				if(img.getLineCount()>0) { 
+			public void rawDataChangedEvent(ImageDataset data) {
+				if(data.getLinesCount()>0) { 
 					createNewMap(); 
 					for(int i=0; i<uptodate.length; i++) {
 						heat[i] = null;

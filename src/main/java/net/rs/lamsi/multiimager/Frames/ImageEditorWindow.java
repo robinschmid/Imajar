@@ -69,11 +69,13 @@ import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleGeneral;
 import net.rs.lamsi.multiimager.FrameModules.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
+import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -93,6 +95,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private static ImageEditorWindow thisFrame;
 	private ImageLogicRunner logicRunner;
 	private ImportDataDialog importDataDialog; 
+	private DialogPreferences preferencesDialog;
 
 	// save all frames for updating style etc
 	private Vector<Component> listFrames = new Vector<Component>();
@@ -179,6 +182,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		logicRunner = new ImageLogicRunner(this); 
 		// progress dialog 
 		ProgressDialog.initDialog(this);
+		// create preferences dialog
+		preferencesDialog = new DialogPreferences(this);
+		WindowStyleUtil.changeWindowStyle(preferencesDialog, WindowStyleUtil.STYLE_SYSTEM);
+		preferencesDialog.setVisible(false);
+		listFrames.addElement(preferencesDialog);
+		
 		// init data import
 		importDataDialog = new ImportDataDialog(logicRunner);
 		WindowStyleUtil.changeWindowStyle(importDataDialog, WindowStyleUtil.STYLE_SYSTEM);
@@ -333,6 +342,17 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 		JMenu mnWindow = new JMenu("Window");
 		menuBar.add(mnWindow);
+		
+		JMenuItem btnOpenPrefDialog = new JMenuItem("General preferences");
+		btnOpenPrefDialog.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// opens the preferences dialog
+				preferencesDialog.setVisible(true);
+			}
+		});
+		mnWindow.add(btnOpenPrefDialog);
+
+		mnWindow.add( new JSeparator());
 
 		JRadioButtonMenuItem rdbtnmntmSystemStyle = new JRadioButtonMenuItem("System style");
 		rdbtnmntmSystemStyle.setSelected(true);
@@ -362,7 +382,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbCreateImageIcons.setToolTipText("Creating image icons for the tree view uses RAM");
 		cbCreateImageIcons.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) { 
-				// TODO
+				SettingsHolder.getSettings().getSetGeneralPreferences().setGeneratesIcons(cbCreateImageIcons.isSelected());
 			}
 		});
 		cbCreateImageIcons.setSelected(true);
@@ -482,6 +502,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		// TODO richtig so?  
 		moduleTreeImages = new ModuleTreeWithOptions<Image2D>("", true);
 		moduleTreeImages.getTree().setCellRenderer(new IconNodeRenderer());
+		moduleTreeImages.getTree().setRowHeight(0);
 		moduleTreeImages.getLbTitle().setText("Tree of images");
 		west.add(moduleTreeImages, BorderLayout.CENTER); 
 		// adding a show/hide changed listener for changing size of jsplitpane
@@ -767,7 +788,15 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	// END OF AUTO UPDATING THE SETTINGS
 	//##########################################################################################
 	// START OF SETTINGS MANIPULATIONS
-	
+
+	/**
+	 * preferences have been changed in the general pref dialog
+	 * Apply to this window
+	 */
+	public void callPreferencesChanged() {
+		SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
+		setIsCreatingImageIcons(pref.isGeneratesIcons());
+	}
 	/**
 	 * reads all settings from all modules
 	 * renews the heatmap that is shown --> update in modules
@@ -795,7 +824,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		if(ImageLogicRunner.IS_UPDATING()) {
 			Heatmap heat = logicRunner.renewImage2DView();
 		}
-	}
+	} 
+	
 	/**
 	 * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
 	 * @param img
@@ -1042,7 +1072,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public JCheckBox getCbDirectAutoScale() {
 		return cbDirectAutoScale;
 	}
-
+	public void setIsCreatingImageIcons(boolean state) {
+		cbCreateImageIcons.setSelected(state);
+	}
 	public boolean isCreatingImageIcons() {
 		return cbCreateImageIcons.isSelected();
 	}

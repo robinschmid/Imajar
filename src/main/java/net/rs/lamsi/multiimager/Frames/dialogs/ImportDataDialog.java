@@ -31,6 +31,7 @@ import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -50,8 +51,8 @@ import javax.swing.SwingConstants;
 
 import java.awt.Font;
 
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
 import javax.swing.BoxLayout;
+
 import java.awt.Component;
 
 public class ImportDataDialog extends JDialog {

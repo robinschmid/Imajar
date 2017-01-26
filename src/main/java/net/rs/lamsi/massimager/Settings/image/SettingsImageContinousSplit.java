@@ -1,7 +1,7 @@
 package net.rs.lamsi.massimager.Settings.image;
 
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 
 public class SettingsImageContinousSplit extends Settings {
 	// do not change the version!

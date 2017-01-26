@@ -6,13 +6,14 @@ import java.util.Vector;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 
 /**
  * basic dataset of multiple scan lines
  * @author Robin Schmid
  *
  */
-public class DatasetMD implements ImageDataset, Serializable  {
+public class DatasetMD extends ImageDataset implements MDDataset, Serializable  {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     
@@ -42,7 +43,26 @@ public class DatasetMD implements ImageDataset, Serializable  {
 		avgDP=-1;
 	}
 	
+	//##################################################
+	// Multi dimensional
+	@Override
+	public boolean removeDimension(int i) {
+		boolean removed = true;
+		for(ScanLineMD l:lines) {
+			if(!l.removeDimension(i))
+				removed = false;
+		}
+		return removed;
+	}
+	@Override
+	public int addDimension(Double[] dim) {
+		for(ScanLineMD l:lines)
+			l.addDimension(dim);
+		return lines[0].getImageCount()-1;
+	} 
 	
+	//##################################################
+	// general ImageDataset
 	@Override
 	public int getLinesCount() {
 		// TODO Auto-generated method stub
@@ -154,5 +174,5 @@ public class DatasetMD implements ImageDataset, Serializable  {
 			}
 		}
 		return maxXWidth;
-	} 
+	}
 }

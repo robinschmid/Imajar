@@ -1,5 +1,6 @@
 package net.rs.lamsi.massimager.Settings;
 
+import net.rs.lamsi.massimager.Settings.image.SettingsImage;
 import net.sf.mzmine.parameters.parametertypes.MZTolerance;
 import net.sf.mzmine.parameters.parametertypes.RTTolerance;
 

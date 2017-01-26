@@ -12,7 +12,7 @@ import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 

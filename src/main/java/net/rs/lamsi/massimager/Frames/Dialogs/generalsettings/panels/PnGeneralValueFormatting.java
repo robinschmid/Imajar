@@ -6,8 +6,8 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsConverterRAW;
-import net.rs.lamsi.massimager.Settings.SettingsGeneralValueFormatting;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
 
 import java.awt.BorderLayout;
 

@@ -4,17 +4,17 @@ import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.massimager.Settings.SettingsImage;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 
 /**
  * basic dataset of multiple scan lines
  * @author Robin Schmid
  *
  */
-public class DatasetContinuousMD implements ImageDataset, Serializable  {
+public class DatasetContinuousMD  extends ImageDataset implements Serializable  {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
 	

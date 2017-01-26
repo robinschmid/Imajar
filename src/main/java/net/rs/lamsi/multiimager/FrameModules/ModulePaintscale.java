@@ -36,7 +36,7 @@ import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.multiimager.FrameModules.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;

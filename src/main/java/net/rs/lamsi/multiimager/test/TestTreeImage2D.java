@@ -106,13 +106,13 @@ public class TestTreeImage2D extends JFrame {
 				node = new IconNode(coll); 
 				root.add(node);
 				// add img to node
-				IconNode in = new IconNode(img, false, img.getIcon(60)); 
+				IconNode in = new IconNode(img, false, img.getIcon(60,18)); 
 				node.add(in); 
 			}
 			else {
 				// add to coll
 				coll.add(img);
-				node.add(new IconNode(img, false, img.getIcon(60)));
+				node.add(new IconNode(img, false, img.getIcon(60,18)));
 			}
 		}
 

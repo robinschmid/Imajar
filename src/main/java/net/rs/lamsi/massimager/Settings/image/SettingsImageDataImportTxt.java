@@ -2,7 +2,7 @@ package net.rs.lamsi.massimager.Settings.image;
 
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;

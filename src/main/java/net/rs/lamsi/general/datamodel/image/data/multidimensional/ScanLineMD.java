@@ -3,19 +3,21 @@ package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 import java.io.Serializable;
 import java.util.Vector;
 
+import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+
 /**
  * A scan line of multi dimensional data:
  * x y1 y2 y3 ... (y=intensity)
  * @author r_schm33
  *
  */
-public class ScanLineMD  implements Serializable  {
+public class ScanLineMD  implements Serializable, MDDataset  {
 	// do not change the version!
-    private static final long serialVersionUID = 1L;
-    //
+	private static final long serialVersionUID = 1L;
+	//
 	protected float[] x;
 	protected Vector<Double[]> intensity;
-	
+
 	public ScanLineMD(Vector<Float> x, Vector<Double[]> intensity) {
 		super();
 		setX(x);
@@ -35,13 +37,22 @@ public class ScanLineMD  implements Serializable  {
 	public ScanLineMD() {
 		this.intensity = new Vector<Double[]>();
 	}
-	/**
-	 * adds an intensity dimension (image)
-	 * @param i
-	 */
-	public void addDimension(Double[] i) {
-		intensity.add(i);
+
+	//##################################################
+	// Multi dimensional
+	@Override
+	public boolean removeDimension(int i) {
+		if(i>=0 && i<intensity.size()) {
+			intensity.remove(i);
+			return true;
+		}
+		return false;
 	}
+	@Override
+	public int addDimension(Double[] dim) {
+		intensity.add(dim);
+		return intensity.size()-1;
+	}  
 	/**
 	 * adds an intensity dimension (image)
 	 * @param i
@@ -49,7 +60,7 @@ public class ScanLineMD  implements Serializable  {
 	public void addDimension(Vector<Double> i) {
 		addDimension(i.toArray(new Double[i.size()]));
 	}
-	
+
 	public float[] getX() {
 		return x;
 	}
@@ -61,7 +72,7 @@ public class ScanLineMD  implements Serializable  {
 		for(int i=0; i<x.length; i++)
 			x[i] = lx.get(i);
 	}
-	
+
 	/**
 	 * 
 	 * @param ix
@@ -70,8 +81,8 @@ public class ScanLineMD  implements Serializable  {
 	public float getX(int ix) { 
 		return x!=null? this.x[ix] : ix;
 	}
-	
-	
+
+
 	/**
 	 * 
 	 * @param i
@@ -81,7 +92,7 @@ public class ScanLineMD  implements Serializable  {
 	public double getI(int i, int ix) {
 		return intensity.get(i)[ix];
 	}
-	
+
 	/**
 	 * total data points count
 	 * @return
@@ -97,7 +108,7 @@ public class ScanLineMD  implements Serializable  {
 		// width is defined by x of last dp devided by all datapoints in front of the last
 		return (getXWidth())/(getDPCount()-1);
 	} 
-	
+
 	@Override
 	public String toString() {
 		return (x==null? "" : x.toString()) +intensity.toString();

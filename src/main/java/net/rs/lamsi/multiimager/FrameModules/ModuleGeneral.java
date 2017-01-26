@@ -26,9 +26,9 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.SettingsImage; 
-import net.rs.lamsi.massimager.Settings.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 

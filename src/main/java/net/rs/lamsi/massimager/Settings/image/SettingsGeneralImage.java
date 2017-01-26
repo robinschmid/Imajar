@@ -1,4 +1,5 @@
-package net.rs.lamsi.massimager.Settings;
+package net.rs.lamsi.massimager.Settings.image;
+
 
 
 public class SettingsGeneralImage extends SettingsImage {

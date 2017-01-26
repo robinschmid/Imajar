@@ -10,6 +10,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -61,6 +62,13 @@ public class ModuleTree <T> extends Module {
 				}
 				//
 				getTreeModel().removeNodeFromParent(node);  
+				// image? remove data
+				if(isImage(node)) {
+					Image2D image = (Image2D) node.getUserObject();
+					if(image.getImageGroup()!=null) {
+						image.getImageGroup().remove(image);
+					}
+				}
 			}  
 		}catch(Exception ex){
 			ImageEditorWindow.log(ex.getMessage(), LOG.ERROR);

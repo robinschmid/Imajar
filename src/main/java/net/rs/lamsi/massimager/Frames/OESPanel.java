@@ -35,7 +35,7 @@ import net.rs.lamsi.massimager.MyOES.OESFile;
 import net.rs.lamsi.massimager.MyOES.OESFileReaderWriter;
 import net.rs.lamsi.massimager.MyOES.OESScan;
 import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
-import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

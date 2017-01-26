@@ -24,12 +24,12 @@ import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyOES.OESElementLine;
 import net.rs.lamsi.massimager.MyOES.OESScan;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.SettingsImage;
-import net.rs.lamsi.massimager.Settings.SettingsMSImage;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
@@ -50,6 +50,10 @@ public class Image2D implements Serializable, Collectable2D {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
+	// image group: Multi dimensional data sets create an ImageGroupMD
+	// this controls image operations
+	protected ImageGroupMD imageGroup = null;
+	
 	// Parent image with master settings
 	protected Image2D parent;
 
@@ -69,9 +73,6 @@ public class Image2D implements Serializable, Collectable2D {
 	// blank subtraction and internal standard
 	protected SettingsImage2DOperations operations;
 
-	//############################################################
-	// listener
-	protected Vector<RawDataChangedListener> rawDataChangedListener;
 
 	//############################################################
 	// data
@@ -1366,11 +1367,10 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param maxh
 	 * @return
 	 */
-	public Icon getIcon(int maxw) {
+	public Icon getIcon(int maxw, int maxh) {
 		try {
 			applyCutFilterMin(2.5);
 			applyCutFilterMax(0.2);
-			int maxh = 18;
 	        PaintScale scale = PaintScaleGenerator.generateStepPaintScale(minZFiltered, maxZFiltered, getSettPaintScale()); 
 			BufferedImage img = new BufferedImage(maxw, maxh, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = img.createGraphics();
@@ -1437,36 +1437,8 @@ public class Image2D implements Serializable, Collectable2D {
 		Dataset2D data = new Dataset2D(lines);
 		return new Image2D(data);
 	}
+
 	
-	//########################################################################
-	// listener
-	/**
-	 * raw data changes by:
-	 * direct imaging, 
-	 */
-	public void fireRawDataChangedEvent() {
-		if(rawDataChangedListener!=null) {
-			for(RawDataChangedListener l : rawDataChangedListener)
-				l.rawDataChangedEvent(this);
-		}
-	}
-	/**
-	 * raw data changes by:
-	 * direct imaging,
-	 * @param listener
-	 */
-	public void addRawDataChangedListener(RawDataChangedListener listener) {
-		if(rawDataChangedListener==null) rawDataChangedListener = new Vector<RawDataChangedListener>();
-		rawDataChangedListener.add(listener);
-	}
-	public void removeRawDataChangedListener(RawDataChangedListener list) {
-		if(rawDataChangedListener!=null)
-			rawDataChangedListener.remove(list);
-	}
-	public void cleatRawDataChangedListeners() {
-		if(rawDataChangedListener!=null)
-			rawDataChangedListener.clear();
-	}
 
 	public ImageDataset getData() {
 		return data;
@@ -1480,5 +1452,37 @@ public class Image2D implements Serializable, Collectable2D {
 	}
 	public int getIndex() {
 		return index;
+	}
+
+	/**
+	 * image is marked as a group member in an image group. 
+	 * This group handles  multi dimensional data sets (not only)
+	 * @param imageGroupMD
+	 */
+	public void setImageGroup(ImageGroupMD imageGroup) {
+		this.imageGroup = imageGroup;
+	}
+	
+
+	public ImageGroupMD getImageGroup() {
+		return this.imageGroup;
+	}
+	
+
+	//############################################################
+	// listener
+	/**
+	 * raw data changes by:
+	 * direct imaging,
+	 * @param listener
+	 */
+	public void addRawDataChangedListener(RawDataChangedListener listener) {
+		data.addRawDataChangedListener(listener);
+	}
+	public void removeRawDataChangedListener(RawDataChangedListener list) {
+		data.removeRawDataChangedListener(list);
+	}
+	public void cleatRawDataChangedListeners() {
+		data.cleatRawDataChangedListeners();
 	}
 }

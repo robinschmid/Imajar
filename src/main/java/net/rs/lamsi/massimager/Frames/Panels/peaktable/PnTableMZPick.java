@@ -11,7 +11,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
 import net.rs.lamsi.massimager.Frames.Window;
-import net.rs.lamsi.massimager.Settings.SettingsGeneralValueFormatting;
+import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
 

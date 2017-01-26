@@ -5,8 +5,8 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
-import net.rs.lamsi.massimager.Settings.SettingsImage;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.visualization.plots.SettingsThemes;
 
 import org.jfree.chart.ChartPanel;

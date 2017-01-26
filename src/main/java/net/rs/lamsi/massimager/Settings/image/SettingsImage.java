@@ -1,9 +1,10 @@
-package net.rs.lamsi.massimager.Settings;
+package net.rs.lamsi.massimager.Settings.image;
 
 import java.io.File;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
+import net.rs.lamsi.massimager.Settings.Settings;
 
 import org.jfree.chart.plot.XYPlot;
 

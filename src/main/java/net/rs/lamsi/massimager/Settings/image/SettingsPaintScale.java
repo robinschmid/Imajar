@@ -1,6 +1,8 @@
-package net.rs.lamsi.massimager.Settings;
+package net.rs.lamsi.massimager.Settings.image;
 
 import java.awt.Color;
+
+import net.rs.lamsi.massimager.Settings.Settings;
 
 public class SettingsPaintScale extends Settings {
 	// do not change the version!

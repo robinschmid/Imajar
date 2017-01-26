@@ -1,4 +1,4 @@
-package net.rs.lamsi.massimager.Settings;
+package net.rs.lamsi.massimager.Settings.image;
 
 import net.rs.lamsi.massimager.MyMZ.MZIon;
 

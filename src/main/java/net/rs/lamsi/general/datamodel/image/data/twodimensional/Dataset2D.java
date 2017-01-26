@@ -1,17 +1,20 @@
 package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.massimager.Settings.SettingsImage;
-import net.rs.lamsi.massimager.Settings.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 
 /**
  * basic dataset of multiple scan lines
  * @author Robin Schmid
  *
  */
-public class Dataset2D implements ImageDataset {
+public class Dataset2D extends ImageDataset  implements Serializable  {
+	// do not change the version!
+    private static final long serialVersionUID = 1L;
 
 	protected float maxXWidth = -1;
 	protected int totalDPCount = -1, minDP=-1, maxDP=-1, avgDP=-1;

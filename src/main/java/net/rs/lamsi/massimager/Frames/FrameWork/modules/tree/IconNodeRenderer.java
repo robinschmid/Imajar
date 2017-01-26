@@ -8,6 +8,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
  
 
 public class IconNodeRenderer extends DefaultTreeCellRenderer {
+	private int height = 0;
 	
 	@Override
 	public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -18,7 +19,16 @@ public class IconNodeRenderer extends DefaultTreeCellRenderer {
 
 		Icon icon = ((IconNode) value).getIcon(); 
 		setIcon(icon);
+		if(icon!=null) 
+			height = icon.getIconHeight();
+		else height=0;
 
 		return this;
 	}
+		  @Override
+		public int getHeight() { 
+			  if(height == 0)
+				  return super.getHeight();
+			return height;
+		} 
 } 
