@@ -23,9 +23,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.mylists.ListAction;
 import net.rs.lamsi.utils.useful.mylists.TreeAction;
 
@@ -72,6 +73,8 @@ public class DialogLoggerUtil {
 		dialog.pack();
 		centerOnScreen(dialog, true);
 		dialog.startDialog();
+		// log in window
+		ImageEditorWindow.log("DIALOG:"+message, LOG.MESSAGE);
 	}
 	
 	

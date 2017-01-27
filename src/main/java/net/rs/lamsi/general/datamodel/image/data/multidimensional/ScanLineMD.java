@@ -3,6 +3,7 @@ package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 import java.io.Serializable;
 import java.util.Vector;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 
 /**
@@ -15,8 +16,8 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	//
-	protected float[] x;
-	protected Vector<Double[]> intensity;
+	protected float[] x = null;
+	protected Vector<Double[]> intensity = null;
 
 	public ScanLineMD(Vector<Float> x, Vector<Double[]> intensity) {
 		super();
@@ -53,6 +54,43 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 		intensity.add(dim);
 		return intensity.size()-1;
 	}  
+	
+	@Override
+	/**
+	 * do not use this method here
+	 * use the one with line instead
+	 */
+	public boolean addDimension(Image2D img) {
+		return false;
+	}
+
+	/**
+	 * adds the dimension of line i
+	 * @param img
+	 * @param line
+	 */
+	public int addDimension(Image2D img, int line) {
+		int dp = img.getData().getLineLength(line);
+		if(x==null  && (!MDDataset.class.isInstance(img.getData()) || ((MDDataset)img.getData()).hasXData())) {
+			x = new float[dp];
+			for(int i=0; i<dp; i++) {
+				x[dp] = img.getXRaw(line, i);
+			}
+		}
+		// add dimension
+		Double[] z = new Double[dp];
+		for(int i=0; i<dp; i++) {
+			z[i] = img.getIRaw(line, i);
+		}
+		return addDimension(z);
+	}
+	
+
+	@Override
+	public boolean hasXData() { 
+		return this.getX()!=null;
+	}
+	
 	/**
 	 * adds an intensity dimension (image)
 	 * @param i

@@ -3,6 +3,7 @@ package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 import java.io.Serializable;
 import java.util.Vector;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
@@ -60,6 +61,21 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 			l.addDimension(dim);
 		return lines[0].getImageCount()-1;
 	} 
+
+	@Override
+	public boolean addDimension(Image2D img) {
+		if(img.getData().hasSameDataDimensionsAs(this)) {
+			// add dimension to all lines
+			for(int i=0; i<lines.length; i++)
+				lines[i].addDimension(img, i);
+			
+			// replace image data
+			img.setData(this);
+			img.setIndex(lines[0].getImageCount()-1);
+			return true;
+		}
+		return false;
+	}
 	
 	//##################################################
 	// general ImageDataset
@@ -174,5 +190,9 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 			}
 		}
 		return maxXWidth;
+	}
+	@Override
+	public boolean hasXData() { 
+		return lines!=null && lines[0]!=null && lines[0].getX()!=null;
 	}
 }

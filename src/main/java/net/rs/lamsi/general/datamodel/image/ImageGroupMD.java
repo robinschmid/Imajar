@@ -13,6 +13,10 @@ public class ImageGroupMD {
 	public ImageGroupMD() {
 		images = new Vector<Image2D>();
 	}
+	public ImageGroupMD(Image2D img) {
+		images = new Vector<Image2D>();
+		add(img);
+	}
 
 	//################################################
 	// vector methods

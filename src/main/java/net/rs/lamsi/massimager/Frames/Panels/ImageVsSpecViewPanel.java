@@ -15,14 +15,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.text.NumberFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -43,7 +46,6 @@ import javax.swing.event.ListSelectionEvent;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Window;
-import net.rs.lamsi.massimager.Frames.Dialogs.ChargeCalculatorSettingsDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.SelectMZDirectDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleListWithOptions;
@@ -52,25 +54,22 @@ import net.rs.lamsi.massimager.Frames.Menu.MenuTableActions;
 import net.rs.lamsi.massimager.Frames.Panels.peaktable.PnTableMZPick;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
-import net.rs.lamsi.massimager.MyFreeChart.Plot.spectra.PlotSpectraLabelGenerator;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.spectra.PlotSpectraLineAndShapeRenderer;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
 import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation.MZChargeCalculatorMZMine;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
-import net.sf.mzmine.desktop.impl.MainWindow;
-import net.sf.mzmine.main.WindowMZMine;
-import net.sf.mzmine.modules.peaklistmethods.isotopes.deisotoper.IsotopeGrouperParameters;
 
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.Range;
  
 
@@ -121,6 +120,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 
 	//TIC, EIC, Image im mittleren screen
 	protected SettingsMSImage settImage;
+	protected SettingsImageContinousSplit settSplitCon;
 	private int selectedModeMiddle = -1;
 	private double selectedVsMiddleMZ = -1, selectedVsMiddlePM = 1;
 	//
@@ -161,8 +161,6 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private JTextField txtSpotsize;
 	private JLabel lblTp;
 	private JTextField txtTimePerLine;
-	private JRadioButton rbTimePerLine;
-	private JRadioButton rbScanPerLine;
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private JButton btnSendImage;
 	private JPanel pnTopEICTIC1;
@@ -615,26 +613,77 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																
 																		pnImgCon = new JPanel();
 																		pnSettImageCon.add(pnImgCon, "cell 0 4 2 1,grow");
-																		pnImgCon.setLayout(new MigLayout("", "[][grow]", "[][][]"));
+																		pnImgCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][grow]"));
 																		
-																				lblTp = new JLabel("tp =");
+																				lblTp = new JLabel("Split after");
 																				pnImgCon.add(lblTp, "cell 0 0,alignx trailing");
 																				
 																						txtTimePerLine = new JTextField();
 																						txtTimePerLine.setText("60");
 																						txtTimePerLine.setToolTipText("Time [s] or scans per line");
 																						pnImgCon.add(txtTimePerLine, "cell 1 0,alignx left");
-																						txtTimePerLine.setColumns(10);
-																						txtTimePerLine.getDocument().addDocumentListener(autoDocumentL);
+																						txtTimePerLine.setColumns(5);
 																						
-																								rbTimePerLine = new JRadioButton("time per line");
-																								rbTimePerLine.setSelected(true);
-																								buttonGroup_1.add(rbTimePerLine);
-																								pnImgCon.add(rbTimePerLine, "cell 0 1 2 1");
-																								
-																										rbScanPerLine = new JRadioButton("scans per line");
-																										buttonGroup_1.add(rbScanPerLine);
-																										pnImgCon.add(rbScanPerLine, "cell 0 2 2 1");
+																						lblStartX = new JLabel("Start x");
+																						pnImgCon.add(lblStartX, "cell 0 1,alignx trailing");
+																						
+																						txtSplitStartX = new JTextField();
+																						txtSplitStartX.setToolTipText("Start X to be removed from the data.");
+																						txtSplitStartX.setText("0");
+																						pnImgCon.add(txtSplitStartX, "cell 1 1,growx");
+																						txtSplitStartX.setColumns(5);
+																						txtSplitStartX.getDocument().addDocumentListener(autoDocumentL);
+																						
+																						comboSplitUnit = new JComboBox();
+																						comboSplitUnit.setModel(new DefaultComboBoxModel(XUNIT.values()));
+																						comboSplitUnit.setSelectedIndex(0);
+																						pnImgCon.add(comboSplitUnit, "cell 1 2,growx");
+																						
+																						panel = new JPanel();
+																						pnImgCon.add(panel, "cell 0 3 2 1,grow");
+																						
+																						button = new JButton("-");
+																						button.addActionListener(new ActionListener() {
+																							public void actionPerformed(ActionEvent e) {
+																								if(getComboSplitUnit().getSelectedItem().equals(XUNIT.DP)) {
+																									int tpl = Module.intFromTxt(getTxtTimePerLine())-
+																											Module.intFromTxt(txtAddSplit);
+																									getTxtTimePerLine().setText(String.valueOf(tpl));
+																								}
+																								else  {
+																									float tpl = Module.floatFromTxt(getTxtTimePerLine())-
+																											Module.floatFromTxt(txtAddSplit);
+																									NumberFormat format = SettingsHolder.getSettings().getSetGeneralValueFormatting().getRTFormat();
+																									getTxtTimePerLine().setText(format.format(tpl));
+																								}
+																							}
+																						});
+																						panel.add(button);
+																						
+																						txtAddSplit = new JTextField();
+																						panel.add(txtAddSplit);
+																						txtAddSplit.setToolTipText("The data points or time units to be added to \"split after\".");
+																						txtAddSplit.setText("10");
+																						txtAddSplit.setColumns(5);
+																						
+																						button_1 = new JButton("+");
+																						button_1.addActionListener(new ActionListener() {
+																							public void actionPerformed(ActionEvent e) {
+																								if(getComboSplitUnit().getSelectedItem().equals(XUNIT.DP)) {
+																									int tpl = Module.intFromTxt(getTxtTimePerLine())+
+																											Module.intFromTxt(txtAddSplit);
+																									getTxtTimePerLine().setText(String.valueOf(tpl));
+																								}
+																								else  {
+																									float tpl = Module.floatFromTxt(getTxtTimePerLine())+
+																											Module.floatFromTxt(txtAddSplit);
+																									NumberFormat format = SettingsHolder.getSettings().getSetGeneralValueFormatting().getRTFormat();
+																									getTxtTimePerLine().setText(format.format(tpl));
+																								}
+																							}
+																						});
+																						panel.add(button_1);
+																						txtTimePerLine.getDocument().addDocumentListener(autoDocumentL);
 																												
 																														btnSendImage = new JButton("Send Image");
 																														btnSendImage.addActionListener(new ActionListener() {
@@ -751,6 +800,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		selectedVsRetentionTime[1] = 0;
 		//
 		settImage = new SettingsMSImage(true, true, 50, 50, 60, new MZIon("Caffein", 195, 0.3));
+		settSplitCon = new SettingsImageContinousSplit(10, 0, XUNIT.s);
 	}
 	// set mode
 	protected void setModeMiddle(int mode) {
@@ -857,7 +907,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					Image2D image = null;
 					// Image Con
 					if(selectedModeMiddle==MODE_IMAGE_CON) {
-						image = window.getLogicRunner().generateImageCon(settImage);
+						image = window.getLogicRunner().generateImageCon(settImage, settSplitCon);
 					} 
 					// Image Discon
 					if(selectedModeMiddle==MODE_IMAGE_DISCON) {
@@ -1290,10 +1340,12 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			
 			settImage.setSpotsize(Float.valueOf(getTxtSpotsize().getText()));
 			settImage.setVelocity(Float.valueOf(getTxtVelocity().getText()));
-			settImage.setTimePerLine(Double.valueOf(getTxtTimePerLine().getText()));
 			
-			settImage.setTriggert(selectedModeMiddle==MODE_IMAGE_DISCON);
-			settImage.setModeTimePerLine((getRbTimePerLine().isSelected())? SettingsImage.MODE_TIME_PER_LINE : SettingsImage.MODE_SCANS_PER_LINE);
+			settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
+			settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));
+			if(settSplitCon.getSplitMode()==XUNIT.DP)
+				settSplitCon.setSplitAfterDP(Module.intFromTxt(getTxtTimePerLine()));
+			else settSplitCon.setSplitAfterX(Module.floatFromTxt(getTxtTimePerLine()));
 		} catch(Exception ex) {
 			ex.printStackTrace();
 			JOptionPane.showMessageDialog(window.getFrame(), "Wrong input in text fields for image settings. "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -1653,6 +1705,13 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private JLabel lbSelectedPeakList;
 	private JTextField txtImgGroupID;
 	private JLabel lblId;
+	private JComboBox comboSplitUnit;
+	private JLabel lblStartX;
+	private JTextField txtSplitStartX;
+	private JButton button;
+	private JTextField txtAddSplit;
+	private JButton button_1;
+	private JPanel panel;
 	public void startImageUpdater() {
 		if(startTime == -1){
 			startTime = System.currentTimeMillis();
@@ -1738,15 +1797,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	}
 	public JLabel getLbY2() {
 		return lbY2;
-	}
-
-
-	public JRadioButton getRbScanPerLine() {
-		return rbScanPerLine;
-	}
-	public JRadioButton getRbTimePerLine() {
-		return rbTimePerLine;
-	}
+	} 
 	public JSplitPane getSplitMZvsSpec() {
 		return splitMZvsSpec;
 	}
@@ -1788,5 +1839,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	} 
 	public JTextField getTxtImgGroupID() {
 		return txtImgGroupID;
+	}
+	public JComboBox getComboSplitUnit() {
+		return comboSplitUnit;
+	}
+	public JTextField getTxtSplitStartX() {
+		return txtSplitStartX;
 	}
 }

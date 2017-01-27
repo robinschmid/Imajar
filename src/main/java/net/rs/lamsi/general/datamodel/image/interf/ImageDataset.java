@@ -75,6 +75,25 @@ public abstract class ImageDataset {
 	 * @return
 	 */
 	public abstract int getAvgDP();
+	
+
+	
+
+	/**
+	 * data is the same or has the same dimensions
+	 * @param data
+	 * @return
+	 */
+	public boolean hasSameDataDimensionsAs(ImageDataset data){
+		if(data.equals(this)) return true;
+		if(data.getTotalDPCount()!=this.getTotalDPCount()) return false;
+		for(int i=0; i<data.getLinesCount(); i++) {
+			if(data.getLineLength(i)!=this.getLineLength(i)) 
+				return false;
+		}
+		
+		return true;
+	}
 
 
 	//########################################################################

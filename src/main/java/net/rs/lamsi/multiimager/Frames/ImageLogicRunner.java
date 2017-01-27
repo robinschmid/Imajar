@@ -13,6 +13,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTree;
@@ -125,11 +128,35 @@ public class ImageLogicRunner {
 		// TODO 
 		// test for existing parent node
 		if(mapNodes.containsKey(id)){
-			IconNode node = addImage(i, mapNodes.get(id)); 
-			treeImg.getTreeModel().reload();
-			return node;
+			boolean added = false;
+			// add to data set - this generates a new image2D
+			IconNode parent = mapNodes.get(id);
+			if(parent.getChildCount()>0) {
+				Image2D friend = ((Image2D)((IconNode)parent.getFirstChild()).getUserObject());
+				if(friend.getImageGroup()!=null) {
+					// add to MD data set and set this data set to image i
+					added = ((MDDataset)friend.getData()).addDimension(i);
+					if(added) {
+						// add to group 
+						friend.getImageGroup().add(i);
+					}
+				}
+			}
+			// add to tree
+			if(added) {
+				IconNode node = addImage(i, parent); 
+				treeImg.getTreeModel().reload(); 
+				return node;
+			}
+			else {
+				DialogLoggerUtil.showMessageDialogForTime(window, "Image was not added", "Image was not added due to different data dimensions", 2000);
+				return null;
+			}
 		}
-		else { 
+		else {  
+			// create image group 
+			ImageGroupMD group = new ImageGroupMD(i);
+			// add to tree
 			IconNode parent = new IconNode(id);
 			mapNodes.put(id, parent);
 			IconNode node = addImage(i, parent);

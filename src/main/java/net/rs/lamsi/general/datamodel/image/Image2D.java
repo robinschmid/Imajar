@@ -12,6 +12,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.Dataset2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
@@ -26,9 +28,9 @@ import net.rs.lamsi.massimager.MyOES.OESScan;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
@@ -99,6 +101,17 @@ public class Image2D implements Serializable, Collectable2D {
 
 
 	// COntstruct 
+	public Image2D(SettingsPaintScale settPaintScale) {  
+		try { 
+			this.settPaintScale = (SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale); 
+			// standard theme
+			this.settTheme = new SettingsThemes();
+			this.quantifier = new SettingsImage2DQuantifierLinear();
+			this.operations = new SettingsImage2DOperations();
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+	} 
 	public Image2D(SettingsPaintScale settPaintScale, SettingsImage setImage) {  
 		try {
 			settImage = (SettingsImage) BinaryWriterReader.deepCopy(setImage);
@@ -121,10 +134,18 @@ public class Image2D implements Serializable, Collectable2D {
 		this.data = data; 
 		this.index = index;
 	}
+	public Image2D(ImageDataset data, int index, SettingsPaintScale settPaintScale) { 
+		this(settPaintScale);
+		this.data = data; 
+		this.index = index;
+	} 
 	public Image2D(ImageDataset data, int index, SettingsPaintScale settPaintScale, SettingsImage setImage) { 
 		this(settPaintScale, setImage);
 		this.data = data; 
 		this.index = index;
+	} 
+	public Image2D(ImageDataset data, SettingsPaintScale settPaintScale) { 
+		this(data, 0, settPaintScale);
 	} 
 	public Image2D(ImageDataset data, SettingsPaintScale settPaintScale, SettingsImage setImage) { 
 		this(data, 0, settPaintScale, setImage);
@@ -149,69 +170,44 @@ public class Image2D implements Serializable, Collectable2D {
 		// Alle Spec
 		// Erst Messpunkteanzahl ausrechnen 
 		// lines listLines
-		ScanLine2D[] listLines = new ScanLine2D[mzchrom.length];
+		Vector<ScanLineMD> listLines = new Vector<ScanLineMD>(mzchrom.length);
 		// Lines durchgehen
 		for(int i=0; i<mzchrom.length; i++) { 
-			// Datapoint array
-			DataPoint2D[] dp = new DataPoint2D[mzchrom[i].getItemCount()];
+			int scanpoints = mzchrom[i].getItemCount();
+			float startTime = mzchrom[i].getX(0).floatValue();  
+			float[] x  = new float[scanpoints];
+			Double[] z  = new Double[scanpoints]; 
 			// x, i datapoints
-			for(int d=0; d<mzchrom[i].getItemCount(); d++) {
-				float x = mzchrom[i].getX(d).floatValue();
-				double intensity = mzchrom[i].getY(d).doubleValue();
-				dp[d] = new DataPoint2D(x, intensity);
+			for(int d=0; d<scanpoints; d++) {
+				x[d] = mzchrom[i].getX(d).floatValue()-startTime;
+				z[d] = mzchrom[i].getY(d).doubleValue();
 			}
 
 			// new line 
-			listLines[i] = new ScanLine2D(dp);
+			listLines.add(new ScanLineMD(x,z));
 		}
 		// Image erstellen 
-		return  new Image2D(new Dataset2D(listLines), settPaintScale, setImage); 
+		return  new Image2D(new DatasetMD(listLines), 0, settPaintScale, setImage); 
 	}
 
 	// Discontinous MS-Image
 	// Generate Heatmap with Continous Data WIDHTOUT Triggerin every Line
-	public static Image2D generateImage2DFromCon(SettingsPaintScale settPaintScale, SettingsMSImage setMSICon, MZChromatogram mzchrom) {  
-		// usesTime = false --> scansPerLine
-		boolean usesTimePerLine = setMSICon.getModeTimePerLine() == SettingsImage.MODE_TIME_PER_LINE;
-		double timePerLine = setMSICon.getTimePerLine();  
-		// Größe des Images aus Zeiten ableiten
-		// deltaTime aus Daten lesen = Zeit zwischen Messungen 
-		double overallTime = (mzchrom.getMaxX()-mzchrom.getMinX());  
-
-		// XYZ anzahl ist definiert durch messwerte im MZChrom 
+	public static Image2D generateImage2DFromCon(SettingsPaintScale settPaintScale, SettingsImage setImage, SettingsImageContinousSplit settSplit, MZChromatogram mzchrom) {  
+		// startTime
+		float startTime = mzchrom.getX(0).floatValue();  
+		// data points
 		int scanpoints = mzchrom.getItemCount();
-		double[] x = new double[scanpoints]; 
-		double[] z = new double[scanpoints];
-		// zeigt an wo man sich in der listData befindet 
-		int lasti = 0;
-		double lastTime = mzchrom.getMinX(); 
-		double deltatime;
-		// lines 
-		int lineCount = (int) Math.ceil(overallTime/timePerLine);
-		Vector<ScanLine2D> scanLines = new Vector<ScanLine2D>(); 
-		// Alle MZChrom punkte durchgehen und in xyz eintragen
-		// wenn Zeit größer als timePerLine dann y um eins vergrößern
-		for(int i=0; i<mzchrom.getItemCount(); i++) {
-			deltatime = mzchrom.getX(i).doubleValue()-lastTime;
-			// nächste Zeile?
-			if((usesTimePerLine && deltatime>timePerLine) ||
-					(!usesTimePerLine && (i)%(timePerLine)==0)) {
-				// copy over to scanLine
-				DataPoint2D[] data = new DataPoint2D[i-lasti];
-				for(int s=0; s<i-lasti; s++) {
-					data[s] = new DataPoint2D(x[lasti+s], z[lasti+s]); 
-				} 
-				scanLines.add(new ScanLine2D(data));
-				// next line 
-				lasti=i;
-				lastTime = mzchrom.getX(i).doubleValue();  
-			}
-			// Daten eintragen und zwischen speichern
-			x[i] = mzchrom.getX(i).doubleValue() -lastTime; 
+		float[] x  = new float[scanpoints];
+		Double[] z  = new Double[scanpoints];
+		// Daten eintragen und zwischen speichern
+		for(int i=0; i<scanpoints; i++) {
+			x[i] = mzchrom.getX(i).floatValue() - startTime; 
 			z[i] = mzchrom.getY(i).doubleValue();
 		}
+		ScanLineMD line = new ScanLineMD(x, z);
+		
 		// generate Image
-		return new Image2D(new Dataset2D(scanLines), settPaintScale, setMSICon);
+		return new Image2D(new DatasetContinuousMD(line, settSplit), 0, settPaintScale, setImage);
 	}
 
 	//
@@ -1443,6 +1439,10 @@ public class Image2D implements Serializable, Collectable2D {
 	public ImageDataset getData() {
 		return data;
 	}
+	public void setData(ImageDataset data) {
+		this.data = data;
+	}
+
 
 	public void shiftIndex(int i) {
 		index += i;
@@ -1466,8 +1466,7 @@ public class Image2D implements Serializable, Collectable2D {
 
 	public ImageGroupMD getImageGroup() {
 		return this.imageGroup;
-	}
-	
+	} 
 
 	//############################################################
 	// listener
@@ -1485,4 +1484,5 @@ public class Image2D implements Serializable, Collectable2D {
 	public void cleatRawDataChangedListeners() {
 		data.cleatRawDataChangedListeners();
 	}
+	
 }

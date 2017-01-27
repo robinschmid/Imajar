@@ -3,7 +3,9 @@ package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 import java.io.Serializable;
 import java.util.Vector;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
@@ -14,7 +16,7 @@ import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
  * @author Robin Schmid
  *
  */
-public class DatasetContinuousMD  extends ImageDataset implements Serializable  {
+public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Serializable  {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
 	
@@ -91,7 +93,63 @@ public class DatasetContinuousMD  extends ImageDataset implements Serializable  
 		maxDP=-1; 
 		avgDP=-1;
 	}
+	
+	//##################################################
+	// Multi dimensional
+	@Override
+	public boolean removeDimension(int i) {
+			return line.removeDimension(i);
+	}
+	@Override
+	public int addDimension(Double[] dim) {
+		line.addDimension(dim);
+		return line.getImageCount()-1;
+	}
 
+	@Override
+	public boolean addDimension(Image2D img) {
+		if(img.getData().hasSameDataDimensionsAs(this)) {
+
+			int dp = img.getData().getTotalDPCount();
+			// add x data if not present in current data set but in new image
+			if(!this.hasXData() && (!MDDataset.class.isInstance(img.getData()) || ((MDDataset)img.getData()).hasXData())) {
+				int c=0;
+				float[] x = new float[dp];
+				for(int l=0; l<img.getData().getLinesCount(); l++) {
+					for(int i=0; i<img.getData().getLineLength(l); i++) {
+						x[c] = img.getXRaw(l, i);
+						c++;
+					}
+				}
+				line.setX(x);
+			}
+			// add dimension
+			Double[] z = new Double[dp];
+			int c = 0;
+			for(int l=0; l<img.getData().getLinesCount(); l++) {
+				for(int i=0; i<img.getData().getLineLength(l); i++) {
+					z[c] = img.getIRaw(l, i);
+					c++;
+				}
+			}
+			int index = line.addDimension(z);
+			
+			// replace image data
+			img.setData(this);
+			img.setIndex(index);
+			return true;
+		}
+		return false;
+	}
+	
+	
+	@Override
+	public boolean hasSameDataDimensionsAs(ImageDataset data) {
+		return data.getTotalDPCount() == this.getTotalDPCount();
+	}
+
+	//####################################################
+	// standard
 	@Override
 	public int getLinesCount() { 
 		if(sett.getSplitMode()==XUNIT.s)
@@ -205,5 +263,9 @@ public class DatasetContinuousMD  extends ImageDataset implements Serializable  
 					} 
 			}
 			return maxXWidth; 
-	} 
+	}
+	@Override
+	public boolean hasXData() { 
+		return line!=null && line.hasXData();
+	}
 }

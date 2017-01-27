@@ -3,13 +3,14 @@ package net.rs.lamsi.massimager.Frames;
 
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog; 
+import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.MyException.NoFileSelectedException;
 import net.rs.lamsi.massimager.MyMZ.ChromGenType;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
@@ -19,7 +20,9 @@ import net.rs.lamsi.massimager.MyMZ.oldmzjavasave.MZXMLReaderList;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.exceptions.FilteringFailedException;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra.MZSpectrumCombineFilter;
 import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
+import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
@@ -860,26 +863,31 @@ public class LogicRunner {
 	
 	// TIC / EIC 
 	public ChartPanel generateTICAsChartPanel() throws Exception { 
-		return MZDataFactory.getTIC(listSpecFiles.get(selectedFileIndex)).getChromChartPanel("TIC", "time", "intensity"); 	
+		if(selectedFileIndex!=-1 && listSpecFiles!=null)
+			return MZDataFactory.getTIC(listSpecFiles.get(selectedFileIndex)).getChromChartPanel("TIC", "time", "intensity");
+		else return null;
 	}  
 	public ChartPanel generateEICAsChartPanel(MZIon mzIon) throws Exception { 
-		return MZDataFactory.getMZChrom(listSpecFiles.get(selectedFileIndex), mzIon, ChromGenType.HIGHEST_PEAK).getChromChartPanel("MZ = "+mzIon.getMz(), "time", "intensity"); 	
+		if(selectedFileIndex!=-1 && listSpecFiles!=null)
+			return MZDataFactory.getMZChrom(listSpecFiles.get(selectedFileIndex), mzIon, ChromGenType.HIGHEST_PEAK).getChromChartPanel("MZ = "+mzIon.getMz(), "time", "intensity"); 	
+		else return null;
 	} 
 	
 	// Images
-	public Image2D generateImageCon(SettingsMSImage setMSICon) { 
+	public Image2D generateImageCon(SettingsMSImage setMSICon, SettingsImageContinousSplit settSplit) { 
 		// pass options to reader. 
 		// TODO nicht immer SUM_PEAKS
 		MZChromatogram mzChrom = MZDataFactory.getMZChrom(getSelectedFile(), setMSICon.getMZIon(), ChromGenType.SUM_PEAKS); 
         // Panel as ChartViewer 
 		if(mzChrom!=null) {
 			// set title 
-			String title = "m/z = "+setMSICon.getMZIon().getMz();
+			NumberFormat form = SettingsHolder.getSettings().getSetGeneralValueFormatting().getMZFormat();
+			String title = "m/z = "+form.format(setMSICon.getMZIon().getMz())+"(+- "+form.format(setMSICon.getMZIon().getPm())+")";
 			setMSICon.setTitle(title);
 			// set Path from first rawfile TODO
 			//setMSICon.setRAWFilepath(listSpecFiles.get(selectedFileIndex).getFile().getPath());
 			// create image
-			Image2D img = Image2D.generateImage2DFromCon(window.getSettings().getSetPaintScale(), setMSICon, mzChrom);
+			Image2D img = Image2D.generateImage2DFromCon(window.getSettings().getSetPaintScale(), setMSICon, settSplit, mzChrom);
 			return img;
 		} 
 		else return null;
