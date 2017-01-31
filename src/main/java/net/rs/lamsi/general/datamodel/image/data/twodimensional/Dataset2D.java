@@ -14,13 +14,13 @@ import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
  */
 public class Dataset2D extends ImageDataset  implements Serializable  {
 	// do not change the version!
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	protected float maxXWidth = -1;
 	protected int totalDPCount = -1, minDP=-1, maxDP=-1, avgDP=-1;
 	protected ScanLine2D[] lines; 
-	
-	
+
+
 	public Dataset2D(ScanLine2D[] listLines) { 
 		lines = listLines;
 	}
@@ -29,7 +29,7 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 		for(int i=0; i<lines.length; i++)
 			lines[i] = scanLines.get(i); 
 	}
-	
+
 	/**
 	 * reset to start conditions (e.g. after data has changed)
 	 */
@@ -40,8 +40,8 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 		maxDP=-1; 
 		avgDP=-1;
 	}
-	
-	
+
+
 	@Override
 	public int getLinesCount() {
 		// TODO Auto-generated method stub
@@ -88,7 +88,7 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 		//fireIntensityProcessingChanged();
 		//fireRawDataChangedEvent();
 	}
-	
+
 
 
 	@Override
@@ -108,10 +108,10 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 	 */
 	public int getMaxDP() {
 		if(maxDP==-1) {
-		maxDP = Integer.MIN_VALUE;
-		for(ScanLine2D l : lines) {
-			if(l.getDPCount()>maxDP) maxDP = l.getDPCount();
-		}
+			maxDP = Integer.MIN_VALUE;
+			for(ScanLine2D l : lines) {
+				if(l.getDPCount()>maxDP) maxDP = l.getDPCount();
+			}
 		}
 		return maxDP;
 	}
@@ -122,11 +122,11 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 	 */
 	public int getMinDP() {
 		if(minDP==-1) {
-		minDP = Integer.MAX_VALUE;
-		for(int i=1; i<lines.length-1; i++) {
-			ScanLine2D l = lines[i];
-			if(l.getDPCount()<minDP) minDP = l.getDPCount();
-		}
+			minDP = Integer.MAX_VALUE;
+			for(int i=1; i<lines.length-1; i++) {
+				ScanLine2D l = lines[i];
+				if(l.getDPCount()<minDP) minDP = l.getDPCount();
+			}
 		}
 		return minDP;
 	}
@@ -137,16 +137,16 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 	 */
 	public int getAvgDP() {
 		if(avgDP==-1) {
-		int avg = 0;
-		for(int i=1; i<lines.length-1; i++) {
-			ScanLine2D l = lines[i];
-			avg += l.getDPCount();
-		}
-		avgDP = Math.round((avg/(lines.length-2)));
+			int avg = 0;
+			for(int i=1; i<lines.length-1; i++) {
+				ScanLine2D l = lines[i];
+				avg += l.getDPCount();
+			}
+			avgDP = Math.round((avg/(lines.length-2)));
 		}
 		return avgDP;
 	}
-	
+
 	@Override
 	public float getMaxXWidth() {
 		if(maxXWidth==-1) {
@@ -164,4 +164,5 @@ public class Dataset2D extends ImageDataset  implements Serializable  {
 		}
 		return maxXWidth;
 	} 
+
 }

@@ -18,16 +18,16 @@ import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
  */
 public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Serializable  {
 	// do not change the version!
-    private static final long serialVersionUID = 1L;
-	
+	private static final long serialVersionUID = 1L;
+
 	protected SettingsImageContinousSplit sett;
 
 	protected ScanLineMD line; 
 	protected int[] lineStart;
-	
+
 	protected float maxXWidth = -1;
 	protected int minDP=-1, maxDP=-1, avgDP=-1;
-	
+
 	public DatasetContinuousMD(ScanLineMD line) { 
 		this(line, new SettingsImageContinousSplit(aproxLineLength(line)));
 	}
@@ -35,8 +35,8 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		this.line = line; 
 		setSplitSettings(sett);
 	}
-	
-	
+
+
 	public void setSplitSettings(SettingsImageContinousSplit sett) {
 		this.sett = sett;
 		reset();
@@ -93,12 +93,12 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		maxDP=-1; 
 		avgDP=-1;
 	}
-	
+
 	//##################################################
 	// Multi dimensional
 	@Override
 	public boolean removeDimension(int i) {
-			return line.removeDimension(i);
+		return line.removeDimension(i);
 	}
 	@Override
 	public int addDimension(Double[] dim) {
@@ -133,7 +133,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 				}
 			}
 			int index = line.addDimension(z);
-			
+
 			// replace image data
 			img.setData(this);
 			img.setIndex(index);
@@ -141,8 +141,8 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		}
 		return false;
 	}
-	
-	
+
+
 	@Override
 	public boolean hasSameDataDimensionsAs(ImageDataset data) {
 		return data.getTotalDPCount() == this.getTotalDPCount();
@@ -161,7 +161,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public int getLineLength(int i) {
 		if(sett.getSplitMode()==XUNIT.s)
 			return i==getLinesCount()-1? getTotalDPCount()-lineStart[i] : lineStart[i+1]-lineStart[i];
-		else return i==getLinesCount()-1? getTotalDPCount()-(int)sett.getStartX()-(sett.getSplitAfterDP()*i) : sett.getSplitAfterDP();
+			else return i==getLinesCount()-1? getTotalDPCount()-(int)sett.getStartX()-(sett.getSplitAfterDP()*i) : sett.getSplitAfterDP();
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public double getI(int index, int line, int dpi) {
 		return this.line.getI(index, getIndex(line, dpi));
 	}
-	
+
 	/**
 	 * calculates the data point in the continuous dimension
 	 * @param line
@@ -206,7 +206,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 					int l = getLineLength(i);
 					if(l>maxDP) maxDP = l;
 				}
-				}
+			}
 			return maxDP;
 		}
 		else return sett.getSplitAfterDP();
@@ -224,8 +224,8 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 					int l = getLineLength(i);
 					if(l<minDP) minDP = l;
 				}
-				}
-				return minDP;
+			}
+			return minDP;
 		}
 		else return getLineLength(getLinesCount()-1);
 	}
@@ -237,35 +237,45 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public int getAvgDP() {
 		if(sett.getSplitMode()==XUNIT.s){
 			if(avgDP==-1) {
-			int avg = 0;
-			for(int i=1; i<lineStart.length-1; i++) {
-				int l = getLineLength(i);
-				avg += l;
-			}
-			avgDP = Math.round((avg/(getLinesCount()-2)));
+				int avg = 0;
+				for(int i=1; i<lineStart.length-1; i++) {
+					int l = getLineLength(i);
+					avg += l;
+				}
+				avgDP = Math.round((avg/(getLinesCount()-2)));
 			}
 			return avgDP;
 		}
 		else return sett.getSplitAfterDP();
 	}
-	
+
 	@Override
 	public float getMaxXWidth() {
-			if(maxXWidth==-1) {
-				// calc min x
-				maxXWidth = Float.NEGATIVE_INFINITY; 
-					for(int i=0; i<line.getDPCount()-2; i++) {
-						float dp1 = line.getX(i);
-						float dp2 = line.getX(i+1);
-						float width = Math.abs(dp2 -dp1);
-						if(width>maxXWidth)
-							maxXWidth = width;
-					} 
-			}
-			return maxXWidth; 
+		if(maxXWidth==-1) {
+			// calc min x
+			maxXWidth = Float.NEGATIVE_INFINITY; 
+			for(int i=0; i<line.getDPCount()-2; i++) {
+				float dp1 = line.getX(i);
+				float dp2 = line.getX(i+1);
+				float width = Math.abs(dp2 -dp1);
+				if(width>maxXWidth)
+					maxXWidth = width;
+			} 
+		}
+		return maxXWidth; 
 	}
 	@Override
 	public boolean hasXData() { 
 		return line!=null && line.hasXData();
+	}	
+
+	@Override
+	public Object[][] toXMatrix(float scale) {
+		int cols = getLinesCount();
+		int rows = getMaxDP();
+		if(hasXData()) {
+			super.toXMatrix(scale);
+		} 
+		return null;
 	}
 }

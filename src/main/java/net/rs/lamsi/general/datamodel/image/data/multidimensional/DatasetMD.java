@@ -195,4 +195,45 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	public boolean hasXData() { 
 		return lines!=null && lines[0]!=null && lines[0].getX()!=null;
 	}
+	/**
+	 * 
+	 * @return true if there is only one x column false if there is no x or more than one
+	 */
+	public boolean hasOnlyOneXColumn() { 
+		if(hasXData()){
+			return !(lines.length>=2 && lines[1]!=null && lines[1].hasXData() && lines[1].equals(lines[0]));
+		}
+		else return false;
+	}
+	
+	
+	@Override
+	public Object[][] toXMatrix(float scale) {
+		int cols = getLinesCount();
+		int rows = getMaxDP();
+		if(hasXData()) {
+			if(hasOnlyOneXColumn()){
+				Object[][] dataExp = new Object[rows][1]; 
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					dataExp[r][0] = r<getLineLength(0)? getX(0, r)*scale : "";
+				} 
+				return dataExp;
+			}
+			else {
+				Object[][] dataExp = new Object[rows][cols]; 
+				for(int c=0; c<cols; c++) {
+					// increment l
+					for(int r = 0; r<rows; r++) {
+						// only if not null: write Intensity
+						dataExp[r][c] = r<getLineLength(c)? getX(c, r)*scale : "";
+					} 
+				}
+				return dataExp;
+			}
+		}
+		else {
+			return null;
+		}
+	}
 }

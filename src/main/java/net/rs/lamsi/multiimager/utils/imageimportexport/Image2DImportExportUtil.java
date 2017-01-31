@@ -76,160 +76,217 @@ public class Image2DImportExportUtil {
 	// I0	i1	i2	i3	i4
 	// i5	i6	i7	i8	i9 ...
 	public static Image2D[] import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 		
-
-		Image2D[] img = new Image2D[files.length];
-		// store data in Vector
-		// x[line].get(dp)
-		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>();  
 		// read x only once
 		Vector<Float>[] x = null; 
 		float[] startXValue = null;
 		int xcol = -1, ycol=-1; 
 
+		ModeData mode = sett.getModeData();
+		
+		int xmatrix = -1;
+		
+		if(mode.equals(ModeData.X_MATRIX_STANDARD)) {
+			// search for xmatrix.csv
+
+			for(int f=0; f<files.length && xmatrix == -1; f++) {
+				if(files[f].getName().startsWith("xmatrix")) {
+					xmatrix = f;
+					// import xmatrix
+					File file = files[f];
+					BufferedReader br = txtWriter.getBufferedReader(file);
+					String s; 
+					int dp = 0;
+					while ((s = br.readLine()) != null  && (sett.getEndDP()==0 || dp<sett.getEndDP())) {
+						dp++;
+						if(dp>=sett.getStartDP()) {
+							// try to separate by separation
+							String[] sep = s.split(separation);
+							// initialise
+							if(x == null) {
+								int minus = sett.getStartLine()==0? 0 : sett.getEndLine()-1;
+								int size = sett.getEndLine()==0? sep.length-minus : Math.min(sep.length, sett.getEndLine()) -minus;
+								x = new Vector[size];
+								startXValue = new float[size];
+							}
+							// fill data
+							int c = 0;
+							for(int i=sett.getStartLine()==0? 0 : sett.getEndLine()-1; i<sep.length && (sett.getEndLine()==0 || i<sett.getEndLine()); i++) {
+								if(x[c]==null) {
+									x[c] = new Vector<Float>();
+									startXValue[c] = Float.valueOf(sep[i]);
+								}
+								x[c].addElement(Float.valueOf(sep[i])-startXValue[c]);
+								c++;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// resulting images
+		Image2D[] img = new Image2D[files.length - (xmatrix==-1? 0 : 1)];
+		// store data in Vector
+		// x[line].get(dp)
+		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>();  
+		
 
 		ImageGroupMD group = new ImageGroupMD();
 		// one file is one dimension (image) of scanLines
 		for(int f=0; f<files.length; f++) {
-			File file = files[f];
-			Vector<Double>[] y = null;  
-			ModeData mode = sett.getModeData();
-			// for metadata collection if selected in settings
-			String metadata = "";
-			String title = "";
-
-			// read text file 
-			// line by line
-			BufferedReader br = txtWriter.getBufferedReader(file);
-			String s;
-			int k = 0;
-			int line = 0;
-			int dp = 0;
-			while ((s = br.readLine()) != null) {
-				// try to separate by separation
-				String[] sep = s.split(separation);
-				// data
-				if(sep.length>1 && TextAnalyzer.isNumberValues(sep)) { 
-					// increment dp 
-					dp++;
-					// 
-					line = 0;
-					// initialise data lists
-					if(xcol==-1) {
-						if(mode==ModeData.XYXY_ALTERN) {
-							xcol = sep.length/2;
-							// limits
-							if(sett.getEndLine()!=0 && xcol>sett.getEndLine()) xcol = sett.getEndLine();
-							if(sett.getStartLine()!=0) xcol = xcol+1-sett.getStartLine();
-							ycol = xcol;
+			// skip xmatrix
+			if(f==xmatrix)
+				continue;
+			else {
+				File file = files[f];
+				Vector<Double>[] y = null;  
+				// for metadata collection if selected in settings
+				String metadata = "";
+				String title = "";
+	
+				// read text file 
+				// line by line
+				BufferedReader br = txtWriter.getBufferedReader(file);
+				String s;
+				int k = 0;
+				int line = 0;
+				int dp = 0;
+				while ((s = br.readLine()) != null) {
+					// try to separate by separation
+					String[] sep = s.split(separation);
+					// data
+					if(sep.length>1 && TextAnalyzer.isNumberValues(sep)) { 
+						// increment dp 
+						dp++;
+						// 
+						line = 0;
+						// initialise data lists
+						if(xcol==-1) {
+							if(mode==ModeData.XYXY_ALTERN) {
+								xcol = sep.length/2;
+								// limits
+								if(sett.getEndLine()!=0 && xcol>sett.getEndLine()) xcol = sett.getEndLine();
+								if(sett.getStartLine()!=0) xcol = xcol+1-sett.getStartLine();
+								ycol = xcol;
+							}
+							else {
+								xcol = mode==ModeData.ONLY_Y || mode==ModeData.X_MATRIX_STANDARD? 0 : 1; 
+								ycol = (sep.length-xcol);
+								// limits
+								if(sett.getEndLine()!=0 && ycol>sett.getEndLine()) ycol = sett.getEndLine();
+								if(sett.getStartLine()!=0) ycol = ycol+1-sett.getStartLine();
+							}
 						}
-						else {
-							xcol = mode==ModeData.ONLY_Y? 0 : 1; 
-							ycol = (sep.length-xcol);
-							// limits
-							if(sett.getEndLine()!=0 && ycol>sett.getEndLine()) ycol = sett.getEndLine();
-							if(sett.getStartLine()!=0) ycol = ycol+1-sett.getStartLine();
+						if(y==null) {
+							if(mode!=ModeData.ONLY_Y && x==null) {
+								startXValue = new float[xcol];
+								x = new Vector[xcol];  
+								for(int i=0; i<x.length; i++)
+									x[i] = new Vector<Float>();
+							}
+							y = new Vector[ycol]; 
+							for(int i=0; i<y.length; i++)
+								y[i] = new Vector<Double>();
 						}
-					}
-					if(y==null) {
-						if(mode!=ModeData.ONLY_Y && x==null) {
-							startXValue = new float[xcol];
-							x = new Vector[xcol];  
-							for(int i=0; i<x.length; i++)
-								x[i] = new Vector<Float>();
-						}
-						y = new Vector[ycol]; 
-						for(int i=0; i<y.length; i++)
-							y[i] = new Vector<Double>();
-					}
-					// add data if dp is not excluded
-					if(sett.getStartDP()==0 || dp>=sett.getStartDP()) {
-						// add data if line is not excluded
-						for(int i=0; i<sep.length && (sett.getEndLine()==0 || line<sett.getMaxLines()); i++) {
-							// x is only added in f==0 (first file)
-							switch(mode) {
-							case ONLY_Y:
-								if((sett.getStartLine()==0 || i+1>=sett.getStartLine())) {
-									if(line==187)
-										System.out.println("");
-									y[line].addElement(Double.valueOf(sep[i]));
-									line++;
-								}
-								break;
-							case XYXY_ALTERN:
-								if(sett.getStartLine()==0 || i/2+1>=sett.getStartLine()) {
-									if(i%2==1) {
+						// add data if dp is not excluded
+						if(sett.getStartDP()==0 || dp>=sett.getStartDP()) {
+							// add data if line is not excluded
+							for(int i=0; i<sep.length && (sett.getEndLine()==0 || line<sett.getMaxLines()); i++) {
+								// x is only added in f==0 (first file)
+								switch(mode) { // TODO
+								case X_MATRIX_STANDARD:
+								case ONLY_Y:
+									if((sett.getStartLine()==0 || i+1>=sett.getStartLine())) {
+										if(line==187)
+											System.out.println("");
 										y[line].addElement(Double.valueOf(sep[i]));
 										line++;
 									}
-									else if(f==0) {
+									break;
+								case XYXY_ALTERN:
+									if(sett.getStartLine()==0 || i/2+1>=sett.getStartLine()) {
+										if(i%2==1) {
+											y[line].addElement(Double.valueOf(sep[i]));
+											line++;
+										}
+										else if(f==0) {
+											// first as 0
+											if(x[line].size()==0) {
+												x[line].addElement(0.f);
+												startXValue[line] = Float.valueOf(sep[i]);
+											}
+											// relative to startX
+											else x[line].addElement(Float.valueOf(sep[i])-startXValue[line]);
+										}
+									}
+									break;
+								case XYYY: 
+									// add x once
+									if(f==0 && i==0) {
 										// first as 0
-										if(x[line].size()==0) {
-											x[line].addElement(0.f);
-											startXValue[line] = Float.valueOf(sep[i]);
+										if(x[0].size()==0) {
+											x[0].addElement(0.f);
+											startXValue[0] = Float.valueOf(sep[i]);
 										}
 										// relative to startX
-										else x[line].addElement(Float.valueOf(sep[i])-startXValue[line]);
+										else x[0].addElement(Float.valueOf(sep[i])-startXValue[0]);
 									}
-								}
-								break;
-							case XYYY: 
-								// add x once
-								if(f==0 && i==0) {
-									// first as 0
-									if(x[0].size()==0) {
-										x[0].addElement(0.f);
-										startXValue[0] = Float.valueOf(sep[i]);
+									// add y
+									if(i!=0){
+										if(sett.getStartLine()==0 || i>=sett.getStartLine()) {
+											y[line].addElement(Double.valueOf(sep[i]));
+											line++;
+										}
 									}
-									// relative to startX
-									else x[0].addElement(Float.valueOf(sep[i])-startXValue[0]);
-								}
-								// add y
-								if(i!=0){
-									if(sett.getStartLine()==0 || i>=sett.getStartLine()) {
-										y[line].addElement(Double.valueOf(sep[i]));
-										line++;
-									}
-								}
-								break;
-							} 
-						}  
+									break;
+								} 
+							}  
+						}
+						// last dp added?
+						if(sett.getEndDP()!=0 && dp>=sett.getEndDP())
+							break;
 					}
-					// last dp added?
-					if(sett.getEndDP()!=0 && dp>=sett.getEndDP())
+					// or metadata
+					else {
+						// title
+						if(k==0 && s.length()<=30) {
+							title = s;
+						}
+						metadata += s+"\n"; 
+					}
+					k++;
+				}
+				// Generate Lines
+				for(int i=0; i<y.length; i++) {
+					// create lines
+					if(scanLines.size()<=i)
+						scanLines.add(new ScanLineMD());
+					// add data
+					scanLines.get(i).addDimension(y[i]);
+					switch(mode) { 
+					case XYXY_ALTERN:
+						scanLines.get(i).setX(x[i]);
 						break;
-				}
-				// or metadata
-				else {
-					// title
-					if(k==0 && s.length()<=30) {
-						title = s;
+					case XYYY:
+						scanLines.get(i).setX(x[0]);
+						break;
+					case X_MATRIX_STANDARD:
+						if(x.length==1) {
+							scanLines.get(i).setX(x[0]);
+						}
+						else scanLines.get(i).setX(x[i]);
+						break;
+						//TODO
 					}
-					metadata += s+"\n"; 
+	
 				}
-				k++;
+	
+				// Generate Image2D from scanLines
+				int index = xmatrix==-1 || f<xmatrix? f : f-1;
+				Image2D image = createImage2D(file, title, metadata, scanLines, index, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
+				img[index] = image;
+				group.add(img[index]);
 			}
-			// Generate Lines
-			for(int i=0; i<y.length; i++) {
-				// create lines
-				if(scanLines.size()<=i)
-					scanLines.add(new ScanLineMD());
-				// add data
-				scanLines.get(i).addDimension(y[i]);
-				switch(mode) { 
-				case XYXY_ALTERN:
-					scanLines.get(i).setX(x[i]);
-					break;
-				case XYYY:
-					scanLines.get(i).setX(x[0]);
-					break;
-				}
-
-			}
-
-			// Generate Image2D from scanLines
-			Image2D image = createImage2D(file, title, metadata, scanLines, f, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
-			img[f] = image;
-			group.add(img[f]);
 		}
 		//return image 
 		return img;
@@ -264,7 +321,10 @@ public class Image2DImportExportUtil {
 		ImageGroupMD group = new ImageGroupMD();
 		Image2D realImages[] = new Image2D[lines.firstElement().getImageCount()];
 		for(int i=0; i<realImages.length; i++) {   
-			realImages[i] = createImage2D(parent, title, metadata, lines, i, continuous && !hardsplit);  
+			// has title line? with xyyyy
+			if(titleLine!=null && titleLine.length>=realImages.length+1)
+				realImages[i] = createImage2D(parent, titleLine[i+1], metadata, lines, i, continuous && !hardsplit);  
+			else realImages[i] = createImage2D(parent, "", metadata, lines, i, continuous && !hardsplit);  
 			// continuous?
 			if(continuous && !hardsplit) {
 				// set split settings for continuous data (non hardsplit)
@@ -272,10 +332,6 @@ public class Image2DImportExportUtil {
 				data.setSplitSettings(new SettingsImageContinousSplit(sett.getSplitAfter(), sett.getSplitStart(), sett.getSplitUnit()));
 			}
 
-			// set titles if a title line was found
-			if(titleLine!=null && titleLine.length>=realImages.length+1) 
-				realImages[i].getSettImage().setTitle(titleLine[i+1]);
-			
 			// add to group (also sets the group for this image)
 			group.add(realImages[i]);
 		}
@@ -825,8 +881,11 @@ public class Image2DImportExportUtil {
 		SettingsGeneralImage general = new SettingsGeneralImage();
 		general.resetAll();
 		// Metadata 
-		if(title=="") title = file.getName();
 		general.setRAWFilepath(file.getPath());
+		if(title=="") {
+			general.setRAWFilepath(file.getParent());
+			title = FileAndPathUtil.eraseFormat(file.getName());
+		}
 		general.setTitle(title);
 		general.setMetadata(metadata);
 		// Image creation

@@ -31,9 +31,10 @@ import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
-import net.rs.lamsi.utils.DataExportUtil;
+import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
@@ -67,7 +68,6 @@ public class DialogDataSaver extends JFrame {
 	private JPanel pnXlsOptions;
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private JLabel lblSucceed;
-	private JCheckBox cbTimeOnlyOnce;
 	private JCheckBox cbSaveAllFilesInOne;
 	private JRadioButton rbAllFiles;
 	private JRadioButton rbSelectedFileOnly;
@@ -77,13 +77,12 @@ public class DialogDataSaver extends JFrame {
 	//
 	private JCheckBox cbWriteTitleRow;
 	private JCheckBox cbRawData;
-	private JCheckBox cbExportAsXYZ;
 	private JTextField txtSep;
 	private JLabel lbSep;
-	private JCheckBox cbWriteNoTime;
 	private JCheckBox rbToClipboard;
 	private JPanel panel_1;
 	private JComboBox comboBox;
+	private JComboBox comboDataFormat;
 	
 	// TODO
 	// Irgendwann das aufrufen: 
@@ -205,7 +204,7 @@ public class DialogDataSaver extends JFrame {
 					if(currentMode==MODE.ALL) {
 						if(imgList==null || (settings.getSetImage2DDataExport().isExportsAllFiles()==false && img!=null))
 							DataExportUtil.exportDataImage2D(img, settings.getSetImage2DDataExport());
-						else if(imgList!=null) 
+						else if(imgList!=null && imgList.size()>0) 
 							DataExportUtil.exportDataImage2D(thisFrame, imgList, settings.getSetImage2DDataExport());
 					}
 					else if(currentMode == MODE.SELECTED_RECTS){
@@ -229,7 +228,7 @@ public class DialogDataSaver extends JFrame {
 		
 		pnXlsOptions = new JPanel();
 		pnMS.add(pnXlsOptions);
-		pnXlsOptions.setLayout(new MigLayout("", "[178px][154px]", "[23px][23px][23px][23px][14px]"));
+		pnXlsOptions.setLayout(new MigLayout("", "[178px,grow][154px]", "[23px][23px][23px][23px][14px]"));
 		
 		rbAllFiles = new JRadioButton("All images");
 		rbAllFiles.addChangeListener(new ChangeListener() {
@@ -261,31 +260,15 @@ public class DialogDataSaver extends JFrame {
 		lblSucceed = new JLabel("Succeed");
 		lblSucceed.setVisible(false);
 		
-		cbWriteNoTime = new JCheckBox("Write no time column");
-		cbWriteNoTime.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				getCbTimeOnlyOnce().setEnabled(e.getStateChange() != ItemEvent.SELECTED);
-			}
-		});
-		pnXlsOptions.add(cbWriteNoTime, "flowy,cell 0 3");
-		
-		cbTimeOnlyOnce = new JCheckBox("Write time only once");
-		cbTimeOnlyOnce.setSelected(true);
-		cbTimeOnlyOnce.setToolTipText("Writes the time only once followed by inensities for all scans");
-		pnXlsOptions.add(cbTimeOnlyOnce, "cell 0 3,growx,aligny top");
-		
-		cbExportAsXYZ = new JCheckBox("Export as XYZ");
-		cbExportAsXYZ.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) { 
-				getCbTimeOnlyOnce().setEnabled(e.getStateChange() != ItemEvent.SELECTED && !getCbWriteNoTime().isSelected());
-				getCbWriteNoTime().setEnabled(e.getStateChange() != ItemEvent.SELECTED);
-			}
-		});
-		pnXlsOptions.add(cbExportAsXYZ, "cell 1 3");
-		
 		cbWriteTitleRow = new JCheckBox("Write title row");
 		cbWriteTitleRow.setSelected(true);
-		pnXlsOptions.add(cbWriteTitleRow, "cell 0 4");
+		pnXlsOptions.add(cbWriteTitleRow, "cell 0 3");
+		
+		comboDataFormat = new JComboBox();
+		comboDataFormat.setToolTipText("Select the data export pattern: X-matrix is the standard and exports one xmatrix.txt file to keep information about data point width. XYYY is for equally spaced data points. XYXY (altern.) is for data points not spaced equally. Only-Y has no information about spacing.");
+		comboDataFormat.setModel(new DefaultComboBoxModel(ModeData.values()));
+		comboDataFormat.setSelectedIndex(0);
+		pnXlsOptions.add(comboDataFormat, "cell 0 4,growx");
 		lblSucceed.setForeground(new Color(0, 128, 0));
 		pnXlsOptions.add(lblSucceed, "cell 1 4,alignx right,aligny top");
 		
@@ -369,11 +352,10 @@ public class DialogDataSaver extends JFrame {
 		settingsData.setFilename(getTxtFileName().getText());
 		settingsData.setSavesAllFilesToOneXLS(getCbSaveAllFilesInOne().isSelected());
 		 
-		settingsData.setWriteTimeOnlyOnce(getCbTimeOnlyOnce().isSelected()); 
 		settingsData.setIsExportRaw(getCbRawData().isSelected());
 		settingsData.setIsWriteTitleRow(getCbWriteTitleRow().isSelected());
-		settingsData.setIsWriteXYZData(getCbExportAsXYZ().isSelected());
-		settingsData.setIsWriteNoX(getCbWriteNoTime().isSelected());
+		
+		settingsData.setMode((ModeData) getComboDataFormat().getSelectedItem());
 		
 		settingsData.setSeparation(txtSep.getText());
 	}
@@ -392,12 +374,10 @@ public class DialogDataSaver extends JFrame {
 		
 		getTxtPath().setText(settingsData.getPath().getPath());
 
-		getCbTimeOnlyOnce().setSelected(settingsData.isWriteTimeOnlyOnce()); 
-		getCbRawData().setSelected(settingsData.isExportRaw());
+		getComboDataFormat().setSelectedItem(settingsData.getMode());
+
 		getCbWriteTitleRow().setSelected(settingsData.isWriteTitleRow());
-		getCbExportAsXYZ().setSelected(settingsData.isWriteXYZData());
-		getCbWriteNoTime().setSelected(settingsData.isWriteNoX());
-		
+		getCbRawData().setSelected(settingsData.isExportRaw());
 		getTxtSep().setText(settingsData.getSeparation());
 	}
 	
@@ -408,9 +388,6 @@ public class DialogDataSaver extends JFrame {
 	}
 	public JLabel getLblSucceed() {
 		return lblSucceed;
-	}
-	public JCheckBox getCbTimeOnlyOnce() {
-		return cbTimeOnlyOnce;
 	}
 	public JTextField getTxtPath() {
 		return txtPath; 
@@ -436,19 +413,16 @@ public class DialogDataSaver extends JFrame {
 	public JCheckBox getCbRawData() {
 		return cbRawData;
 	}
-	public JCheckBox getCbExportAsXYZ() {
-		return cbExportAsXYZ;
-	}
 	public JLabel getLbSep() {
 		return lbSep;
 	}
 	public JTextField getTxtSep() {
 		return txtSep;
 	}
-	public JCheckBox getCbWriteNoTime() {
-		return cbWriteNoTime;
-	}
 	public JCheckBox getCbToClipboard() {
 		return rbToClipboard;
+	}
+	public JComboBox getComboDataFormat() {
+		return comboDataFormat;
 	}
 }

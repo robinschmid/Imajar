@@ -77,7 +77,25 @@ public abstract class ImageDataset {
 	public abstract int getAvgDP();
 	
 
-	
+
+	/**
+	 * 
+	 * @param scale
+	 * @return x matrix scaled by a factor. null if there are no x values
+	 */
+	public Object[][] toXMatrix(float scale) {
+		int cols = getLinesCount();
+		int rows = getMaxDP();
+		Object[][] dataExp = new Object[rows][cols]; 
+		for(int c=0; c<cols; c++) {
+			// increment l
+			for(int r = 0; r<rows; r++) {
+				// only if not null: write Intensity
+				dataExp[r][c] = r<getLineLength(c)? getX(c, r)*scale : "";
+			} 
+		}
+		return dataExp;
+	}
 
 	/**
 	 * data is the same or has the same dimensions

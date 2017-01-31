@@ -115,4 +115,5 @@ public class SettingsDataSaver extends Settings {
 	public void setUsesElementLineAsSheet(boolean usesElementLineAsSheet) {
 		this.usesElementLineAsSheet = usesElementLineAsSheet;
 	}
+	
 }

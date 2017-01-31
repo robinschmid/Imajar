@@ -10,8 +10,9 @@ import javax.swing.JMenuItem;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
-import net.rs.lamsi.utils.DataExportUtil;
+import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jfree.chart.JFreeChart;
@@ -89,7 +90,7 @@ public class PlotImage2DChartPanel extends PlotChartPanel {
 				// 
 				SettingsImage2DDataExport sett = new SettingsImage2DDataExport();
 				sett.setUpForDataOnly(true, true);
-				sett.setIsWriteXYZData(true);
+				sett.setMode(ModeData.XYZ);
 				try {
 					DataExportUtil.exportDataImage2D(img, sett);
 				} catch (InvalidFormatException | IOException e1) {
@@ -108,7 +109,7 @@ public class PlotImage2DChartPanel extends PlotChartPanel {
 				// 
 				SettingsImage2DDataExport sett = new SettingsImage2DDataExport();
 				sett.setUpForDataOnly(true, false);
-				sett.setIsWriteXYZData(true); 
+				sett.setMode(ModeData.XYZ);
 				try {
 					DataExportUtil.exportDataImage2D(img, sett);
 				} catch (InvalidFormatException | IOException e1) {

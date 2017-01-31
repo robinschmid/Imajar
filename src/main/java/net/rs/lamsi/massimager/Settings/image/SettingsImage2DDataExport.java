@@ -3,6 +3,7 @@ package net.rs.lamsi.massimager.Settings.image;
 import java.io.File;
 
 import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 
 public class SettingsImage2DDataExport extends Settings { 
 	// do not change the version!
@@ -39,7 +40,9 @@ public class SettingsImage2DDataExport extends Settings {
 	
 	private FileType fileFormat;
 	private boolean exportsAllFiles, savesAllFilesToOneXLS;
-	private boolean writeTimeOnlyOnce, isExportRaw, isWriteTitleRow, isWriteXYZData, isWriteNoX, isWritingToClipboard;
+	private boolean isExportRaw, isWriteTitleRow, isWritingToClipboard;
+	
+	private ModeData mode = ModeData.X_MATRIX_STANDARD;
 	
 	// new one
 	// cuts the data to minum of line width
@@ -52,15 +55,13 @@ public class SettingsImage2DDataExport extends Settings {
 		path = "";
 		filename = "";
 		separation = ",";
-		fileFormat = FileType.XLSX;
+		fileFormat = FileType.CSV;
 		exportsAllFiles = false;
 		savesAllFilesToOneXLS = true;
-		writeTimeOnlyOnce = true;
 		isExportRaw = false;
 		isWriteTitleRow = true;
-		isWriteXYZData = false;
-		isWriteNoX = false;
 		isWritingToClipboard = false;
+		mode = ModeData.X_MATRIX_STANDARD;
 	}
 
 	/**
@@ -72,7 +73,6 @@ public class SettingsImage2DDataExport extends Settings {
 		resetAll();
 		separation = "\t";
 		setWritingToClipboard(clipboard);
-		isWriteNoX = true;
 		isWriteTitleRow = false;
 		isExportRaw = raw;
 	}
@@ -107,12 +107,6 @@ public class SettingsImage2DDataExport extends Settings {
 	public void setSavesAllFilesToOneXLS(boolean savesAllFilesToOneXLS) {
 		this.savesAllFilesToOneXLS = savesAllFilesToOneXLS;
 	}
-	public boolean isWriteTimeOnlyOnce() {
-		return writeTimeOnlyOnce;
-	}
-	public void setWriteTimeOnlyOnce(boolean writeTimeOnlyOnce) {
-		this.writeTimeOnlyOnce = writeTimeOnlyOnce;
-	} 
 
 	public void setPath(String path) {
 		this.path = path;
@@ -134,13 +128,6 @@ public class SettingsImage2DDataExport extends Settings {
 		return isWriteTitleRow;
 	}
 
-	public void setIsWriteXYZData(boolean state) {
-		isWriteXYZData = state;
-	}
-	public boolean isWriteXYZData() {
-		// TODO Auto-generated method stub
-		return isWriteXYZData;
-	}
 
 	public String getSeparation() {
 		return separation;
@@ -148,13 +135,6 @@ public class SettingsImage2DDataExport extends Settings {
 
 	public void setSeparation(String separation) {
 		this.separation = separation;
-	}
-	public void setIsWriteNoX(boolean state) {
-		isWriteNoX = state;
-	}
-	public boolean isWriteNoX() {
-		// TODO Auto-generated method stub
-		return isWriteNoX;
 	}
 
 	public boolean isWritingToClipboard() {
@@ -171,5 +151,13 @@ public class SettingsImage2DDataExport extends Settings {
 
 	public void setCuttingDataToMin(boolean isCuttingDataToMin) {
 		this.isCuttingDataToMin = isCuttingDataToMin;
+	}
+
+	public ModeData getMode() {
+		return mode;
+	}
+
+	public void setMode(ModeData mode) {
+		this.mode = mode;
 	}
 }

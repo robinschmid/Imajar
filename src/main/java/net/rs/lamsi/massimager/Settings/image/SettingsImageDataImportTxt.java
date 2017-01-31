@@ -18,7 +18,7 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	} 
 	public static enum ModeData {
 		// mode of data: onlyY, one X, alternating
-		ONLY_Y, XYYY, XYXY_ALTERN
+		X_MATRIX_STANDARD, XYYY, XYXY_ALTERN, ONLY_Y, XYZ
 	} 
 	
 	protected String sSeparation = ",";
@@ -95,7 +95,8 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	public void resetAll() { 
 		isSearchingForMetaData = true;
 		sSeparation = ",";
-		modeData = ModeData.ONLY_Y;
+		modeData = ModeData.X_MATRIX_STANDARD;
+		isFilesInSeparateFolders = false;
 	}
 
 

@@ -1,7 +1,6 @@
-package net.rs.lamsi.utils;
+package net.rs.lamsi.multiimager.utils.imageimportexport;
 
 import java.awt.Component;
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
@@ -10,17 +9,21 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.ProgressMonitor;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierMultiPoints;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTaskMonitor;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
+import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
@@ -63,20 +66,21 @@ public class DataExportUtil {
 						for(int k=i+1; k<imgList.size() && !titlesAreTheSame; k++) {
 							if(imgList.get(i).getTitle().equalsIgnoreCase(imgList.get(k).getTitle()))
 								titlesAreTheSame = true;
-						}
+						} 
 					}
 					// export data
 					for(int i=0; i<imgList.size(); i++) {
 						String qualifier = imgList.get(i).getTitle();
 						if(titlesAreTheSame) qualifier += " "+(i+1);
 						// TODO name extention for txt
-						exportDataImage2D(imgList.get(i), setImage2DDataExport, qualifier, i==imgList.size()-1, true);
+						exportDataImage2D(imgList.get(i), setImage2DDataExport, qualifier, i==0, i==imgList.size()-1, true);
 						// no exception then progress
 						System.out.println("set progress " +(int)((i+1)/imgList.size()));
 						setProgress((int)((i+1)*100.0/imgList.size()));
 					}	
 				}catch(Exception ex) {
 					this.setProgress(100);
+					ex.printStackTrace();
 					return false;
 				}
 				this.setProgress(100);
@@ -112,7 +116,7 @@ public class DataExportUtil {
 	 */
 	public static void exportDataImage2D(Image2D img, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException { 		
 		lastwb = null;
-		exportDataImage2D(img, sett, "", true, false);
+		exportDataImage2D(img, sett, "", true, true, false);
 
 		if(sett.isWritingToClipboard())
 			DialogLoggerUtil.showMessageDialog(null, "Succeed", "File(s) saved successfully");
@@ -127,20 +131,34 @@ public class DataExportUtil {
 	 * @throws IOException 
 	 * @throws InvalidFormatException 
 	 */
-	private static void exportDataImage2D(Image2D img, SettingsImage2DDataExport sett, String qualifier, boolean lastFile, boolean inFolder) throws InvalidFormatException, IOException {
+	private static void exportDataImage2D(Image2D img, SettingsImage2DDataExport sett, String qualifier, boolean firstFile, boolean lastFile, boolean inFolder) throws InvalidFormatException, IOException {
 		// compute vtk 
 		if(sett.getFileFormat()==FileType.VTK && !sett.isWritingToClipboard()) {
-			sett.setIsWriteNoX(true);
+			sett.setMode(ModeData.ONLY_Y);
 			sett.setSeparation(" ");
 		}
 		// get data
 		Object[][] data = null;
+		// only for x matrix
+		Object[][] xmatrix = null;
 		// get title row
 		String[] title = null;
 		// export line per line matrix of intensity
-		if(!sett.isWriteXYZData()) {
+		if(sett.getMode().equals(ModeData.XYZ)) {
+			// export xyz data
+			data = img.toXYIArray(sett);
+			// get title row
+			title = new String[]{"X", "Y", "I"};
+		}
+		else if(sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
 			// intensity matrix
-			data = img.toDataArray(sett);
+			data = img.toDataArray(ModeData.ONLY_Y, sett.isExportRaw());
+			if(firstFile)
+				xmatrix = img.toXArray(sett.isExportRaw());
+		}
+		else {
+			// intensity matrix
+			data = img.toDataArray(sett.getMode(), sett.isExportRaw());
 			// get title row
 			if(sett.isWriteTitleRow()) {
 				int size = data[0].length;
@@ -148,22 +166,16 @@ public class DataExportUtil {
 				int line = 1;
 				for(int i=0; i<size; i++) {
 					// write title X
-					if(((sett.isWriteTimeOnlyOnce() && i==0) || (!sett.isWriteTimeOnlyOnce() && i%2==0)) && !sett.isWriteNoX()) {
+					if(((sett.getMode().equals(ModeData.XYYY) && i==0) || (sett.getMode().equals(ModeData.XYXY_ALTERN) && i%2==0))) {
 						title[i] = "X"+line;
 					}
-					// write y and increment 
-					if((sett.isWriteTimeOnlyOnce() && i!=0) || (!sett.isWriteTimeOnlyOnce() && i%2==1) || sett.isWriteNoX()) {
+					else {
+						// write y and increment 
 						title[i] = "Y"+line;
 						line++;
 					}
 				}
 			}
-		}
-		else {
-			// export xyz data
-			data = img.toXYIArray(sett);
-			// get title row
-			title = new String[]{"X", "Y", "I"};
 		}
 		//writer it to txt or xlsx	
 
@@ -212,18 +224,25 @@ public class DataExportUtil {
 			} 
 		} 
 		else {
-			String file = "";
+			// put into one folder? or create a new folder named after the raw file
+			File path = null;
 			if(inFolder) {
 				// create folder like filename
-				File path = new File(sett.getPath(), img.getSettImage().getRAWFileName());
-				file = new File(path, FileAndPathUtil.eraseFormat((sett.getFilename()))+qualifier+"."+sett.getFileFormat().toString()).getAbsolutePath();
+				path = new File(sett.getPath(), img.getSettImage().getRAWFileName());
 			}
-			else file = new File(sett.getPath(), FileAndPathUtil.eraseFormat((sett.getFilename()))+qualifier+"."+sett.getFileFormat().toString()).getAbsolutePath();
+			else {
+				path = sett.getPath();
+			}
+			File file = new File(path, FileAndPathUtil.eraseFormat((sett.getFilename()))+qualifier+"."+sett.getFileFormat().toString());
+			
 
-			writer.openNewFileOutput(file);
+			writer.openNewFileOutput(file.getAbsolutePath());
 
 			// vtk? write VTK header
-			if(sett.getFileFormat()==FileType.VTK)
+			if(sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
+				// do nothing... no tilte
+			}
+			else if(sett.getFileFormat()==FileType.VTK)
 				writeVTKHeader(img, data, sett);
 			else {
 				// write title
@@ -240,6 +259,20 @@ public class DataExportUtil {
 			writer.writeDataArrayToCurrentFile(data, sett.getSeparation());
 			// end file
 			writer.closeDatOutput(); 
+			//log
+			ImageEditorWindow.log("Written: "+file.getName()+" to "+file.getParent(), LOG.MESSAGE);
+			
+			// export x matrix
+			if(sett.getMode().equals(ModeData.X_MATRIX_STANDARD) && firstFile && xmatrix != null) {
+				file = new File(path, "xmatrix."+sett.getFileFormat().toString());
+				writer.openNewFileOutput(file.getAbsolutePath());
+				// content xmatrix
+				writer.writeDataArrayToCurrentFile(xmatrix, sett.getSeparation());
+				// end file
+				writer.closeDatOutput(); 
+				//log
+				ImageEditorWindow.log("Written: "+file.getName()+" to "+file.getParent(), LOG.MESSAGE);
+			}
 		}
 	}
 
@@ -263,7 +296,7 @@ LOOKUP_TABLE default
 		writer.writeLine("# vtk DataFile Version 2.0\n"
 				+img.getTitle()+"\n"
 				+ "ASCII");
-		if(sett.isWriteXYZData()){
+		if(sett.getMode().equals(ModeData.XYZ)){
 			writer.writeLine("DATASET UNSTRUCTURED_ GRID\n"
 					+ "POINTS "+(data.length*data[0].length)+" double");
 		}
@@ -398,7 +431,7 @@ LOOKUP_TABLE default
 	public static void exportDataReportOnOperations(Image2D img, File path, String fileName) throws InvalidFormatException, IOException { 
 		SettingsImage2DDataExport sett = new SettingsImage2DDataExport();
 		sett.setIsExportRaw(false);
-		sett.setIsWriteNoX(true);
+		sett.getMode().equals(ModeData.ONLY_Y);
 
 		File file = new File(path, FileAndPathUtil.eraseFormat(fileName)+".xlsx");
 		XSSFWorkbook wb = new XSSFWorkbook(); 

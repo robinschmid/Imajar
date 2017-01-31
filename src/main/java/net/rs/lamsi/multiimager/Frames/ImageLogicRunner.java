@@ -29,8 +29,8 @@ import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
-import net.rs.lamsi.utils.DataExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -193,10 +193,10 @@ public class ImageLogicRunner {
 			int c = 0;
 			// create img nodes
 			for(Image2D i : img) {
-				if(sub==null || (!last.equals(i.getSettImage().getRAWFolderPath()))) {
-					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolderPath());
+				if(sub==null || (!last.equals(i.getSettImage().getRAWFolder()))) {
+					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder());
 					parent.add(sub);
-					last = i.getSettImage().getRAWFolderPath(); 
+					last = i.getSettImage().getRAWFolder(); 
 				}
 				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
 				nodes[c] = inode;
