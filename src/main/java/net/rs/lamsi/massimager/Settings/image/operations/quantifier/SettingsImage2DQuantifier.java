@@ -1,5 +1,8 @@
 package net.rs.lamsi.massimager.Settings.image.operations.quantifier;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.rs.lamsi.massimager.Settings.Settings;
 
 public abstract class SettingsImage2DQuantifier extends Settings implements Image2DQuantifyStrategyImpl {
@@ -14,7 +17,7 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 	
 	
 	public SettingsImage2DQuantifier(int mode) {
-		super("/Settings/operations/", "setQuantifier"); 
+		super("SettingsImage2DQuantifier", "/Settings/operations/", "setQuantifier"); 
 		this.mode = mode;
 		resetAll();		
 	} 
@@ -48,5 +51,13 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 	}
 	
 	public abstract boolean isApplicable();
+
+	
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+	} 
 	
 }

@@ -21,9 +21,9 @@ import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.exceptions.Filtering
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra.MZSpectrumCombineFilter;
 import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
@@ -748,13 +748,13 @@ public class LogicRunner {
 		}
 	}
 	// get spectrum from point in image. with image settings!
-	public Scan generateSpectrumByXY(SettingsImage sett, double x, double y) {
+	public Scan generateSpectrumByXY(SettingsGeneralImage sett, double x, double y) {
 		try{
 			// var init
 			int filei = -1;
 			double rt = 0;
 			// triggert / discon
-			if(sett.isTriggert()) {
+			if(sett.isTriggered()) {
 				// Fileindex y gibt aufschluss zur linie und damit zum file 
 				filei = (int)Math.floor(y/sett.getSpotsize());
 				if(filei<0) filei = 0;
@@ -777,7 +777,7 @@ public class LogicRunner {
 		}
 	} 
 	// get SUM spectrum from area in image. with image settings!
-	public MZChromatogram generateSpectrumByXY(SettingsImage sett, Rectangle2D rect) {
+	public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, Rectangle2D rect) {
 		double x = rect.getX();
 		double y = rect.getY();
 		double x2 = rect.getMaxX();
@@ -785,7 +785,7 @@ public class LogicRunner {
 		return generateSpectrumByXY(sett, x, y, x2, y2);
 	}
 	// get SUM spectrum from area in image. with image settings!
-	public MZChromatogram generateSpectrumByXY(SettingsImage sett, double x, double y, double x2, double y2) {
+	public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, double x, double y, double x2, double y2) {
 		try{
 			// var init
 			int fileiStart = -1;
@@ -793,7 +793,7 @@ public class LogicRunner {
 			double rt = 0;
 			double rt2 = 0;
 			// triggert / discon
-			if(sett.isTriggert()) {
+			if(sett.isTriggered()) {
 				// Fileindex y gibt aufschluss zur linie und damit zum file 
 				fileiStart = (int)Math.floor(y/sett.getSpotsize());
 				if(fileiStart<0) fileiStart = 0;
@@ -811,7 +811,7 @@ public class LogicRunner {
 				fileiStart = selectedFileIndex;
 				fileiEnd = selectedFileIndex;
 				// time per line
-				if(sett.getModeTimePerLine()==SettingsImage.MODE_TIME_PER_LINE) {
+				if(sett.getModeTimePerLine()==SettingsGeneralImage.MODE_TIME_PER_LINE) {
 					// get Spectrum by time per line
 					rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
 					rt2 = Math.floor(y2/sett.getSpotsize())*sett.getTimePerLine() + x2/sett.getVelocity();  

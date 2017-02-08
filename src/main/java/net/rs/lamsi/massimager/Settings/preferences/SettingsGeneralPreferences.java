@@ -3,6 +3,11 @@ package net.rs.lamsi.massimager.Settings.preferences;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import net.rs.lamsi.massimager.Settings.Settings;
 
 public class SettingsGeneralPreferences extends Settings {
@@ -16,7 +21,7 @@ public class SettingsGeneralPreferences extends Settings {
 	
 
 	public SettingsGeneralPreferences() {
-		super("/Settings/General/", "settPrefer");  
+		super("GeneralPreferences", "/Settings/General/", "settPrefer");  
 		resetAll();
 	}
 
@@ -26,6 +31,28 @@ public class SettingsGeneralPreferences extends Settings {
 		iconWidth = 60;
 		iconHeight = 16;
 		generatesIcons = true;
+	}
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "iconWidth", iconWidth); 
+		toXML(elParent, doc, "iconHeight",iconHeight ); 
+		toXML(elParent, doc, "generatesIcons", generatesIcons); 
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("iconWidth")) iconWidth = intFromXML(nextElement); 
+				else if(paramName.equals("iconHeight"))iconHeight = intFromXML(nextElement);  
+				else if(paramName.equals("generatesIcons"))generatesIcons = booleanFromXML(nextElement);  
+			}
+		}
 	}
 
 

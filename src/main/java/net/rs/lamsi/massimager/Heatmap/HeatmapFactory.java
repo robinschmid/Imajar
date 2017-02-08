@@ -5,9 +5,10 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.visualization.plots.SettingsThemes;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -32,7 +33,7 @@ public class HeatmapFactory {
 	// Image2D to Heatmap Image
 	public static Heatmap generateHeatmap(Image2D image)  throws Exception { 
 		SettingsPaintScale setPaint = image.getSettPaintScale();
-		SettingsImage setImg = image.getSettImage();
+		SettingsGeneralImage setImg = image.getSettImage();
 		// get rotated and reflected dataset
 		XYIData2D dat = image.toXYIArray(setImg); 
 		// Heatmap erzeugen
@@ -126,20 +127,20 @@ public class HeatmapFactory {
 
 	// Diese wird aufgerufen um Heatmap zu generieren.
 	// test heatmap bei ColorPicker Dialog
-	public static Heatmap generateHeatmap(SettingsPaintScale settings, SettingsImage settImage,  String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
+	public static Heatmap generateHeatmap(SettingsPaintScale settings, SettingsGeneralImage settImage,  String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
 		// chartpanel der Heatmap hinzufügen 
 		return createChart(null, settings, settImage, createDataset(title, xvalues, yvalues, zvalues));
 	}
 	
 
 	// erstellt ein JFreeChart Plot der heatmap
-	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsImage settImage, IXYZDataset dataset)  throws Exception  {
+	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset)  throws Exception  {
     	return createChart(img, settings, settImage, dataset, "x", "y");
     }
 	
 	// erstellt ein JFreeChart Plot der heatmap
 	// bwidth und bheight (BlockWidth) sind die Maximalwerte
-	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsImage settImage, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
+	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
         // this min max values in array
         double zmin = dataset.getZMin();
         double zmax = dataset.getZMax();
@@ -171,12 +172,12 @@ public class HeatmapFactory {
 	        // TODO upper and lower value setzen!!!!
 	        //two ways of min or max z value: 
 	        // min max values by filter
-	        if(settings.isUsesMinValues()==false) {
+	        if(settings.getModeMin().equals(ValueMode.PERCENTILE)) {
 	        	// uses filter for min
 	        	img.applyCutFilterMin(settings.getMinFilter());
 	        	settings.setMin(img.getMinZFiltered());
 	        }
-	        if(settings.isUsesMaxValues()==false) {
+	        if(settings.getModeMax().equals(ValueMode.PERCENTILE)) {
 	        	// uses filter for min
 	        	img.applyCutFilterMax(settings.getMaxFilter());
 	        	settings.setMax(img.getMaxZFiltered());

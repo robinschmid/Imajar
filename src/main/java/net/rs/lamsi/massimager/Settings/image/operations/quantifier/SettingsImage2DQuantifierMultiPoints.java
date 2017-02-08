@@ -8,7 +8,10 @@ import java.util.Vector;
 
 
 
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -100,4 +103,12 @@ public class SettingsImage2DQuantifierMultiPoints extends SettingsImage2DQuantif
 		DialogLoggerUtil.centerOnScreen(dialog, true);
 		dialog.setVisible(true);
 	}
+	
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+	} 
+	
 }

@@ -2,6 +2,9 @@ package net.rs.lamsi.massimager.Settings;
 
 import java.io.File;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 
 
 public class SettingsConverterRAW extends Settings {  
@@ -17,7 +20,7 @@ public class SettingsConverterRAW extends Settings {
 	private boolean is32bit = true, isZlibCompressed = true, isPeakPicking = false;
 
 	public SettingsConverterRAW(String path, String end) {
-		super(path, end); 
+		super("SettingsConverterRaw", path, end); 
 	}
 	
 	// returns the cmd line for msconvert.exe
@@ -71,6 +74,14 @@ public class SettingsConverterRAW extends Settings {
 
 	public void setPeakPicking(boolean isPeakPicking) {
 		this.isPeakPicking = isPeakPicking;
+	}
+
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
 	}
 
 	

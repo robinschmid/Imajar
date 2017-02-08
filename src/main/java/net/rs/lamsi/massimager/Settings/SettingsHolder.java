@@ -8,21 +8,26 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
-import net.rs.lamsi.massimager.Settings.image.SettingsExportGraphics;
-import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.SettingsMSImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
 import net.rs.lamsi.massimager.Settings.visualization.SettingsPlotSpectraLabelGenerator;
-import net.rs.lamsi.massimager.Settings.visualization.plots.SettingsThemes;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class SettingsHolder extends Settings {
 	// do not change the version!
@@ -72,7 +77,7 @@ public class SettingsHolder extends Settings {
 
 	public SettingsHolder() {
 		// alle settings in einer groﬂen
-		super("/Settings/", "setall");
+		super("SettingsHolder", "/Settings/", "setall");
 		// list
 		settList = new Vector<Settings>();
 		// einzelne settings 
@@ -134,8 +139,29 @@ public class SettingsHolder extends Settings {
 		for(Settings s : settList)
 			s.resetAll(); 
 	}  
+	
+
+	//##################################################################################
+	// xml
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		for(Settings s : settList) {
+			s.appendSettingsToXML(elParent, doc);
+		}
+	}
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		for(Settings s : settList) {
+			NodeList list = doc.getElementsByTagName(s.getDescription());
+			if(list.getLength()==1 && list.item(0).getNodeType() == Node.ELEMENT_NODE) {
+				s.loadValuesFromXML((Element)list.item(0), doc);
+			}
+		}
+	}
 
 
+	//##################################################################################
+	// binary
 	public File saveSettingsToFile(Component parentFrame, Class settingsClass)  throws Exception { 
 		return saveSettingsToFile(parentFrame, getSetByClass(settingsClass));
 	}

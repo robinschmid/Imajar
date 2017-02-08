@@ -1,4 +1,4 @@
-package net.rs.lamsi.massimager.Settings.visualization.plots;
+package net.rs.lamsi.massimager.Settings.image.visualisation;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -6,10 +6,15 @@ import java.text.NumberFormat;
 import java.util.Vector;
 
 import org.jfree.chart.JFreeChart;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
 import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
 import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 
 public class SettingsThemes extends Settings {
 	// do not change the version!
@@ -67,7 +72,7 @@ public class SettingsThemes extends Settings {
 	
 	
 	public SettingsThemes() {
-		super("/Settings/Visualization/", "setPStyle"); 
+		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
 		theme = ChartThemeFactory.getStandardTheme();
 		resetAll();
 	} 
@@ -76,7 +81,7 @@ public class SettingsThemes extends Settings {
 	 * @param theme example: ChartThemeFactory.THEME_KARST
 	 */
 	public SettingsThemes(int themeid) {
-		super("/Settings/Visualization/", "setPStyle"); 
+		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
 		resetAll();
 		this.theme = ChartThemeFactory.createChartTheme(themeid);
 	} 
@@ -166,6 +171,35 @@ public class SettingsThemes extends Settings {
 		listFontColor.add(cAxes);
 		listFontColor.add(cTitle);
 	}
+	
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "isAntiAliased", isAntiAliased); 
+		toXML(elParent, doc, "showTitle", showTitle); 
+		toXML(elParent, doc, "noBackground", isNoBackground()); 
+		
+		theme.appendThemeSettingsToXML(elParent, doc);
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("isAntiAliased")) isAntiAliased = booleanFromXML(nextElement); 
+				else if(paramName.equals("showTitle"))showTitle = booleanFromXML(nextElement);  
+				else if(paramName.equals("noBackground"))setNoBackground(booleanFromXML(nextElement));  
+				else if(paramName.equals(MyStandardChartTheme.XML_DESC))
+					theme.loadValuesFromXML(nextElement, doc);
+				
+			}
+		}
+	}
+	
 	
 	/**
 	 * applies theme to chart

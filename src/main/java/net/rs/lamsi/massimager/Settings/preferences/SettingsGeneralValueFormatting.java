@@ -3,6 +3,11 @@ package net.rs.lamsi.massimager.Settings.preferences;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import net.rs.lamsi.massimager.Settings.Settings;
 
 public class SettingsGeneralValueFormatting extends Settings {
@@ -15,7 +20,7 @@ public class SettingsGeneralValueFormatting extends Settings {
 	
 
 	public SettingsGeneralValueFormatting() {
-		super("/Settings/General/", "valform");  
+		super("SettingsGeneralValueFormatting", "/Settings/General/", "valform");  
 		resetAll();
 	}
 
@@ -28,6 +33,30 @@ public class SettingsGeneralValueFormatting extends Settings {
 		isShowingExponentIntensity = true;
 	}
 
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "decimalsMZ", decimalsMZ); 
+		toXML(elParent, doc, "decimalsIntensity", decimalsIntensity); 
+		toXML(elParent, doc, "decimalsRT", decimalsRT); 
+		toXML(elParent, doc, "isShowingExponentIntensity", isShowingExponentIntensity); 
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("decimalsMZ")) decimalsMZ = intFromXML(nextElement); 
+				else if(paramName.equals("decimalsIntensity"))decimalsIntensity = intFromXML(nextElement);  
+				else if(paramName.equals("decimalsRT"))decimalsRT = intFromXML(nextElement);  
+				else if(paramName.equals("isShowingExponentIntensity"))isShowingExponentIntensity = booleanFromXML(nextElement);  
+			}
+		}
+	}
 
 	public int getDecimalsMZ() {
 		return decimalsMZ;

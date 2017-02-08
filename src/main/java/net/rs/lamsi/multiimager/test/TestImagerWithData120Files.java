@@ -6,8 +6,8 @@ import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;

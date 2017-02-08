@@ -1,11 +1,11 @@
 package net.rs.lamsi.massimager.Settings;
 
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.sf.mzmine.parameters.parametertypes.MZTolerance;
 import net.sf.mzmine.parameters.parametertypes.RTTolerance;
 
 
-public class SettingsChargeCalculator extends SettingsImage {
+public class SettingsChargeCalculator extends SettingsGeneralImage {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //

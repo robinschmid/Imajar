@@ -1,5 +1,8 @@
 package net.rs.lamsi.massimager.Settings.image.operations;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.Image2DQuantifyStrategyImpl;
@@ -21,7 +24,7 @@ public class SettingsImage2DOperations  extends Settings  implements Image2DQuan
 	
 	
 	public SettingsImage2DOperations() {
-		super("/Settings/operations/", "setOp"); 
+		super("SettingsImage2DOperations", "/Settings/operations/", "setOp"); 
 		internalQuantifier = new SettingsImage2DQuantifierIS();
 		blankQuantifier = new SettingsImage2DBlankSubtraction();
 		resetAll();		
@@ -99,6 +102,13 @@ public class SettingsImage2DOperations  extends Settings  implements Image2DQuan
 	}
 	public void setBlankQuantifier(SettingsImage2DBlankSubtraction blankQuantifier) {
 		this.blankQuantifier = blankQuantifier;
+	}
+	
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
 	} 
 	
 }

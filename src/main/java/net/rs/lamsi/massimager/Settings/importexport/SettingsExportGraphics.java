@@ -1,8 +1,13 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.importexport;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -27,7 +32,7 @@ public class SettingsExportGraphics extends Settings {
 	
 	
 	public SettingsExportGraphics() {
-		super("/Settings/export", "setExport"); 
+		super("GraphicsExport", "/Settings/export", "setExport"); 
 		resetAll();		
 	} 
 	@Override
@@ -36,6 +41,37 @@ public class SettingsExportGraphics extends Settings {
 		format = 0;  
 		fileName = "";
 		resolution = new SettingsImageResolution();
+	}
+	
+
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "fileName", fileName); 
+		toXML(elParent, doc, "path", path); 
+		toXML(elParent, doc, "format", format); 
+		toXML(elParent, doc, "useOnlyWidth", useOnlyWidth); 
+		toXML(elParent, doc, "colorBackground", colorBackground); 
+		resolution.appendSettingsToXML(elParent, doc);
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("fileName")) fileName = nextElement.getTextContent(); 
+				else if(paramName.equals("path"))path = fileFromXML(nextElement);  
+				else if(paramName.equals("format"))format = intFromXML(nextElement);  
+				else if(paramName.equals("useOnlyWidth"))useOnlyWidth = booleanFromXML(nextElement);  
+				else if(paramName.equals("colorBackground"))colorBackground = colorFromXML(nextElement);  
+				else if(paramName.equals(resolution.getDescription()))
+					resolution.loadValuesFromXML(nextElement, doc);
+			}
+		}
 	}
 	/**
 	 * Parses the full file path with path\filename.format

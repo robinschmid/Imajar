@@ -21,8 +21,8 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorPicker2;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
 import org.jfree.chart.ChartPanel;

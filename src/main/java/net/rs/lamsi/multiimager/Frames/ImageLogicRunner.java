@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -14,7 +13,6 @@ import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
@@ -24,8 +22,7 @@ import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -35,9 +32,7 @@ import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
-import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.jfree.chart.ChartPanel;
 
 public class ImageLogicRunner {
@@ -358,7 +353,7 @@ public class ImageLogicRunner {
 	 * or set up the direct imaging analysis
 	 * @param settingsDataImport
 	 */
-	public void importDataToImage(SettingsImageDataImport settingsDataImport) { 
+	public void importDataToImage(SettingsImageDataImportTxt settingsDataImport) { 
 		// import TXT or csv
 		if(settingsDataImport instanceof SettingsImageDataImportTxt) { 
 			// txt chooser

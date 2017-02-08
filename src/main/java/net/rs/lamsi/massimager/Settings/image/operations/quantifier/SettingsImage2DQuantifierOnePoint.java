@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -49,4 +52,12 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
 	public void setConcentrationEx(double c) {
 		imgEx.setConcentration(c);
 	}
+	
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+	} 
+	
 }

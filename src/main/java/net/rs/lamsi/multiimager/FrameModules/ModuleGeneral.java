@@ -26,9 +26,8 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
@@ -38,7 +37,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
-public class ModuleGeneral extends ImageSettingsModule<SettingsImage> { 
+public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> { 
 	//
 	private ImageEditorWindow window;
 	
@@ -63,7 +62,7 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsImage> {
 	 * Create the panel.
 	 */
 	public ModuleGeneral(ImageEditorWindow wnd) {
-		super("General", false, SettingsImage.class);  
+		super("General", false, SettingsGeneralImage.class);  
 		window = wnd;
 		
 		JPanel pnNorth = new JPanel();
@@ -279,7 +278,7 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsImage> {
 	// LOGIC
 	// Paintsclae from Image
 	@Override
-	public void setAllViaExistingSettings(SettingsImage si) {  
+	public void setAllViaExistingSettings(SettingsGeneralImage si) {  
 		ImageLogicRunner.setIS_UPDATING(false);
 		// new reseted ps
 		if(si == null) {
@@ -293,8 +292,8 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsImage> {
 		
 		this.getCbBiaryData().setSelected(si.isBinaryData());
 		// 
-		getBtnImagingOneWay().setSelected(settings.getImagingMode()==SettingsImage.MODE_IMAGING_ONEWAY);
-		getBtnImagingTwoWays().setSelected(settings.getImagingMode()!=SettingsImage.MODE_IMAGING_ONEWAY);
+		getBtnImagingOneWay().setSelected(settings.getImagingMode()==SettingsGeneralImage.MODE_IMAGING_ONEWAY);
+		getBtnImagingTwoWays().setSelected(settings.getImagingMode()!=SettingsGeneralImage.MODE_IMAGING_ONEWAY);
 		// reflection
 		getBtnReflectHorizontal().setSelected(settings.isReflectHorizontal());
 		getBtnReflectVertical().setSelected(settings.isReflectVertical());
@@ -311,10 +310,10 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsImage> {
 	} 
 
 	@Override
-	public SettingsImage writeAllToSettings(SettingsImage settImage) {
+	public SettingsGeneralImage writeAllToSettings(SettingsGeneralImage settImage) {
 		if(settImage!=null) {
 			try {
-				int imagingMode = getBtnImagingOneWay().isSelected()? SettingsImage.MODE_IMAGING_ONEWAY : SettingsImage.MODE_IMAGING_TWOWAYS;
+				int imagingMode = getBtnImagingOneWay().isSelected()? SettingsGeneralImage.MODE_IMAGING_ONEWAY : SettingsGeneralImage.MODE_IMAGING_TWOWAYS;
 				int rotation = 270;
 				if(getRbRotation0().isSelected()) rotation = 0;
 				if(getRbRotation90().isSelected()) rotation = 90;

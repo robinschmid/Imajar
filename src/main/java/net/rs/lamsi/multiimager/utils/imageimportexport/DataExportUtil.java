@@ -9,14 +9,14 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.ProgressMonitor;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport.FileType;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierMultiPoints;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTaskMonitor;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;

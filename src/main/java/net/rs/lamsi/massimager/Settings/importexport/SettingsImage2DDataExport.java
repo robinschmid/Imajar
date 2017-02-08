@@ -1,16 +1,21 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.importexport;
 
 import java.io.File;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 
 public class SettingsImage2DDataExport extends Settings { 
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
 	public SettingsImage2DDataExport() {
-		super("/Settings/Export/Image2D", "settExImg2DData"); 
+		super("ImageDataExport","/Settings/Export/Image2D", "settExImg2DData"); 
 		resetAll();
 	} 
 	/**
@@ -62,6 +67,44 @@ public class SettingsImage2DDataExport extends Settings {
 		isWriteTitleRow = true;
 		isWritingToClipboard = false;
 		mode = ModeData.X_MATRIX_STANDARD;
+	}
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "path", path); 
+		toXML(elParent, doc, "filename", filename); 
+		toXML(elParent, doc, "separation", separation); 
+		toXML(elParent, doc, "fileFormat", fileFormat); 
+		toXML(elParent, doc, "isCuttingDataToMin", isCuttingDataToMin); 
+		toXML(elParent, doc, "exportsAllFiles", exportsAllFiles); 
+		toXML(elParent, doc, "savesAllFilesToOneXLS", savesAllFilesToOneXLS); 
+		toXML(elParent, doc, "isWriteTitleRow", isWriteTitleRow); 
+		toXML(elParent, doc, "isWritingToClipboard", isWritingToClipboard); 
+		toXML(elParent, doc, "mode", mode); 
+		toXML(elParent, doc, "isExportRaw", isExportRaw); 
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("path")) path = nextElement.getTextContent();
+				else if(paramName.equals("filename")) filename = nextElement.getTextContent();
+				else if(paramName.equals("separation")) separation = nextElement.getTextContent(); 
+				else if(paramName.equals("fileFormat"))fileFormat = FileType.valueOf(nextElement.getTextContent());  
+				else if(paramName.equals("mode"))mode = ModeData.valueOf(nextElement.getTextContent());  
+				else if(paramName.equals("exportsAllFiles"))exportsAllFiles = booleanFromXML(nextElement);  
+				else if(paramName.equals("savesAllFilesToOneXLS"))savesAllFilesToOneXLS = booleanFromXML(nextElement);  
+				else if(paramName.equals("isExportRaw"))isExportRaw = booleanFromXML(nextElement);  
+				else if(paramName.equals("isWriteTitleRow"))isWriteTitleRow = booleanFromXML(nextElement);  
+				else if(paramName.equals("isWritingToClipboard"))isWritingToClipboard = booleanFromXML(nextElement);  
+				else if(paramName.equals("isCuttingDataToMin"))isCuttingDataToMin = booleanFromXML(nextElement);  
+			}
+		}
 	}
 
 	/**

@@ -2,12 +2,15 @@ package net.rs.lamsi.massimager.Settings;
 
 import java.io.File;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class SettingsDataSaver extends Settings { 
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
 	public SettingsDataSaver(String path, String end) {
-		super(path, end); 
+		super("SettingsDataSaver", path, end); 
 	}
 	//
 	public static final int FORMAT_XLS = 0, FORMAT_TXT = 1, FORMAT_CLIPBOARD = 2;
@@ -25,6 +28,18 @@ public class SettingsDataSaver extends Settings {
 
 	@Override
 	public void resetAll() {
+		
+	}
+	
+
+
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
 		
 	}
 	

@@ -1,13 +1,20 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.importexport;
 
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
-public class SettingsImageDataImportTxt extends SettingsImageDataImport {
+public class SettingsImageDataImportTxt extends Settings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
@@ -26,6 +33,7 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	protected ModeData modeData = ModeData.ONLY_Y;
 	protected FileNameExtFilter filter;
 	protected boolean isFilesInSeparateFolders = false;
+	protected boolean isSearchingForMetaData = true;
 	// filter lines and dp (0 = no filter)
 	protected int startLine=0, endLine=0, startDP=0, endDP=0;
 	// splitting settings
@@ -48,17 +56,19 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	}
 
 	public SettingsImageDataImportTxt(String path, String fileEnding, IMPORT modeImport, boolean isSearchingForMetaData, String sSeparation, FileNameExtFilter filter) {
-		super(path, fileEnding, isSearchingForMetaData);  
+		super("ImageDataImportTxt", path, fileEnding);  
 		this.sSeparation = sSeparation;
 		this.modeImport = modeImport;
 		this.filter = filter;
+		this.isSearchingForMetaData =isSearchingForMetaData;
 	}
 	public SettingsImageDataImportTxt(IMPORT modeImport, boolean isSearchingForMetaData, String sSeparation, FileNameExtFilter filter, boolean isFilesInSeparateFolders) {
-		super("/Settings/Import/", "txt2img", isSearchingForMetaData);  
+		super("ImageDataImportTxt", "/Settings/Import/", "txt2img");  
 		this.sSeparation = sSeparation;
 		this.modeImport = modeImport;
 		this.filter = filter;
 		this.isFilesInSeparateFolders = isFilesInSeparateFolders;
+		this.isSearchingForMetaData =isSearchingForMetaData;
 	}
 	public SettingsImageDataImportTxt(IMPORT modeImport, boolean isSearchingForMetaData, String sSeparation, boolean isFilesInSeparateFolders) {
 		this(modeImport, isSearchingForMetaData, sSeparation, new FileNameExtFilter("", ""), isFilesInSeparateFolders);
@@ -99,6 +109,58 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 		isFilesInSeparateFolders = false;
 	}
 
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "splitUnit",splitUnit ); 
+		toXML(elParent, doc, "splitStart", splitStart); 
+		toXML(elParent, doc, "splitAfter", splitAfter); 
+		toXML(elParent, doc, "useHardSplit", useHardSplit); 
+		toXML(elParent, doc, "noXData", noXData); 
+		toXML(elParent, doc, "excludeColumns", excludeColumns); 
+		
+		toXML(elParent, doc, "modeData", modeData); 
+		toXML(elParent, doc, "endDP", endDP); 
+		toXML(elParent, doc, "startDP", startDP); 
+		toXML(elParent, doc, "startLine", startLine); 
+		toXML(elParent, doc, "endLine", endLine); 
+		
+		toXML(elParent, doc, "sSeparation", sSeparation); 
+		toXML(elParent, doc, "modeImport", modeImport); 
+		toXML(elParent, doc, "isSearchingForMetaData", isSearchingForMetaData); 
+		toXML(elParent, doc, "filter.ext", filter.getExt()); 
+		toXML(elParent, doc, "filter.start", filter.getStartsWith()); 
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("splitUnit")) splitUnit = XUNIT.valueOf(nextElement.getTextContent()); 
+				else if(paramName.equals("splitStart"))splitStart = floatFromXML(nextElement);  
+				else if(paramName.equals("splitAfter"))splitAfter = floatFromXML(nextElement);  
+				else if(paramName.equals("useHardSplit"))useHardSplit = booleanFromXML(nextElement);  
+				else if(paramName.equals("noXData"))noXData = booleanFromXML(nextElement);  
+				else if(paramName.equals("excludeColumns"))excludeColumns = nextElement.getTextContent();  
+				
+				else if(paramName.equals("modeData"))modeData = ModeData.valueOf(nextElement.getTextContent());  
+				else if(paramName.equals("endDP"))endDP = intFromXML(nextElement);  
+				else if(paramName.equals("startDP"))startDP = intFromXML(nextElement);  
+				else if(paramName.equals("startLine"))startLine = intFromXML(nextElement);  
+				else if(paramName.equals("endLine"))endLine = intFromXML(nextElement);  
+				
+				else if(paramName.equals("sSeparation"))sSeparation = nextElement.getTextContent();  
+				else if(paramName.equals("modeImport"))modeImport = IMPORT.valueOf(nextElement.getTextContent()); 
+				else if(paramName.equals("filter.ext"))filter.setExt(nextElement.getTextContent());
+				else if(paramName.equals("filter.start"))filter.setStartsWith(nextElement.getTextContent());  
+				else if(paramName.equals("isSearchingForMetaData"))isSearchingForMetaData = booleanFromXML(nextElement);  
+			}
+		}
+	}
 
 	public String getSeparation() {
 		return sSeparation;
@@ -280,5 +342,10 @@ public class SettingsImageDataImportTxt extends SettingsImageDataImport {
 	public int getSplitStartDP() {
 		return Math.round(splitStart);
 	}
-
+	public boolean isSearchingForMetaData() {
+		return isSearchingForMetaData;
+	}
+	public void setSearchingForMetaData(boolean isSearchingForMetaData) {
+		this.isSearchingForMetaData = isSearchingForMetaData;
+	}
 }

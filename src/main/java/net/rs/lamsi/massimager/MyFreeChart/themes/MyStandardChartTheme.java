@@ -3,14 +3,21 @@ package net.rs.lamsi.massimager.MyFreeChart.themes;
 import java.awt.Color;
 import java.awt.Paint;
 
+import net.rs.lamsi.massimager.Settings.Settings;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.title.PaintScaleLegend;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
  
 
 public class MyStandardChartTheme extends StandardChartTheme {
 	
+	public static final String XML_DESC = "ChartTheme";
 	protected Paint axisLinePaint = Color.black;
 	protected int themeID;
 
@@ -64,6 +71,50 @@ public class MyStandardChartTheme extends StandardChartTheme {
         	chart.getLegend().setBackgroundPaint(this.getPlotBackgroundPaint());
 	}
 
+
+	//#########################################################################
+	// xml import export
+	public void appendThemeSettingsToXML(Element elParent, Document doc) {
+		Element el = doc.createElement(XML_DESC);
+		elParent.appendChild(el);
+
+		Settings.toXML(el, doc, "axisLinePaint", axisLinePaint); 
+		Settings.toXML(el, doc, "themeID", themeID); 
+		Settings.toXML(el, doc, "showXGrid", showXGrid); 
+		Settings.toXML(el, doc, "showYGrid",showYGrid); 
+		Settings.toXML(el, doc, "showXAxis", showXAxis ); 
+		Settings.toXML(el, doc, "showYAxis", showYAxis); 
+		Settings.toXML(el, doc, "showScale", showScale); 
+		Settings.toXML(el, doc, "isPaintScaleInPlot", isPaintScaleInPlot); 
+		Settings.toXML(el, doc, "scaleUnit",scaleUnit); 
+		Settings.toXML(el, doc, "scaleFactor", scaleFactor); 
+		Settings.toXML(el, doc, "scaleValue", scaleValue); 
+		Settings.toXML(el, doc, "scaleXPos", scaleXPos); 
+		Settings.toXML(el, doc, "scaleYPos", scaleYPos);  
+	}
+
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("axisLinePaint")) axisLinePaint = Settings.colorFromXML(nextElement); 
+				else if(paramName.equals("themeID"))themeID = Settings.intFromXML(nextElement);  
+				else if(paramName.equals("showXGrid"))showXGrid = Settings.booleanFromXML(nextElement);  
+				else if(paramName.equals("showYGrid"))showYGrid = Settings.booleanFromXML(nextElement);  
+				else if(paramName.equals("showXAxis"))showXAxis = Settings.booleanFromXML(nextElement);  
+				else if(paramName.equals("showYAxis"))showYAxis = Settings.booleanFromXML(nextElement);  
+				else if(paramName.equals("showScale"))showScale = Settings.booleanFromXML(nextElement);  
+				else if(paramName.equals("isPaintScaleInPlot"))isPaintScaleInPlot = Settings.booleanFromXML(nextElement);  
+				else if(paramName.equals("scaleUnit"))scaleUnit = nextElement.getTextContent();  
+				else if(paramName.equals("scaleFactor"))scaleFactor = Settings.floatFromXML(nextElement);  
+				else if(paramName.equals("scaleValue"))scaleValue = Settings.floatFromXML(nextElement);  
+				else if(paramName.equals("scaleXPos"))scaleXPos = Settings.floatFromXML(nextElement);  
+				else if(paramName.equals("scaleYPos"))scaleYPos = Settings.floatFromXML(nextElement);  
+			}
+		}
+	}
 	
 	
 	// GETTERS AND SETTERS

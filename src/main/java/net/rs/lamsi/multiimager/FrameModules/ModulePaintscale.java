@@ -36,13 +36,15 @@ import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.multiimager.FrameModules.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	//################################################################################################
@@ -70,15 +72,9 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	private JButton btnReset;
 	private Component verticalStrut;
 	private Component verticalStrut_1;
-	private JLabel lblMinimumPercentage;
 	private JSlider sliderMinimum;
 	private Component verticalStrut_2;
-	private JLabel lblMaximumPercentage;
 	private JSlider sliderMaximum;
-	private JRadioButton rbUseMinValues;
-	private JRadioButton rbUseMaxValues;
-	private JRadioButton rbUseMinFilter;
-	private JRadioButton rbUseMaxFilter;
 	private JSeparator separator;
 	private JTextField txtMinFilter;
 	private JLabel label;
@@ -87,7 +83,6 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private JLabel lblAbs;
-	private JLabel lblAbs_1;
 	private JButton btnApplyMinFilter;
 	private JButton btnApplyMaxFilter;
 	private Component verticalStrut_3;
@@ -252,27 +247,50 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		
 		pnMinMax = new JPanel();
 		getPnContent().add(pnMinMax, "cell 0 1,growx,aligny top");
-		pnMinMax.setLayout(new MigLayout("", "[][grow][grow]", "[][][][][][][][][][][][]"));
+		pnMinMax.setLayout(new MigLayout("", "[][grow][grow]", "[][grow][][][][][][][][][][][][]"));
 		
 		cbMinimumTransparent = new JCheckBox("minimum transparent");
 		pnMinMax.add(cbMinimumTransparent, "cell 0 0 3 1,alignx left");
 		
-		rbUseMinValues = new JRadioButton("");
-		rbUseMinValues.setToolTipText("Use absolute values");
-		buttonGroup.add(rbUseMinValues);
-		rbUseMinValues.setSelected(true);
-		pnMinMax.add(rbUseMinValues, "cell 0 2 1 2");
+		panel_2 = new JPanel();
+		panel_2.setPreferredSize(new Dimension(10, 120));
+		pnMinMax.add(panel_2, "cell 0 1 3 1,grow");
 		
 		JLabel lblMinimum = new JLabel("minimum");
 		lblMinimum.setFont(new Font("Tahoma", Font.BOLD, 11));
-		pnMinMax.add(lblMinimum, "cell 1 2,alignx trailing");
+		pnMinMax.add(lblMinimum, "cell 0 2 2 1,alignx left");
 		
-		txtMinimum = new JTextField();
-		pnMinMax.add(txtMinimum, "flowx,cell 2 2,alignx left");
-		txtMinimum.setColumns(10);
-		
-		lblMinimumPercentage = new JLabel("0 %");
-		pnMinMax.add(lblMinimumPercentage, "cell 1 3,alignx trailing");
+		comboMinValType = new JComboBox();
+		comboMinValType.setModel(new DefaultComboBoxModel(ValueMode.values()));
+		pnMinMax.add(comboMinValType, "cell 2 2,growx");
+		comboMinValType.addItemListener(new ItemListener() {
+			@Override
+		    public void itemStateChanged(ItemEvent event) {
+		       if (event.getStateChange() == ItemEvent.SELECTED) {
+		    	   ValueMode mode = (ValueMode)comboMinValType.getSelectedItem();
+		    	   switch(mode) {
+		    	   case ABSOLUTE: 
+		    		   getTxtMinimum().setEditable(true);
+		    		   getTxtMinFilter().setEditable(true);
+		    		   getTxtMinPerc().setEditable(false);
+		    		   getSliderMinimum().setEnabled(false);
+		    		   break;
+		    	   case PERCENTILE:
+		    		   getTxtMinimum().setEditable(false);
+		    		   getTxtMaxFilter().setEditable(true);
+		    		   getTxtMaxPerc().setEditable(false);
+		    		   getSliderMinimum().setEnabled(false);
+		    		   break;
+		    	   case RELATIVE: 
+		    		   getTxtMinimum().setEditable(false);
+		    		   getTxtMinFilter().setEditable(false);
+		    		   getTxtMinPerc().setEditable(true);
+		    		   getSliderMinimum().setEnabled(true);
+		    		   break;
+		    	   }
+		       }
+		    }
+	});
 		
 		sliderMinimum = new JSlider();
 		sliderMinimum.addChangeListener(new ChangeListener() {
@@ -283,64 +301,79 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			    }
 			}
 		});
+		
+		txtMinimum = new JTextField();
+		pnMinMax.add(txtMinimum, "cell 1 3,alignx left");
+		txtMinimum.setColumns(14);
+		
+		txtMinPerc = new JTextField();
+		pnMinMax.add(txtMinPerc, "cell 1 4,growx");
+		txtMinPerc.setColumns(10);
+		
+		label_2 = new JLabel("%");
+		pnMinMax.add(label_2, "flowx,cell 2 4");
 		sliderMinimum.setMaximum(100000);
 		sliderMinimum.setValue(0);
-		pnMinMax.add(sliderMinimum, "cell 2 3");
+		pnMinMax.add(sliderMinimum, "cell 2 4");
 		
 		verticalStrut_3 = Box.createVerticalStrut(20);
 		verticalStrut_3.setPreferredSize(new Dimension(0, 5));
 		verticalStrut_3.setMinimumSize(new Dimension(0, 5));
-		pnMinMax.add(verticalStrut_3, "cell 1 4");
-		
-		rbUseMinFilter = new JRadioButton("");
-		rbUseMinFilter.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				JRadioButton rb = (JRadioButton) e.getSource();
-				// set enabled
-				getTxtMinFilter().setEnabled(rb.isSelected());
-				getBtnApplyMinFilter().setEnabled(rb.isSelected());
-				getTxtMinimum().setEnabled(!rb.isSelected());
-				getSliderMinimum().setEnabled(!rb.isSelected());
-			}
-		});
-		buttonGroup.add(rbUseMinFilter);
-		rbUseMinFilter.setToolTipText("Cut-filter");
-		pnMinMax.add(rbUseMinFilter, "cell 0 5");
+		pnMinMax.add(verticalStrut_3, "cell 1 5");
 		
 		txtMinFilter = new JTextField();
 		txtMinFilter.setToolTipText("Do not use the first X% of values");
 		txtMinFilter.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtMinFilter.setText("1");
-		pnMinMax.add(txtMinFilter, "cell 1 5,growx");
+		pnMinMax.add(txtMinFilter, "cell 1 6,growx");
 		txtMinFilter.setColumns(10);
 		
 		label = new JLabel("%");
-		pnMinMax.add(label, "flowx,cell 2 5");
+		pnMinMax.add(label, "flowx,cell 2 6");
 		
 		verticalStrut_2 = Box.createVerticalStrut(20);
 		verticalStrut_2.setPreferredSize(new Dimension(0, 10));
 		verticalStrut_2.setMinimumSize(new Dimension(0, 10));
-		pnMinMax.add(verticalStrut_2, "cell 1 6");
+		pnMinMax.add(verticalStrut_2, "cell 1 7");
 		
 		separator = new JSeparator();
-		pnMinMax.add(separator, "cell 1 7 2 1");
-		
-		rbUseMaxValues = new JRadioButton("");
-		rbUseMaxValues.setToolTipText("Use absolute values");
-		buttonGroup_1.add(rbUseMaxValues);
-		rbUseMaxValues.setSelected(true);
-		pnMinMax.add(rbUseMaxValues, "cell 0 8 1 2");
+		pnMinMax.add(separator, "flowx,cell 1 8 2 1");
 		
 		JLabel lblMaximum = new JLabel("maximum");
 		lblMaximum.setFont(new Font("Tahoma", Font.BOLD, 11));
-		pnMinMax.add(lblMaximum, "cell 1 8,alignx trailing");
+		pnMinMax.add(lblMaximum, "flowx,cell 0 9 2 1,alignx left");
 		
-		txtMaximum = new JTextField();
-		pnMinMax.add(txtMaximum, "flowx,cell 2 8,alignx left");
-		txtMaximum.setColumns(10);
-		
-		lblMaximumPercentage = new JLabel("0 %");
-		pnMinMax.add(lblMaximumPercentage, "cell 1 9,alignx trailing");
+		comboMaxValType = new JComboBox();
+		comboMaxValType.setModel(new DefaultComboBoxModel(ValueMode.values()));
+		pnMinMax.add(comboMaxValType, "cell 2 9,growx");
+		comboMaxValType.addItemListener(new ItemListener() {
+				@Override
+			    public void itemStateChanged(ItemEvent event) {
+			       if (event.getStateChange() == ItemEvent.SELECTED) {
+			    	   ValueMode mode = (ValueMode)comboMaxValType.getSelectedItem();
+			    	   switch(mode) {
+			    	   case ABSOLUTE: 
+			    		   getTxtMaximum().setEditable(true);
+			    		   getTxtMaxFilter().setEditable(true);
+			    		   getTxtMaxPerc().setEditable(false);
+			    		   getSliderMaximum().setEnabled(false);
+			    		   break;
+			    	   case PERCENTILE:
+			    		   getTxtMaximum().setEditable(false);
+			    		   getTxtMaxFilter().setEditable(true);
+			    		   getTxtMaxPerc().setEditable(false);
+			    		   getSliderMaximum().setEnabled(false);
+			    		   break;
+			    	   case RELATIVE: 
+			    		   getTxtMaximum().setEditable(false);
+			    		   getTxtMaxFilter().setEditable(false);
+			    		   getTxtMaxPerc().setEditable(true);
+			    		   getSliderMaximum().setEnabled(true);
+			    		   break;
+			    	   }
+			       }
+			    }
+		});
 		
 		sliderMaximum = new JSlider();
 		sliderMaximum.addChangeListener(new ChangeListener() {
@@ -351,50 +384,43 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			    }
 			}
 		});
+		
+		txtMaximum = new JTextField();
+		pnMinMax.add(txtMaximum, "flowx,cell 1 10,alignx left");
+		txtMaximum.setColumns(14);
+		
+		txtMaxPerc = new JTextField();
+		pnMinMax.add(txtMaxPerc, "cell 1 11,growx");
+		txtMaxPerc.setColumns(10);
+		
+		label_3 = new JLabel("%");
+		pnMinMax.add(label_3, "flowx,cell 2 11");
 		sliderMaximum.setValue(0);
 		sliderMaximum.setMaximum(100000);
-		pnMinMax.add(sliderMaximum, "cell 2 9");
+		pnMinMax.add(sliderMaximum, "cell 2 11");
 		
 		verticalStrut_4 = Box.createVerticalStrut(20);
 		verticalStrut_4.setPreferredSize(new Dimension(0, 5));
 		verticalStrut_4.setMinimumSize(new Dimension(0, 5));
-		pnMinMax.add(verticalStrut_4, "cell 1 10");
-		
-		rbUseMaxFilter = new JRadioButton("");
-		rbUseMaxFilter.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				JRadioButton rb = (JRadioButton) e.getSource();
-				// set enabled
-				getTxtMaxFilter().setEnabled(rb.isSelected());
-				getBtnApplyMaxFilter().setEnabled(rb.isSelected());
-				getTxtMaximum().setEnabled(!rb.isSelected());
-				getSliderMaximum().setEnabled(!rb.isSelected());
-			}
-		});
-		buttonGroup_1.add(rbUseMaxFilter);
-		rbUseMaxFilter.setToolTipText("Cut-filter");
-		pnMinMax.add(rbUseMaxFilter, "cell 0 11");
+		pnMinMax.add(verticalStrut_4, "cell 1 12");
 		
 		txtMaxFilter = new JTextField();
 		txtMaxFilter.setToolTipText("Do not use the last X% values");
 		txtMaxFilter.setText("1");
 		txtMaxFilter.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtMaxFilter.setColumns(10);
-		pnMinMax.add(txtMaxFilter, "cell 1 11,growx");
+		pnMinMax.add(txtMaxFilter, "cell 1 13,growx");
 		
 		label_1 = new JLabel("%");
-		pnMinMax.add(label_1, "flowx,cell 2 11");
+		pnMinMax.add(label_1, "flowx,cell 2 13");
 		
 		lblAbs = new JLabel("abs");
-		pnMinMax.add(lblAbs, "cell 2 2");
-		
-		lblAbs_1 = new JLabel("abs");
-		pnMinMax.add(lblAbs_1, "cell 2 8");
+		pnMinMax.add(lblAbs, "cell 2 3");
 		
 		btnApplyMinFilter = new JButton("Apply");
 		btnApplyMinFilter.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(currentImage!=null && rbUseMinFilter.isSelected()) {
+				if(currentImage!=null) {
 					try {
 						double f = doubleFromTxt(getTxtMinFilter());
 						currentImage.applyCutFilterMin(f);
@@ -406,12 +432,12 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 				}
 			}
 		});
-		pnMinMax.add(btnApplyMinFilter, "cell 2 5,growx");
+		pnMinMax.add(btnApplyMinFilter, "cell 2 6,growx");
 		
 		btnApplyMaxFilter = new JButton("Apply");
 		btnApplyMaxFilter.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(currentImage!=null && rbUseMaxFilter.isSelected()) {
+				if(currentImage!=null) {
 					try {
 						double f = doubleFromTxt(getTxtMaxFilter());
 						currentImage.applyCutFilterMax(f);
@@ -423,7 +449,10 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 				}
 			}
 		});
-		pnMinMax.add(btnApplyMaxFilter, "cell 2 11,growx");
+		pnMinMax.add(btnApplyMaxFilter, "cell 2 13,growx");
+		
+		lblAbs_3 = new JLabel("abs");
+		pnMinMax.add(lblAbs_3, "cell 2 10");
 		
 		// init 
 		colorPickerDialog = new ColorPicker2(this); 
@@ -481,13 +510,21 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	private JLabel lblLod;
 	private JLabel lblAbs_2;
 	private JCheckBox cbLODMonochrome;
+	private JPanel panel_2;
+	private JComboBox comboMinValType;
+	private JComboBox comboMaxValType;
+	private JTextField txtMinPerc;
+	private JTextField txtMaxPerc;
+	private JLabel lblAbs_3;
+	private JLabel label_2;
+	private JLabel label_3;
 	protected void setMinimumValuePercentage(double f) {
 		if(!(lastMinPercentage+1>f && lastMinPercentage-1<f)  && currentImage!=null) {
 			System.out.println("Setting Min % "+f);
 			lastMinPercentage = f;
 			// apply to all perc. components 
 			getSliderMinimum().setValue((int)(f*1000));
-			getLblMinimumPercentage().setText(formatPercentNumber(f)+"%");
+			getTxtMinPerc().setText(formatPercentNumber(f));
 			// absolute
 			double absMin = f*currentImage.getMaxIntensity(getCbOnlyUseSelectedMinMax().isSelected())/100.f;
 			setMinimumValue(absMin);
@@ -508,7 +545,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			lastMaxPercentage = f;
 			// apply to all perc. components
 			getSliderMaximum().setValue((int)(f*1000));
-			getLblMaximumPercentage().setText(formatPercentNumber(f)+"%");
+			getTxtMaxPerc().setText(formatPercentNumber(f));
 			// absolute
 			double absMax = f*currentImage.getMaxIntensity(getCbOnlyUseSelectedMinMax().isSelected())/100.f;
 			setMaximumValue(absMax);
@@ -534,6 +571,12 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		getTxtMinimum().getDocument().addDocumentListener(dl);
 		getTxtMaximum().getDocument().addDocumentListener(dl);
 		getTxtLOD().getDocument().addDocumentListener(dl);
+		
+		getTxtMaxPerc().getDocument().addDocumentListener(dl);
+		getTxtMinPerc().getDocument().addDocumentListener(dl);
+		
+		getComboMaxValType().addItemListener(il);
+		getComboMinValType().addItemListener(il);
 
 		getCbBlackAsMax().addActionListener(al);
 		getCbWhiteAsMin().addActionListener(al);
@@ -544,11 +587,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		getCbUseMinMax().addActionListener(al);
 		getCbOnlyUseSelectedMinMax().addActionListener(al);
 
-		getRbUseMaxFilter().addActionListener(al);
-		getRbUseMinFilter().addActionListener(al);
-		getRbUseMaxValues().addActionListener(al);
-		getRbUseMinValues().addActionListener(al); 
-
+		
 		getBtnApplyMinFilter().addActionListener(al);
 		getBtnApplyMaxFilter().addActionListener(al);
 		
@@ -558,6 +597,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		getBtnMaxColor().addColorChangedListener(ccl);
 		// LOD 
 		getCbLODMonochrome().addActionListener(al);
+		
 		
 	}
 
@@ -577,22 +617,21 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		this.getTxtLevels().setText(String.valueOf(ps.getLevels()));
 		this.getTxtMinimum().setText(formatAbsNumber(ps.getMin()));
 		this.getTxtMaximum().setText(formatAbsNumber(ps.getMax()));
+		// comboboxes
+		getComboMinValType().setSelectedItem(ps.getModeMin());
+		getComboMaxValType().setSelectedItem(ps.getModeMax());
 		// percentage
-		float perMin = (float) (ps.getMin()/currentImage.getMaxIntensity(ps.isUsesMinMaxFromSelection())*100.f);
-		float perMax = (float) (ps.getMax()/currentImage.getMaxIntensity(ps.isUsesMinMaxFromSelection())*100.f);
+		double perMin = currentImage.getPercentage(ps.getMin(), ps.isUsesMinMaxFromSelection());
+		double perMax = currentImage.getPercentage(ps.getMax(), ps.isUsesMinMaxFromSelection());
 		perMax = perMax==0 || perMax<=perMin? 100 : perMax;
 		this.getSliderMinimum().setValue((int)perMin*1000);
 		this.getSliderMaximum().setValue((int)perMax*1000);
-		this.getLblMinimumPercentage().setText(formatPercentNumber(perMin)+"%");
-		this.getLblMaximumPercentage().setText(formatPercentNumber(perMax)+"%");
+		this.getTxtMinPerc().setText(formatPercentNumber(perMin));
+		this.getTxtMaxPerc().setText(formatPercentNumber(perMax));
 		//max
 		this.getTxtMinFilter().setText(String.valueOf(ps.getMinFilter()));
 		this.getTxtMaxFilter().setText(String.valueOf(ps.getMaxFilter()));
 		//rb
-		getRbUseMinFilter().setSelected(!ps.isUsesMinValues());
-		getRbUseMinValues().setSelected(ps.isUsesMinValues());
-		getRbUseMaxFilter().setSelected(!ps.isUsesMaxValues());
-		getRbUseMaxValues().setSelected(ps.isUsesMaxValues());
 
 		this.getCbMonochrom().setSelected(ps.isMonochrom());
 		this.getCbGreyScale().setSelected(ps.isGrey());
@@ -632,7 +671,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 						getCbMonochrom().isSelected(), getCbInvert().isSelected(), 
 						getCbBlackAsMax().isSelected(), getCbWhiteAsMin().isSelected(), getCbUseMinMax().isSelected(), 
 						getCbMinimumTransparent().isSelected(),
-						getRbUseMinValues().isSelected(), getRbUseMaxValues().isSelected(),
+						ValueMode.PERCENTILE, ValueMode.PERCENTILE, //TODO
 						doubleFromTxt(getTxtMinimum()), 
 						doubleFromTxt(getTxtMaximum()), 
 						getBtnMinColor().getBackground(), getBtnMaxColor().getBackground(),
@@ -697,31 +736,13 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	} 
 	public JSlider getSliderBrightness() {
 		return sliderBrightness;
-	}
-	public JLabel getLblMinimumPercentage() {
-		return lblMinimumPercentage;
-	}
-	public JLabel getLblMaximumPercentage() {
-		return lblMaximumPercentage;
-	}
+	} 
 	public JSlider getSliderMaximum() {
 		return sliderMaximum;
 	}
 	public JSlider getSliderMinimum() {
 		return sliderMinimum;
-	}
-	public JRadioButton getRbUseMinValues() {
-		return rbUseMinValues;
-	}
-	public JRadioButton getRbUseMinFilter() {
-		return rbUseMinFilter;
-	}
-	public JRadioButton getRbUseMaxValues() {
-		return rbUseMaxValues;
-	}
-	public JRadioButton getRbUseMaxFilter() {
-		return rbUseMaxFilter;
-	}
+	} 
 	public JTextField getTxtMaxFilter() {
 		return txtMaxFilter;
 	}
@@ -751,5 +772,17 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	}
 	public JCheckBox getCbLODMonochrome() {
 		return cbLODMonochrome;
+	}
+	public JTextField getTxtMinPerc() {
+		return txtMinPerc;
+	}
+	public JTextField getTxtMaxPerc() {
+		return txtMaxPerc;
+	}
+	public JComboBox getComboMaxValType() {
+		return comboMaxValType;
+	}
+	public JComboBox getComboMinValType() {
+		return comboMinValType;
 	}
 }

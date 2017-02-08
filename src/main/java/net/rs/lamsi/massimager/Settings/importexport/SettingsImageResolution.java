@@ -1,6 +1,11 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.importexport;
 
 import java.awt.Dimension;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.massimager.Settings.Settings;
 
@@ -21,19 +26,42 @@ public class SettingsImageResolution extends Settings {
 	
 	
 	public SettingsImageResolution() {
-		super("", "");
+		super("SettingsImageResolution", "", "");
 		resetAll();		
 	} 
 	
 	@Override
 	public void resetAll() { 
-		size = null; 
+		size = new Dimension(0,0); 
 	} 
 	public int getResolution() {
 		return resolution;
 	}
 	public void setResolution(int resolution) {
 		this.resolution = resolution;
+	}
+
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "resolution", resolution); 
+		toXML(elParent, doc, "width", size.getWidth()); 
+		toXML(elParent, doc, "height", size.getHeight()); 
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("resolution")) resolution = intFromXML(nextElement); 
+				else if(paramName.equals("width"))size.setSize(doubleFromXML(nextElement), size.getHeight());  
+				else if(paramName.equals("height"))size.setSize(size.getWidth(), doubleFromXML(nextElement));
+			}
+		}
 	}
 	
 	/**

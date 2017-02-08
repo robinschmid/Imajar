@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 
 /**
  * basic dataset of multiple scan lines

@@ -4,11 +4,9 @@ import java.io.File;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.directimaging.DIATask;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
@@ -28,7 +26,7 @@ public class DirectImageLogicRunner implements Runnable {
 	// 
 	private TxtWriter writer = new TxtWriter();
 	private Thread thread; 
-	private SettingsImageDataImport settings;
+	private SettingsImageDataImportTxt settings;
 	// parameters
 	private boolean isPaused = true, sumTasks = true;
 	private File dir = null;
@@ -409,11 +407,11 @@ public class DirectImageLogicRunner implements Runnable {
 	 */
 	private DIATask createTask(File[] i, IconNode parent, int index) throws Exception {
 		// load them as image set
-		Image2D[] imgs = Image2DImportExportUtil.importTextDataToImage(i, (SettingsImageDataImportTxt) settings, true); 
+		Image2D[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
 		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
 		if(imgs.length>0) {
 			// add img to list
-			IconNode nodes[] = runner.addCollection2D(imgs, parent, (SettingsImageDataImportTxt) settings); 
+			IconNode nodes[] = runner.addCollection2D(imgs, parent, settings); 
 			// get all filedimensions like lines/length... for later comparison 
 			FileDim[] dim = writer.getFileDim(i);
 			// create task
@@ -468,7 +466,7 @@ public class DirectImageLogicRunner implements Runnable {
 		}
 	}
 
-	public void startDIA(File dir, SettingsImageDataImport settings) {
+	public void startDIA(File dir, SettingsImageDataImportTxt settings) {
 		this.dir = dir;
 		this.settings = settings; 
 		isFirstRun = true;
@@ -505,8 +503,7 @@ public class DirectImageLogicRunner implements Runnable {
 		this.fileExt = fileFilterExt;
 		this.fileFilter = new FileNameExtFilter(startsWith, fileExt);
 		if(settings!=null)
-			if(SettingsImageDataImportTxt.class.isInstance(settings))
-				((SettingsImageDataImportTxt)settings).setFilter(fileFilter);
+				settings.setFilter(fileFilter);
 		this.sumTasks = sumTasks;
 		this.autoScale = autoScale;
 		this.scaleFactor = scaleFactor;
@@ -538,13 +535,15 @@ public class DirectImageLogicRunner implements Runnable {
 			for(DIATask task : tasks) {
 				for(Image2D img : task.getImg()) { 
 					img.getSettPaintScale().setUsesMinMax(true);
-					img.getSettPaintScale().setUsesMaxValues(true);
+					img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
+					img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
 					img.getSettPaintScale().setMax(img.getMaxIntensity(false));
 				}
 			}
 			for(Image2D img : sumimages) {
 				img.getSettPaintScale().setUsesMinMax(true);
-				img.getSettPaintScale().setUsesMaxValues(true);
+				img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
+				img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
 				img.getSettPaintScale().setMax(img.getMaxIntensity(false));
 			}
 		}

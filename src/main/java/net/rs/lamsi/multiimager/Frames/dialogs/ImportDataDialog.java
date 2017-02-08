@@ -1,16 +1,23 @@
 package net.rs.lamsi.multiimager.Frames.dialogs;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -19,9 +26,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -29,39 +34,23 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
-
-import javax.swing.SwingConstants;
-
-import java.awt.Font;
-
-import javax.swing.BoxLayout;
-
-import java.awt.Component;
-
 public class ImportDataDialog extends JDialog {
 	//
-	protected SettingsImageDataImport settingsDataImport = null;
+	protected SettingsImageDataImportTxt settingsDataImport = null;
 	protected ImageLogicRunner runner;
 	private final ImportDataDialog thisframe;
 	// presets
-	private Vector<SettingsImageDataImport> presets;
+	private Vector<SettingsImageDataImportTxt> presets;
 	private JTextField txtOwnSeperation;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JPanel tabTXT;
@@ -485,7 +474,7 @@ public class ImportDataDialog extends JDialog {
 						btnSavePreset.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) { 
 								try {
-									SettingsImageDataImport sett = createSettingsForImport();
+									SettingsImageDataImportTxt sett = createSettingsForImport();
 									File file = SettingsHolder.getSettings().saveSettingsToFile(null, sett);
 									if(file!=null)
 										addPreset(sett, FileAndPathUtil.eraseFormat(file.getName()));
@@ -537,7 +526,7 @@ public class ImportDataDialog extends JDialog {
 	
 	protected void setAllViaExistingSettings(int i) {
 		// TODO Auto-generated method stub
-		SettingsImageDataImport sett = presets.get(i);
+		SettingsImageDataImportTxt sett = presets.get(i);
 		// set active tab
 		if(SettingsImageDataImportTxt.class.isInstance(sett)) {
 			SettingsImageDataImportTxt s = (SettingsImageDataImportTxt)sett;
@@ -618,7 +607,7 @@ public class ImportDataDialog extends JDialog {
 	 * load presets to list
 	 */
 	private void loadPresets() { 
-		presets = new Vector<SettingsImageDataImport>();
+		presets = new Vector<SettingsImageDataImportTxt>();
 		// load files from directory as presets
 		Settings sett = createSettingsForImport();
 		
@@ -632,7 +621,7 @@ public class ImportDataDialog extends JDialog {
 					for(File f : files.get(0)) {
 						// load
 						try {
-							SettingsImageDataImport load = (SettingsImageDataImport)SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
+							SettingsImageDataImportTxt load = (SettingsImageDataImportTxt)SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
 							if(load !=null)
 								addPreset(load, FileAndPathUtil.eraseFormat(f.getName()));
 						} catch(Exception ex) {
@@ -654,7 +643,7 @@ public class ImportDataDialog extends JDialog {
 	 * @param title
 	 * @return
 	 */
-	public void addPreset(final SettingsImageDataImport settings, String title) { 
+	public void addPreset(final SettingsImageDataImportTxt settings, String title) { 
 		// add to lists
 		((DefaultListModel)(getListPresets().getModel())).addElement(title);
 		presets.addElement(settings);
@@ -662,7 +651,7 @@ public class ImportDataDialog extends JDialog {
 	
 	
 
-	protected SettingsImageDataImport createSettingsForImport() {
+	protected SettingsImageDataImportTxt createSettingsForImport() {
 		// fileformatfilter
 		FileNameExtFilter filter = new FileNameExtFilter(getTxtStartsWith().getText(), getTxtEndsWith().getText());
 		// line/dp  start/end (0 for no filter)
@@ -759,7 +748,7 @@ public class ImportDataDialog extends JDialog {
 	public JCheckBox getChckbxSearchForMeta() {
 		return chckbxSearchForMeta;
 	} 
-	public SettingsImageDataImport getSettingsDataImport() {
+	public SettingsImageDataImportTxt getSettingsDataImport() {
 		return settingsDataImport;
 	}  
 	public JCheckBox getCb2DMetadata() {

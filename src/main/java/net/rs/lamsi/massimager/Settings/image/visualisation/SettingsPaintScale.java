@@ -1,47 +1,61 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.image.visualisation;
 
 import java.awt.Color;
 
 import net.rs.lamsi.massimager.Settings.Settings;
 
+import org.apache.poi.ss.formula.functions.T;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+
 public class SettingsPaintScale extends Settings {
 	// do not change the version!
-    private static final long serialVersionUID = 1L;
-    //
+	private static final long serialVersionUID = 1L;
+	//
 	// for creation of standards
 	public static final int S_RAINBOW = 0, S_BLACK_RED_YE_W = 1, S_BLACK_BLUE_GR_W = 2, S_RED = 3, S_GREEN = 4, S_BLUE=5, S_YELLOW=6, S_PURPLE=7, S_GREY=8, S_RAINBOW_BRIGHT=9, S_RAINBOW_INVERSE = 10, S_KARST_RAINBOW_INVERSE = 11;
-	
-	
+
+	/**
+	 * mode for values like minimum and maximum
+	 */
+	public enum ValueMode {
+		ABSOLUTE, RELATIVE, PERCENTILE
+	}
+
 	private int levels = 256;
 	private boolean isMonochrom = false, isGrey = false;
 	private boolean isInverted, usesBAsMax, usesWAsMin;
 	private boolean usesMinMax, usesMinAsInvisible;
-	
+
 	// min max values or filter (cut off filter)
-	private boolean usesMinValues, usesMaxValues, usesMinMaxFromSelection;
+	private boolean usesMinMaxFromSelection;
+	// relative, absolute or percentile?
+	private ValueMode modeMin, modeMax;
 	private double min, max;
 	// in percentage
 	private float minFilter, maxFilter;
-	private boolean usesMinFilter, usesMaxFilter;
-	
+
 	// LOD monochrome
 	private boolean isLODMonochrome = false;
 	private double LOD = 0;
-	
+
 	// brightnessFactor for black and white as min / max
 	// defines how fast brightness and saturation will be increased /decreased
 	private float brightnessFactor;
-	
+
 	private Color minColor, maxColor;
-	  
+
 
 	public SettingsPaintScale() {
-		super("/Settings/PaintScales/", "setPaintScale"); 
+		super("Paintscale", "/Settings/PaintScales/", "setPaintScale"); 
 		resetAll(); 
 	} 
-	
+
 	public void setAll(int levels, boolean isMonochrom, boolean isInverted, boolean usesBAsMax, boolean usesWAsMin,
-			boolean usesMinMax, boolean usesMinAsInvisible, boolean usesMinValues, boolean usesMaxValues, double min, double max, Color minColor,
+			boolean usesMinMax, boolean usesMinAsInvisible, ValueMode modeMin, ValueMode modeMax, double min, double max, Color minColor,
 			Color maxColor, float brightnessFactor, float minFilter, float maxFilter, boolean isGrey, boolean usesMinMaxFromSelection, boolean isLODMonochrome, double LOD) { 
 		this.levels = levels;
 		this.isMonochrom = isMonochrom;
@@ -57,8 +71,8 @@ public class SettingsPaintScale extends Settings {
 		this.brightnessFactor = brightnessFactor;
 		this.minFilter = minFilter;
 		this.maxFilter = maxFilter;
-		this.usesMaxValues = usesMaxValues;
-		this.usesMinValues = usesMinValues;
+		this.modeMin = modeMin;
+		this.modeMax = modeMax;
 		this.isGrey = isGrey;
 		this.usesMinMaxFromSelection = usesMinMaxFromSelection;
 		this.isLODMonochrome = isLODMonochrome;
@@ -84,8 +98,8 @@ public class SettingsPaintScale extends Settings {
 		brightnessFactor = 4;
 		this.minFilter = 2.5f;
 		this.maxFilter = 0.2f; 
-		this.usesMaxValues = false;
-		this.usesMinValues = false;
+		this.modeMax = ValueMode.PERCENTILE;
+		this.modeMin = ValueMode.PERCENTILE;
 		usesMinMaxFromSelection = false;
 	}
 
@@ -174,7 +188,67 @@ public class SettingsPaintScale extends Settings {
 	}
 	// done with standards
 	//##############################################################################################
-	
+
+	//##############################################################################################
+	// import export
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "levels", levels);
+		toXML(elParent, doc, "isMonochrom", isMonochrom);
+		toXML(elParent, doc, "isInverted", isInverted);
+		toXML(elParent, doc, "usesWAsMin", usesWAsMin);
+		toXML(elParent, doc, "usesBAsMax", usesBAsMax);
+		toXML(elParent, doc, "usesMinMax", usesMinMax);
+		toXML(elParent, doc, "usesMinAsInvisible", usesMinAsInvisible);
+		toXML(elParent, doc, "min", min);
+		toXML(elParent, doc, "max", max);
+		toXML(elParent, doc, "minColor", minColor);
+		toXML(elParent, doc, "maxColor", maxColor);
+		toXML(elParent, doc, "brightnessFactor", brightnessFactor);
+		toXML(elParent, doc, "minFilter", minFilter);
+		toXML(elParent, doc, "maxFilter", maxFilter);
+		toXML(elParent, doc, "modeMax", modeMax);
+		toXML(elParent, doc, "modeMin", modeMin);
+		toXML(elParent, doc, "isGrey", isGrey);
+		toXML(elParent, doc, "usesMinMaxFromSelection", usesMinMaxFromSelection);
+		toXML(elParent, doc, "isLODMonochrome", isLODMonochrome);
+		toXML(elParent, doc, "LOD", LOD);
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("levels")) levels = intFromXML(nextElement); 
+				else if(paramName.equals("isMonochrom"))isMonochrom = booleanFromXML(nextElement); 
+				else if(paramName.equals("isInverted")) isInverted = booleanFromXML(nextElement); 
+				else if(paramName.equals("usesWAsMin")) usesWAsMin = booleanFromXML(nextElement); 
+				else if(paramName.equals("usesBAsMax")) usesBAsMax = booleanFromXML(nextElement); 
+				else if(paramName.equals("usesMinMax")) usesMinMax = booleanFromXML(nextElement); 
+				else if(paramName.equals("usesMinAsInvisible")) usesMinAsInvisible = booleanFromXML(nextElement); 
+				else if(paramName.equals("min")) min = doubleFromXML(nextElement); 
+				else if(paramName.equals("max")) max = doubleFromXML(nextElement); 
+				else if(paramName.equals("minColor")) minColor = colorFromXML(nextElement); 
+				else if(paramName.equals("maxColor")) maxColor = colorFromXML(nextElement); 
+				else if(paramName.equals("brightnessFactor")) brightnessFactor = floatFromXML(nextElement); 
+				else if(paramName.equals("minFilter")) minFilter= floatFromXML(nextElement); 
+				else if(paramName.equals("maxFilter")) maxFilter= floatFromXML(nextElement); 
+				else if(paramName.equals("modeMax")) modeMax = ValueMode.valueOf(nextElement.getTextContent()); 
+				else if(paramName.equals("modeMin")) modeMin = ValueMode.valueOf(nextElement.getTextContent());
+				else if(paramName.equals("isGrey")) isGrey = booleanFromXML(nextElement); 
+				else if(paramName.equals("usesMinMaxFromSelection")) usesMinMaxFromSelection= booleanFromXML(nextElement); 
+				else if(paramName.equals("isLODMonochrome")) isLODMonochrome= booleanFromXML(nextElement); 
+				else if(paramName.equals("LOD")) LOD = doubleFromXML(nextElement); 
+			}
+		}
+	}
+
+
+
+
 	//##############################################################################################
 	// GETTER AND SETTER
 	public int getLevels() {
@@ -230,6 +304,7 @@ public class SettingsPaintScale extends Settings {
 	public double getMin() {
 		return min;
 	}
+	
 
 	/**
 	 * absolute
@@ -284,22 +359,23 @@ public class SettingsPaintScale extends Settings {
 	}
 	public void setBrightnessFactor(float bf) {
 		brightnessFactor = bf;
+	} 
+	
+	
+	public ValueMode getModeMin() {
+		return modeMin;
 	}
 
-	public boolean isUsesMinValues() {
-		return usesMinValues;
+	public void setModeMin(ValueMode modeMin) {
+		this.modeMin = modeMin;
 	}
 
-	public void setUsesMinValues(boolean usesMinValues) {
-		this.usesMinValues = usesMinValues;
+	public ValueMode getModeMax() {
+		return modeMax;
 	}
 
-	public boolean isUsesMaxValues() {
-		return usesMaxValues;
-	}
-
-	public void setUsesMaxValues(boolean usesMaxValues) {
-		this.usesMaxValues = usesMaxValues;
+	public void setModeMax(ValueMode modeMax) {
+		this.modeMax = modeMax;
 	}
 
 	public float getMinFilter() {
@@ -348,21 +424,5 @@ public class SettingsPaintScale extends Settings {
 
 	public void setLOD(double lOD) {
 		LOD = lOD;
-	}
-
-	public boolean isUsesMinFilter() {
-		return usesMinFilter;
-	}
-
-	public void setUsesMinFilter(boolean usesMinFilter) {
-		this.usesMinFilter = usesMinFilter;
-	}
-
-	public boolean isUsesMaxFilter() {
-		return usesMaxFilter;
-	}
-
-	public void setUsesMaxFilter(boolean usesMaxFilter) {
-		this.usesMaxFilter = usesMaxFilter;
 	}
 }

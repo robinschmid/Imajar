@@ -9,8 +9,8 @@ import javax.swing.JMenuItem;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 

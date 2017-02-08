@@ -1,12 +1,13 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.image.sub;
 
 import net.rs.lamsi.massimager.MyMZ.MZIon;
 
-public class SettingsMSImage extends SettingsImage {
+public class SettingsMSImage extends SettingsGeneralImage {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
 	
+    // my pm and name
 	protected MZIon mzIon = null;
  
 	public SettingsMSImage(boolean allFiles, boolean isTriggert, float velocity, float spotsize, double timePerLine, MZIon mzIon) {
@@ -15,7 +16,7 @@ public class SettingsMSImage extends SettingsImage {
 		this.spotsize = spotsize;
 		this.timePerLine = timePerLine;
 		this.mzIon = mzIon;
-		this.isTriggert = isTriggert;
+		this.isTriggered = isTriggert;
 		this.allFiles = allFiles;
 	}
 

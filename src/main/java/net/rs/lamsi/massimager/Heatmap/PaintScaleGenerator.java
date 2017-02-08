@@ -2,7 +2,7 @@ package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
 import java.awt.Paint;
 
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 
 import org.jfree.chart.renderer.GrayPaintScale;
 import org.jfree.chart.renderer.LookupPaintScale;

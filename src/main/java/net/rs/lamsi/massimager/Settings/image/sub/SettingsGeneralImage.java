@@ -1,26 +1,31 @@
-package net.rs.lamsi.massimager.Settings.image;
+package net.rs.lamsi.massimager.Settings.image.sub;
 
 import java.io.File;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
+import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
 import net.rs.lamsi.massimager.Settings.Settings;
 
 import org.jfree.chart.plot.XYPlot;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
-public class SettingsImage extends Settings {
+public class SettingsGeneralImage extends Settings {
 
 	public enum XUNIT {
 		DP,s
 	}
 	// do not change the version!
-    private static final long serialVersionUID = 1L;
-    //
-	
+	private static final long serialVersionUID = 1L;
+	//
+
 	public static int MODE_IMAGING_ONEWAY = 0, MODE_IMAGING_TWOWAYS = 1;
 	public static int MODE_SCANS_PER_LINE = 0, MODE_TIME_PER_LINE = 1;
-	
+
 	protected String title = "NODEF", filepath = "";
 	protected float velocity, spotsize;
 	// crop marks
@@ -34,12 +39,19 @@ public class SettingsImage extends Settings {
 	//
 	protected double timePerLine = 1;
 	protected int modeTimePerLine = MODE_TIME_PER_LINE; 
-	protected boolean isTriggert = false;
-	
+	protected boolean isTriggered = false;
+
 	protected boolean allFiles, isBinaryData = false;
 	// Metadata
 	protected String metadata = "";
- 
+
+
+	public SettingsGeneralImage(String path, String fileEnding) {
+		super("SettingsGeneralImage", path, fileEnding); 
+	}
+	public SettingsGeneralImage() {
+		super("SettingsGeneralImage", "/Settings/OESImage/", "setGIMG"); 
+	} 
 
 	@Override
 	public void resetAll() { 
@@ -47,7 +59,7 @@ public class SettingsImage extends Settings {
 		spotsize = 50;
 		allFiles = true;
 		title = "";
-		isTriggert = false;
+		isTriggered = false;
 		timePerLine = 60;
 		deleteCropMarks();
 		imagingMode = MODE_IMAGING_ONEWAY;
@@ -56,8 +68,8 @@ public class SettingsImage extends Settings {
 		reflectVertical = false;
 		isBinaryData = false;
 	}
-	
-	
+
+
 	public void setAll(String title, float velocity, float spotsize, int imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
@@ -68,8 +80,8 @@ public class SettingsImage extends Settings {
 		this.isBinaryData = isBinaryData; 
 		this.imagingMode = imagingMode;
 	}
-	
-	
+
+
 	@Override
 	public void applyToImage(Image2D img) throws Exception {
 		// dont copy name
@@ -79,10 +91,43 @@ public class SettingsImage extends Settings {
 		img.getSettImage().setTitle(name);
 		img.getSettImage().setRAWFilepath(path);
 	}
-	
+	//##########################################################
+	// xml input/output
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "velocity", velocity); 
+		toXML(elParent, doc, "spotsize", spotsize); 
+		toXML(elParent, doc, "allFiles", allFiles); 
+		toXML(elParent, doc, "title", title); 
+		toXML(elParent, doc, "isTriggered", isTriggered); 
+		toXML(elParent, doc, "timePerLine", timePerLine); 
+		toXML(elParent, doc, "imagingMode", imagingMode); 
+		toXML(elParent, doc, "rotationOfData", rotationOfData); 
+		toXML(elParent, doc, "reflectHorizontal", reflectHorizontal); 
+		toXML(elParent, doc, "reflectVertical", reflectVertical); 
+		toXML(elParent, doc, "isBinaryData", isBinaryData); 
+	}
 
-	public SettingsImage(String path, String fileEnding) {
-		super(path, fileEnding); 
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("allFiles")) allFiles = booleanFromXML(nextElement); 
+				else if(paramName.equals("velocity"))velocity = floatFromXML(nextElement);  
+				else if(paramName.equals("spotsize"))spotsize = floatFromXML(nextElement);  
+				else if(paramName.equals("title"))title = nextElement.getTextContent();  
+				else if(paramName.equals("isTriggered"))isTriggered = booleanFromXML(nextElement);  
+				else if(paramName.equals("timePerLine"))timePerLine = doubleFromXML(nextElement);  
+				else if(paramName.equals("imagingMode"))imagingMode = intFromXML(nextElement);  
+				else if(paramName.equals("rotationOfData"))rotationOfData = intFromXML(nextElement);  
+				else if(paramName.equals("reflectHorizontal"))reflectHorizontal = booleanFromXML(nextElement);  
+				else if(paramName.equals("reflectVertical"))reflectVertical = booleanFromXML(nextElement);  
+				else if(paramName.equals("isBinaryData"))isBinaryData = booleanFromXML(nextElement);  
+			}
+		}
 	}
 
 	public float getVelocity() {
@@ -100,7 +145,7 @@ public class SettingsImage extends Settings {
 	public void setSpotsize(float spotsize) {
 		this.spotsize = spotsize;
 	} 
- 
+
 
 	public boolean isAllFiles() {
 		return allFiles;
@@ -155,14 +200,14 @@ public class SettingsImage extends Settings {
 		this.timePerLine = timePerLine;
 	}
 
-	public boolean isTriggert() {
-		return isTriggert;
+	public boolean isTriggered() {
+		return isTriggered;
 	}
 
-	public void setTriggert(boolean isTriggert) {
-		this.isTriggert = isTriggert;
+	public void setTriggered(boolean isTriggert) {
+		this.isTriggered = isTriggert;
 	}
- 
+
 
 	public int getModeTimePerLine() {
 		return modeTimePerLine;

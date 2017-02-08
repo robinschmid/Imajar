@@ -5,22 +5,19 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Vector;
 
-import ucar.nc2.stream.NcStreamProto.Group;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
-import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.IMPORT;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
@@ -783,7 +780,7 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Vector<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImport sett, String separation, boolean sortFiles) throws Exception { 
+	public static Vector<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
@@ -891,9 +888,9 @@ public class Image2DImportExportUtil {
 		// Image creation
 		// if only one line was found it is a Image2DContinous with one data line
 		if(continous) 
-			return new Image2D(new DatasetContinuousMD(scanLines.firstElement()), index, paint, general);
+			return new Image2D(new DatasetContinuousMD(scanLines.firstElement()), index, new SettingsImage2D(paint, general));
 		// else just add it as normal matrix-data image
-		else return new Image2D(new DatasetMD(scanLines), index, paint, general);
+		else return new Image2D(new DatasetMD(scanLines), index, new SettingsImage2D(paint, general));
 	}
 
 	/**
@@ -916,7 +913,7 @@ public class Image2DImportExportUtil {
 		general.setTitle(title);
 		general.setMetadata(metadata);
 		// Image creation
-		Image2D img = new Image2D(paint, general);
+		Image2D img = new Image2D(new SettingsImage2D(paint, general));
 		return img;
 	}
 

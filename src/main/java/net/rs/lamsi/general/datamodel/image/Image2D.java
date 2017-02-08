@@ -26,18 +26,16 @@ import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyOES.OESElementLine;
 import net.rs.lamsi.massimager.MyOES.OESScan;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage.XUNIT;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
-import net.rs.lamsi.massimager.Settings.visualization.plots.SettingsThemes;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.DataMinMaxAvg;
@@ -67,14 +65,7 @@ public class Image2D implements Serializable, Collectable2D {
 
 	//############################################################
 	// Settings
-	protected SettingsPaintScale settPaintScale;
-	// LaserVelocity und Spotsize 
-	protected SettingsImage settImage;
-	// theme settings
-	protected SettingsThemes settTheme; 
-	protected SettingsImage2DQuantifier quantifier;
-	// blank subtraction and internal standard
-	protected SettingsImage2DOperations operations;
+	protected SettingsImage2D settings;
 
 
 	//############################################################
@@ -100,32 +91,15 @@ public class Image2D implements Serializable, Collectable2D {
 	protected Vector<RectSelection> excludedData = null;
 	protected Vector<RectSelection> infoData = null;
 
+	public Image2D() { 
+		settings = new SettingsImage2D();
+	}
 
-	// COntstruct 
-	public Image2D(SettingsPaintScale settPaintScale) {  
-		try { 
-			this.settPaintScale = (SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale); 
-			// standard theme
-			this.settTheme = new SettingsThemes();
-			this.quantifier = new SettingsImage2DQuantifierLinear();
-			this.operations = new SettingsImage2DOperations();
-		} catch (Exception e) { 
-			e.printStackTrace();
-		}
-	} 
-	public Image2D(SettingsPaintScale settPaintScale, SettingsImage setImage) {  
-		try {
-			settImage = (SettingsImage) BinaryWriterReader.deepCopy(setImage);
-			this.settPaintScale = (SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale); 
-			// standard theme
-			this.settTheme = new SettingsThemes();
-			this.quantifier = new SettingsImage2DQuantifierLinear();
-			this.operations = new SettingsImage2DOperations();
-		} catch (Exception e) { 
-			e.printStackTrace();
-		}
-	} 
-
+	public Image2D(SettingsImage2D settings) {
+		super();
+		this.settings = settings;
+	}
+	
 	public Image2D(ImageDataset data) {
 		this();
 		this.data = data; 
@@ -135,38 +109,20 @@ public class Image2D implements Serializable, Collectable2D {
 		this.data = data; 
 		this.index = index;
 	}
-	public Image2D(ImageDataset data, int index, SettingsPaintScale settPaintScale) { 
-		this(settPaintScale);
+	public Image2D(ImageDataset data, int index, SettingsImage2D sett) { 
+		this(sett);
 		this.data = data; 
 		this.index = index;
 	} 
-	public Image2D(ImageDataset data, int index, SettingsPaintScale settPaintScale, SettingsImage setImage) { 
-		this(settPaintScale, setImage);
-		this.data = data; 
-		this.index = index;
-	} 
-	public Image2D(ImageDataset data, SettingsPaintScale settPaintScale) { 
-		this(data, 0, settPaintScale);
-	} 
-	public Image2D(ImageDataset data, SettingsPaintScale settPaintScale, SettingsImage setImage) { 
-		this(data, 0, settPaintScale, setImage);
-	} 
+	public Image2D(ImageDataset data, SettingsImage2D sett) { 
+		this(data, 0, sett);
+	}   
 
-	public Image2D() { 
-		settPaintScale = new SettingsPaintScale();
-		settPaintScale.resetAll();
-		settImage = new SettingsGeneralImage();
-		settImage.resetAll(); 
-		// standard theme
-		this.settTheme = new SettingsThemes();  
-		//
-		this.quantifier = new SettingsImage2DQuantifierLinear();
-		this.operations = new SettingsImage2DOperations();
-	}
 	//#####################################################################################################
 	// Generators STATIC
 	// MZChrom Generation
-	public static Image2D generateImage2DFrom(SettingsPaintScale settPaintScale, SettingsImage setImage, MZChromatogram[] mzchrom) {
+	// MS image from raw data
+	public static Image2D generateImage2DFrom(SettingsPaintScale settPaintScale, SettingsGeneralImage setImage, MZChromatogram[] mzchrom) {
 		// TODO mehrere MZ machen 
 		// Alle Spec
 		// Erst Messpunkteanzahl ausrechnen 
@@ -188,12 +144,12 @@ public class Image2D implements Serializable, Collectable2D {
 			listLines.add(new ScanLineMD(x,z));
 		}
 		// Image erstellen 
-		return  new Image2D(new DatasetMD(listLines), 0, settPaintScale, setImage); 
+		return  new Image2D(new DatasetMD(listLines), 0, new SettingsImage2D(settPaintScale, setImage)); 
 	}
 
 	// Discontinous MS-Image
 	// Generate Heatmap with Continous Data WIDHTOUT Triggerin every Line
-	public static Image2D generateImage2DFromCon(SettingsPaintScale settPaintScale, SettingsImage setImage, SettingsImageContinousSplit settSplit, MZChromatogram mzchrom) {  
+	public static Image2D generateImage2DFromCon(SettingsPaintScale settPaintScale, SettingsGeneralImage setImage, SettingsImageContinousSplit settSplit, MZChromatogram mzchrom) {  
 		// startTime
 		float startTime = mzchrom.getX(0).floatValue();  
 		// data points
@@ -208,12 +164,12 @@ public class Image2D implements Serializable, Collectable2D {
 		ScanLineMD line = new ScanLineMD(x, z);
 
 		// generate Image
-		return new Image2D(new DatasetContinuousMD(line, settSplit), 0, settPaintScale, setImage);
+		return new Image2D(new DatasetContinuousMD(line, settSplit), 0, new SettingsImage2D(settPaintScale, setImage));
 	}
 
 	//
 	// OES Generation
-	public static Image2D generateImage2DFromOES(SettingsPaintScale settPaintScale, SettingsImage setImage, OESElementLine eLine) {
+	public static Image2D generateImage2DFromOES(SettingsPaintScale settPaintScale, SettingsGeneralImage setImage, OESElementLine eLine) {
 		// TODO mehrere MZ machen 
 		// Alle Spec
 		// Erst Messpunkteanzahl ausrechnen 
@@ -236,18 +192,18 @@ public class Image2D implements Serializable, Collectable2D {
 			listLines[i] = new ScanLine2D(dp);
 		}
 		// Image erstellen 
-		return  new Image2D(new Dataset2D(listLines), settPaintScale, setImage); 
+		return  new Image2D(new Dataset2D(listLines), new SettingsImage2D(settPaintScale, setImage)); 
 	}
 
 
 	//#########################################################################################################
 	// TO ARRAY LISTS   
-	public XYIData2D toXYIArray(SettingsImage setImg) {
+	public XYIData2D toXYIArray(SettingsGeneralImage setImg) {
 		return toXYIArray(setImg.getImagingMode(), setImg.getRotationOfData(), setImg.isReflectHorizontal(), setImg.isReflectVertical() );
 	}
 	public XYIData2D toXYIArray(int imgMode, int rotation, boolean reflectH, boolean reflectV) {
 		// easy?
-		if(imgMode==SettingsImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
+		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
 			return toXYIArray();
 		}
 		else {
@@ -276,7 +232,7 @@ public class Image2D implements Serializable, Collectable2D {
 					z[currentdp] = getIProcessed(iy, ix);
 
 					// imagecreation mode: if twoways -> first reflect every 2. line (x values)
-					if(imgMode==SettingsImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
+					if(imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
 						// reflect x
 						x[currentdp] += distPercent(width, x[currentdp]) *width; 
 					}
@@ -396,8 +352,7 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 		//
 		return z;
-	}
-
+	} 
 
 	/**
 	 * returns [rows][columns] of xyz data processed or not processed
@@ -459,7 +414,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public Object[][] toXArray(boolean raw) {
-		return data.toXMatrix(raw? 1 : settImage.getVelocity());
+		return data.toXMatrix(raw? 1 : getSettImage().getVelocity());
 	} 
 
 	/**
@@ -563,12 +518,12 @@ public class Image2D implements Serializable, Collectable2D {
 		// TODO prozess intinsity
 		double i = getIRaw(l, dp);
 		// subtract blank and apply IS
-		if(operations!=null) {
-			i = operations.calcIntensity(this, l, dp, i);
+		if(getOperations()!=null) {
+			i = getOperations().calcIntensity(this, l, dp, i);
 		}
 		// quantify
-		if(quantifier!=null && quantifier.isActive())  {
-			return quantifier.calcIntensity(this, l, dp, i); 
+		if(getQuantifier()!=null && getQuantifier().isActive())  {
+			return getQuantifier().calcIntensity(this, l, dp, i); 
 		}
 		else return i;
 	}
@@ -588,15 +543,15 @@ public class Image2D implements Serializable, Collectable2D {
 		// TODO prozess intinsity
 		double i = getIRaw(l, dp);
 		// subtract blank and apply IS
-		if(operations!=null) {
-			i = operations.calcIntensity(this, l, dp, i, blank, IS);
+		if(getOperations()!=null) {
+			i = getOperations().calcIntensity(this, l, dp, i, blank, IS);
 		}
 		// quantify
-		if(quantifier!=null && quantify)  {
-			boolean tmp = quantifier.isActive();
-			quantifier.setActive(true);
-			i = quantifier.calcIntensity(this, l, dp, i); 
-			quantifier.setActive(tmp);
+		if(getQuantifier()!=null && quantify)  {
+			boolean tmp = getQuantifier().isActive();
+			getQuantifier().setActive(true);
+			i = getQuantifier().calcIntensity(this, l, dp, i); 
+			getQuantifier().setActive(tmp);
 		}
 		return i;
 	}
@@ -609,7 +564,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public float getXProcessed(int l, int dp) { 
 		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
 		if(dp<data.getLineLength(line))
-			return data.getX(line, dp) * settImage.getVelocity();
+			return data.getX(line, dp) * getSettImage().getVelocity();
 		else {
 			// TODO WHAT?! Cant understand this
 			// is the program ending at this poitn? at any time?
@@ -617,7 +572,7 @@ public class Image2D implements Serializable, Collectable2D {
 			ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
 			//return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
 			// tmp change
-			return (((data.getX(line, data.getLineLength(line)-1)) * settImage.getVelocity()));
+			return (((data.getX(line, data.getLineLength(line)-1)) * getSettImage().getVelocity()));
 		}
 	}
 	/**
@@ -656,7 +611,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public float getYProcessed(int l) { 
-		return l*settImage.getSpotsize();
+		return l*getSettImage().getSpotsize();
 	}
 	// finished processed data
 	//######################################################################
@@ -668,7 +623,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public int getYAsIndex(double y) {
 		if(y<0) return 0;
-		int l = (int)(y/settImage.getSpotsize());
+		int l = (int)(y/getSettImage().getSpotsize());
 		return l<data.getLinesCount()? l : data.getLinesCount()-1;
 	} 
 	/**
@@ -678,7 +633,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public int getXAsIndex(int line, double x) {
-		double rx = x/settImage.getVelocity();
+		double rx = x/getSettImage().getVelocity();
 		for(int i=1; i<data.getLineLength(line); i++) {
 			if(data.getX(line, i)>=rx)
 				return i-1;
@@ -698,7 +653,7 @@ public class Image2D implements Serializable, Collectable2D {
 
 	// a name for lists
 	public String toListName() { 
-		return settImage.toListName();
+		return getSettImage().toListName();
 	} 
 
 	@Override
@@ -707,7 +662,7 @@ public class Image2D implements Serializable, Collectable2D {
 	}
 
 	public String getTitle() { 
-		return settImage.getTitle();
+		return getSettImage().getTitle();
 	} 
 
 	//#########################################################################################################
@@ -724,8 +679,8 @@ public class Image2D implements Serializable, Collectable2D {
 			// TODO --> complete!!!
 			if(SettingsPaintScale.class.isAssignableFrom(settings.getClass())) 
 				setSettPaintScale((SettingsPaintScale) settings);
-			else if(SettingsImage.class.isAssignableFrom(settings.getClass())) 
-				setSettImage((SettingsImage) settings);
+			else if(SettingsGeneralImage.class.isAssignableFrom(settings.getClass())) 
+				setSettImage((SettingsGeneralImage) settings);
 			else if(SettingsThemes.class.isAssignableFrom(settings.getClass())) 
 				setSettTheme((SettingsThemes) settings);
 			else if(SettingsImage2DOperations.class.isAssignableFrom(settings.getClass()))  {
@@ -747,7 +702,7 @@ public class Image2D implements Serializable, Collectable2D {
 		// TODO -- add other settings here
 		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 
 			return getSettPaintScale();
-		else if(SettingsImage.class.isAssignableFrom(classsettings)) 
+		else if(SettingsGeneralImage.class.isAssignableFrom(classsettings)) 
 			return getSettImage();
 		else if(SettingsThemes.class.isAssignableFrom(classsettings)) 
 			return getSettTheme();
@@ -818,6 +773,7 @@ public class Image2D implements Serializable, Collectable2D {
 			return minZ!=Double.POSITIVE_INFINITY? minZ : -1;
 		}
 	}
+	
 	/**
 	 * maximum intensity processed 
 	 * @return
@@ -857,6 +813,36 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 	}
 
+
+	/**
+	 * 
+	 * @return value (set in a paintscale) as a percentage of the maximum value (value==max: result=100)
+	 */
+	public double getPercentage(double intensity, boolean onlySelected) {
+		return (intensity/this.getMaxIntensity(onlySelected)*100.0);
+	}
+
+	
+	/**
+	 * 
+	 * @param intensity
+	 * @return the percentile of all intensities (if value is equal to max the result is 100)
+	 */
+	public double getPercentile(double intensity, boolean onlySelected) {
+		//sort all z values
+		double[] z = null;
+		if(!onlySelected) toIArray();
+		else z = getSelectedDataAsArray(true);
+		Arrays.sort(z);
+		
+		for(int i=0; i<z.length; i++) {
+			if(z[i]<=intensity) {
+				return (i/(z.length-1));
+			}
+		}
+		return 0;
+	}
+	
 	/** 
 	 * max for line
 	 * @param l
@@ -915,7 +901,9 @@ public class Image2D implements Serializable, Collectable2D {
 			lastAppliedMinFilter = f;
 			// apply filter
 			//sort all z values
-			double[] z = toIArray();
+			double[] z = null;
+			if(!getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray();
+			else z = getSelectedDataAsArray(true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
@@ -928,7 +916,9 @@ public class Image2D implements Serializable, Collectable2D {
 			lastAppliedMaxFilter = f;
 			// apply filter
 			//sort all z values
-			double[] z = toIArray();
+			double[] z = null;
+			if(!getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray();
+			else z = getSelectedDataAsArray(true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
@@ -951,22 +941,22 @@ public class Image2D implements Serializable, Collectable2D {
 		return getMaxIntensity(onlySelected)-getMinIntensity(onlySelected);
 	} 
 	public SettingsPaintScale getSettPaintScale() {
-		return settPaintScale;
+		return settings.getSettPaintScale();
 	} 
 	public void setSettPaintScale(SettingsPaintScale settPaintScale) {
-		this.settPaintScale = settPaintScale;
+		settings.setSettPaintScale(settPaintScale);
 	} 
-	public SettingsImage getSettImage() {
-		return settImage;
+	public SettingsGeneralImage getSettImage() {
+		return settings.getSettImage();
 	} 
-	public void setSettImage(SettingsImage settImgLaser) {
-		this.settImage = settImgLaser;
+	public void setSettImage(SettingsGeneralImage settImgLaser) {
+		settings.setSettImage(settImgLaser);
 	} 
 	public SettingsThemes getSettTheme() {
-		return settTheme;
+		return settings.getSettTheme();
 	}
 	public void setSettTheme(SettingsThemes settTheme) {
-		this.settTheme = settTheme;
+		settings.setSettTheme(settTheme);
 	}
 	public double getMinZFiltered() {
 		return minZFiltered;
@@ -977,23 +967,22 @@ public class Image2D implements Serializable, Collectable2D {
 
 	// if something changes - change the averageI
 	public SettingsImage2DQuantifier getQuantifier() {
-		return quantifier;
+		return settings.getQuantifier();
 	}
 	public void setQuantifier(SettingsImage2DQuantifier quantifier) {
-		this.quantifier = quantifier;
+		settings.setQuantifier(quantifier);
 	}
 	public SettingsImage2DQuantifierIS getInternalQuantifierIS() {
-		return getOperations().getInternalQuantifier();
+		return settings.getInternalQuantifierIS();
 	}
 	public void setInternalQuantifierIS(SettingsImage2DQuantifierIS isQ) {
-		getOperations().setInternalQuantifier(isQ);
+		settings.setInternalQuantifierIS(isQ);
 	}
 	public SettingsImage2DOperations getOperations() {
-		return operations;
+		return settings.getOperations();
 	}
 	public void setOperations(SettingsImage2DOperations operations) {
-		this.operations = operations;
-		operations.getBlankQuantifier().getQSameImage().setImg(this);
+		settings.setOperations(operations, this);
 	}
 	/**
 	 * Calcs the average I for this img
