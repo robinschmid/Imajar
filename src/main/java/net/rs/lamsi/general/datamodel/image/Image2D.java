@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.datamodel.image;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.image.BufferedImage;
@@ -43,7 +44,15 @@ import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaD
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.statistics.HistogramDataset;
 
 // XY raw data! 
 // have to be multiplied with velocity and spot size
@@ -679,6 +688,10 @@ public class Image2D implements Serializable, Collectable2D {
 			// TODO --> complete!!!
 			if(SettingsPaintScale.class.isAssignableFrom(settings.getClass())) 
 				setSettPaintScale((SettingsPaintScale) settings);
+			else if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
+				setSettingsImage2D((SettingsImage2D) settings);
+				fireIntensityProcessingChanged();
+			}
 			else if(SettingsGeneralImage.class.isAssignableFrom(settings.getClass())) 
 				setSettImage((SettingsGeneralImage) settings);
 			else if(SettingsThemes.class.isAssignableFrom(settings.getClass())) 
@@ -698,10 +711,13 @@ public class Image2D implements Serializable, Collectable2D {
 			ex.printStackTrace();
 		}
 	} 
+
 	public Settings getSettingsByClass(Class classsettings) {
 		// TODO -- add other settings here
 		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 
 			return getSettPaintScale();
+		else if(SettingsImage2D.class.isAssignableFrom(classsettings))
+			return settings;
 		else if(SettingsGeneralImage.class.isAssignableFrom(classsettings)) 
 			return getSettImage();
 		else if(SettingsThemes.class.isAssignableFrom(classsettings)) 
@@ -815,20 +831,38 @@ public class Image2D implements Serializable, Collectable2D {
 
 
 	/**
+	 * intensity range (max-min)
+	 * @param onlySelected
+	 * @return
+	 */
+	public double getIRange(boolean onlySelected){
+		return this.getMaxIntensity(onlySelected)-this.getMinIntensity(onlySelected);
+	}
+	
+	/**
 	 * 
 	 * @return value (set in a paintscale) as a percentage of the maximum value (value==max: result=100)
 	 */
-	public double getPercentage(double intensity, boolean onlySelected) {
-		return (intensity/this.getMaxIntensity(onlySelected)*100.0);
+	public double getIPercentage(double intensity, boolean onlySelected) {
+		return (intensity/getIRange(onlySelected)*100.0);
 	}
 
+	/**
+	 * 
+	 * @param value as percentage (0-100%)
+	 * @param onlySelected
+	 * @return value /100 * intensityRange
+	 */
+	public double getIAbs(double value, boolean onlySelected) { 
+		return value/100.0*getIRange(onlySelected);
+	}
 	
 	/**
 	 * 
 	 * @param intensity
 	 * @return the percentile of all intensities (if value is equal to max the result is 100)
 	 */
-	public double getPercentile(double intensity, boolean onlySelected) {
+	public double getIPercentile(double intensity, boolean onlySelected) {
 		//sort all z values
 		double[] z = null;
 		if(!onlySelected) toIArray();
@@ -1146,6 +1180,43 @@ public class Image2D implements Serializable, Collectable2D {
 		return datasel;
 	}
 
+
+
+	/**
+	 * returns all data points in intensity range (max/min)
+	 * @return
+	 */
+	public double[] getIInIRange() {
+		double[] list = new double[countIInIRange()];
+		
+		int counter = 0;
+		for(int l=0; l<data.getLinesCount(); l++) {
+			for(int dp = 0; dp<data.getLineLength(l); dp++) {
+				double intensity =getIProcessed(l, dp);
+				if(getIProcessed(l, dp)>=getSettPaintScale().getMin() && getIProcessed(l, dp)<=getSettPaintScale().getMax()) {
+					list[counter] = intensity;
+					counter++;
+				} 
+			}
+		}
+		return list;
+	}
+	/**
+	 * returns number of data points in intensity range (max/min)
+	 * @return
+	 */
+	public int countIInIRange() {
+		int counter = 0;
+		for(int l=0; l<data.getLinesCount(); l++) {
+			for(int dp = 0; dp<data.getLineLength(l); dp++) {
+				if(getIProcessed(l, dp)>=getSettPaintScale().getMin() && getIProcessed(l, dp)<=getSettPaintScale().getMax()) {
+					counter++;
+				} 
+			}
+		}
+		return counter;
+	}
+	
 	/**
 	 * checks if a dp is excluded by a rect in excluded list
 	 * @param l
@@ -1236,9 +1307,8 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 		else return -1;
 	}
-
-
-
+	
+	
 	/**
 	 * returns the intensity array for this rect
 	 * @param rect 
@@ -1330,6 +1400,50 @@ public class Image2D implements Serializable, Collectable2D {
 	public void setInfoData(Vector<RectSelection> infoData) {
 		this.infoData = infoData;
 	}
+	
+
+	/**
+	 * creates a histogram
+	 * @return
+	 */
+	public ChartPanel createHistogram(double[] data, int bin) {
+		if(data!=null && data.length>0) {
+			HistogramDataset dataset = new HistogramDataset();
+		    dataset.addSeries("histo", data, bin);
+		    
+		    JFreeChart chart = ChartFactory.createHistogram(
+		              "", 
+		              null, 
+		              null, 
+		              dataset, 
+		              PlotOrientation.VERTICAL, 
+		              true, 
+		              false, 
+		              false
+		          );
+	
+		    chart.setBackgroundPaint(new Color(230,230,230));
+		    chart.getLegend().setVisible(false);
+		    XYPlot xyplot = (XYPlot)chart.getPlot();
+		    xyplot.setForegroundAlpha(0.7F);
+		    xyplot.setBackgroundPaint(Color.WHITE);
+		    xyplot.setDomainGridlinePaint(new Color(150,150,150));
+		    xyplot.setRangeGridlinePaint(new Color(150,150,150));
+		    xyplot.getDomainAxis().setVisible(true);
+		    xyplot.getRangeAxis().setVisible(false);
+		    XYBarRenderer xybarrenderer = (XYBarRenderer)xyplot.getRenderer();
+		    xybarrenderer.setShadowVisible(false);
+		    xybarrenderer.setBarPainter(new StandardXYBarPainter()); 
+	//	    xybarrenderer.setDrawBarOutline(false);
+		    return new ChartPanel(chart);
+		}
+		else return null;
+	}
+	public ChartPanel createHistogram(double[] data) {
+	    int bin = (int) Math.sqrt(data.length);
+	    return createHistogram(data, bin);
+	}
+	
 	/**
 	 * returns an easy icon
 	 * @param maxw
@@ -1441,6 +1555,12 @@ public class Image2D implements Serializable, Collectable2D {
 		return this.imageGroup;
 	} 
 
+	public void setSettingsImage2D(SettingsImage2D settings) {
+		this.settings = settings;
+	}
+	public SettingsImage2D getSettingsImage2D() {
+		return settings;
+	}
 	//############################################################
 	// listener
 	/**

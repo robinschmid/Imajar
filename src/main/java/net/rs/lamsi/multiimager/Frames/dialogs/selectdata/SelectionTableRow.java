@@ -25,43 +25,8 @@ public class SelectionTableRow {
 		this.img = img;
 		this.rect = rect; 
 		//
-		histo = createHistogram();
-	}
-	
-	private ChartPanel createHistogram() {
 		double[] data = img.getIProcessedRect(rect);
-		if(data!=null && data.length>0) {
-			HistogramDataset dataset = new HistogramDataset();
-		    int bin = (int) Math.sqrt(data.length);
-		    dataset.addSeries("histo", data, bin);
-		    
-		    JFreeChart chart = ChartFactory.createHistogram(
-		              "", 
-		              null, 
-		              null, 
-		              dataset, 
-		              PlotOrientation.VERTICAL, 
-		              true, 
-		              false, 
-		              false
-		          );
-	
-		    chart.setBackgroundPaint(new Color(230,230,230));
-		    chart.getLegend().setVisible(false);
-		    XYPlot xyplot = (XYPlot)chart.getPlot();
-		    xyplot.setForegroundAlpha(0.7F);
-		    xyplot.setBackgroundPaint(Color.WHITE);
-		    xyplot.setDomainGridlinePaint(new Color(150,150,150));
-		    xyplot.setRangeGridlinePaint(new Color(150,150,150));
-		    xyplot.getDomainAxis().setVisible(false);
-		    xyplot.getRangeAxis().setVisible(false);
-		    XYBarRenderer xybarrenderer = (XYBarRenderer)xyplot.getRenderer();
-		    xybarrenderer.setShadowVisible(false);
-		    xybarrenderer.setBarPainter(new StandardXYBarPainter()); 
-	//	    xybarrenderer.setDrawBarOutline(false);
-		    return new ChartPanel(chart);
-		}
-		else return null;
+		histo = img.createHistogram(data);
 	}
 
 	/**

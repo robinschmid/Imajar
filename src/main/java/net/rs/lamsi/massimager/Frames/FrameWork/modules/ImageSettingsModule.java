@@ -29,6 +29,7 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
  
 	protected Class classsettings;
 	protected T settings; 
+	protected int presetindex = 4;
 	
 	public ImageSettingsModule(String title, boolean westside, Class csettings) { 
 		super(title, westside);
@@ -82,7 +83,7 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 	public JMenuItem addPreset(ModuleMenu menu, final T settings, String title) { 
 		// menuitem
 		JMenuItem item = new JMenuItem(title); 
-		menu.addMenuItem(item);
+		menu.addMenuItem(item, presetindex);
 		item.addActionListener(new ActionListener() {  
 			@Override
 			public void actionPerformed(ActionEvent e) { 
@@ -166,7 +167,7 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 					File f = settings.saveSettingsToFile(this, s);
 					File presetpath = new File(FileAndPathUtil.getPathOfJar(), s.getPathSettingsFile());
 					// path in presets?
-					if(f!=null && f.equals(presetpath)) {
+					if(f!=null && f.getParentFile().equals(presetpath)) {
 						// add to presets
 						addPreset(getPopupMenu(), (T)s, FileAndPathUtil.eraseFormat(f.getName()));
 					}
@@ -175,6 +176,14 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 				e1.printStackTrace();
 				DialogLoggerUtil.showErrorDialog(this, "Error while saving", e1);
 			}
+		}
+
+		public int getPresetindex() {
+			return presetindex;
+		}
+
+		public void setPresetindex(int presetindex) {
+			this.presetindex = presetindex;
 		}
 		
 }

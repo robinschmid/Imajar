@@ -7,8 +7,9 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
+
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 
 public class TableHistoColumnRenderer implements TableCellRenderer {
 	

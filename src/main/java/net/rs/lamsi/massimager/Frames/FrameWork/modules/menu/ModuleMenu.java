@@ -65,6 +65,9 @@ public class ModuleMenu extends JButton {
 	public void addMenuItem(JMenuItem item) {
 		popupMenu.add(item);
 	}
+	public void addMenuItem(JMenuItem item, int pos) {
+		popupMenu.add(item, pos);
+	}
 
 	public void addSeparator() {
 		popupMenu.addSeparator();

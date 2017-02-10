@@ -144,11 +144,6 @@ public class HeatmapFactory {
         // this min max values in array
         double zmin = dataset.getZMin();
         double zmax = dataset.getZMax();
-        // minmax from selection only
-        if(settings.isUsesMinMaxFromSelection() && img.getSelectedData()!=null && img.getSelectedData().size()>0) { 
-	        settings.setMin(img.getMinIntensity(true));
-	        settings.setMax(img.getMaxIntensity(true)); 
-        } 
         // no data!
         if(zmin == zmax || zmax == 0) {
         	throw new Exception("Every data point has the same intensity of "+zmin);

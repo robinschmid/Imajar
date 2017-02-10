@@ -10,7 +10,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -47,12 +46,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-
-import org.apache.batik.gvt.ImageNode;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
@@ -61,7 +56,6 @@ import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleListWithOptions;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
@@ -71,6 +65,7 @@ import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioList
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleGeneral;
+import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.ModuleThemes;
@@ -120,6 +115,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	// AUTOGEN 
 	//
 	private JCheckBox cbAuto;
+	private ModuleImage2D modImage2D;
 	private ModuleGeneral moduleGeneral;
 	private ModulePaintscale modulePaintscale;
 	private ModuleThemes moduleThemes;
@@ -428,14 +424,14 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		pnNorthContent.add(east, BorderLayout.EAST);
 		east.setLayout(new BorderLayout(0, 0));
 
-		Module module = new Module();
-		east.add(module, BorderLayout.CENTER);
+		modImage2D = new ModuleImage2D(this);
+		east.add(modImage2D, BorderLayout.CENTER);
 
 		JPanel pnTitleSettings = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
 		flowLayout.setHgap(4);
 		flowLayout.setVgap(0);
-		module.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
+		modImage2D.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
 
 		JButton btnApplySettingsToAll = new JButton("apply to all");
 		btnApplySettingsToAll.addActionListener(new ActionListener() {
@@ -460,7 +456,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		module.getPnContent().add(scrollPane, BorderLayout.EAST);
+		modImage2D.getPnContent().add(scrollPane, BorderLayout.EAST);
 
 		JPanel gridsettings = new JPanel();
 		gridsettings.setAlignmentY(0.0f);
@@ -482,6 +478,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		gridsettings.add(moduleOperations);
 
 		// add all modules for Image settings TODO add all mods
+		listImageSettingsModules.addElement(modImage2D);
 		listImageSettingsModules.addElement(moduleGeneral);
 		listImageSettingsModules.addElement(moduleGeneral.getModSplitConImg());
 		listImageSettingsModules.addElement(modulePaintscale);
@@ -790,7 +787,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	// START OF SETTINGS MANIPULATIONS
 
 	/**
-	 * preferences have been changed in the general pref dialog
+	 * general preferences have been changed in the general pref dialog
 	 * Apply to this window
 	 */
 	public void callPreferencesChanged() {
