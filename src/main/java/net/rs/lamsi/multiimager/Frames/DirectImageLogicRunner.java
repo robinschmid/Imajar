@@ -411,7 +411,7 @@ public class DirectImageLogicRunner implements Runnable {
 		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
 		if(imgs.length>0) {
 			// add img to list
-			IconNode nodes[] = runner.addCollection2D(imgs, parent, settings); 
+			IconNode nodes[] = runner.addCollection2D(imgs, parent); 
 			// get all filedimensions like lines/length... for later comparison 
 			FileDim[] dim = writer.getFileDim(i);
 			// create task

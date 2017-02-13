@@ -427,6 +427,40 @@ public class Image2D implements Serializable, Collectable2D {
 	} 
 
 	/**
+	 * 
+	 * @param scale
+	 * @param sep separation chars
+	 * @return xmatrix raw by a factor as CSV string
+	 */
+	public String toXCSV(boolean raw, String sep) {
+		return data.toXCSV(raw? 1 : getSettImage().getVelocity(), sep);
+	}
+
+	/**
+	 * 
+	 * @param scale
+	 * @param sep separation chars
+	 * @return ymatrix raw by a factor as CSV string
+	 */
+	public String toICSV(boolean raw, String sep) {
+		StringBuilder builder = new StringBuilder();
+		
+		int cols = data.getLinesCount();
+		int rows = data.getMaxDP();
+		
+		for(int r = 0; r<rows; r++) {
+			// increment l
+			for(int c=0; c<cols; c++) {
+				// only if not null: write Intensity
+				builder.append(r<getLineLength(c)? raw? getIRaw(c, r) : getIProcessed(c, r) : "");
+				if(c<cols-1) builder.append(sep);
+			} 
+			if(r<rows-1) builder.append("\n");
+		}
+		return builder.toString();
+	}
+	
+	/**
 	 * Returns the processed intensity only
 	 * @param sett
 	 * @return

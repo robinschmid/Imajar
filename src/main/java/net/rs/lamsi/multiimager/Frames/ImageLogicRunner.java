@@ -1,6 +1,7 @@
 package net.rs.lamsi.multiimager.Frames;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -9,6 +10,7 @@ import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -72,21 +74,21 @@ public class ImageLogicRunner {
 		mapNodes = new HashMap<String, IconNode>();
 		treeImg = wnd.getModuleTreeImages();
 		treeImg.getTree().addTreeSelectionListener(new TreeSelectionListener() {
-			
+
 			@Override
 			public void valueChanged(TreeSelectionEvent e) { 
-					try {
-						// show first selected item
-						TreePath path = treeImg.getTree().getSelectionPath();
-						if(path!=null) {
-							DefaultMutableTreeNode img = (DefaultMutableTreeNode) path.getLastPathComponent();
-							if(Image2D.class.isInstance(img.getUserObject())) { 
-								setSelectedImageAndShow((Image2D)img.getUserObject());
-							}
+				try {
+					// show first selected item
+					TreePath path = treeImg.getTree().getSelectionPath();
+					if(path!=null) {
+						DefaultMutableTreeNode img = (DefaultMutableTreeNode) path.getLastPathComponent();
+						if(Image2D.class.isInstance(img.getUserObject())) { 
+							setSelectedImageAndShow((Image2D)img.getUserObject());
 						}
-					}catch(Exception ex) { 
-						ex.printStackTrace();
-					} 
+					}
+				}catch(Exception ex) { 
+					ex.printStackTrace();
+				} 
 			} 
 		});
 		// init heatmapfactory
@@ -112,7 +114,7 @@ public class ImageLogicRunner {
 		binaryWriter = new BinaryWriterReader();
 		txtWriter = new TxtWriter();
 	} 
-	
+
 	//############################################################################################
 	// Add, select, renew, delete images 
 	/**
@@ -159,19 +161,19 @@ public class ImageLogicRunner {
 			return node;
 		}
 	}
-		/**
-		 * adds an image to a parent node
-		 * @param i
-		 * @param parent
-		 */
-	public IconNode addImage(Image2D i, IconNode parent) {  
+	/**
+	 * adds an image to a parent node
+	 * @param i
+	 * @param parent
+	 */
+	public IconNode addImage(Image2D i, DefaultMutableTreeNode parent) {  
 		//
 		SettingsGeneralPreferences sett = SettingsHolder.getSettings().getSetGeneralPreferences();
 		IconNode node = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(sett.getIconWidth(), sett.getIconHeight()) : null);
 		parent.add(node);
 		return node;
 	}
-	public IconNode[] addCollection2D(Image2D[] img, IconNode parent, SettingsImageDataImportTxt sett) { 
+	public IconNode[] addCollection2D(Image2D[] img, IconNode parent) { 
 		// only one image? do not create subnodes
 		if(img==null || img.length==0) {
 			return null;
@@ -198,6 +200,39 @@ public class ImageLogicRunner {
 				sub.add(inode);
 				c++;
 			}
+			return nodes;
+		}
+	}
+
+
+	protected IconNode[] addCollection2D(ImageGroupMD img, File f , DefaultMutableTreeNode parent) {
+		// only one image? do not create subnodes
+		if(img==null || img.getImages().size()==0) {
+			return null;
+		}
+		else if(img.getImages().size()==1) {
+			return new IconNode[]{addImage(img.getImages().firstElement(), parent)};
+		}
+		else {
+			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
+			// create subnode with image name
+			DefaultMutableTreeNode sub = null;
+			String last = null;
+			IconNode[] nodes = new IconNode[img.getImages().size()];
+			int c = 0;
+
+			// create img nodes
+			for(Image2D i : img.getImages()) {
+				if(sub==null || (!last.equals(i.getSettImage().getRAWFolder()))) {
+					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder());
+					parent.add(sub);
+					last = i.getSettImage().getRAWFolder(); 
+				}
+				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
+				nodes[c] = inode;
+				sub.add(inode);
+				c++;
+			} 
 			return nodes;
 		}
 	}
@@ -257,10 +292,10 @@ public class ImageLogicRunner {
 		}
 		return null;
 	}
-	
+
 	//##################################################################################
 	// apply settings 
-	
+
 	/**
 	 * opens a dialog. if ok -> change all settings of all images to current settings
 	 * Copy settings!
@@ -276,7 +311,7 @@ public class ImageLogicRunner {
 			}
 		}
 	} 
-	
+
 
 	//##################################################################################
 	// LOAD AND SAVE IMAGE	
@@ -288,15 +323,22 @@ public class ImageLogicRunner {
 		if(currentHeat!=null)
 			GraphicsExportDialog.openDialog(currentHeat.getChart(), getListImages());
 	}
-	
+
 	// saves selected Image to file
 	public void saveImage2DToFile() {
 		if (selectedImage !=null && fcSave.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {   
 			File file = fcSave.getSelectedFile();
 			file = fileTFImage2D.addExtensionToFileName(file);
 			// save Image2D to file
-			binaryWriter.save2file(selectedImage, file); 
-			binaryWriter.closeOut();
+			ImageGroupMD group = selectedImage.getImageGroup();
+			if(group==null)
+				group = new ImageGroupMD(selectedImage);
+			try {
+				Image2DImportExportUtil.writeToStandardZip(group, file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				ImageEditorWindow.log("Error while writing "+file.getAbsolutePath()+"\n"+e.getMessage(), LOG.ERROR);
+			}
 		}
 	}
 
@@ -322,18 +364,21 @@ public class ImageLogicRunner {
 								// image
 								if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase(fileTFImage2D.getExtension())) {
 									try {
-										// load image from file with binary read
-										Image2D img = (Image2D) binaryWriter.readFromFile(f);
-										binaryWriter.closeIn();
-										if(img!=null) addImage(img, f.getAbsolutePath());
+										// load image group from file 
+										IconNode fnode = new IconNode(f.getName()+"; "+f.getAbsolutePath());
+										ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f);
+										if(img!=null) 
+											addCollection2D(img, f, fnode);
+										treeImg.addNodeToRoot(fnode);
 									}catch(Exception ex) {
 										ex.printStackTrace();
 										// Dialog
+										ImageEditorWindow.log("Error while reading "+f.getAbsolutePath()+"\n"+ex.getMessage(), LOG.ERROR);
 										JOptionPane.showMessageDialog(window, "Cannot load image file "+f.getPath()+"; "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
 									}
 								} 
 								// Progress:
-								addProgressStep(1);
+								addProgressStep(1); 
 							} 
 						} catch(Exception ex) {
 							ex.printStackTrace();
@@ -347,6 +392,7 @@ public class ImageLogicRunner {
 			});
 		}
 	}
+
 
 	/** 
 	 * Import from data file txt, csv, xlsx
@@ -362,11 +408,11 @@ public class ImageLogicRunner {
 			if (fcImport.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
 				// many folders or files
 				File[] files = fcImport.getSelectedFiles(); 
-				
+
 				if(files.length>0) {
 					// open the files
 					SettingsImageDataImportTxt sett = (SettingsImageDataImportTxt) settingsDataImport;
-					
+
 					// import or start direct image analysis?
 					if(window.getCurrentView()== ImageEditorWindow.VIEW_IMAGING_ANALYSIS) {
 						// import text files
@@ -399,14 +445,14 @@ public class ImageLogicRunner {
 							// get all files in this folder TODO change csv to settings
 							// each file[] element is for one image
 							Vector<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
-							
+
 							for(File[] i : sub) {
 								// load them as image set
 								Image2D[] imgs = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true); 
 								ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
 								if(imgs.length>0) {
 									// add img to list
-									addCollection2D(imgs, fnode, settingsDataImport);
+									addCollection2D(imgs, fnode);
 								}
 							}
 							// add
@@ -420,17 +466,17 @@ public class ImageLogicRunner {
 					Image2D[] img = Image2DImportExportUtil.importTextDataToImage(files, settingsDataImport, true); 
 					// add img to list
 					IconNode parent = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
-					addCollection2D(img, parent, settingsDataImport);
+					addCollection2D(img, parent);
 					treeImg.addNodeToRoot(parent);
 				}
 			}
-			
+
 		} catch (Exception e) { 
 			e.printStackTrace();
 			DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
 		}
 	} 
-	
+
 
 	/** 
 	 * exports a data report on quantification
@@ -455,7 +501,7 @@ public class ImageLogicRunner {
 
 	//#####################################################################################
 	// Direct imaging analysis
-	
+
 	/**
 	 * starting direct imaging analysis with one file selected or one folder
 	 * @param sett
@@ -495,7 +541,7 @@ public class ImageLogicRunner {
 	public void setCurrentHeat(Heatmap currentHeat) {
 		this.currentHeat = currentHeat;
 	}
-	
+
 	public ModuleTree<Image2D> getTree() {
 		return treeImg;
 	}

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.rs.lamsi</groupId>
 	<artifactId>MassImager</artifactId>
-	<version>3.12b</version>
+	<version>3.13b</version>
 	<build>
 		<resources>
 			<resource>
@@ -223,6 +223,13 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.5</version>
 		</dependency>
+		
+		<!-- zipping -->
+  	<dependency>
+  		<groupId>net.lingala.zip4j</groupId>
+  		<artifactId>zip4j</artifactId>
+  		<version>1.3.2</version>
+  	</dependency>
 		
 		<!-- charset detection -->
 		<dependency>

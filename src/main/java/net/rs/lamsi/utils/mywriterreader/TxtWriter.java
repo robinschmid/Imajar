@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 import java.util.Vector;
@@ -150,7 +151,7 @@ public class TxtWriter {
         }
     } 
     
-
+    
     /**
      * automatically detects charset with juniversalchardet package
      * close bufferedreader after finishing!
@@ -172,6 +173,17 @@ public class TxtWriter {
 	     //BufferedReader br = new BufferedReader(ReaderFactory.createReaderFromFile(file));
 	     if(lastencoding!=null) br = new BufferedReader(new InputStreamReader(new FileInputStream(file), lastencoding));
 	     else br = new BufferedReader(new InputStreamReader(new FileInputStream(file))); 
+	     return br;
+    }
+
+    /**
+     * automatically detects charset with juniversalchardet package
+     * close bufferedreader after finishing!
+     * @param file
+     * @return
+     */
+    public BufferedReader getBufferedReader(InputStream stream) throws IOException {  
+	     BufferedReader br = new BufferedReader(new InputStreamReader(stream)); 
 	     return br;
     }
     

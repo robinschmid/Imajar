@@ -36,9 +36,14 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 		intensity.add(i);
 	}
 	public ScanLineMD() {
+		super();
 		this.intensity = new Vector<Double[]>();
 	}
 
+	public ScanLineMD(Vector<Float> x) {
+		this();
+		setX(x);
+	}
 	//##################################################
 	// Multi dimensional
 	@Override

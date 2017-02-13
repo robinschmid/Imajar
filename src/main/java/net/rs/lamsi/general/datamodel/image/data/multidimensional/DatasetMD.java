@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
@@ -43,7 +44,22 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		maxDP=-1; 
 		avgDP=-1;
 	}
+
+	public ImageGroupMD createImageGroup() {
+		if(lines==null || lines.length==0)
+			return null;
+		
+		ImageGroupMD group = new ImageGroupMD();
+		for(int i= 0; i<getImageCount(); i++) {
+			Image2D img = new Image2D(this, i);
+			group.add(img);
+		}
+		return group;
+	}
 	
+	private int getImageCount() { 
+		return lines==null || lines.length==0? 0 : lines[0].getImageCount();
+	}
 	//##################################################
 	// Multi dimensional
 	@Override

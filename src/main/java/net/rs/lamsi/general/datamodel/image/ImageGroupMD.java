@@ -51,4 +51,8 @@ public class ImageGroupMD {
 	public int size() {
 		return images.size();
 	}
+	
+	public Vector<Image2D> getImages() {
+		return images;
+	}
 }

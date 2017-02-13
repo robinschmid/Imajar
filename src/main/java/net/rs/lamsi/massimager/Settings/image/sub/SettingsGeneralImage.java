@@ -106,6 +106,7 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "reflectHorizontal", reflectHorizontal); 
 		toXML(elParent, doc, "reflectVertical", reflectVertical); 
 		toXML(elParent, doc, "isBinaryData", isBinaryData); 
+		toXML(elParent, doc, "filepath", filepath); 
 	}
 
 	@Override
@@ -118,7 +119,7 @@ public class SettingsGeneralImage extends Settings {
 				if(paramName.equals("allFiles")) allFiles = booleanFromXML(nextElement); 
 				else if(paramName.equals("velocity"))velocity = floatFromXML(nextElement);  
 				else if(paramName.equals("spotsize"))spotsize = floatFromXML(nextElement);  
-				else if(paramName.equals("title"))title = nextElement.getTextContent();  
+				else if(paramName.equals("title"))title = nextElement.getTextContent();   
 				else if(paramName.equals("isTriggered"))isTriggered = booleanFromXML(nextElement);  
 				else if(paramName.equals("timePerLine"))timePerLine = doubleFromXML(nextElement);  
 				else if(paramName.equals("imagingMode"))imagingMode = intFromXML(nextElement);  
@@ -126,6 +127,7 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("reflectHorizontal"))reflectHorizontal = booleanFromXML(nextElement);  
 				else if(paramName.equals("reflectVertical"))reflectVertical = booleanFromXML(nextElement);  
 				else if(paramName.equals("isBinaryData"))isBinaryData = booleanFromXML(nextElement);  
+				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
 			}
 		}
 	}

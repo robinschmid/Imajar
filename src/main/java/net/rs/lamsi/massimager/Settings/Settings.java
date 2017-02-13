@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -55,6 +57,15 @@ public abstract class Settings implements Serializable {
 	 * @throws IOException
 	 */
 	public void saveToXML(File file) throws IOException {
+		saveToXML(new FileOutputStream(file));
+	}
+	
+	/**
+	 * saves settings to a file
+	 * @param file
+	 * @throws IOException
+	 */
+	public void saveToXML(OutputStream fos) throws IOException {
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -74,7 +85,7 @@ public abstract class Settings implements Serializable {
 			transformer.setOutputProperty(
 					"{http://xml.apache.org/xslt}indent-amount", "4");
 
-			StreamResult result = new StreamResult(new FileOutputStream(file));
+			StreamResult result = new StreamResult(fos);
 			DOMSource source = new DOMSource(configuration);
 			transformer.transform(source, result); 
 		} catch (Exception e) {
@@ -138,6 +149,29 @@ public abstract class Settings implements Serializable {
 
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document configuration = dBuilder.parse(file);
+
+			XPathFactory factory = XPathFactory.newInstance();
+			XPath xpath = factory.newXPath();
+
+			// load settings
+			loadSettingsFromXML(configuration, xpath, "//settings");
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+	}
+	
+	/**
+	 * load xml settings from a file
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	public void loadFromXML(InputStream is) throws IOException { 
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document configuration = dBuilder.parse(is);
 
 			XPathFactory factory = XPathFactory.newInstance();
 			XPath xpath = factory.newXPath();
