@@ -359,9 +359,6 @@ public class Image2DImportExportUtil {
 				}
 			}
 		}
-		
-		// resulting images
-		Image2D[] img = new Image2D[files.length - (xmatrix==-1? 0 : 1)];
 		// store data in Vector
 		// x[line].get(dp)
 		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>();
@@ -529,7 +526,7 @@ public class Image2DImportExportUtil {
 		for(int i=0;i<group.getImages().size() && i<titles.size(); i++) 
 			setSettingsImage2D(group.getImages().get(i), flist.get(i), titles.get(i), meta.get(i));
 		//return image 
-		return img;
+		return group.getImages().toArray(new Image2D[group.getImages().size()]);
 	}
 
 

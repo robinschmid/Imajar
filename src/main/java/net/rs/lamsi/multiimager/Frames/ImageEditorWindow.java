@@ -264,6 +264,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		});
 		mnFile.add(mnImportData);
 
+
 		JMenuItem mntmOpenDialog = new JMenuItem("Open dialog");
 		mntmOpenDialog.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
