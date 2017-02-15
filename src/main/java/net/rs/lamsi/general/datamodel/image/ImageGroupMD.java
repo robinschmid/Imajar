@@ -2,6 +2,8 @@ package net.rs.lamsi.general.datamodel.image;
 
 import java.util.Vector;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 
 public class ImageGroupMD {
@@ -9,7 +11,7 @@ public class ImageGroupMD {
 	// dataset
 	protected MDDataset data = null;
 	protected Vector<Image2D> images;
-
+	protected DefaultMutableTreeNode node = null;
 	public ImageGroupMD() {
 		images = new Vector<Image2D>();
 	}
@@ -30,7 +32,7 @@ public class ImageGroupMD {
 
 			if(data.equals(img.getData())){
 				images.addElement(img);
-				img.setImageGroup(this);
+				img.setImageGroup(this); 
 			}
 		}
 	}
@@ -54,5 +56,12 @@ public class ImageGroupMD {
 	
 	public Vector<Image2D> getImages() {
 		return images;
+	}
+
+	public DefaultMutableTreeNode getNode() {
+		return node;
+	}
+	public void setNode(DefaultMutableTreeNode node) {
+		this.node = node;
 	}
 }

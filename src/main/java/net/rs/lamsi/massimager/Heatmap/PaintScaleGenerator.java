@@ -46,8 +46,8 @@ public class PaintScaleGenerator {
 			if(max<min)
 				min=max-0.000001;
 			// real min and max values as given by minz or min in settings
-			double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()) ? settings.getMin() : min);
-			double realmax = ((settings.getMax()!=0 && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())) ? settings.getMax() : max); 
+			double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()) ? settings.getMinIAbs(min,max) : min);
+			double realmax = ((settings.getMaxIAbs(min,max)!=0 && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())) ? settings.getMaxIAbs(min,max) : max); 
 			
 
 			// error when min == max
@@ -83,7 +83,7 @@ public class PaintScaleGenerator {
 			// adding color steps in middle 
 			addColorsteps(realmin, realmax, settings, paintScale, i);
 			// end
-			if(max>settings.getMax() && settings.isUsesMinMax() && settings.getMax()>0) {
+			if(max>settings.getMaxIAbs(min,max) && settings.isUsesMinMax() && settings.getMinIAbs(min,max)>0) {
 				if((settings.isUsesWAsMin() && settings.isInverted()) || (settings.isUsesBAsMax() && !settings.isInverted()) || settings.isMonochrom()) { 
 					// end to black or white
 					Color color = (settings.isInverted()? Color.WHITE : Color.BLACK); 
@@ -107,8 +107,8 @@ public class PaintScaleGenerator {
 		}
 		else {
 			// Min und Max das festgelegt ist
-			double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()) ? settings.getMin() : min);
-			double realmax = ((settings.getMax()!=0 && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())) ? settings.getMax() : max); 
+			double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()) ? settings.getMinIAbs(min,max) : min);
+			double realmax = ((settings.getMaxIAbs(min,max)!=0 && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())) ? settings.getMaxIAbs(min,max) : max); 
 			// 
 			LookupPaintScale paintScale = new LookupPaintScale(realmin,realmax,Color.lightGray); 
 			// Index schon festlegen
@@ -172,8 +172,8 @@ public class PaintScaleGenerator {
 
 	// grey
 	public static PaintScale generateGreyPaintScale(double min, double max, SettingsPaintScale settings) { 
-		double realmin = ((settings.isUsesMinMax()) ? settings.getMin() : min);
-		double realmax = ((settings.getMax()!=0 && settings.isUsesMinMax()) ? settings.getMax() : max); 
+		double realmin = ((settings.isUsesMinMax()) ? settings.getMinIAbs(min,max) : min);
+		double realmax = ((settings.getMaxIAbs(min,max)!=0 && settings.isUsesMinMax()) ? settings.getMaxIAbs(min,max) : max); 
 		
 		PaintScale scale = new GrayPaintScale(realmin, realmax); 
 		return scale;

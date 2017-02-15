@@ -2,6 +2,7 @@ package net.rs.lamsi.massimager.Settings.image.visualisation;
 
 import java.awt.Color;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
 
 import org.apache.poi.ss.formula.functions.T;
@@ -34,6 +35,7 @@ public class SettingsPaintScale extends Settings {
 	private boolean usesMinMaxFromSelection;
 	// relative, absolute or percentile?
 	private ValueMode modeMin, modeMax;
+	// either a percentage (0-100) or absolute value 
 	private double min, max;
 	// in percentage
 	private float minFilter, maxFilter;
@@ -79,8 +81,115 @@ public class SettingsPaintScale extends Settings {
 		this.LOD = LOD; 
 	}
 
+	/**
+	 * this method should be used to receive the correct value
+	 * @param img
+	 * @return
+	 */
+	public double getMinIAbs(Image2D img) {
+		switch(modeMin) {
+		case ABSOLUTE:
+			return min;
+		case RELATIVE:
+			return img.getIAbs(min, usesMinMaxFromSelection);
+		case PERCENTILE:
+			return min;
+		}
+		return 0;
+	}
 
+	/**
+	 * this method should be used to receive the correct value
+	 * @param img
+	 * @return
+	 */
+	public double getMinIRel(Image2D img) {
+		switch(modeMin) {
+		case ABSOLUTE:
+			return img.getIPercentage(min, usesMinMaxFromSelection);
+		case RELATIVE:
+			return min;
+		case PERCENTILE:
+			return img.getIPercentage(min, usesMinMaxFromSelection);
+		}
+		return 0;
+	}
 
+	/**
+	 * this method should be used to receive the correct value
+	 * @param img
+	 * @return
+	 */
+	public double getMaxIAbs(Image2D img) {
+		switch(modeMax) {
+		case ABSOLUTE:
+			return max;
+		case RELATIVE:
+			return img.getIAbs(max, usesMinMaxFromSelection);
+		case PERCENTILE:
+			return max;
+		}
+		return 0;
+	}
+
+	/**
+	 * this method should be used to receive the correct value
+	 * @param img
+	 * @return
+	 */
+	public double getMaxIRel(Image2D img) {
+		switch(modeMax) {
+		case ABSOLUTE:
+			return img.getIPercentage(max, usesMinMaxFromSelection);
+		case RELATIVE:
+			return max;
+		case PERCENTILE:
+			return img.getIPercentage(max, usesMinMaxFromSelection);
+		}
+		return 0;
+	}
+	
+
+	/**
+	 * use this to get the correct value
+	 * @param totalmin
+	 * @param totalmax
+	 * @return
+	 */
+	public double getMinIAbs(double totalmin, double totalmax) {
+		switch(modeMin) {
+		case ABSOLUTE:
+			return min;
+		case RELATIVE:
+			return (totalmax-totalmin)*this.min/100.0;
+		case PERCENTILE:
+			return min;
+		}
+		return 0;
+	}
+
+	/**
+	 * use this to get the correct value
+	 * @param totalmin
+	 * @param totalmax
+	 * @return
+	 */
+	public double getMaxIAbs(double totalmin, double totalmax) {
+		switch(modeMax) {
+		case ABSOLUTE:
+			return max;
+		case RELATIVE:
+			return (totalmax-totalmin)*this.max/100.0;
+		case PERCENTILE:
+			return max;
+		}
+		return 0;
+	}
+	
+	
+	public boolean isInIRange(Image2D img, double intensity) {
+		return intensity>=getMinIAbs(img) && intensity<=getMaxIAbs(img);
+	}
 
 	@Override
 	public void resetAll() {
@@ -247,8 +356,6 @@ public class SettingsPaintScale extends Settings {
 	}
 
 
-
-
 	//##############################################################################################
 	// GETTER AND SETTER
 	public int getLevels() {
@@ -301,9 +408,9 @@ public class SettingsPaintScale extends Settings {
 	 * absolute
 	 * @return
 	 */
-	public double getMin() {
-		return min;
-	}
+//	public double getMin() {
+//		return min;
+//	}
 	
 
 	/**
@@ -318,9 +425,9 @@ public class SettingsPaintScale extends Settings {
 	 * absolute
 	 * @return
 	 */
-	public double getMax() {
-		return max;
-	}
+//	public double getMax() {
+//		return max;
+//	}
 
 	/**
 	 * absolute
@@ -425,4 +532,5 @@ public class SettingsPaintScale extends Settings {
 	public void setLOD(double lOD) {
 		LOD = lOD;
 	}
+
 }

@@ -14,6 +14,7 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 	private long dalay = 1500;
 	private boolean isActive = true;
 	private DocumentEvent lastEvent = null;
+	private boolean isStopped = false;
 
 	public DelayedDocumentListener() {
 		super();
@@ -29,6 +30,7 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 	public void startAutoUpdater(DocumentEvent e) {
 		lastAutoUpdateTime = System.currentTimeMillis();
 		lastEvent = e;
+		isStopped = false;
 		if(!isAutoUpdateStarted) { 
 			ImageEditorWindow.log("Auto update started", LOG.DEBUG);
 			isAutoUpdateStarted = true;
@@ -40,7 +42,7 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 	}
 	@Override
 	public void run() {
-		while(true) {
+		while(true && !isStopped) {
 			if(lastAutoUpdateTime+dalay<=System.currentTimeMillis()) {
 				documentChanged(lastEvent);
 				lastAutoUpdateTime=-1;
@@ -53,6 +55,7 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 				e.printStackTrace();
 			}
 		} 
+		isStopped = false;
 	}
 
 	/**
@@ -88,6 +91,9 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
+	}
+	public void stop() {
+		isStopped = true;
 	}
 	
 }

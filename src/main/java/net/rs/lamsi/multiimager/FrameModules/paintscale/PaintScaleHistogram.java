@@ -6,6 +6,7 @@ import java.awt.Color;
 import javax.swing.JPanel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -39,15 +40,19 @@ public class PaintScaleHistogram extends JPanel {
 	public void updateHisto() {
 		if(img!=null) {
 		try {
-		double min = img.getSettPaintScale().getMin();
-		double max = img.getSettPaintScale().getMax();
+			SettingsPaintScale ps = img.getSettPaintScale();
+		double min = ps.getMinIAbs(img);
+		double max = ps.getMaxIAbs(img);
 		
+		double[] dat1 = img.toIArray();
 		double[] dat2 = img.getIInIRange();
-		int bin = (int) Math.sqrt(dat2.length);
-		
-		ChartPanel pn1 = img.createHistogram(img.toIArray(), bin);
+		int bins2 = (int) Math.sqrt(dat2.length)+40;
+		double binwidth2 = (max-min)/bins2;
+		int bins1 = (int) ((img.getMaxIntensity(ps.isUsesMinMaxFromSelection())-img.getMinIntensity(ps.isUsesMinMaxFromSelection()))/binwidth2);
+		System.out.println("bi1:"+bins1+ "   Bins2:"+bins2);
+		ChartPanel pn1 = img.createHistogram(dat1, bins1);
 		XYPlot plot1 = pn1.getChart().getXYPlot();
-		XYPlot plot2 = img.createHistogram(dat2, bin).getChart().getXYPlot();
+		XYPlot plot2 = img.createHistogram(dat2, bins2).getChart().getXYPlot();
 
 		Marker minM = new ValueMarker(min);
 		minM.setPaint(Color.RED);

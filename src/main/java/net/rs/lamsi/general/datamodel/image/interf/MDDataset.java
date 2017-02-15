@@ -1,5 +1,7 @@
 package net.rs.lamsi.general.datamodel.image.interf;
 
+import java.util.Vector;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 
 /**
@@ -21,7 +23,7 @@ public interface MDDataset {
 	 * @param dim
 	 * @return the index of the added dimension
 	 */
-	public int addDimension(Double[] dim);
+	public int addDimension(Vector<Double[]> dim);
 
 	/**
 	 * adds the image img as a new dimension

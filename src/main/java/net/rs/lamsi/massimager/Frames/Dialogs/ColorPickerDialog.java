@@ -286,8 +286,6 @@ public class ColorPickerDialog extends JDialog {
 			getCbBlackWhiteAsMinMax().setSelected(set.isUsesBAsMax());
 			// Zahlen
 			getTxtLevels().setText(""+set.getLevels());
-			getTxtMinValue().setText(""+set.getMin());
-			getTxtMaxValue().setText(""+set.getMax());
 			// Color
 			getBtnColorMonochrom().setBackground(set.getMinColor());
 			getBtnMinColor().setBackground(set.getMinColor());

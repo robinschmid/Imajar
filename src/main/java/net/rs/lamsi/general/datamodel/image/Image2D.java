@@ -34,6 +34,7 @@ import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImag
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -107,6 +108,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public Image2D(SettingsImage2D settings) {
 		super();
 		this.settings = settings;
+		setSettPaintScale(settings.getSettPaintScale());
 	}
 	
 	public Image2D(ImageDataset data) {
@@ -235,10 +237,15 @@ public class Image2D implements Serializable, Collectable2D {
 				double width = getMaxXProcessed(iy);
 				// for all datapoints in line
 				for(int ix=0; ix<data.getLineLength(iy); ix++) {
+					// reverse x if two way
+					int cx = ix;
+					if(imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
+						cx = data.getLineLength(iy)-1-cx;
+					}
 					// x = time; NOT distance; so calc TODO
-					x[currentdp] = getXProcessed(iy, ix);
+					x[currentdp] = getXProcessed(iy, cx);
 					y[currentdp] = getYProcessed(iy);
-					z[currentdp] = getIProcessed(iy, ix);
+					z[currentdp] = getIProcessed(iy, cx);
 
 					// imagecreation mode: if twoways -> first reflect every 2. line (x values)
 					if(imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
@@ -790,6 +797,22 @@ public class Image2D implements Serializable, Collectable2D {
 
 
 	/**
+	 * according to rotation of data
+	 * @return
+	 */
+	public int getWidthMaxDP() {
+		SettingsGeneralImage sg = getSettImage();
+		return (sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? data.getLinesCount() : data.getMaxDP();
+	}
+	/**
+	 * according to rotation of data
+	 * @return
+	 */
+	public int getHeightMaxDP() {
+		SettingsGeneralImage sg = getSettImage();
+		return (sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? data.getMaxDP() : data.getLinesCount();	
+	}
+	/**
 	 * minimum intensity processed 
 	 * @return
 	 */
@@ -977,6 +1000,7 @@ public class Image2D implements Serializable, Collectable2D {
 			int size = z.length-1;
 			// save in var
 			minZFiltered =  z[(int)(size*f/100.0)];
+			getSettPaintScale().setMin(minZFiltered);
 		}
 	}
 	public void applyCutFilterMax(double f) {
@@ -992,6 +1016,7 @@ public class Image2D implements Serializable, Collectable2D {
 			int size = z.length-1;
 			// save in var --> cut from max 1-p
 			maxZFiltered = z[size-(int)(size*f/100.0)];
+			getSettPaintScale().setMax(maxZFiltered);
 		}
 	}
 
@@ -1011,8 +1036,12 @@ public class Image2D implements Serializable, Collectable2D {
 	public SettingsPaintScale getSettPaintScale() {
 		return settings.getSettPaintScale();
 	} 
-	public void setSettPaintScale(SettingsPaintScale settPaintScale) {
-		settings.setSettPaintScale(settPaintScale);
+	public void setSettPaintScale(SettingsPaintScale ps) {
+		settings.setSettPaintScale(ps);
+		if(ps.getModeMax().equals(ValueMode.PERCENTILE) && ps.getMaxIAbs(this)==0 && ps.getMinIAbs(this)==0)
+			applyCutFilterMax(ps.getMaxFilter());
+		if(ps.getModeMin().equals(ValueMode.PERCENTILE) && ps.getMaxIAbs(this)==0 && ps.getMinIAbs(this)==0)
+			applyCutFilterMin(ps.getMinFilter());
 	} 
 	public SettingsGeneralImage getSettImage() {
 		return settings.getSettImage();
@@ -1227,7 +1256,7 @@ public class Image2D implements Serializable, Collectable2D {
 		for(int l=0; l<data.getLinesCount(); l++) {
 			for(int dp = 0; dp<data.getLineLength(l); dp++) {
 				double intensity =getIProcessed(l, dp);
-				if(getIProcessed(l, dp)>=getSettPaintScale().getMin() && getIProcessed(l, dp)<=getSettPaintScale().getMax()) {
+				if(getSettPaintScale().isInIRange(this, getIProcessed(l, dp))) {
 					list[counter] = intensity;
 					counter++;
 				} 
@@ -1243,7 +1272,7 @@ public class Image2D implements Serializable, Collectable2D {
 		int counter = 0;
 		for(int l=0; l<data.getLinesCount(); l++) {
 			for(int dp = 0; dp<data.getLineLength(l); dp++) {
-				if(getIProcessed(l, dp)>=getSettPaintScale().getMin() && getIProcessed(l, dp)<=getSettPaintScale().getMax()) {
+				if(getSettPaintScale().isInIRange(this, getIProcessed(l, dp))) {
 					counter++;
 				} 
 			}
@@ -1611,5 +1640,6 @@ public class Image2D implements Serializable, Collectable2D {
 	public void cleatRawDataChangedListeners() {
 		data.cleatRawDataChangedListeners();
 	}
+
 
 }

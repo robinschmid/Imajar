@@ -101,8 +101,8 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		return line.removeDimension(i);
 	}
 	@Override
-	public int addDimension(Double[] dim) {
-		line.addDimension(dim);
+	public int addDimension(Vector<Double[]> dim) {
+		line.addDimension(dim.get(0));
 		return line.getImageCount()-1;
 	}
 

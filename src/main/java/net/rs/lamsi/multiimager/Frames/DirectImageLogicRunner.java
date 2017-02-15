@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
@@ -407,15 +408,16 @@ public class DirectImageLogicRunner implements Runnable {
 	 */
 	private DIATask createTask(File[] i, IconNode parent, int index) throws Exception {
 		// load them as image set
-		Image2D[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
+		ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
 		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
-		if(imgs.length>0) {
+		for(ImageGroupMD g : imgs)
+		if(g.getImages().size()>0) {
 			// add img to list
-			IconNode nodes[] = runner.addCollection2D(imgs, parent); 
+			IconNode nodes[] = runner.addCollection2D(g, parent); 
 			// get all filedimensions like lines/length... for later comparison 
 			FileDim[] dim = writer.getFileDim(i);
 			// create task
-			return new DIATask(imgs, dim, nodes, index); 
+			return new DIATask(g, dim, nodes, index); 
 		}
 		return null;
 	}

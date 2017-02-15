@@ -36,7 +36,7 @@ public class ModuleTree <T> extends Module {
 
 	public void addNodeToRoot(DefaultMutableTreeNode node) { 
 		root.add(node); 
-		getTreeModel().reload();
+		reload();
 	}
 	/**
 	 * removes all elements from the list
@@ -44,7 +44,7 @@ public class ModuleTree <T> extends Module {
 	public void removeAllElements() {
 		try{  
 			getRoot().removeAllChildren();
-			getTreeModel().reload();
+			reload();
 		}catch(Exception ex) {
 			ex.printStackTrace();
 		}
@@ -145,6 +145,10 @@ public class ModuleTree <T> extends Module {
 	}
 	public DefaultMutableTreeNode getRoot() {
 		return root;
+	}
+	
+	public void reload() {
+		getTreeModel().reload();
 	}
 
 }

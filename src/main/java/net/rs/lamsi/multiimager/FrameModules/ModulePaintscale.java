@@ -118,7 +118,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	private final Border emptyBorder = BorderFactory.createEmptyBorder();
 	
 	//
-	private DelayedDocumentListener listenerMinAbs, listenerMinPerc, listenerMaxPerc, listenerMaxAbs;
+	private DelayedDocumentListener listenerMinAbs, listenerMinPerc, listenerMaxPerc, listenerMaxAbs, listenerMaxFilter, listenerMinFilter;
 	
 	/**
 	 * Create the panel.
@@ -303,6 +303,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		    		   getSliderMinimum().setEnabled(false);
 		    		   listenerMinAbs.setActive(true);
 		    		   listenerMinPerc.setActive(false);
+		    		   listenerMinFilter.setActive(false);
 		    		   break;
 		    	   case PERCENTILE:
 		    		   getTxtMinimum().setEditable(false);
@@ -311,6 +312,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		    		   getSliderMinimum().setEnabled(false);
 		    		   listenerMinAbs.setActive(false);
 		    		   listenerMinPerc.setActive(false);
+		    		   listenerMinFilter.setActive(true);
 		    		   break;
 		    	   case RELATIVE: 
 			    	   applyNewMinimum();
@@ -320,6 +322,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		    		   getSliderMinimum().setEnabled(true);
 		    		   listenerMinAbs.setActive(false);
 		    		   listenerMinPerc.setActive(true);
+		    		   listenerMinFilter.setActive(false);
 		    		   break;
 		    	   }
 		       }
@@ -332,8 +335,8 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		sliderMinimum.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) { 
 			    JSlider source = (JSlider)e.getSource(); 
-			    if (!source.getValueIsAdjusting()) { 
-			    	setMinimumValuePercentage(source.getValue()/1000.f);
+			    if (!source.getValueIsAdjusting() && source.isEnabled()) { 
+			    	setMinimumValuePercentage(source.getValue()/1000.f, false);
 			    }
 			}
 		});
@@ -396,6 +399,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			    		   getSliderMaximum().setEnabled(false);
 			    		   listenerMaxAbs.setActive(true);
 			    		   listenerMaxPerc.setActive(false);
+			    		   listenerMaxFilter.setActive(false);
 			    		   break;
 			    	   case PERCENTILE:
 			    		   getTxtMaximum().setEditable(false);
@@ -404,6 +408,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			    		   getSliderMaximum().setEnabled(false);
 			    		   listenerMaxAbs.setActive(false);
 			    		   listenerMaxPerc.setActive(false);
+			    		   listenerMaxFilter.setActive(true);
 			    		   break;
 			    	   case RELATIVE: 
 			    		   applyNewMaximum();
@@ -413,6 +418,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			    		   getSliderMaximum().setEnabled(true);
 			    		   listenerMaxAbs.setActive(false);
 			    		   listenerMaxPerc.setActive(true);
+			    		   listenerMaxFilter.setActive(false);
 			    		   break;
 			    	   }
 			       }
@@ -425,8 +431,8 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		sliderMaximum.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) { 
 			    JSlider source = (JSlider)e.getSource();
-			    if (!source.getValueIsAdjusting()) {
-			    	setMaximumValuePercentage(source.getValue()/1000.f);
+			    if (!source.getValueIsAdjusting() && source.isEnabled()) {
+			    	setMaximumValuePercentage(source.getValue()/1000.f, false);
 			    }
 			}
 		});
@@ -543,8 +549,8 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	// MINIMUM AND MAXIMUM INTENSITY
 	// last values
 	private double lastMaxPercentage = 0, lastMinPercentage = 0, lastMin = 0, lastMax = 0;
-	protected void setMinimumValuePercentage(double f) {
-		if(!(lastMinPercentage+1>f && lastMinPercentage-1<f)  && currentImage!=null) {
+	protected void setMinimumValuePercentage(double f, boolean force) {
+		if((!(lastMinPercentage+1>f && lastMinPercentage-1<f) || force)  && currentImage!=null) {
 			System.out.println("Setting Min % "+f);
 			lastMinPercentage = f;
 			// apply to all perc. components 
@@ -552,20 +558,20 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			getTxtMinPerc().setText(formatPercentNumber(f));
 			// absolute
 			double absMin = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
-			setMinimumValue(absMin);
+			setMinimumValue(absMin, false);
 		}		
 	}
-	protected void setMinimumValue(double abs) {
-		if(lastMin!=abs && currentImage!=null) { 
+	protected void setMinimumValue(double abs, boolean force) {
+		if((lastMin!=abs || force) && currentImage!=null) { 
 			lastMin = abs;
 			// apply to all abs components
 			getTxtMinimum().setText(formatAbsNumber(abs));
 			// percentage
-			setMinimumValuePercentage(currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected()));
+			setMinimumValuePercentage(currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected()), false);
 		}
 	}
-	protected void setMaximumValuePercentage(double f) {
-		if(!(lastMaxPercentage+1>f && lastMaxPercentage-1<f) && currentImage!=null) {
+	protected void setMaximumValuePercentage(double f, boolean force) {
+		if((!(lastMaxPercentage+0.001>f && lastMaxPercentage-0.001<f) || getTxtMaxPerc().getText().length()==0)  && currentImage!=null) {
 			System.out.println("Setting max % "+f);
 			lastMaxPercentage = f;
 			// apply to all perc. components
@@ -573,17 +579,17 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			getTxtMaxPerc().setText(formatPercentNumber(f));
 			// absolute
 			double absMax = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
-			setMaximumValue(absMax);
+			setMaximumValue(absMax, false);
 		}		
 	}
-	protected void setMaximumValue(double abs) {
+	protected void setMaximumValue(double abs, boolean force) {
 		if(lastMax!=abs && currentImage!=null) {
 			System.out.println("Setting max abs "+abs);
 			lastMax = abs;
 			// apply to all abs components
 			getTxtMaximum().setText(formatAbsNumber(abs));
 			// percentage
-			setMaximumValuePercentage(currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected()));
+			setMaximumValuePercentage(currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected()), false);
 		}
 	}
 	
@@ -593,7 +599,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			double f = doubleFromTxt(getTxtMinFilter());
 			currentImage.applyCutFilterMin(f);
 			double minZ = currentImage.getMinZFiltered();
-			setMinimumValue(minZ);
+			setMinimumValue(minZ, true);
 			getTxtMinFilter().setBorder(emptyBorder);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -605,7 +611,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 			double f = doubleFromTxt(getTxtMaxFilter());
 			currentImage.applyCutFilterMax(f);
 			double maxZ = currentImage.getMaxZFiltered();
-			setMaximumValue(maxZ);
+			setMaximumValue(maxZ, true);
 			getTxtMaxFilter().setBorder(emptyBorder);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -676,14 +682,14 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		});
 		
 		// filter
-		getTxtMaxFilter().getDocument().addDocumentListener(new DelayedDocumentListener() {
+		getTxtMaxFilter().getDocument().addDocumentListener(listenerMaxFilter = new DelayedDocumentListener() {
 			@Override 
 			public void documentChanged(DocumentEvent e) {
 				applyMaxFilter();
 				al.actionPerformed(null);
 			}
 		});
-		getTxtMinFilter().getDocument().addDocumentListener(new DelayedDocumentListener() {
+		getTxtMinFilter().getDocument().addDocumentListener(listenerMinFilter = new DelayedDocumentListener() {
 			@Override 
 			public void documentChanged(DocumentEvent e) {
 				applyMinFilter();
@@ -702,13 +708,13 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		switch(mode){
 		case ABSOLUTE:
 			double value = Double.parseDouble(getTxtMinimum().getText());
-			getTxtMinPerc().setText(String.valueOf(currentImage.getIPercentage(value, settings.isUsesMinMaxFromSelection())));
+			setMinimumValue(value, false);
 			getTxtMinPerc().setBorder(emptyBorder);
 			getTxtMinimum().setBorder(emptyBorder);
 			break;
 		case RELATIVE:
 			double value2 = Double.parseDouble(getTxtMinPerc().getText());
-			getTxtMinimum().setText(String.valueOf(currentImage.getIAbs(value2, settings.isUsesMinMaxFromSelection())));
+			setMinimumValuePercentage(value2, false);
 			getTxtMinPerc().setBorder(emptyBorder);
 			getTxtMinimum().setBorder(emptyBorder);
 			break;
@@ -731,13 +737,13 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		switch(mode){
 		case ABSOLUTE:
 			double value = Double.parseDouble(getTxtMaximum().getText());
-			getTxtMaxPerc().setText(String.valueOf(currentImage.getIPercentage(value, settings.isUsesMinMaxFromSelection())));
+			setMaximumValue(value, false);
 			getTxtMaxPerc().setBorder(emptyBorder);
 			getTxtMaximum().setBorder(emptyBorder);
 			break;
 		case RELATIVE:
 			double value2 = Double.parseDouble(getTxtMaxPerc().getText());
-			getTxtMaximum().setText(String.valueOf(currentImage.getIAbs(value2, settings.isUsesMinMaxFromSelection())));
+			setMaximumValuePercentage(value2, false);
 			getTxtMaxPerc().setBorder(emptyBorder);
 			getTxtMaximum().setBorder(emptyBorder);
 			break;
@@ -761,31 +767,21 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	@Override
 	public void setAllViaExistingSettings(SettingsPaintScale ps) { 
 		ImageLogicRunner.setIS_UPDATING(false);
+
 		// new reseted ps
 		if(ps == null) {
 			System.out.println("NULL PAINTSCALE");
 			ps = new SettingsPaintScale();
 			ps.resetAll();
 		}
-		// 
-		this.getTxtLevels().setText(String.valueOf(ps.getLevels()));
-		this.getTxtMinimum().setText(formatAbsNumber(ps.getMin()));
-		this.getTxtMaximum().setText(formatAbsNumber(ps.getMax()));
-		// comboboxes
-		getComboMinValType().setSelectedItem(ps.getModeMin());
-		getComboMaxValType().setSelectedItem(ps.getModeMax());
-		// percentage
-		double perMin = currentImage.getIPercentage(ps.getMin(), ps.isUsesMinMaxFromSelection());
-		double perMax = currentImage.getIPercentage(ps.getMax(), ps.isUsesMinMaxFromSelection());
-		perMax = perMax==0 || perMax<=perMin || perMax>100 ? 100 : perMax;
-		perMin = perMin<0 || perMin>100? 0 : perMin;
-		this.getSliderMinimum().setValue((int)perMin*1000);
-		this.getSliderMaximum().setValue((int)perMax*1000);
-		this.getTxtMinPerc().setText(formatPercentNumber(perMin));
-		this.getTxtMaxPerc().setText(formatPercentNumber(perMax));
-		//max
-		this.getTxtMinFilter().setText(formatPercentNumber(ps.getMinFilter()));
-		this.getTxtMaxFilter().setText(formatPercentNumber(ps.getMaxFilter()));
+		// stop auto updating
+		listenerMinAbs.stop();
+		listenerMinPerc.stop();
+		listenerMaxPerc.stop();
+		listenerMaxAbs.stop();
+		listenerMaxFilter.stop();
+		listenerMinFilter.stop();
+		
 		//rb
 
 		this.getCbMonochrom().setSelected(ps.isMonochrom());
@@ -813,6 +809,28 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		this.getCbLODMonochrome().setSelected(ps.isLODMonochrome());
 		this.getTxtLOD().setText(formatAbsNumber(ps.getLOD()));
 		
+		this.getTxtLevels().setText(String.valueOf(ps.getLevels()));
+		
+		// comboboxes
+		getComboMinValType().setSelectedItem(ps.getModeMin());
+		getComboMaxValType().setSelectedItem(ps.getModeMax());
+		//max
+		double minFilter = ps.getMinFilter();
+		double maxFilter = ps.getMaxFilter();
+		this.getTxtMinFilter().setText(formatPercentNumber(minFilter));
+		this.getTxtMaxFilter().setText(formatPercentNumber(maxFilter));
+		
+		// apply if min/max is not set
+		if(ps.getMaxIAbs(currentImage)==0 && ps.getMinIAbs(currentImage)==0 && ps.getModeMax().equals(ValueMode.PERCENTILE))
+			applyMaxFilter();
+		if(ps.getMaxIAbs(currentImage)==0 && ps.getMinIAbs(currentImage)==0 && ps.getModeMin().equals(ValueMode.PERCENTILE))
+			applyMinFilter();
+
+		// set values
+		setMinimumValue(ps.getMinIAbs(currentImage), true);
+		setMaximumValue(ps.getMaxIAbs(currentImage), true);
+		setMinimumValuePercentage(ps.getMinIRel(currentImage), true);
+		setMaximumValuePercentage(ps.getMaxIRel(currentImage), true);
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		ImageEditorWindow.getEditor().fireUpdateEvent(true);
@@ -822,13 +840,15 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	public SettingsPaintScale writeAllToSettings(SettingsPaintScale ps) {
 		if(ps!=null) {
 			try {
+				// for abs. and percentile the min max values are absolute
+				double min = ps.getModeMin().equals(ValueMode.RELATIVE)? doubleFromTxt(getTxtMinPerc()) : doubleFromTxt(getTxtMinimum());
+				double max = ps.getModeMax().equals(ValueMode.RELATIVE)? doubleFromTxt(getTxtMaxPerc()) : doubleFromTxt(getTxtMaximum());
 				ps.setAll(intFromTxt(getTxtLevels()), 
 						getCbMonochrom().isSelected(), getCbInvert().isSelected(), 
 						getCbBlackAsMax().isSelected(), getCbWhiteAsMin().isSelected(), getCbUseMinMax().isSelected(), 
 						getCbMinimumTransparent().isSelected(),
 						(ValueMode)getComboMinValType().getSelectedItem(), (ValueMode)getComboMaxValType().getSelectedItem(), 
-						doubleFromTxt(getTxtMinimum()), 
-						doubleFromTxt(getTxtMaximum()), 
+						min, max, 
 						getBtnMinColor().getBackground(), getBtnMaxColor().getBackground(),
 						getSliderBrightness().getValue()/100.f,
 						floatFromTxt(getTxtMinFilter()),

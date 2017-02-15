@@ -271,7 +271,7 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Image2D[] importTextDataToImage(File[] files, SettingsImageDataImportTxt sett, boolean sortFiles) throws Exception { 
+	public static ImageGroupMD[] importTextDataToImage(File[] files, SettingsImageDataImportTxt sett, boolean sortFiles) throws Exception { 
 		// get separation strng
 		String separation = "";
 		if(sett.getSeparation().equalsIgnoreCase("AUTO")) {
@@ -286,19 +286,18 @@ public class Image2DImportExportUtil {
 		switch(sett.getModeImport()){
 		case MULTIPLE_FILES_LINES_TXT_CSV:
 		case PRESETS_THERMO_NEPTUNE:
-			return importTextFilesToImage(files, sett, separation, sortFiles);
+			return new ImageGroupMD[]{importTextFilesToImage(files, sett, separation, sortFiles)};
 		case CONTINOUS_DATA_TXT_CSV:
 			// do the import for one file after each other because one image=one file
-			Vector<Image2D> list = new Vector<Image2D>(); 
+			Vector<ImageGroupMD> list = new Vector<ImageGroupMD>(); 
 			for(File f : files) {
-				Image2D[] imgList = importTextFilesToImage(new File[]{f}, sett, separation, sortFiles);
-				// add all
-				for(Image2D i : imgList)
-					list.addElement(i);
+				ImageGroupMD imgList = importTextFilesToImage(new File[]{f}, sett, separation, sortFiles);
+				// add all 
+				list.addElement(imgList);
 			}
-			return list.toArray(new Image2D[list.size()]);
+			return list.toArray(new ImageGroupMD[list.size()]);
 		case ONE_FILE_2D_INTENSITY:  
-			return import2DIntensityToImage(files, sett, separation);
+			return new ImageGroupMD[]{import2DIntensityToImage(files, sett, separation)};
 		case PRESETS_THERMO_MP17: 
 			return importFromThermoMP17FileToImage(files, sett); 
 		}
@@ -311,7 +310,7 @@ public class Image2DImportExportUtil {
 	// txt /csv / Excel
 	// I0	i1	i2	i3	i4
 	// i5	i6	i7	i8	i9 ...
-	public static Image2D[] import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 		
+	public static ImageGroupMD import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 		
 		// read x only once
 		Vector<Float>[] x = null; 
 		float[] startXValue = null;
@@ -526,7 +525,7 @@ public class Image2DImportExportUtil {
 		for(int i=0;i<group.getImages().size() && i<titles.size(); i++) 
 			setSettingsImage2D(group.getImages().get(i), flist.get(i), titles.get(i), meta.get(i));
 		//return image 
-		return group.getImages().toArray(new Image2D[group.getImages().size()]);
+		return group;
 	}
 
 
@@ -534,7 +533,7 @@ public class Image2DImportExportUtil {
 	// load text files with separation
 	// time  SEPARATION   intensity
 	// new try the first is not good
-	public static Image2D[] importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
+	public static ImageGroupMD importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 		// reset title line
 		titleLine = null;
 		
@@ -577,7 +576,7 @@ public class Image2DImportExportUtil {
 		}
 
 		//return image
-		return realImages;
+		return group;
 	}
 
 	// needed for image creation from Vector<ScanLine>
@@ -852,18 +851,21 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Image2D[] importFromThermoMP17FileToImage(File[] file, SettingsImageDataImportTxt sett) throws Exception { 
+	public static ImageGroupMD[] importFromThermoMP17FileToImage(File[] file, SettingsImageDataImportTxt sett) throws Exception { 
 		// images
-		Vector<Image2D> images=new Vector<Image2D>();
+		Vector<ImageGroupMD> images=new Vector<ImageGroupMD>();
 		// all files
-		for(File f : file) 
-			importFromThermoMP17FileToImage(images, f, sett);
+		for(File f : file) {
+			ImageGroupMD group = importFromThermoMP17FileToImage(f, sett);
+			if(group!=null)
+				images.add(group);
+		}
 		//return image 
-		Image2D imgArray [] = new Image2D[images.size()];
+		ImageGroupMD imgArray [] = new ImageGroupMD[images.size()];
 		imgArray = images.toArray(imgArray);
 		return imgArray;
 	}
-	private static void importFromThermoMP17FileToImage(Vector<Image2D> images, File file, SettingsImageDataImportTxt sett) throws Exception { 
+	private static ImageGroupMD importFromThermoMP17FileToImage(File file, SettingsImageDataImportTxt sett) throws Exception { 
 		// images
 		// store data in Vector
 		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>(); 
@@ -1003,14 +1005,9 @@ public class Image2DImportExportUtil {
 				scanLines.get(i).addDimension(iList[i]);
 			} 
 		}
-		// Generate Image2D from scanLines
-		ImageGroupMD group = new ImageGroupMD();
-		DatasetMD data = new DatasetMD(scanLines);
-		for(int i=0; i<titles.size(); i++) {
-			Image2D img = createImage2D(file, titles.get(i), metadata, data, i, sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV));
-			images.add(img);
-			group.add(img);
-		}
+		// Generate Image2D from scanLines 
+		DatasetMD data = new DatasetMD(scanLines); 
+		return data.createImageGroup();
 	}
 
 	/**

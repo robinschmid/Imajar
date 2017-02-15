@@ -72,9 +72,9 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		return removed;
 	}
 	@Override
-	public int addDimension(Double[] dim) {
-		for(ScanLineMD l:lines)
-			l.addDimension(dim);
+	public int addDimension(Vector<Double[]> dim) {
+		for(int i=0; i<lines.length; i++)
+			lines[i].addDimension(dim.get(i));
 		return lines[0].getImageCount()-1;
 	} 
 

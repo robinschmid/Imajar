@@ -1,16 +1,19 @@
 package net.rs.lamsi.multiimager.Frames;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -37,6 +40,8 @@ import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
 import org.jfree.chart.ChartPanel;
 
+import com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.image.ImageComponent2DURLIOListener;
+
 public class ImageLogicRunner {
 	//##################################################################################
 	// MyStuff
@@ -52,11 +57,13 @@ public class ImageLogicRunner {
 	private TxtWriter txtWriter;
 	// Filechooser
 	final private JFileChooser fcOpen = new JFileChooser();
+	final private JFileChooser fcImportPicture = new JFileChooser();
 	final private JFileChooser fcImport = new JFileChooser();
 	final private JFileChooser fcSave = new JFileChooser();
 	// last file for filechooser
 	private File lastPath = null;
 	private FileTypeFilter fileTFImage2D, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
+	private FileTypeFilter filePicture;
 	// List of Images
 	private ModuleTree<Image2D> treeImg;
 	// get parent IconNode by String keys (parent only)
@@ -107,7 +114,11 @@ public class ImageLogicRunner {
 		fcImport.addChoosableFileFilter(fileTFxls = new FileTypeFilter("xls", "Import Excel file")); 
 		fcImport.setMultiSelectionEnabled(true);
 		fcImport.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
+		
+		fcImportPicture.addChoosableFileFilter(filePicture = new FileTypeFilter(new String[]{"png", "jpg", "gif"}, "Import pictures"));
+		fcImportPicture.setMultiSelectionEnabled(false);
+		fcImportPicture.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		
 		fcSave.addChoosableFileFilter(fileTFImage2D); 
 		fcSave.setMultiSelectionEnabled(false);
 		// Init binaryWriter
@@ -173,46 +184,44 @@ public class ImageLogicRunner {
 		parent.add(node);
 		return node;
 	}
-	public IconNode[] addCollection2D(Image2D[] img, IconNode parent) { 
-		// only one image? do not create subnodes
-		if(img==null || img.length==0) {
-			return null;
-		}
-		else if(img.length==1) {
-			return new IconNode[]{addImage(img[0], parent)};
-		}
-		else {
-			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
-			// create subnode with image name
-			DefaultMutableTreeNode sub = null;
-			String last = null;
-			IconNode[] nodes = new IconNode[img.length];
-			int c = 0;
-			// create img nodes
-			for(Image2D i : img) {
-				if(sub==null || (!last.equals(i.getSettImage().getRAWFolder()))) {
-					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder());
-					parent.add(sub);
-					last = i.getSettImage().getRAWFolder(); 
-				}
-				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
-				nodes[c] = inode;
-				sub.add(inode);
-				c++;
-			}
-			return nodes;
-		}
-	}
+	// OLD
+//	public IconNode[] addCollection2D(Image2D[] img, IconNode parent) { 
+//		// only one image? do not create subnodes
+//		if(img==null || img.length==0) {
+//			return null;
+//		}
+//		else if(img.length==1) {
+//			return new IconNode[]{addImage(img[0], parent)};
+//		}
+//		else {
+//			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
+//			// create subnode with image name
+//			DefaultMutableTreeNode sub = null;
+//			String last = null;
+//			IconNode[] nodes = new IconNode[img.length];
+//			int c = 0;
+//			// create img nodes
+//			for(Image2D i : img) {
+//				if(sub==null || (!last.equals(i.getSettImage().getRAWFolder()))) {
+//					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder());
+//					parent.add(sub);
+//					last = i.getSettImage().getRAWFolder(); 
+//				}
+//				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
+//				nodes[c] = inode;
+//				sub.add(inode);
+//				c++;
+//			} 
+//			return nodes;
+//		}
+//	}
 
 
-	protected IconNode[] addCollection2D(ImageGroupMD img, File f , DefaultMutableTreeNode parent) {
+	protected IconNode[] addCollection2D(ImageGroupMD img, DefaultMutableTreeNode parent) {
 		// only one image? do not create subnodes
 		if(img==null || img.getImages().size()==0) {
 			return null;
-		}
-		else if(img.getImages().size()==1) {
-			return new IconNode[]{addImage(img.getImages().firstElement(), parent)};
-		}
+		} 
 		else {
 			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
 			// create subnode with image name
@@ -233,6 +242,7 @@ public class ImageLogicRunner {
 				sub.add(inode);
 				c++;
 			} 
+			img.setNode(sub);
 			return nodes;
 		}
 	}
@@ -368,7 +378,7 @@ public class ImageLogicRunner {
 										IconNode fnode = new IconNode(f.getName()+"; "+f.getAbsolutePath());
 										ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f);
 										if(img!=null) 
-											addCollection2D(img, f, fnode);
+											addCollection2D(img, fnode);
 										treeImg.addNodeToRoot(fnode);
 									}catch(Exception ex) {
 										ex.printStackTrace();
@@ -448,11 +458,13 @@ public class ImageLogicRunner {
 
 							for(File[] i : sub) {
 								// load them as image set
-								Image2D[] imgs = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true); 
+								ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true); 
 								ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
-								if(imgs.length>0) {
-									// add img to list
-									addCollection2D(imgs, fnode);
+								for(int coll = 0; coll<imgs.length; coll++) {
+									if(imgs[coll].getImages().size()>0) {
+										// add img to list
+										addCollection2D(imgs[coll], fnode);
+									}
 								}
 							}
 							// add
@@ -463,11 +475,20 @@ public class ImageLogicRunner {
 				}
 				else {
 					// load all files as one image set
-					Image2D[] img = Image2DImportExportUtil.importTextDataToImage(files, settingsDataImport, true); 
+					ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(files, settingsDataImport, true); 
+					
 					// add img to list
-					IconNode parent = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
-					addCollection2D(img, parent);
-					treeImg.addNodeToRoot(parent);
+					IconNode fnode = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
+					// add all
+					for(int coll = 0; coll<imgs.length; coll++) {
+						if(imgs[coll].getImages().size()>0) {
+							// add img to list
+							addCollection2D(imgs[coll], fnode);
+						}
+					} 
+					// add
+					if(fnode.getChildCount()>0)
+						treeImg.addNodeToRoot(fnode);
 				}
 			}
 
@@ -499,6 +520,63 @@ public class ImageLogicRunner {
 		}
 	}
 
+
+	/**
+	 * imports a down sampled microscopic image to the selected image group
+	 */
+	public void importMicroscopicImageDownSampled() {
+		if(selectedImage!=null) {
+			try {
+				// choose files
+				if (fcImportPicture.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+					// many folders or files
+					File file = fcImportPicture.getSelectedFile(); 
+					// open Image
+					BufferedImage image = ImageIO.read(file);
+					// down sample to target
+					int tw = selectedImage.getWidthMaxDP();
+					int th = selectedImage.getHeightMaxDP();
+					
+					Image ti = image.getScaledInstance(tw, th, Image.SCALE_AREA_AVERAGING);
+					BufferedImage scaled = new BufferedImage(tw,th, image.getType());
+
+					Graphics2D graphics = scaled.createGraphics();
+					graphics.drawImage(ti, 0, 0, null);
+					
+					// generate dataset
+					Vector<Double[]> data = new Vector<Double[]>();
+					for(int l = 0; l<th; l++) {
+						data.add(new Double[tw]);
+						for(int dp=0; dp<tw; dp++) {
+							int rgb = scaled.getRGB(dp, l);
+							int r = (rgb >> 16) & 0xFF;
+							int g = (rgb >> 8) & 0xFF;
+							int b = (rgb & 0xFF);
+							double gray = (r + g + b) / 3.0;
+							
+							data.get(l)[dp] = gray;
+						}
+					}
+					
+					// create image
+					int index = ((MDDataset)selectedImage.getData()).addDimension(data);
+					Image2D result = new Image2D(selectedImage.getData(), index);
+					
+					result.getSettImage().setTitle(file.getName());
+					result.getSettImage().setRAWFilepath(file.getAbsolutePath());
+					// add to image group
+					selectedImage.getImageGroup().add(result);
+					addImage(result, selectedImage.getImageGroup().getNode());
+					
+					// update tree
+					treeImg.reload();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	//#####################################################################################
 	// Direct imaging analysis
 

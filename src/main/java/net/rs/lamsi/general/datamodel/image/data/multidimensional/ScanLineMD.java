@@ -12,7 +12,7 @@ import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
  * @author r_schm33
  *
  */
-public class ScanLineMD  implements Serializable, MDDataset  {
+public class ScanLineMD  implements Serializable  {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	//
@@ -46,7 +46,6 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	}
 	//##################################################
 	// Multi dimensional
-	@Override
 	public boolean removeDimension(int i) {
 		if(i>=0 && i<intensity.size()) {
 			intensity.remove(i);
@@ -54,20 +53,11 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 		}
 		return false;
 	}
-	@Override
 	public int addDimension(Double[] dim) {
 		intensity.add(dim);
 		return intensity.size()-1;
 	}  
 	
-	@Override
-	/**
-	 * do not use this method here
-	 * use the one with line instead
-	 */
-	public boolean addDimension(Image2D img) {
-		return false;
-	}
 
 	/**
 	 * adds the dimension of line i
@@ -91,7 +81,6 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	}
 	
 
-	@Override
 	public boolean hasXData() { 
 		return this.getX()!=null;
 	}

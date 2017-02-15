@@ -293,6 +293,17 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JMenuItem mntmSplitImages = new JMenuItem("Split images");
 		mnAction.add(mntmSplitImages);
 
+
+		JMenuItem btnImportMicroscopic = new JMenuItem("Add down sampled microscopic image");
+		btnImportMicroscopic.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				logicRunner.importMicroscopicImageDownSampled();
+			}
+		});
+		mnAction.add(btnImportMicroscopic);
+		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
 
