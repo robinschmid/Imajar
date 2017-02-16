@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,6 +23,8 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
+import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 import org.w3c.dom.Document;
@@ -38,6 +41,9 @@ public abstract class Settings implements Serializable {
 	protected final String description;
 	protected final String path;
 	protected final String fileEnding;
+	
+	// change listener
+	protected Vector<SettingsChangedListener> changeListener;
 
 
 	public Settings(String description, String path, String fileEnding) {
@@ -49,6 +55,26 @@ public abstract class Settings implements Serializable {
 
 	public abstract void resetAll();
 
+	
+	/**
+	 * add a settings changed listener
+	 * @param listener
+	 */
+	public void addChangeListener(SettingsChangedListener listener) {
+		if(changeListener==null)
+			changeListener = new Vector<SettingsChangedListener>();
+		changeListener.add(listener);
+	}
+	
+	/**
+	 * notifies all change listeners
+	 */
+	public void fireChangeEvent() {
+		if(changeListener!=null)
+			for(SettingsChangedListener l : changeListener)
+				l.settingsChanged(this);
+	}
+	
 	//##################################################################
 	// xml write and read
 	/**
@@ -57,6 +83,7 @@ public abstract class Settings implements Serializable {
 	 * @throws IOException
 	 */
 	public void saveToXML(File file) throws IOException {
+		FileAndPathUtil.createDirectory(file.getParentFile());
 		saveToXML(new FileOutputStream(file));
 	}
 	

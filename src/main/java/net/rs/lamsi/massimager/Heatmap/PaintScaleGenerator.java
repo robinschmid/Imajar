@@ -83,10 +83,15 @@ public class PaintScaleGenerator {
 			// adding color steps in middle 
 			addColorsteps(realmin, realmax, settings, paintScale, i);
 			// end
-			if(max>settings.getMaxIAbs(min,max) && settings.isUsesMinMax() && settings.getMinIAbs(min,max)>0) {
-				if((settings.isUsesWAsMin() && settings.isInverted()) || (settings.isUsesBAsMax() && !settings.isInverted()) || settings.isMonochrom()) { 
+			if(max>settings.getMaxIAbs(min,max) && settings.isUsesMinMax()) {
+				if(settings.isUsesMaxAsInvisible()) {
+					paintScale.add(realmax+Double.MIN_VALUE,  new Color(0, 0, 0, 0));  
+					paintScale.add(max, new Color(0, 0, 0, 0)); 
+				}
+				else if((settings.isUsesWAsMin() && settings.isInverted()) || (settings.isUsesBAsMax() && !settings.isInverted()) || settings.isMonochrom()) { 
 					// end to black or white
 					Color color = (settings.isInverted()? Color.WHITE : Color.BLACK); 
+
 					paintScale.add(max, color);  
 					i++;
 				}

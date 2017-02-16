@@ -52,18 +52,12 @@ public class ImageLogicRunner {
 	private ImageEditorWindow window;
 	private DirectImageLogicRunner diaRunner;
 	private HeatmapFactory heatFactory;
+	private SettingsGeneralPreferences preferences;
 	// Readers and Writers
 	private BinaryWriterReader binaryWriter;
 	private TxtWriter txtWriter;
-	// Filechooser
-	final private JFileChooser fcOpen = new JFileChooser();
-	final private JFileChooser fcImportPicture = new JFileChooser();
-	final private JFileChooser fcImport = new JFileChooser();
-	final private JFileChooser fcSave = new JFileChooser();
 	// last file for filechooser
 	private File lastPath = null;
-	private FileTypeFilter fileTFImage2D, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
-	private FileTypeFilter filePicture;
 	// List of Images
 	private ModuleTree<Image2D> treeImg;
 	// get parent IconNode by String keys (parent only)
@@ -77,6 +71,7 @@ public class ImageLogicRunner {
 	// LOGIC
 	public ImageLogicRunner(ImageEditorWindow wnd) {
 		this.window = wnd;
+		preferences = SettingsHolder.getSettings().getSetGeneralPreferences();
 		diaRunner = new DirectImageLogicRunner(this);
 		mapNodes = new HashMap<String, IconNode>();
 		treeImg = wnd.getModuleTreeImages();
@@ -100,27 +95,6 @@ public class ImageLogicRunner {
 		});
 		// init heatmapfactory
 		heatFactory = new HeatmapFactory();
-		// init filechooser 
-		// add Filter 
-		fileTFImage2D = new FileTypeFilter("image2d", "Image format from this application");
-		fcOpen.addChoosableFileFilter(fileTFImage2D); 
-		fcOpen.setMultiSelectionEnabled(true);
-
-		String[] txtcsv = {"txt","csv"};
-		fcImport.addChoosableFileFilter(fileTFtxtcsv = new FileTypeFilter(txtcsv, "Import text or csv file")); 
-		fcImport.addChoosableFileFilter(fileTFtxt = new FileTypeFilter("txt", "Import text file")); 
-		fcImport.addChoosableFileFilter(fileTFcsv = new FileTypeFilter("csv", "Import csv file")); 
-		fcImport.addChoosableFileFilter(fileTFxlsx = new FileTypeFilter("xlsx", "Import Excel file")); 
-		fcImport.addChoosableFileFilter(fileTFxls = new FileTypeFilter("xls", "Import Excel file")); 
-		fcImport.setMultiSelectionEnabled(true);
-		fcImport.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		
-		fcImportPicture.addChoosableFileFilter(filePicture = new FileTypeFilter(new String[]{"png", "jpg", "gif"}, "Import pictures"));
-		fcImportPicture.setMultiSelectionEnabled(false);
-		fcImportPicture.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		
-		fcSave.addChoosableFileFilter(fileTFImage2D); 
-		fcSave.setMultiSelectionEnabled(false);
 		// Init binaryWriter
 		binaryWriter = new BinaryWriterReader();
 		txtWriter = new TxtWriter();
@@ -336,15 +310,16 @@ public class ImageLogicRunner {
 
 	// saves selected Image to file
 	public void saveImage2DToFile() {
-		if (selectedImage !=null && fcSave.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {   
-			File file = fcSave.getSelectedFile();
-			file = fileTFImage2D.addExtensionToFileName(file);
+		if (selectedImage !=null && preferences.getFcSave().showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {   
+			File file = preferences.getFcSave().getSelectedFile();
+			file = preferences.getFileTFImage2D().addExtensionToFileName(file);
 			// save Image2D to file
 			ImageGroupMD group = selectedImage.getImageGroup();
 			if(group==null)
 				group = new ImageGroupMD(selectedImage);
 			try {
 				Image2DImportExportUtil.writeToStandardZip(group, file);
+				preferences.addImage2DImportExportPath(file);
 			} catch (IOException e) {
 				e.printStackTrace();
 				ImageEditorWindow.log("Error while writing "+file.getAbsolutePath()+"\n"+e.getMessage(), LOG.ERROR);
@@ -353,11 +328,13 @@ public class ImageLogicRunner {
 	}
 
 	/**
+	 * opens a file chooser and
 	 * loads own format image2D
 	 */
 	public void loadImage2DFromFile() {
-		if (fcOpen.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {   
-			final File[] files = fcOpen.getSelectedFiles(); 
+		if (preferences.getFcOpen().showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {   
+			final File[] files = preferences.getFcOpen().getSelectedFiles(); 
+			
 			// Up	dateTask
 			if(ProgressDialog.getInst()==null) ProgressDialog.initDialog(window);
 			ProgressUpdateTask task = ProgressDialog.getInst().startTask(new ProgressUpdateTask(ProgressDialog.getInst(), files.length) {
@@ -371,25 +348,12 @@ public class ImageLogicRunner {
 						try {
 							// All files in fileList
 							for(File f : files) {
-								// image
-								if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase(fileTFImage2D.getExtension())) {
-									try {
-										// load image group from file 
-										IconNode fnode = new IconNode(f.getName()+"; "+f.getAbsolutePath());
-										ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f);
-										if(img!=null) 
-											addCollection2D(img, fnode);
-										treeImg.addNodeToRoot(fnode);
-									}catch(Exception ex) {
-										ex.printStackTrace();
-										// Dialog
-										ImageEditorWindow.log("Error while reading "+f.getAbsolutePath()+"\n"+ex.getMessage(), LOG.ERROR);
-										JOptionPane.showMessageDialog(window, "Cannot load image file "+f.getPath()+"; "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
-									}
-								} 
+								loadImage2DFromFile(f);
 								// Progress:
 								addProgressStep(1); 
 							} 
+							// save changes
+							preferences.saveChanges();
 						} catch(Exception ex) {
 							ex.printStackTrace();
 						} finally {
@@ -398,11 +362,35 @@ public class ImageLogicRunner {
 					}
 					//
 					return state; 
-				} 
+				}
 			});
 		}
 	}
 
+
+	/**
+	 * loads own format image2D
+	 */
+	public void loadImage2DFromFile(File f) { 
+		// image
+		if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase(preferences.getFileTFImage2D().getExtension())) {
+			try {
+				// load image group from file 
+				IconNode fnode = new IconNode(f.getName()+"; "+f.getAbsolutePath());
+				ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f);
+				if(img!=null) 
+					addCollection2D(img, fnode);
+				treeImg.addNodeToRoot(fnode);
+
+				preferences.addImage2DImportExportPath(f, false);
+			}catch(Exception ex) {
+				ex.printStackTrace();
+				// Dialog
+				ImageEditorWindow.log("Error while reading "+f.getAbsolutePath()+"\n"+ex.getMessage(), LOG.ERROR);
+				JOptionPane.showMessageDialog(window, "Cannot load image file "+f.getPath()+"; "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
+			}
+		} 
+	} 
 
 	/** 
 	 * Import from data file txt, csv, xlsx
@@ -413,11 +401,11 @@ public class ImageLogicRunner {
 		// import TXT or csv
 		if(settingsDataImport instanceof SettingsImageDataImportTxt) { 
 			// txt chooser
-			fcImport.setFileFilter(fileTFtxtcsv);
+			preferences.getFcImport().setFileFilter(preferences.getFileTFtxtcsv());
 			// choose files
-			if (fcImport.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+			if (preferences.getFcImport().showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
 				// many folders or files
-				File[] files = fcImport.getSelectedFiles(); 
+				File[] files = preferences.getFcImport().getSelectedFiles(); 
 
 				if(files.length>0) {
 					// open the files
@@ -433,6 +421,9 @@ public class ImageLogicRunner {
 						startDirectImagingAnalysis(sett, files);
 					}
 				}
+				// save changed path
+				preferences.saveChanges();
+				
 				// run garbage collection 
 				System.gc();
 			}
@@ -528,9 +519,9 @@ public class ImageLogicRunner {
 		if(selectedImage!=null) {
 			try {
 				// choose files
-				if (fcImportPicture.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+				if (preferences.getFcImportPicture().showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
 					// many folders or files
-					File file = fcImportPicture.getSelectedFile(); 
+					File file = preferences.getFcImportPicture().getSelectedFile(); 
 					// open Image
 					BufferedImage image = ImageIO.read(file);
 					// down sample to target
@@ -554,7 +545,7 @@ public class ImageLogicRunner {
 							int b = (rgb & 0xFF);
 							double gray = (r + g + b) / 3.0;
 							
-							data.get(l)[dp] = gray;
+							data.get(l)[dp] = 255.0-gray;
 						}
 					}
 					
@@ -570,6 +561,28 @@ public class ImageLogicRunner {
 					
 					// update tree
 					treeImg.reload();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+
+	/**
+	 * imports a microscopic image to the selected image group background
+	 */
+	public void importMicroscopicImageBG() {
+		if(selectedImage!=null) {
+			try {
+				// choose files
+				if (preferences.getFcImportPicture().showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+					// many folders or files
+					File file = preferences.getFcImportPicture().getSelectedFile(); 
+					// open Image
+					BufferedImage image = ImageIO.read(file);
+
+					selectedImage.getImageGroup().setBackgroundImage(image, file);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

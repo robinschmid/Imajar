@@ -4,7 +4,7 @@ import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.Settings.Settings;
 
 /**
- * Used in SettingsModule for loading settings in the {@link ModuleMenu} and setting them
+ * Used in {@link SettingsModule} for loading settings in the {@link ModuleMenu} and setting them
  * @author vukmir69
  *
  */

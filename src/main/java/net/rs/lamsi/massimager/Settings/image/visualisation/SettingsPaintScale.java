@@ -29,7 +29,7 @@ public class SettingsPaintScale extends Settings {
 	private int levels = 256;
 	private boolean isMonochrom = false, isGrey = false;
 	private boolean isInverted, usesBAsMax, usesWAsMin;
-	private boolean usesMinMax, usesMinAsInvisible;
+	private boolean usesMinMax, usesMinAsInvisible, usesMaxAsInvisible;
 
 	// min max values or filter (cut off filter)
 	private boolean usesMinMaxFromSelection;
@@ -57,7 +57,7 @@ public class SettingsPaintScale extends Settings {
 	} 
 
 	public void setAll(int levels, boolean isMonochrom, boolean isInverted, boolean usesBAsMax, boolean usesWAsMin,
-			boolean usesMinMax, boolean usesMinAsInvisible, ValueMode modeMin, ValueMode modeMax, double min, double max, Color minColor,
+			boolean usesMinMax, boolean usesMinAsInvisible, boolean usesMaxAsInvisible, ValueMode modeMin, ValueMode modeMax, double min, double max, Color minColor,
 			Color maxColor, float brightnessFactor, float minFilter, float maxFilter, boolean isGrey, boolean usesMinMaxFromSelection, boolean isLODMonochrome, double LOD) { 
 		this.levels = levels;
 		this.isMonochrom = isMonochrom;
@@ -66,6 +66,7 @@ public class SettingsPaintScale extends Settings {
 		this.usesBAsMax = usesBAsMax;
 		this.usesMinMax = usesMinMax;
 		this.usesMinAsInvisible = usesMinAsInvisible;
+		this.usesMaxAsInvisible = usesMaxAsInvisible;
 		this.min = min;
 		this.max = max;
 		this.minColor = minColor;
@@ -200,6 +201,7 @@ public class SettingsPaintScale extends Settings {
 		this.usesBAsMax = true;
 		this.usesMinMax = true;
 		this.usesMinAsInvisible = false;
+		this. usesMaxAsInvisible = false;
 		this.min = 0;
 		this.max = 0;
 		this.minColor = Color.CYAN;
@@ -322,6 +324,7 @@ public class SettingsPaintScale extends Settings {
 		toXML(elParent, doc, "usesMinMaxFromSelection", usesMinMaxFromSelection);
 		toXML(elParent, doc, "isLODMonochrome", isLODMonochrome);
 		toXML(elParent, doc, "LOD", LOD);
+		toXML(elParent, doc, "usesMaxAsInvisible", usesMaxAsInvisible);
 	}
 
 	@Override
@@ -338,6 +341,7 @@ public class SettingsPaintScale extends Settings {
 				else if(paramName.equals("usesBAsMax")) usesBAsMax = booleanFromXML(nextElement); 
 				else if(paramName.equals("usesMinMax")) usesMinMax = booleanFromXML(nextElement); 
 				else if(paramName.equals("usesMinAsInvisible")) usesMinAsInvisible = booleanFromXML(nextElement); 
+				else if(paramName.equals("usesMaxAsInvisible")) usesMaxAsInvisible = booleanFromXML(nextElement); 
 				else if(paramName.equals("min")) min = doubleFromXML(nextElement); 
 				else if(paramName.equals("max")) max = doubleFromXML(nextElement); 
 				else if(paramName.equals("minColor")) minColor = colorFromXML(nextElement); 
@@ -459,6 +463,14 @@ public class SettingsPaintScale extends Settings {
 
 	public void setUsesMinAsInvisible(boolean usesMinAsInvisible) {
 		this.usesMinAsInvisible = usesMinAsInvisible;
+	}
+
+	public boolean isUsesMaxAsInvisible() {
+		return usesMaxAsInvisible;
+	}
+
+	public void setUsesMaxAsInvisible(boolean usesMaxAsInvisible) {
+		this.usesMaxAsInvisible = usesMaxAsInvisible;
 	}
 
 	public float getBrightnessFactor() { 

@@ -1,5 +1,6 @@
 package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
+import java.awt.Image;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
@@ -193,6 +194,15 @@ public class HeatmapFactory {
 	        plot.setBackgroundPaint(Color.lightGray);
 	        plot.setDomainGridlinesVisible(false);
 	        plot.setRangeGridlinePaint(Color.white);
+	        
+	        // set background image
+	        if(settImage.usesBGImage() && img.getImageGroup()!=null) {
+	        	Image bg = img.getImageGroup().getBGImage();
+	        	if(bg!=null)
+	        		plot.setBackgroundImage(bg);
+	        }
+	        
+	        // create chart
 	        JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
 	        // remove lower legend - wie farbskala rein? TODO
 	        chart.removeLegend();

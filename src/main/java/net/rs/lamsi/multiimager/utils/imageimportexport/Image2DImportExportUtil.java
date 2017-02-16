@@ -1,5 +1,6 @@
 package net.rs.lamsi.multiimager.utils.imageimportexport;
 
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,8 +9,10 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
-import java.util.zip.ZipEntry;
 
+import javax.imageio.ImageIO;
+
+import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipOutputStream;
 import net.lingala.zip4j.model.ZipParameters;
@@ -21,6 +24,7 @@ import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
@@ -50,11 +54,8 @@ public class Image2DImportExportUtil {
 		 * @throws IOException
 		 */
 		public static void writeToStandardZip(ImageGroupMD group, File file) throws IOException {
-			// zip file 
-			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
 			// parameters
 			ZipParameters parameters = new ZipParameters();
-			parameters.setSourceExternalStream(true); 
 	        parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
 
 	        //DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
@@ -65,7 +66,11 @@ public class Image2DImportExportUtil {
 	        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 	        
 	        Vector<Image2D> images = group.getImages();
-	        
+
+			// zip file 
+			parameters.setSourceExternalStream(true); 
+			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
+			
 	        // export xmatrix
 			// intensity matrix
 	        if(MDDataset.class.isInstance(images.firstElement().getData())) {
@@ -115,6 +120,20 @@ public class Image2DImportExportUtil {
 				e.printStackTrace();
 			}
 			out.close();
+
+	        
+	        // copy existing files directly
+			try {
+				ZipFile zipFile = new ZipFile(file);
+		        // copy background image over
+				File bg = group.getBGImagePath();
+				if(bg!=null && bg.exists()) {
+					parameters.setFileNameInZip(bg.getName());
+					zipFile.addFile(bg, parameters);
+				}
+			} catch (ZipException e1) {
+				e1.printStackTrace();
+			}
 		}
 
 		/**
@@ -124,15 +143,16 @@ public class Image2DImportExportUtil {
 		 * @throws IOException
 		 */
 		public static ImageGroupMD readFromStandardZip(File f) throws IOException {
-			// result
-			ImageGroupMD group=null;
-			
 			// read files from zip
 			Map<String, InputStream> files = ZipUtil.readZip(f);
 			// try to find xmatrix
 			Vector<ScanLineMD> lines = new Vector<ScanLineMD>();
 			Vector<SettingsImage2D> settings = new Vector<SettingsImage2D>();
 			
+			// background image
+			Image bgimg = null;
+			File bgFile = null;
+			//
 			InputStream is = files.get("xmatrix.csv");
 			if(is!=null) {
 	            ImageEditorWindow.log("reading x", LOG.MESSAGE);
@@ -247,18 +267,34 @@ public class Image2DImportExportUtil {
 						settings.lastElement().loadFromXML(isSett);
 		        	}
 	        	}
+	        	else if(SettingsHolder.getSettings().getSetGeneralPreferences().getFilePicture().accept(new File(fileName))) {
+	        		// add as microscopic image
+	        		try {
+		        		bgimg = ImageIO.read(files.get(fileName));
+		        		bgFile = new File(fileName);
+					} catch (Exception e) {
+						e.printStackTrace();
+						ImageEditorWindow.log("ERROR: Cannot load microscopic image: "+fileName+"\n"+e.getMessage(), LOG.ERROR);
+					}
+	        	}
 	        }
 
 			// add new Image to image group
 			if(lines.size()>0) {
 				DatasetMD data = new DatasetMD(lines);
-				group = data.createImageGroup();
+				ImageGroupMD group = data.createImageGroup();
+				// add bg image
+				if(bgimg!=null) {
+					group.setBackgroundImage(bgimg, bgFile);
+				}
+				
+				// set settings to images
 				for(int i=0; i<group.getImages().size(); i++)
 					group.getImages().get(i).setSettingsImage2D(settings.get(i));
+		        // return group
+		        return group;
 			}
-				
-	        // return group
-	        return group;
+			return null;
 		}
 		
 		

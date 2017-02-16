@@ -14,6 +14,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -55,14 +56,15 @@ import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
+import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleGeneral;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
@@ -74,6 +76,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.WindowStyleUtil;
 
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
@@ -112,6 +115,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 	private int currentView = VIEW_IMAGING_ANALYSIS;
 
+	// Image2d history for import/export
+	private JMenuItem[] menuItemHistoryImg2D = null; 
+	
 	// AUTOGEN 
 	//
 	private JCheckBox cbAuto;
@@ -198,7 +204,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		JMenu mnFile = new JMenu("File");
+		final JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
 
 		JMenuItem mntmOpenImage = new JMenuItem("Open image");
@@ -274,6 +280,41 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		});
 		mnImportData.add(mntmOpenDialog);
 		
+		// ######################################################################
+		// add image2D history TODO
+		SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
+		pref.addChangeListener(new SettingsChangedListener() {
+			@Override
+			public void settingsChanged(Settings settings) {
+				// remove old menu items
+				if(menuItemHistoryImg2D!=null)
+					for(JMenuItem mi : menuItemHistoryImg2D)
+						mnFile.remove(mi);
+				// create new
+				Vector<File> files = SettingsHolder.getSettings().getSetGeneralPreferences().getImg2DHistory();
+				menuItemHistoryImg2D = new JMenuItem[files.size()];
+				
+				// add new
+				if(menuItemHistoryImg2D!=null) {
+					for(int i=0; i<files.size(); i++){
+						final File f = files.get(i);
+						JMenuItem mnImportData = new JMenuItem(FileAndPathUtil.eraseFormat(f.getName())+"; "+f.getParentFile().getAbsolutePath());
+						mnImportData.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								// import file as image2d
+								logicRunner.loadImage2DFromFile(f);
+							}
+						});
+						mnImportData.setPreferredSize(new Dimension(280, (int)mnImportData.getPreferredSize().getHeight()));
+						mnFile.add(mnImportData);
+						menuItemHistoryImg2D[i] = mnImportData;
+					}
+				}
+			}
+		});
+		pref.fireChangeEvent();
+		//		
+		
 		JMenu mnAction = new JMenu("Action");
 		menuBar.add(mnAction);
 		
@@ -303,6 +344,16 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			}
 		});
 		mnAction.add(btnImportMicroscopic);
+
+		JMenuItem btnImportMicroscopic2 = new JMenuItem("Add microscopic image to background");
+		btnImportMicroscopic2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				logicRunner.importMicroscopicImageBG();
+			}
+		});
+		mnAction.add(btnImportMicroscopic2);
 		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
@@ -408,6 +459,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbDebug = new JCheckBoxMenuItem("Debug");
 		cbDebug.setSelected(true);
 		mnWindow.add(cbDebug);
+		 
 		// #####################################################
 		// set visible for correct sizes
 		this.setVisible(true); 

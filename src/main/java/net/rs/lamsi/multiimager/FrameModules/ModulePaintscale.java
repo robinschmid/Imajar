@@ -275,8 +275,13 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		getPnContent().add(pnMinMax, "cell 0 1,growx,aligny top");
 		pnMinMax.setLayout(new MigLayout("", "[][][][][][grow][grow]", "[][grow][][][][][][][][][][][][]"));
 		
-		cbMinimumTransparent = new JCheckBox("minimum transparent");
+		cbMinimumTransparent = new JCheckBox("min transparent");
+		cbMinimumTransparent.setToolTipText("Displays the all values <=minimum as transparent");
 		pnMinMax.add(cbMinimumTransparent, "cell 0 0 3 1,alignx left");
+		
+		CbMaximumTransparent = new JCheckBox("max transparent");
+		CbMaximumTransparent.setToolTipText("Displays all values >= maximum as transparent");
+		pnMinMax.add(CbMaximumTransparent, "cell 3 0");
 		
 		pnHistogram = new PaintScaleHistogram();
 		pnHistogram.setPreferredSize(new Dimension(10, 120));
@@ -497,7 +502,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		
 		// add standard paintscales to menu
 		// TODO comment out for window build
-		addStandardPaintScalesToMenu();
+		//addStandardPaintScalesToMenu();
 	}
 	
 	
@@ -549,6 +554,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	// MINIMUM AND MAXIMUM INTENSITY
 	// last values
 	private double lastMaxPercentage = 0, lastMinPercentage = 0, lastMin = 0, lastMax = 0;
+	private JCheckBox CbMaximumTransparent;
 	protected void setMinimumValuePercentage(double f, boolean force) {
 		if((!(lastMinPercentage+1>f && lastMinPercentage-1<f) || force)  && currentImage!=null) {
 			System.out.println("Setting Min % "+f);
@@ -631,6 +637,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		getCbWhiteAsMin().addActionListener(al);
 		getCbInvert().addActionListener(al);
 		getCbMinimumTransparent().addActionListener(al);
+		getCbMaximumTransparent().addActionListener(al);
 		getCbMonochrom().addActionListener(al);
 		getCbGreyScale().addActionListener(al);
 		getCbUseMinMax().addActionListener(al);
@@ -791,6 +798,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		this.getCbInvert().setSelected(ps.isInverted()); 
 		this.getCbUseMinMax().setSelected(ps.isUsesMinMax()); 
 		this.getCbMinimumTransparent().setSelected(ps.isUsesMinAsInvisible()); 
+		this.getCbMaximumTransparent().setSelected(ps.isUsesMaxAsInvisible()); 
 		this.getCbOnlyUseSelectedMinMax().setSelected(ps.isUsesMinMaxFromSelection());
 
 		this.getBtnMinColor().setBackground(ps.getMinColor());
@@ -846,7 +854,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 				ps.setAll(intFromTxt(getTxtLevels()), 
 						getCbMonochrom().isSelected(), getCbInvert().isSelected(), 
 						getCbBlackAsMax().isSelected(), getCbWhiteAsMin().isSelected(), getCbUseMinMax().isSelected(), 
-						getCbMinimumTransparent().isSelected(),
+						getCbMinimumTransparent().isSelected(),getCbMaximumTransparent().isSelected(),
 						(ValueMode)getComboMinValType().getSelectedItem(), (ValueMode)getComboMaxValType().getSelectedItem(), 
 						min, max, 
 						getBtnMinColor().getBackground(), getBtnMaxColor().getBackground(),
@@ -964,5 +972,8 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	}
 	public PaintScaleHistogram getPnHistogram() {
 		return pnHistogram;
+	}
+	public JCheckBox getCbMaximumTransparent() {
+		return CbMaximumTransparent;
 	}
 }
