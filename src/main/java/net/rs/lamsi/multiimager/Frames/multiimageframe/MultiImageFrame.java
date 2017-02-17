@@ -612,7 +612,7 @@ public class MultiImageFrame extends JFrame {
 			for(int i=0; i<img.length; i++) {
 				updateChart(i);
 				// export to new file
-				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+img[i].getTitle(), ext), img[i].toIArrayProcessed(map), ",");
+				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+img[i].getTitle(), ext), img[i].toIMatrix(true, map), ",");
 			}
 			// show dialog
 			DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
@@ -652,7 +652,7 @@ public class MultiImageFrame extends JFrame {
 				updateChart(i);
 				// export to new file
 				sheet = writer.getSheet(wb, i+" "+img[i].getTitle());
-				writer.writeDataArrayToSheet(sheet, img[i].toIArrayProcessed(map), 0, 0); 
+				writer.writeDataArrayToSheet(sheet, img[i].toIMatrix(true,map), 0, 0); 
 			}
 
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);

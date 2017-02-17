@@ -268,14 +268,4 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public boolean hasXData() { 
 		return line!=null && line.hasXData();
 	}	
-
-	@Override
-	public Object[][] toXMatrix(float scale) {
-		int cols = getLinesCount();
-		int rows = getMaxDP();
-		if(hasXData()) {
-			super.toXMatrix(scale);
-		} 
-		return null;
-	}
 }

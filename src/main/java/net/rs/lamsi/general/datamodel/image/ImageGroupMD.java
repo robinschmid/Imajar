@@ -8,6 +8,7 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 
 public class ImageGroupMD {
@@ -112,5 +113,8 @@ public class ImageGroupMD {
 	}
 	public void setNode(DefaultMutableTreeNode node) {
 		this.node = node;
+	}
+	public MDDataset getData() {
+		return data;
 	}
 }

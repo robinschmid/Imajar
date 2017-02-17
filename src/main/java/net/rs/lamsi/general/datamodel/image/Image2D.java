@@ -21,6 +21,7 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
@@ -322,7 +323,7 @@ public class Image2D implements Serializable, Collectable2D {
 		//
 		return new XYIData2D(x, y, z);
 	}
-	public XYIData2D toXYIArrayRaw() {
+	public XYIData2D toXYIArray(boolean raw) {
 		// Erst Messpunkteanzahl ausrechnen 
 		int scanpoints = data.getTotalDPCount(); 
 		// Datenerstellen
@@ -337,7 +338,7 @@ public class Image2D implements Serializable, Collectable2D {
 			//
 			for(int ix=0; ix<data.getLineLength(iy); ix++) {
 				// x = time; NOT distance; 
-				x[currentdp] = Double.valueOf(String.valueOf(getXRaw(iy, ix)));
+				x[currentdp] = Double.valueOf(String.valueOf(raw? getXRaw(iy, ix) : getXProcessed(iy, ix)));
 				y[currentdp] = Double.valueOf(String.valueOf((iy)));
 				z[currentdp] = Double.valueOf(String.valueOf(getIRaw(iy, ix)));
 				currentdp++;
@@ -346,37 +347,14 @@ public class Image2D implements Serializable, Collectable2D {
 		//
 		return new XYIData2D(x, y, z);
 	}
-	/**
-	 * all intensities as one array
-	 * @return float intensity Array
-	 */
-	public double[] toIArray() {
-		// calc count of points
-		int scanpoints = data.getTotalDPCount(); 
-		double[] z = new double[scanpoints];
-		//
-		ScanLine2D line; 
-		int currentdp = 0;
-		//
-		for(int iy=0; iy<data.getLinesCount(); iy++) {
-			//
-			for(int ix=0; ix<data.getLineLength(iy); ix++) {
-				// x = time; NOT distance; so calc 
-				z[currentdp] =  getIProcessed(iy, ix);
-				currentdp++;
-			} 
-		}
-		//
-		return z;
-	} 
 
 	/**
-	 * returns [rows][columns] of xyz data processed or not processed
+	 * returns [rows][columns (3 : xyz)] of xyz data processed or not processed
 	 * @param sett
 	 * @return
 	 */
-	public Object[][] toXYIArray(SettingsImage2DDataExport sett) {
-		XYIData2D data = sett.isExportRaw()?  toXYIArrayRaw() : toXYIArray();
+	public Object[][] toXYIMatrix(boolean raw) {
+		XYIData2D data = toXYIArray(raw);
 
 		Object[][] real = new Object[data.getI().length][3];
 		for(int i=0; i<real.length; i++) {
@@ -423,16 +401,25 @@ public class Image2D implements Serializable, Collectable2D {
 	}
 
 
-
 	/**
-	 * Returns the processed intensity only
-	 * @param sett
-	 * @return
+	 * 
+	 * @param scale
+	 * @return x matrix raw or processed. null if there are no x values
 	 */
-	public Object[][] toXArray(boolean raw) {
-		return data.toXMatrix(raw? 1 : getSettImage().getVelocity());
-	} 
-
+	public Object[][] toXMatrix(boolean raw) {
+		int cols = data.getLinesCount();
+		int rows = data.getMaxDP();
+		Object[][] dataExp = new Object[rows][cols]; 
+		for(int c=0; c<cols; c++) {
+			// increment l
+			for(int r = 0; r<rows; r++) {
+				// only if not null: write Intensity
+				dataExp[r][c] = r<getLineLength(c)? (raw? getXRaw(c, r) : getXProcessed(c, r)) : "";
+			} 
+		}
+		return dataExp;
+	}
+	
 	/**
 	 * 
 	 * @param scale
@@ -440,7 +427,42 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return xmatrix raw by a factor as CSV string
 	 */
 	public String toXCSV(boolean raw, String sep) {
-		return data.toXCSV(raw? 1 : getSettImage().getVelocity(), sep);
+		// no x data --> null
+		if(MDDataset.class.isInstance(data)) {
+			if(((MDDataset)data).hasXData()) {
+				// has only one x line
+				if(DatasetMD.class.isInstance(data) && ((DatasetMD)data).hasOnlyOneXColumn()) 
+					return toXCSV(raw, sep, 1);
+				else return toXCSV(raw, sep, data.getLinesCount());
+			}
+			else return null;
+		}
+		else {
+			return toXCSV(raw, sep, data.getLinesCount());
+		}
+	}
+	/**
+	 * 
+	 * @param scale
+	 * @param sep separation chars
+	 * @return xmatrix raw by a factor as CSV string
+	 */
+	private String toXCSV(boolean raw, String sep, int lines) {
+		// no x data --> null
+			StringBuilder builder = new StringBuilder();
+			int cols = lines;
+			int rows = data.getMaxDP();
+			// increment dp
+			for(int r = 0; r<rows; r++) {
+				// increment l
+				for(int c=0; c<cols; c++) {
+					// only if not null: write Intensity
+					builder.append(r<getLineLength(c)? (raw? getXRaw(c, r) : getXProcessed(c, r)) : "");
+					if(c<cols-1) builder.append(sep);
+				} 
+				if(r<rows-1) builder.append("\n");
+			}
+			return builder.toString();
 	}
 
 	/**
@@ -466,13 +488,38 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 		return builder.toString();
 	}
+
 	
 	/**
-	 * Returns the processed intensity only
-	 * @param sett
+	 * all intensities as one array
+	 * @return float intensity Array
+	 */
+	public double[] toIArray(boolean raw) {
+		// calc count of points
+		int scanpoints = data.getTotalDPCount(); 
+		double[] z = new double[scanpoints];
+		//
+		ScanLine2D line; 
+		int currentdp = 0;
+		//
+		for(int iy=0; iy<data.getLinesCount(); iy++) {
+			//
+			for(int ix=0; ix<data.getLineLength(iy); ix++) {
+				// x = time; NOT distance; so calc 
+				z[currentdp] =  getI(raw,iy, ix);
+				currentdp++;
+			} 
+		}
+		//
+		return z;
+	} 
+	
+	/**
+	 * Returns the intensity matrix
+	 * @param raw
 	 * @return
 	 */
-	public Object[][] toIArrayProcessed() {
+	public Object[][] toIMatrix(boolean raw) {
 		// time only once?
 		int cols = data.getLinesCount();
 		int rows = data.getMaxDP();
@@ -481,18 +528,18 @@ public class Image2D implements Serializable, Collectable2D {
 			// increment l
 			for(int r = 0; r<rows; r++) {
 				// only if not null: write Intensity
-				dataExp[r][c] = r<data.getLineLength(c)? getIProcessed(c,r) : "";
+				dataExp[r][c] = r<data.getLineLength(c)? getI(raw,c,r) : "";
 			} 
 		}
 		return dataExp;
 	} 
 	/**
 	 * Returns the processed intensity only.
-	 * with boolean map
+	 * with boolean map as alpha map
 	 * @param sett
 	 * @return
 	 */
-	public Object[][] toIArrayProcessed(boolean[][] map) {
+	public Object[][] toIMatrix(boolean raw, boolean[][] map) {
 		// time only once?
 		int rows = data.getLinesCount();
 		int cols = data.getMaxDP();
@@ -502,17 +549,19 @@ public class Image2D implements Serializable, Collectable2D {
 				// increment l 
 				// only if not null: write Intensity
 				boolean state = r<map.length && c<map[r].length && map[r][c];
-				dataExp[r][c] = c<data.getLineLength(r) && state? getIProcessed(r,c) : "";
+				dataExp[r][c] = c<data.getLineLength(r) && state? getI(raw,r,c) : "";
 			} 
 		}
 		return dataExp;
 	}
+	
+	
 	/**
 	 * Returns the processed intensity and xy
 	 * @param sett
 	 * @return
 	 */
-	public Object[][] toDataArrayProcessed(SettingsImage2DDataExport sett, boolean blank, boolean IS, boolean quantifier) {
+	public Object[][] toDataMatrixProcessed(SettingsImage2DDataExport sett, boolean blank, boolean IS, boolean quantifier) {
 		// all lines are full? or is the first/last one only half
 		int startLine = 0;
 		int lcount = data.getLinesCount();
@@ -555,6 +604,37 @@ public class Image2D implements Serializable, Collectable2D {
 		return dataRes;
 	}
 
+	/**
+	 * intensity values
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getY(boolean raw, int l) { 
+		return raw? l : getYProcessed(l);
+	}
+
+	/**
+	 * The processed y
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public float getYProcessed(int l) { 
+		return l*getSettImage().getSpotsize();
+	}
+	
+	/**
+	 * intensity values
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getI(boolean raw, int l, int dp) { 
+		return raw? getIRaw(l, dp) : getIProcessed(l, dp);
+	}
 	/**
 	 * The processed intensity.
 	 * blank reduced, internal standard normalization and quantification
@@ -605,6 +685,16 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 		return i;
 	}
+	
+	/**
+	 * x values
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public float getX(boolean raw, int l, int dp) { 
+		return raw? getXRaw(l, dp) : getXProcessed(l, dp);
+	}
 	/**
 	 * The processed x
 	 * @param l
@@ -653,15 +743,6 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public double getIRaw(int l, int dp) {  
 		return data.getI(index,l, dp);
-	}
-	/**
-	 * The processed y
-	 * @param l
-	 * @param dp
-	 * @return
-	 */
-	public float getYProcessed(int l) { 
-		return l*getSettImage().getSpotsize();
 	}
 	// finished processed data
 	//######################################################################
@@ -800,7 +881,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * according to rotation of data
 	 * @return
 	 */
-	public int getWidthMaxDP() {
+	public int getWidthAsMaxDP() {
 		SettingsGeneralImage sg = getSettImage();
 		return (sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? data.getLinesCount() : data.getMaxDP();
 	}
@@ -808,7 +889,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * according to rotation of data
 	 * @return
 	 */
-	public int getHeightMaxDP() {
+	public int getHeightAsMaxDP() {
 		SettingsGeneralImage sg = getSettImage();
 		return (sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? data.getMaxDP() : data.getLinesCount();	
 	}
@@ -919,11 +1000,11 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param intensity
 	 * @return the percentile of all intensities (if value is equal to max the result is 100)
 	 */
-	public double getIPercentile(double intensity, boolean onlySelected) {
+	public double getIPercentile(boolean raw, double intensity, boolean onlySelected) {
 		//sort all z values
 		double[] z = null;
-		if(!onlySelected) toIArray();
-		else z = getSelectedDataAsArray(true);
+		if(!onlySelected) toIArray(raw);
+		else z = getSelectedDataAsArray(raw, true);
 		Arrays.sort(z);
 		
 		for(int i=0; i<z.length; i++) {
@@ -993,8 +1074,8 @@ public class Image2D implements Serializable, Collectable2D {
 			// apply filter
 			//sort all z values
 			double[] z = null;
-			if(!getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray();
-			else z = getSelectedDataAsArray(true);
+			if(!getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray(false);
+			else z = getSelectedDataAsArray(false, true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
@@ -1009,8 +1090,8 @@ public class Image2D implements Serializable, Collectable2D {
 			// apply filter
 			//sort all z values
 			double[] z = null;
-			if(!getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray();
-			else z = getSelectedDataAsArray(true);
+			if(!getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray(false);
+			else z = getSelectedDataAsArray(false, true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
@@ -1229,13 +1310,13 @@ public class Image2D implements Serializable, Collectable2D {
 	 * Returns all selected and not excluded data points to an array
 	 * @return
 	 */
-	public double[] getSelectedDataAsArray(boolean excluded) {
+	public double[] getSelectedDataAsArray(boolean raw, boolean excluded) {
 		double[] datasel = new double[getSelectedDPCount(true)];
 		int counter = 0;
 		for(int l=0; l<data.getLinesCount(); l++) {
 			for(int dp = 0; dp<data.getLineLength(l); dp++) {
 				if((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp))  {
-					datasel[counter] = getIProcessed(l, dp);
+					datasel[counter] = getI(raw, l, dp);
 					counter++;
 				} 
 			}
@@ -1464,7 +1545,8 @@ public class Image2D implements Serializable, Collectable2D {
 		this.infoData = infoData;
 	}
 	
-
+	//###########################################################################
+	// Info graphics> histogram / icons
 	/**
 	 * creates a histogram
 	 * @return
@@ -1555,13 +1637,6 @@ public class Image2D implements Serializable, Collectable2D {
 			return null;
 		}
 	}
-	public int getLineCount() {
-		return data.getLinesCount();
-	}
-	public int getLineLength(int i) {
-		return data.getLineLength(i);
-	}
-
 	/**
 	 * test images
 	 * @return
@@ -1583,17 +1658,25 @@ public class Image2D implements Serializable, Collectable2D {
 		Dataset2D data = new Dataset2D(lines);
 		return new Image2D(data);
 	}
+	// end of visual extras
+	//###########################################################################
 
 
 
+	
+	
+	public int getLineCount() {
+		return data.getLinesCount();
+	}
+	public int getLineLength(int i) {
+		return data.getLineLength(i);
+	}
 	public ImageDataset getData() {
 		return data;
 	}
 	public void setData(ImageDataset data) {
 		this.data = data;
 	}
-
-
 	public void shiftIndex(int i) {
 		index += i;
 	}
@@ -1612,12 +1695,9 @@ public class Image2D implements Serializable, Collectable2D {
 	public void setImageGroup(ImageGroupMD imageGroup) {
 		this.imageGroup = imageGroup;
 	}
-
-
 	public ImageGroupMD getImageGroup() {
 		return this.imageGroup;
 	} 
-
 	public void setSettingsImage2D(SettingsImage2D settings) {
 		this.settings = settings;
 	}
@@ -1640,6 +1720,4 @@ public class Image2D implements Serializable, Collectable2D {
 	public void cleatRawDataChangedListeners() {
 		data.cleatRawDataChangedListeners();
 	}
-
-
 }

@@ -77,50 +77,6 @@ public abstract class ImageDataset {
 	public abstract int getAvgDP();
 	
 
-
-	/**
-	 * 
-	 * @param scale
-	 * @return x matrix scaled by a factor. null if there are no x values
-	 */
-	public Object[][] toXMatrix(float scale) {
-		int cols = getLinesCount();
-		int rows = getMaxDP();
-		Object[][] dataExp = new Object[rows][cols]; 
-		for(int c=0; c<cols; c++) {
-			// increment l
-			for(int r = 0; r<rows; r++) {
-				// only if not null: write Intensity
-				dataExp[r][c] = r<getLineLength(c)? getX(c, r)*scale : "";
-			} 
-		}
-		return dataExp;
-	}
-	
-	/**
-	 * 
-	 * @param scale
-	 * @param sep separation chars
-	 * @return xmatrix scaled by a factor as CSV string
-	 */
-	public String toXCSV(float scale, String sep) {
-		StringBuilder builder = new StringBuilder();
-		
-		int cols = getLinesCount();
-		int rows = getMaxDP();
-		// increment dp
-		for(int r = 0; r<rows; r++) {
-			// increment l
-			for(int c=0; c<cols; c++) {
-				// only if not null: write Intensity
-				builder.append(r<getLineLength(c)? getX(c, r)*scale : "");
-				if(c<cols-1) builder.append(sep);
-			} 
-			if(r<rows-1) builder.append("\n");
-		}
-		return builder.toString();
-	}
-
 	
 
 	/**

@@ -341,7 +341,7 @@ public class XSSFExcelWriterReader {
 			writeToCell(sheet, 9+i, 2, q.get(i).getAverageIntensity());
 			writeToCell(sheet, 9+i, 3, q.get(i).getConcentration());
 			writeToCell(sheet, 9+i, 5, "d"+(i+1));
-			writeDataArrayToSheet(sheet, q.get(i).getImg().getSelectedDataAsArray(true), 9+i, 6, true);
+			writeDataArrayToSheet(sheet, q.get(i).getImg().getSelectedDataAsArray(true, true), 9+i, 6, true);
 		}
 	}
 

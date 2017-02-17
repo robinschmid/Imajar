@@ -525,8 +525,8 @@ public class ImageLogicRunner {
 					// open Image
 					BufferedImage image = ImageIO.read(file);
 					// down sample to target
-					int tw = selectedImage.getWidthMaxDP();
-					int th = selectedImage.getHeightMaxDP();
+					int tw = selectedImage.getWidthAsMaxDP();
+					int th = selectedImage.getHeightAsMaxDP();
 					
 					Image ti = image.getScaledInstance(tw, th, Image.SCALE_AREA_AVERAGING);
 					BufferedImage scaled = new BufferedImage(tw,th, image.getType());

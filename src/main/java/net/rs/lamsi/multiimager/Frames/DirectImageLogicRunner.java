@@ -416,7 +416,7 @@ public class DirectImageLogicRunner implements Runnable {
 			IconNode nodes[] = runner.addCollection2D(g, parent); 
 			// get all filedimensions like lines/length... for later comparison 
 			FileDim[] dim = writer.getFileDim(i);
-			// create task
+			// create task 
 			return new DIATask(g, dim, nodes, index); 
 		}
 		return null;
@@ -535,7 +535,7 @@ public class DirectImageLogicRunner implements Runnable {
 		if(!autoScale) {
 			// reset to img max (reverse effect of autoscale)
 			for(DIATask task : tasks) {
-				for(Image2D img : task.getImg()) { 
+				for(Image2D img : task.getImg().getImages()) { 
 					img.getSettPaintScale().setUsesMinMax(true);
 					img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
 					img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);

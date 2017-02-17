@@ -40,7 +40,7 @@ public class SettingsImage2D extends Settings {
  
 	public SettingsImage2D() {
 		super("SettingsImage2D", "/Settings/Image2d/", "setImg2d"); 
-		settPaintScale = new SettingsPaintScale();
+		settPaintScale = SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE);
 		settPaintScale.resetAll();
 		settImage = new SettingsGeneralImage();
 		settImage.resetAll(); 

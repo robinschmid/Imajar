@@ -222,34 +222,4 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		else return false;
 	}
 	
-	
-	@Override
-	public Object[][] toXMatrix(float scale) {
-		int cols = getLinesCount();
-		int rows = getMaxDP();
-		if(hasXData()) {
-			if(hasOnlyOneXColumn()){
-				Object[][] dataExp = new Object[rows][1]; 
-				for(int r = 0; r<rows; r++) {
-					// only if not null: write Intensity
-					dataExp[r][0] = r<getLineLength(0)? getX(0, r)*scale : "";
-				} 
-				return dataExp;
-			}
-			else {
-				Object[][] dataExp = new Object[rows][cols]; 
-				for(int c=0; c<cols; c++) {
-					// increment l
-					for(int r = 0; r<rows; r++) {
-						// only if not null: write Intensity
-						dataExp[r][c] = r<getLineLength(c)? getX(c, r)*scale : "";
-					} 
-				}
-				return dataExp;
-			}
-		}
-		else {
-			return null;
-		}
-	}
 }

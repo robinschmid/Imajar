@@ -146,7 +146,7 @@ public class DataExportUtil {
 		// export line per line matrix of intensity
 		if(sett.getMode().equals(ModeData.XYZ)) {
 			// export xyz data
-			data = img.toXYIArray(sett);
+			data = img.toXYIMatrix(sett.isExportRaw());
 			// get title row
 			title = new String[]{"X", "Y", "I"};
 		}
@@ -154,7 +154,7 @@ public class DataExportUtil {
 			// intensity matrix
 			data = img.toDataArray(ModeData.ONLY_Y, sett.isExportRaw());
 			if(firstFile)
-				xmatrix = img.toXArray(sett.isExportRaw());
+				xmatrix = img.toXMatrix(sett.isExportRaw());
 		}
 		else {
 			// intensity matrix
@@ -323,7 +323,7 @@ LOOKUP_TABLE default
 	public static void exportDataImage2DInRects(Image2D img, Vector<RectSelection> rects, Vector<RectSelection> rectsExcluded, Vector<RectSelection> rectsInfo, Vector<SelectionTableRow> tableRows, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException  { 
 		img.setSelectedData(rects);
 		img.setExcludedData(rectsExcluded);
-		double[] dataSelected = img.getSelectedDataAsArray(true);
+		double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
 		// export the data
 		//writer it to txt or xlsx	
 		if(sett.isWritingToClipboard()) {  
@@ -461,7 +461,7 @@ LOOKUP_TABLE default
 		xwriter.writeToCell(sheetStats, 1, 5, (img.getTotalDPCount()/img.getLineCount()));
 		//write data: RAW
 		XSSFSheet sheet = xwriter.getSheet(wb, classifier+"RAW"); 
-		Object[][] data = img.toDataArrayProcessed(sett, false, false, false);
+		Object[][] data = img.toDataMatrixProcessed(sett, false, false, false);
 		xwriter.writeToCell(sheet, 0, 0, "Raw data; Ablated lines in columns");
 		xwriter.writeToCell(sheet, 0, 1, "Lines:");
 		xwriter.writeToCell(sheet, 0, 2, "Datapoints:");
@@ -475,7 +475,7 @@ LOOKUP_TABLE default
 		if(usesBlank) {
 			SettingsImage2DBlankSubtraction bl = img.getOperations().getBlankQuantifier();
 			sheet = xwriter.getSheet(wb, classifier+"BlankRed"); 
-			data = img.toDataArrayProcessed(sett, true, false, false);
+			data = img.toDataMatrixProcessed(sett, true, false, false);
 			// av and avperline
 			int modetmp = bl.getMode();
 			bl.setMode(SettingsImage2DBlankSubtraction.MODE_AVERAGE);
@@ -508,7 +508,7 @@ LOOKUP_TABLE default
 		if(usesIS){ 
 			SettingsImage2DQuantifierIS is = img.getOperations().getInternalQuantifier();
 			sheet = xwriter.getSheet(wb, classifier+"ISNorm"); 
-			data = img.toDataArrayProcessed(sett, usesBlank, true, false);
+			data = img.toDataMatrixProcessed(sett, usesBlank, true, false);
 			xwriter.writeToCell(sheet, 0, 0, "Internal standard: "+is.getImgIS().getTitle());
 			xwriter.writeToCell(sheet, 0, 1, usesBlank? "(I-blank)/(IS-blank)" : "I/IS");
 			xwriter.writeDataArrayToSheet(sheet, data,1,5); 
@@ -519,7 +519,7 @@ LOOKUP_TABLE default
 		if(img.getQuantifier()!=null && img.getQuantifier().isApplicable() && img.getQuantifier().isActive()) {
 			SettingsImage2DQuantifier q = img.getQuantifier();
 			sheet = xwriter.getSheet(wb, classifier+"Quanty"); 
-			data = img.toDataArrayProcessed(sett, usesBlank, usesIS, true);
+			data = img.toDataMatrixProcessed(sett, usesBlank, usesIS, true);
 			xwriter.writeToCell(sheet, 0, 0, "Quantify with "+(q.getModeAsString()));
 			switch(q.getMode()) { 
 			case SettingsImage2DQuantifier.MODE_LINEAR:

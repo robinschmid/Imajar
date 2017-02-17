@@ -3,6 +3,7 @@ package net.rs.lamsi.multiimager.directimaging;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
@@ -17,20 +18,20 @@ public class DIATask {
 	// save all lines in here. old lines have to be deleted and new lines are to be added
 	private DatasetMD data;
 	
-	private Image2D[] img;
+	private ImageGroupMD img;
 	private IconNode[] nodes;
 	
 	private int index = 0;
 	
 
-	public DIATask(Image2D[] img, FileDim[] dim, IconNode[] nodes, int index) {
+	public DIATask(ImageGroupMD img, FileDim[] dim, IconNode[] nodes, int index) {
 		this.img = img;
 		this.lastFiles = dim;
 		this.index = index;
 		//
 		this.nodes = nodes;
 		// add lines to this data set
-		data = (DatasetMD) img[0].getData();
+		data = (DatasetMD) img.getData();
 	}
 
 
@@ -39,8 +40,8 @@ public class DIATask {
 	 * @return
 	 */
 	public String getIdentifier() { 
-		if(img!=null && img.length>0)
-			return img[0].getSettImage().getRAWFilepath();
+		if(img!=null && img.size()>0)
+			return img.getImages().get(0).getSettImage().getRAWFilepath();
 		else return "";
 	}
 
@@ -127,10 +128,10 @@ public class DIATask {
 	public void setNewFileIndex(int newFileIndex) {
 		this.newFileIndex = newFileIndex;
 	} 
-	public Image2D[] getImg() {
+	public ImageGroupMD getImg() {
 		return img;
 	} 
-	public void setImg(Image2D[] img) {
+	public void setImg(ImageGroupMD img) {
 		this.img = img;
 	}
 
