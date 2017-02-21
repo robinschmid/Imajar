@@ -406,14 +406,16 @@ public class MultiImageFrame extends JFrame {
 		// only if different size
 		Image2D first = img[0];
 
-		boolean different = first.getLineCount()!=map.length;
+		int maxlines = first.getMaxLineCount();
+		
+		boolean different = first.getMaxLineCount()!=map.length;
 		if(!different) {
 			for(int r = 0; r<map.length && !different; r++)
 				if(map[r].length!=first.getLineLength(r))
 					different = true;
 		}
 		if(different) {
-			map = new boolean[first.getLineCount()][];
+			map = new boolean[][];
 			for(int r = 0; r<first.getLineCount(); r++)
 				map = new boolean[r][first.getLineLength(r)];  
 		}

@@ -117,7 +117,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 				float[] x = new float[dp];
 				for(int l=0; l<img.getData().getLinesCount(); l++) {
 					for(int i=0; i<img.getData().getLineLength(l); i++) {
-						x[c] = img.getXRaw(l, i);
+						x[c] = img.getXRaw(true,l, i);
 						c++;
 					}
 				}
@@ -128,7 +128,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 			int c = 0;
 			for(int l=0; l<img.getData().getLinesCount(); l++) {
 				for(int i=0; i<img.getData().getLineLength(l); i++) {
-					z[c] = img.getIRaw(l, i);
+					z[c] = img.getIRaw(true,l, i);
 					c++;
 				}
 			}

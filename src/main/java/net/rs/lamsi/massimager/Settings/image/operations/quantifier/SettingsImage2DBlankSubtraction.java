@@ -34,6 +34,7 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 	
 	public SettingsImage2DBlankSubtraction() {
 		super(MODE_BLANK); 
+		resetAll();
 	} 
 	public SettingsImage2DBlankSubtraction(Image2D imgBlank) { 
 		this(); 
@@ -83,7 +84,7 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 			if(modeData==MODE_DATA_IMG) {
 				// one image as blank
 				if(mode==MODE_AVERAGE) return (imgBlank.getAverageIProcessed());
-				else if(mode==MODE_ACTUAL_DP) return (imgBlank.getIProcessed(line, dp));
+				else if(mode==MODE_ACTUAL_DP) return (imgBlank.getI(false,line, dp));
 				else return (imgBlank.getAverageIProcessed(line));
 			} 
 			else {

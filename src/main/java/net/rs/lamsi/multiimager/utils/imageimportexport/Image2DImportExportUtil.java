@@ -75,7 +75,7 @@ public class Image2DImportExportUtil {
 			// intensity matrix
 	        if(MDDataset.class.isInstance(images.firstElement().getData())) {
 	        	if(((MDDataset)images.firstElement().getData()).hasXData()) {
-		            String xmatrix = images.firstElement().toXCSV(true, SEPARATION);
+		            String xmatrix = images.firstElement().toXCSV(true, SEPARATION, false);
 		    		try {
 						parameters.setFileNameInZip("xmatrix.csv");
 						out.putNextEntry(null, parameters);
@@ -95,7 +95,7 @@ public class Image2DImportExportUtil {
 	        for(Image2D img : images) {	
 	        	try {
 		        	// export ymatrix
-					String matrix = img.toICSV(true, SEPARATION);
+					String matrix = img.toICSV(true, SEPARATION, false);
 					parameters.setFileNameInZip(img.getTitle()+".csv");
 					out.putNextEntry(null, parameters);
 					byte[] data = matrix.getBytes();

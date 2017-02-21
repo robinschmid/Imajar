@@ -312,7 +312,7 @@ public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperati
 			getTxtBlankTitle().setText(img.getTitle());
 			getTxtBlankPath().setText(img.getSettImage().getRAWFilepath());
 			
-			if(getRbBlankActualDataPoint().isSelected() && (img.getLineCount()!=currentImage.getLineCount() || img.getData().getAvgDP()!=currentImage.getData().getAvgDP()))
+			if(getRbBlankActualDataPoint().isSelected() && (img.getLineCount(0)!=currentImage.getLineCount(0) || img.getData().getAvgDP()!=currentImage.getData().getAvgDP()))
 				getRbBlankAveragePerLine().setSelected(true);
 		}
 		// update settings

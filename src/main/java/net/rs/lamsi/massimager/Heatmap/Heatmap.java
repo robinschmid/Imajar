@@ -134,14 +134,14 @@ public class Heatmap {
 		// add them
 		if(isShowingSelectedExcludedRects) {
 			for(RectSelection r : image.getSelectedData()) {  
-				XYBoxAnnotation box = new XYBoxAnnotation(image.getXProcessed(r.getMinY(), r.getMinX()), image.getYProcessed(r.getMinY()), 
-														image.getXProcessed(r.getMaxY()+1, r.getMaxX()+1), image.getYProcessed(r.getMaxY()+1),  new BasicStroke(1.5f), Color.BLACK);
+				XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
+														image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1,r.getMaxX()+1),  new BasicStroke(1.5f), Color.BLACK);
 				selected.add(box);
 				plot.addAnnotation(box, false);
 			}
 			for(RectSelection r : image.getExcludedData()) {
-				XYBoxAnnotation box = new XYBoxAnnotation(image.getXProcessed(r.getMinY(), r.getMinX()), image.getYProcessed(r.getMinY()), 
-						image.getXProcessed(r.getMaxY()+1, r.getMaxX()+1), image.getYProcessed(r.getMaxY()+1),  new BasicStroke(1.5f), Color.RED);
+				XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
+						image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1, r.getMaxX()+1),  new BasicStroke(1.5f), Color.RED);
 				excluded.add(box);
 				plot.addAnnotation(box, false);
 			}
@@ -181,11 +181,11 @@ public class Heatmap {
 		
 		if(isShowingBlankMinMax) {
 			// add
-			double lower = image.getXProcessed(0, image.getOperations().getBlankQuantifier().getQSameImage().getLowerBound());
+			double lower = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getLowerBound());
 			plot.addDomainMarker(lowerMarker = new ValueMarker(lower,Color.BLUE,new BasicStroke(1.5f)));
 			
 			if(image.getOperations().getBlankQuantifier().getQSameImage().isUseEnd()) {
-				double upper = image.getXProcessed(0, image.getOperations().getBlankQuantifier().getQSameImage().getUpperBound());
+				double upper = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getUpperBound());
 				plot.addDomainMarker(upperMarker = new ValueMarker(upper,Color.BLUE,new BasicStroke(1.5f)));
 			}
 		}

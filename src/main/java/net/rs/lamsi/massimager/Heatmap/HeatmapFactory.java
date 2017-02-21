@@ -36,7 +36,7 @@ public class HeatmapFactory {
 		SettingsPaintScale setPaint = image.getSettPaintScale();
 		SettingsGeneralImage setImg = image.getSettImage();
 		// get rotated and reflected dataset
-		XYIData2D dat = image.toXYIArray(setImg); 
+		XYIData2D dat = image.toXYIArray(false, true); 
 		// Heatmap erzeugen
 		Heatmap h = createChart(image, setPaint, setImg, createDataset(image.getSettImage().getTitle(), dat.getX(), dat.getY(), dat.getI()));
 		// TODO WHY?

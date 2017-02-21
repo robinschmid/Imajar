@@ -285,7 +285,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		if(key.equals(KEY.ENLARGE)) currentRect.grow(1, 0);
 		if(key.equals(KEY.SHRINK)) currentRect.grow(-1, 0);
 		// check bounds
-		currentRect.applyMaxima(0, 0, img.getData().getMaxDP()-1, img.getLineCount()-1);
+		currentRect.applyMaxima(0, 0, img.getMaxDP()-1, img.getMaxLineCount()-1);
 		
 		heat.getPlot().removeAnnotation(currentAnn, false);
 		map.remove(currentRect); 
@@ -304,7 +304,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		if(key.equals(KEY.ENLARGE)) currentRect.grow(0,1);
 		if(key.equals(KEY.SHRINK)) currentRect.grow(0,-1);
 		// check bounds
-		currentRect.applyMaxima(0, 0, img.getData().getMaxDP()-1, img.getLineCount()-1);
+		currentRect.applyMaxima(0, 0, img.getMaxDP()-1, img.getMaxLineCount()-1);
 		
 		// remove annotation
 		heat.getPlot().removeAnnotation(currentAnn, false);
@@ -417,10 +417,10 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	 */
 	private void addSelection(RectSelection r) {
 		// for displaying xe and ye +1
-		double x0 = img.getXProcessed(r.getMinY(), r.getMinX());
-		double x1 = img.getXProcessed(r.getMaxY(), r.getMaxX()+1);
-		double y0 = img.getYProcessed(r.getMinY());
-		double y1 = img.getYProcessed(r.getMaxY()+1); 
+		double x0 = img.getX(false, r.getMinY(), r.getMinX());
+		double x1 = img.getX(false, r.getMaxY(), r.getMaxX()+1);
+		double y0 = img.getY(false,r.getMinY(), r.getMinX());
+		double y1 = img.getY(false,r.getMaxY()+1, r.getMaxX()+1); 
 		
 		Color c = null;
 		switch(r.getMode()) {

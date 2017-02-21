@@ -25,7 +25,7 @@ public class SelectionTableRow {
 		this.img = img;
 		this.rect = rect; 
 		//
-		double[] data = img.getIProcessedRect(rect);
+		double[] data = img.getIRect(rect, false);
 		histo = img.createHistogram(data);
 	}
 
@@ -34,14 +34,14 @@ public class SelectionTableRow {
 	 * @return
 	 */
 	public Object[] getRowData() {
-		String y0 = String.valueOf(rect.getY())+"; "+String.valueOf(img.getYProcessed(rect.getY()));
-		String x0 = String.valueOf(rect.getX())+"; "+String.valueOf(img.getXProcessed(rect.getY(), rect.getX()));
-		String y1 =String.valueOf(rect.getMaxY())+"; "+String.valueOf(img.getYProcessed(rect.getMaxY()));
-		String x1 = String.valueOf(rect.getMaxX())+"; "+String.valueOf(img.getXProcessed(rect.getMaxY(), rect.getMaxX()));
+		String y0 = String.valueOf(rect.getY())+"; "+String.valueOf(img.getY(false, rect.getY(), rect.getX()));
+		String x0 = String.valueOf(rect.getX())+"; "+String.valueOf(img.getX(false, rect.getY(), rect.getX()));
+		String y1 =String.valueOf(rect.getMaxY())+"; "+String.valueOf(img.getY(false, rect.getMaxY(), rect.getMaxX()));
+		String x1 = String.valueOf(rect.getMaxX())+"; "+String.valueOf(img.getX(false, rect.getMaxY(), rect.getMaxX()));
 		
-		DataMinMaxAvg data = img.analyzeDataInRect(rect);
-		double max99 = img.analyzePercentile(rect, 0.99);
-		double median = img.analyzePercentile(rect, 0.5);
+		DataMinMaxAvg data = img.analyzeDataInRect(rect, false);
+		double max99 = img.analyzePercentile(rect, false, 0.99);
+		double median = img.analyzePercentile(rect, false, 0.5);
 		
 		return new Object[]{rect.getMode().toString(), x0,y0,x1,y1,data.getMin(),data.getMax(), data.getAvg(), median, max99, data.getStdev(), histo};
 	}
@@ -51,14 +51,14 @@ public class SelectionTableRow {
 	 * @return
 	 */
 	public Object[] getRowDataExport() {
-		String y0 = String.valueOf(rect.getY())+"; "+String.valueOf(img.getYProcessed(rect.getY()));
-		String x0 = String.valueOf(rect.getX())+"; "+String.valueOf(img.getXProcessed(rect.getY(), rect.getX()));
-		String y1 =String.valueOf(rect.getMaxY())+"; "+String.valueOf(img.getYProcessed(rect.getMaxY()));
-		String x1 = String.valueOf(rect.getMaxX())+"; "+String.valueOf(img.getXProcessed(rect.getMaxY(), rect.getMaxX()));
+		String y0 = String.valueOf(rect.getY())+"; "+String.valueOf(img.getY(false, rect.getY(), rect.getX()));
+		String x0 = String.valueOf(rect.getX())+"; "+String.valueOf(img.getX(false, rect.getY(), rect.getX()));
+		String y1 =String.valueOf(rect.getMaxY())+"; "+String.valueOf(img.getY(false, rect.getMaxY(), rect.getMaxX()));
+		String x1 = String.valueOf(rect.getMaxX())+"; "+String.valueOf(img.getX(false, rect.getMaxY(), rect.getMaxX()));
 		
-		DataMinMaxAvg data = img.analyzeDataInRect(rect);
-		double max99 = img.analyzePercentile(rect, 0.99);
-		double median = img.analyzePercentile(rect, 0.5);
+		DataMinMaxAvg data = img.analyzeDataInRect(rect, false);
+		double max99 = img.analyzePercentile(rect, false, 0.99);
+		double median = img.analyzePercentile(rect, false, 0.5);
 		
 		return new Object[]{rect.getMode().toString(), x0,y0,x1,y1,data.getMin(),data.getMax(), data.getAvg(), median, max99, data.getStdev()};
 	}

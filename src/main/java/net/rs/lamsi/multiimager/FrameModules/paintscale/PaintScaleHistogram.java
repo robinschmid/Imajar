@@ -44,7 +44,7 @@ public class PaintScaleHistogram extends JPanel {
 		double min = ps.getMinIAbs(img);
 		double max = ps.getMaxIAbs(img);
 		
-		double[] dat1 = img.toIArray(true);
+		double[] dat1 = img.toIArray(false);
 		double[] dat2 = img.getIInIRange();
 		int bins2 = (int) Math.sqrt(dat2.length)+40;
 		double binwidth2 = (max-min)/bins2;

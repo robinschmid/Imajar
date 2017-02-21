@@ -46,7 +46,16 @@ public class SettingsImage2DDataExport extends Settings {
 	private FileType fileFormat;
 	private boolean exportsAllFiles, savesAllFilesToOneXLS;
 	private boolean isExportRaw, isWriteTitleRow, isWritingToClipboard;
+	// use reflect, rotate and imaging mode
+	private boolean useReflectRotate;
 	
+	public boolean isUseReflectRotate() {
+		return useReflectRotate;
+	}
+	public void setUseReflectRotate(boolean useReflectRotate) {
+		this.useReflectRotate = useReflectRotate;
+	}
+
 	private ModeData mode = ModeData.X_MATRIX_STANDARD;
 	
 	// new one
@@ -67,6 +76,7 @@ public class SettingsImage2DDataExport extends Settings {
 		isWriteTitleRow = true;
 		isWritingToClipboard = false;
 		mode = ModeData.X_MATRIX_STANDARD;
+		useReflectRotate = true;
 	}
 	//##########################################################
 	// xml input/output
@@ -83,6 +93,7 @@ public class SettingsImage2DDataExport extends Settings {
 		toXML(elParent, doc, "isWritingToClipboard", isWritingToClipboard); 
 		toXML(elParent, doc, "mode", mode); 
 		toXML(elParent, doc, "isExportRaw", isExportRaw); 
+		toXML(elParent, doc, "useReflectRotate", useReflectRotate); 
 	}
 
 	@Override
@@ -102,7 +113,8 @@ public class SettingsImage2DDataExport extends Settings {
 				else if(paramName.equals("isExportRaw"))isExportRaw = booleanFromXML(nextElement);  
 				else if(paramName.equals("isWriteTitleRow"))isWriteTitleRow = booleanFromXML(nextElement);  
 				else if(paramName.equals("isWritingToClipboard"))isWritingToClipboard = booleanFromXML(nextElement);  
-				else if(paramName.equals("isCuttingDataToMin"))isCuttingDataToMin = booleanFromXML(nextElement);  
+				else if(paramName.equals("isCuttingDataToMin"))isCuttingDataToMin = booleanFromXML(nextElement);
+				else if(paramName.equals("useReflectRotate"))useReflectRotate = booleanFromXML(nextElement);    
 			}
 		}
 	}

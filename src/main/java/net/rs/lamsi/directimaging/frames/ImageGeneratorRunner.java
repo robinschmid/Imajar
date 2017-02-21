@@ -45,16 +45,16 @@ public class ImageGeneratorRunner implements Runnable {
 		while(isRunning) {
 			Image2D[] image = taskList.get(task);
 			//write next element
-			String line = ""+image[0].getXRaw(cl,cdp);
+			String line = ""+image[0].getX(true,cl,cdp);
 			for(int i=0; i<image.length; i++) {
-				line += ","+image[i].getIRaw(cl, cdp);
+				line += ","+image[i].getI(true,cl, cdp);
 			}
 			writer.writeLine(line);
 			cdp++;
 			if(cdp>=image[0].getLineLength(cl)) {
 				cdp=0;
 				cl++;
-				if(cl>=image[0].getLineCount()) {
+				if(cl>=image[0].getData().getLinesCount()) {
 					// next task or stop?
 					cl = 0;
 					id = (rand.nextInt(1000));

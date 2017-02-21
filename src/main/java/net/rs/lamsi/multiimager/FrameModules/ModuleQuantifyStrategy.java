@@ -337,7 +337,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 	 */
 	protected void addMultiStandard(Image2D img) { 
 		// search for multiple images in one standard
-		if(getCbSplitQuantifierData().isSelected() && img.getLineCount()>2){
+		if(getCbSplitQuantifierData().isSelected() && img.getLineCount(0)>2){
 			Quantifier q = new Quantifier();
 			q.setImg(img);
 			q.setMode(Quantifier.MODE_AVERAGE_PER_LINE);
@@ -348,7 +348,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 			double minD = (lineAv[1]-lineAv[0]);
 			double avD = (lineAv[1]-lineAv[0]);
 			double minAvgValue = lineAv[0]<lineAv[1]? lineAv[0] : lineAv[1];
-			for(int i=2; i<img.getLineCount(); i++) {
+			for(int i=2; i<img.getLineCount(0); i++) {
 				double dif = Math.abs(lineAv[i]-lineAv[i-1]);
 				if(dif<minD) minD = dif;
 				if(dif>maxD) maxD = dif;
@@ -356,10 +356,10 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 				// min value as blank
 				if(lineAv[i]<minAvgValue) minAvgValue = lineAv[i];
 			}
-			avD = avD/img.getLineCount()-1;
+			avD = avD/img.getLineCount(0)-1;
 			// search for contrast
 			int lastSplit = 0;
-			for(int i=1; i<img.getLineCount(); i++) {
+			for(int i=1; i<img.getLineCount(0); i++) {
 				double dif = Math.abs(lineAv[i]-lineAv[i-1]);
 				if(dif>maxD*0.1 ) {
 					// split image here i-1  
@@ -369,7 +369,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 						// set area: exclude all but not lastSplit to i-1
 						if(lastSplit!=0)
 							copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
-						copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,i, copy.getData().getMaxDP()-1, copy.getLineCount()-1));
+						copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,i, copy.getData().getMaxDP()-1, copy.getLineCount(0)-1));
 						// add
 						getPnTable().addQuantifier(copy);
 						// 						

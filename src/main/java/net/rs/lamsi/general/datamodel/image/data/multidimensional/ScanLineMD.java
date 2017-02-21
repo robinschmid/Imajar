@@ -69,13 +69,13 @@ public class ScanLineMD  implements Serializable  {
 		if(x==null  && (!MDDataset.class.isInstance(img.getData()) || ((MDDataset)img.getData()).hasXData())) {
 			x = new float[dp];
 			for(int i=0; i<dp; i++) {
-				x[dp] = img.getXRaw(line, i);
+				x[dp] = img.getXRaw(true,line, i);
 			}
 		}
 		// add dimension
 		Double[] z = new Double[dp];
 		for(int i=0; i<dp; i++) {
-			z[i] = img.getIRaw(line, i);
+			z[i] = img.getIRaw(true,line, i);
 		}
 		return addDimension(z);
 	}

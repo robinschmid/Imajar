@@ -123,7 +123,7 @@ public class DataExportUtil {
 	} 
 
 	/**
-	 * 
+	 * basic export
 	 * @param img
 	 * @param sett
 	 * @param qualifier is just added to the file (txt) or to the sheet (XLSX)
@@ -146,19 +146,19 @@ public class DataExportUtil {
 		// export line per line matrix of intensity
 		if(sett.getMode().equals(ModeData.XYZ)) {
 			// export xyz data
-			data = img.toXYIMatrix(sett.isExportRaw());
+			data = img.toXYIMatrix(sett.isExportRaw(), sett.isUseReflectRotate());
 			// get title row
 			title = new String[]{"X", "Y", "I"};
 		}
 		else if(sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
 			// intensity matrix
-			data = img.toDataArray(ModeData.ONLY_Y, sett.isExportRaw());
+			data = img.toDataArray(ModeData.ONLY_Y, sett.isExportRaw(), sett.isUseReflectRotate());
 			if(firstFile)
-				xmatrix = img.toXMatrix(sett.isExportRaw());
+				xmatrix = img.toXMatrix(sett.isExportRaw(), sett.isUseReflectRotate());
 		}
 		else {
 			// intensity matrix
-			data = img.toDataArray(sett.getMode(), sett.isExportRaw());
+			data = img.toDataArray(sett.getMode(), sett.isExportRaw(), sett.isUseReflectRotate());
 			// get title row
 			if(sett.isWriteTitleRow()) {
 				int size = data[0].length;
@@ -361,7 +361,7 @@ LOOKUP_TABLE default
 			xwriter.writeToCell(sheet, 0, 0, "All intensity data of all rects on one sheet.");
 			for(int r=0; r<tableRows.size(); r++) {
 				SelectionTableRow row = tableRows.get(r);
-				double[] data = row.getImg().getIProcessedRect(row.getRect());
+				double[] data = row.getImg().getIRect(row.getRect(), sett.isExportRaw());
 				xwriter.writeToCell(sheet, r, 1, "Mode="+row.getRect().getMode().toString());
 				xwriter.writeToCell(sheet, r, 2, "I");
 				xwriter.writeDataArrayToSheet(sheet, data, r, 3, true);
@@ -398,7 +398,7 @@ LOOKUP_TABLE default
 				xwriter.writeDataArrayToSheet(sheet, SelectionTableRow.getTitleArrayExport(), 0, 1, false);
 				xwriter.writeDataArrayToSheet(sheet, tableRows.get(r).getRowDataExport(), 0, 2, false);
 				// get data as 2d array
-				double[][] data = row.getImg().getIProcessedRect2D(row.getRect()); 
+				Double[][] data = row.getImg().getIRect2D(row.getRect(), sett.isExportRaw()); 
 				xwriter.writeDataArrayToSheet(sheet, data, 0, 4);
 			}
 
@@ -455,13 +455,13 @@ LOOKUP_TABLE default
 		xwriter.writeToCell(sheetStats, 0, 5, "DP per line:");
 		xwriter.writeToCell(sheetStats, 1, 0, (img.getTitle()));
 		xwriter.writeToCell(sheetStats, 1, 1, (img.getSettImage().getRAWFilepath()));
-		xwriter.writeToCell(sheetStats, 1, 2, (img.getLineCount()));
+		xwriter.writeToCell(sheetStats, 1, 2, (img.getMaxLineCount()));
 		xwriter.writeToCell(sheetStats, 1, 3, (img.getTotalDPCount()));
 		xwriter.writeToCell(sheetStats, 1, 4, (img.isAllLinesSameLength()));
-		xwriter.writeToCell(sheetStats, 1, 5, (img.getTotalDPCount()/img.getLineCount()));
+		xwriter.writeToCell(sheetStats, 1, 5, (img.getTotalDPCount()/img.getMaxLineCount()));
 		//write data: RAW
 		XSSFSheet sheet = xwriter.getSheet(wb, classifier+"RAW"); 
-		Object[][] data = img.toDataMatrixProcessed(sett, false, false, false);
+		Object[][] data = img.toDataMatrix(sett, false, false, false);
 		xwriter.writeToCell(sheet, 0, 0, "Raw data; Ablated lines in columns");
 		xwriter.writeToCell(sheet, 0, 1, "Lines:");
 		xwriter.writeToCell(sheet, 0, 2, "Datapoints:");
