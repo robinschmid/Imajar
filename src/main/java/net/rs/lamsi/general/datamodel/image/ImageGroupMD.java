@@ -1,10 +1,14 @@
 package net.rs.lamsi.general.datamodel.image;
 
+import java.io.Serializable;
 import java.util.Vector;
 
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 
-public class ImageGroupMD {
+public class ImageGroupMD implements Serializable {	 
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
 
 	// dataset
 	protected MDDataset data = null;
