@@ -8,8 +8,9 @@ import net.rs.lamsi.massimager.Frames.Panels.peaktable.PeakTableColumnType;
 import net.rs.lamsi.massimager.Frames.Panels.peaktable.PeakTableRow;
 import net.sf.mzmine.datamodel.PeakList;
 
-public abstract class MultiImageTableModel extends AbstractTableModel {
+public class MultiImageTableModel extends AbstractTableModel {
 
+	private MultiImageFrame window;
     /**
      * 
      */
@@ -24,8 +25,17 @@ public abstract class MultiImageTableModel extends AbstractTableModel {
     /**
      * Constructor, assign given dataset to this table
      */
-    public MultiImageTableModel() {  
+    public MultiImageTableModel(MultiImageFrame window) {  
+    	this.window = window;
     }
+    
+		public void fireGridChanged() {
+			window.updateGridView();
+		} 
+		public void fireDataProcessingChanged() {
+			window.fireProcessingChanged();
+		}
+	
     
     public void addRow(MultiImgTableRow row) {
     	rowList.add(row);
@@ -121,10 +131,6 @@ public abstract class MultiImageTableModel extends AbstractTableModel {
         // update repaint
     } 
 
-    public abstract void fireDataProcessingChanged();
-
-    public abstract void fireGridChanged();
-
 	/**
      * update row and fire table update event
      * @param row
@@ -168,6 +174,14 @@ public abstract class MultiImageTableModel extends AbstractTableModel {
 			ex.printStackTrace();
 			return new Object[0][0];
 		}
+	}
+
+	public MultiImageFrame getWindow() {
+		return window;
+	}
+
+	public void setWindow(MultiImageFrame window) {
+		this.window = window;
 	}
 
 }

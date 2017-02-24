@@ -569,6 +569,73 @@ public class Image2D implements Serializable, Collectable2D {
 		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
 			return toXYIArray(raw);
 		}
+		else if(rotation==180) {
+			return toXYIArray(raw, imgMode, 0, !reflectH, !reflectV);
+		}
+		else {
+			// count scan points
+			int scanpoints = getTotalDPCount();
+			// create data
+			double[] x = new double[scanpoints];
+			double[] y = new double[scanpoints];
+			double[] z = new double[scanpoints];
+			
+			int[] length = new int[data.getLinesCount()];
+			// rotated
+			if((rotation==90 || rotation==270 || rotation == -90)) {
+				// all line length
+				for(int i=0; i<data.getLinesCount(); i++)
+					length[i] = getLineCount(i);
+				
+				// for lines (that are actually datapoints)
+				int c=0;
+				for(int l=0; l<length.length; l++) {
+					// for dp ( that are actually lines)
+					for(int dp=0; dp<data.getLinesCount(); dp++) {
+						if(l<length[dp]) {
+							x[c] = getX(raw, l, dp);
+							y[c] = getY(raw, l, dp);
+							z[c] = getI(raw, l, dp);
+							
+							c++;
+						}
+					}
+				}
+				return new XYIData2D(x, y, z);
+			}
+			else {
+				// no rotation:
+				// all line length
+				for(int i=0; i<data.getLinesCount(); i++)
+					length[i] = getLineLength(i);
+				
+				// for lines
+				int c=0;
+				for(int l=0; l<data.getLinesCount(); l++) {
+					// for dp
+					for(int dp=0; dp<length[l]; dp++) {
+						x[c] = getX(raw, l, dp);
+						y[c] = getY(raw, l, dp);
+						z[c] = getI(raw, l, dp);
+						
+						c++;
+					}
+				}
+				return new XYIData2D(x, y, z);
+			}
+		}
+	} 
+	
+	/*
+	 * old version: not for alpha map
+	public XYIData2D toXYIArray(boolean raw, int imgMode, int rotation, boolean reflectH, boolean reflectV) {
+		// easy?
+		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
+			return toXYIArray(raw);
+		}
+		else if(rotation==180) {
+			return toXYIArray(raw, imgMode, 0, !reflectH, !reflectV);
+		}
 		else {
 			// count scan points
 			int scanpoints = 0;
@@ -582,7 +649,7 @@ public class Image2D implements Serializable, Collectable2D {
 			//
 			ScanLine2D line; 
 			int currentdp = 0;
-			double height = getMaxYRaw(raw);
+			double height = getMaxYRaw(raw)-1;
 			// for all lines
 			for(int iy=0; iy<data.getLinesCount(); iy++) {
 				// width  
@@ -606,19 +673,12 @@ public class Image2D implements Serializable, Collectable2D {
 					}
 
 					// flip values of x and y
-					// xor: ^    reflectV and 180° = reflectH
-					if(!(reflectH && reflectV && rotation==180)) {
-						if((reflectH && rotation!=180) ^ (reflectV && rotation==180)) {// y 
+						if((reflectH)) {// y 
 							y[currentdp] += distPercent(height, y[currentdp]) *height; 
 						}
-						if((reflectV && rotation!=180) ^ (reflectH && rotation==180)) {// x
+						if(reflectV) {// x
 							x[currentdp] += distPercent(width, x[currentdp]) *width; 
 						}
-						if(rotation==180 && !reflectV && !reflectH) {
-							y[currentdp] += distPercent(height, y[currentdp]) *height; 
-							x[currentdp] += distPercent(width, x[currentdp]) *width; 
-						}
-					}
 					// 90°
 					if(rotation==90) {
 						// x0 -> y0   xn -> yn
@@ -645,6 +705,7 @@ public class Image2D implements Serializable, Collectable2D {
 			return new XYIData2D(x, y, z);
 		}
 	} 
+	 */
 
 	/**
 	 * xyi array without rotation, reflection, imaging mode
@@ -690,12 +751,10 @@ public class Image2D implements Serializable, Collectable2D {
 		if(useSettings) {
 			// columns in the data sheet are lines / x values here
 			// time only once?
-			int cols = mode.equals(ModeData.XYYY)? data.getLinesCount() +1 :  data.getLinesCount()*2;
-			if(mode.equals(ModeData.ONLY_Y)) cols = data.getLinesCount();
-
+			int cols = cols = data.getLinesCount();
 			// rows in data sheet = data points here
 			int rows = data.getMaxDP();
-			
+					
 			// rotation
 			int rotation = getSettImage().getRotationOfData();
 			if(rotation==90 || rotation==270 || rotation == -90) {
@@ -703,6 +762,9 @@ public class Image2D implements Serializable, Collectable2D {
 				cols = rows;
 				rows = tmp;
 			}
+			// more columns for x values?
+			if(mode.equals(ModeData.XYYY)) cols += 1;
+			else if(mode.equals(ModeData.XYXY_ALTERN)) cols += 2;
 				
 			Object[][] dataExp = new Object[rows][cols];
 			int l = 0;
@@ -951,14 +1013,6 @@ public class Image2D implements Serializable, Collectable2D {
 			return dataExp;
 		}
 		else {
-			// rotation	
-			int rotation = getSettImage().getRotationOfData();
-			if(rotation==90 || rotation==270 || rotation == -90) {
-				int tmp = cols;
-				cols = rows;
-				rows = tmp;
-			}
-			
 			Object[][] dataExp = new Object[rows][cols]; 
 			for(int c=0; c<cols; c++) {
 				int length = data.getLineLength(c);
@@ -977,7 +1031,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param sett
 	 * @return
 	 */
-	public Object[][] toIMatrix(boolean raw, boolean useSettings, boolean[][] map) {
+	public Object[][] toIMatrix(boolean raw, boolean useSettings, Boolean[][] map) {
 		// time only once?
 		int cols = data.getLinesCount();
 		int rows = data.getMaxDP();

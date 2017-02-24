@@ -33,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.RangeSliderColumn;
@@ -41,6 +42,7 @@ import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -65,7 +67,8 @@ public class MultiImageFrame extends JFrame {
 	private JTable table;
 	private MultiImageTableModel tableModel;
 	// data 
-	private Image2D[] img; 
+	private ImageGroupMD group;
+	private SettingsAlphaMap settings;
 	// keep track of updating, dont update every heatmap all the time only shown ones
 	private boolean[] uptodate;
 	// insert heatmaps in this array
@@ -77,7 +80,7 @@ public class MultiImageFrame extends JFrame {
 
 	// boolean map for visible pixel according to range limitations of other images
 	// map[lines][dp]
-	private boolean[][] map;
+	private Boolean[][] map;
 	private boolean[] maplinear;
 	private JMenuBar menuBar;
 	private JMenu mnSettings;
@@ -109,7 +112,8 @@ public class MultiImageFrame extends JFrame {
 						images[i] = Image2D.createTestStandard();
 						images[i].getSettImage().setTitle("ABC"+i);
 					}
-					frame.init(images);
+					ImageGroupMD group = new ImageGroupMD(images);
+					frame.init(group);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -217,23 +221,9 @@ public class MultiImageFrame extends JFrame {
 		JScrollPane scrollTable = new JScrollPane();
 		split.setLeftComponent(scrollTable);
 
-		tableModel = new MultiImageTableModel() { 
-			@Override
-			public void fireGridChanged() {
-				updateGridView();
-			} 
-			@Override
-			public void fireDataProcessingChanged() {
-				fireProcessingChanged();
-			}
-		};
-
 		table = new JTable();
 		scrollTable.setViewportView(table);
-		table.setModel(tableModel);
 
-		// range slider column
-		RangeSliderColumn col = new RangeSliderColumn(table, 6, 0, 100);
 
 		panel_1 = new JPanel();
 		split.setRightComponent(panel_1);
@@ -342,14 +332,34 @@ public class MultiImageFrame extends JFrame {
 	 * @param img
 	 * @param folder collection name
 	 */
-	public void init(Image2D[] img) {
-		this.img = img; 
-		heat = new Heatmap[img.length];
-		uptodate = new boolean[img.length];
-		titles = new ImageTitle[img.length];
-		pn = new JPanel[img.length];
+	public void init(ImageGroupMD group) {
+		this.group = group;  
+		settings = group.getSettAlphaMap();
+		// already has a table model?
+		if(settings.getTableModel()!=null) {
+			tableModel = settings.getTableModel();
+			tableModel.setWindow(this);
+		}
+		else {
+			// new table model
+			tableModel = new MultiImageTableModel(this); 
+			// for all images
+			for(int k =0; k<group.size(); k++) 
+				// put them into the table
+				tableModel.addRow(new MultiImgTableRow(k, group.get(k)));
+		}
+		table.setModel(tableModel);
+		settings.setTableModel(tableModel);
+		// range slider column
+		RangeSliderColumn col = new RangeSliderColumn(table, 6, 0, 100);
+			
+		
+		heat = new Heatmap[group.size()];
+		uptodate = new boolean[group.size()];
+		titles = new ImageTitle[group.size()];
+		pn = new JPanel[group.size()];
 		// for all images
-		for(int k =0; k<img.length; k++) {
+		for(int k =0; k<group.size(); k++) {
 			// create new pn as place holder
 			final int index = k;
 			pn[k] = new JPanel(new BorderLayout());
@@ -362,12 +372,10 @@ public class MultiImageFrame extends JFrame {
 				}
 			});
 			getPnGridImg().add(pn[k]);
-			// put them into the table
-			tableModel.addRow(new MultiImgTableRow(k, img[k]));
 		}
 
 		// add raw data changed listener for direct imaging 
-		img[img.length-1].addRawDataChangedListener(new RawDataChangedListener() { 
+		group.get(group.size()-1).addRawDataChangedListener(new RawDataChangedListener() { 
 			@Override
 			public void rawDataChangedEvent(ImageDataset data) {
 				if(data.getLinesCount()>0) { 
@@ -404,20 +412,20 @@ public class MultiImageFrame extends JFrame {
 	 */
 	protected void createNewMap() {
 		// only if different size
-		Image2D first = img[0];
+		Image2D first = group.get(0);
 
-		int maxlines = first.getMaxLineCount();
+		ImageDataset data = first.getData();
 		
-		boolean different = first.getMaxLineCount()!=map.length;
+		int maxlines = data.getLinesCount();
+		
+		boolean different = map==null || maxlines!=map.length;
 		if(!different) {
 			for(int r = 0; r<map.length && !different; r++)
-				if(map[r].length!=first.getLineLength(r))
+				if(map[r].length!=data.getLineLength(r))
 					different = true;
 		}
 		if(different) {
-			map = new boolean[][];
-			for(int r = 0; r<first.getLineCount(); r++)
-				map = new boolean[r][first.getLineLength(r)];  
+			settings.setMap(null);
 		}
 		updateMap();
 
@@ -429,26 +437,10 @@ public class MultiImageFrame extends JFrame {
 	 */
 	private void updateMap() {
 		try { 
-			//new?
-			Image2D first = img[0];
-			if(map == null) {
-				map = new boolean[first.getLineCount()][];
-				for(int r = 0; r<first.getLineCount(); r++)
-					map = new boolean[r][first.getLineLength(r)]; 
-			}
-			// init as true
-			for(int r = 0; r<map.length; r++)
-				for(int d=0; d<map[r].length; d++)
-					map[r][d] = true;
-
-			// go through all rows and check if in range
-			for(int i=0; i<tableModel.getRowList().size(); i++) {
-				MultiImgTableRow row = tableModel.getRowList().get(i);
-				row.applyToMap(map);
-			}
-
+			map = group.updateMap();
+			
 			// save linear one
-			maplinear = convertMap(map);
+			maplinear = settings.convertToLinearMap();
 		} catch(Exception ex) {
 			ex.printStackTrace();
 			ImageEditorWindow.log(ex.getMessage(), LOG.ERROR);
@@ -458,7 +450,7 @@ public class MultiImageFrame extends JFrame {
 	/**
 	 * takes all rows in account and shows images in grid view
 	 */
-	private void updateGridView() {
+	public void updateGridView() {
 		// empty grid
 		for(JPanel p : pn) 
 			p.removeAll();
@@ -529,16 +521,16 @@ public class MultiImageFrame extends JFrame {
 	 */
 	private void updateChart(int i) {
 		try {
-			if(img[i].getLineCount()>0) {
+			if(group.get(i).getData().getLinesCount()>0) {
 				// generate heat if not already
 				if(heat[i]==null) {
-					heat[i] = HeatmapFactory.generateHeatmap(img[i]); 
+					heat[i] = HeatmapFactory.generateHeatmap(group.get(i)); 
 					// show axes?
 					heat[i].getPlot().getDomainAxis().setVisible(getCbShowAxes().isSelected());
 					heat[i].getPlot().getRangeAxis().setVisible(getCbShowAxes().isSelected());
 					// title?
 					XYPlot plot = heat[i].getPlot();
-					ImageTitle lt = new ImageTitle(img[i], font); 
+					ImageTitle lt = new ImageTitle(group.get(i), font); 
 					lt.setVisible(getCbShowTitles().isSelected());
 					plot.addAnnotation(lt.getAnnotation()); 
 					// 
@@ -562,27 +554,8 @@ public class MultiImageFrame extends JFrame {
 	 * gets called after change in update grid view 
 	 */
 	private void updateAllCharts() {
-		for(int i=0; i<img.length; i++)
+		for(int i=0; i<group.size(); i++)
 			updateChart(i);
-	}
-
-	/**
-	 * converts the map to one dimension as line, line,line,line
-	 */
-	private boolean[] convertMap(boolean[][] map) {
-		int size = 0;
-		for(boolean[] m : map)
-			size+=m.length;
-
-		boolean[] maplinear = new boolean[size];
-		int c = 0;
-		for(boolean[] m : map) {
-			for(boolean b : m) {
-				maplinear[c] = b;
-				c++;
-			}
-		}
-		return maplinear;
 	}
 
 
@@ -604,17 +577,17 @@ public class MultiImageFrame extends JFrame {
 			
 			//save map 
 			updateMap();
-			writer.writeBooleanArrayToFile(FileAndPathUtil.getRealFileName(fname+"_map", ext), map, ",");
+			writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_map", ext), map, ",");
 
 			// save multi map
 			if(isBinaryMapAvailable())
 				saveBinaryMapToTxt(new File(fname+"_multimap"), ext); 
 
 			// save all img
-			for(int i=0; i<img.length; i++) {
+			for(int i=0; i<group.size(); i++) {
 				updateChart(i);
 				// export to new file
-				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+img[i].getTitle(), ext), img[i].toIMatrix(true, map), ",");
+				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+group.get(i).getTitle(), ext), group.get(i).toIMatrix(true, true, map), ",");
 			}
 			// show dialog
 			DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
@@ -640,21 +613,21 @@ public class MultiImageFrame extends JFrame {
 			// map
 			updateMap();
 			sheet = writer.getSheet(wb, "map");
-			writer.writeBooleanArrayToSheet(sheet, map, 0, 0);
+			writer.writeDataArrayToSheet(sheet, map, 0, 0);
 
 			// multi map 
 			if(isBinaryMapAvailable()) {
 				sheet = writer.getSheet(wb, "multimap");
-				Object[][] bmap = createBinaryMap(); 
+				Object[][] bmap = group.createBinaryMap(); 
 				writer.writeDataArrayToSheet(sheet, bmap, 0, 0); 
 			}
 
 			// write all images 
-			for(int i=0; i<img.length; i++) {
+			for(int i=0; i<group.size(); i++) {
 				updateChart(i);
 				// export to new file
-				sheet = writer.getSheet(wb, i+" "+img[i].getTitle());
-				writer.writeDataArrayToSheet(sheet, img[i].toIMatrix(true,map), 0, 0); 
+				sheet = writer.getSheet(wb, i+" "+group.get(i).getTitle());
+				writer.writeDataArrayToSheet(sheet, group.get(i).toIMatrix(true, true,map), 0, 0); 
 			}
 
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);
@@ -675,7 +648,7 @@ public class MultiImageFrame extends JFrame {
 	protected void saveMapToTxt(File file, String ext) {
 		try {
 			updateMap();
-			new TxtWriter().writeBooleanArrayToFile(FileAndPathUtil.getRealFileName(file, ext), map, ",");
+			new TxtWriter().writeDataArrayToFile(FileAndPathUtil.getRealFileName(file, ext), map, ",");
 			// show dialog
 			DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
 		}catch(Exception ex) {
@@ -695,7 +668,7 @@ public class MultiImageFrame extends JFrame {
 			XSSFExcelWriterReader writer = new XSSFExcelWriterReader();
 			XSSFWorkbook wb = new XSSFWorkbook();
 			XSSFSheet sheet = writer.getSheet(wb, "map");
-			writer.writeBooleanArrayToSheet(sheet, map, 0, 0);
+			writer.writeDataArrayToSheet(sheet, map, 0, 0);
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);
 			writer.closeAllWorkbooks();
 			// show dialog
@@ -715,7 +688,7 @@ public class MultiImageFrame extends JFrame {
 	 */
 	protected void saveBinaryMapToTxt(File file, String ext) {
 		try {
-			Object[][] bmap = createBinaryMap();
+			Object[][] bmap = group.createBinaryMap();
 			new TxtWriter().writeDataArrayToFile(FileAndPathUtil.getRealFileName(file, ext), bmap, ",");
 			DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
 		}catch(Exception ex) {
@@ -731,7 +704,7 @@ public class MultiImageFrame extends JFrame {
 	 */
 	protected void saveBinaryMapToExcel(File file) { 
 		try {
-			Object[][] bmap = createBinaryMap();
+			Object[][] bmap = group.createBinaryMap();
 			XSSFExcelWriterReader writer = new XSSFExcelWriterReader();
 			XSSFWorkbook wb = new XSSFWorkbook();
 			XSSFSheet sheet = writer.getSheet(wb, "map");
@@ -748,33 +721,7 @@ public class MultiImageFrame extends JFrame {
 	}
 
 
-	/**
-	 * map ony for export: binary map
-	 * @return
-	 */
-	private Object[][] createBinaryMap() throws Exception {
-		Image2D first = img[0];
-		Integer[][] bmap = new Integer[first.getLineCount()][];
-		for(int r = 0; r<first.getLineCount(); r++)
-			bmap = new Integer[r][first.getLineLength(r)];  
-
-		// init as 0
-		for(int r = 0; r<bmap.length; r++)
-			for(int d=0; d<bmap[r].length; d++)
-				bmap[r][d] = 0;
-
-		// go through all rows and check if in range
-		int counter = 0;
-		for(int i=0; i<tableModel.getRowList().size(); i++) {
-			MultiImgTableRow row = tableModel.getRowList().get(i);
-			if(row.isUseRange()) {
-				row.applyToBinaryMap(bmap,counter);
-				counter++;
-			}
-		}
-
-		return bmap;
-	}
+	
 
 	//###################################################################
 	// getters and setters

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -156,8 +157,28 @@ public abstract class Settings implements Serializable {
 		    }
 		    else if(File.class.isInstance(o)) {
 		    	paramElement.setTextContent(((File)o).getAbsolutePath());
-		    }
+		    } 
 		    else paramElement.setTextContent(String.valueOf(o));
+		}
+	}
+	public static void toXMLArray(Element elParent, Document doc, String name, Object[][] o) {
+		if(o!=null) {
+		    //Element paramElement = doc.createElement(parameterElement);
+		    //paramElement.setAttribute(nameAttribute, name);
+			Element paramElement = doc.createElement(name);
+		    elParent.appendChild(paramElement); 
+		    StringBuilder res = new StringBuilder();
+		    for(int i=0; i<o.length; i++) {
+		    	for(int x=0; x<o[i].length; x++) {
+		    		res.append(String.valueOf(o[i][x]));
+		    		if(x<o[i].length-1)
+		    			res.append(";");
+		    	}
+		    	if(i<o.length-1)
+	    			res.append("\n");
+		    }
+		    	
+		    paramElement.setTextContent(res.toString());
 		}
 	}
 	
@@ -313,6 +334,29 @@ public abstract class Settings implements Serializable {
         return null;
     }
 	
+
+    /**
+     * 
+     * @param el
+     * @return null if no value was found
+     */
+    public static Boolean[][] mapFromXML(final Element el) {
+        final String numString = el.getTextContent();
+        if (numString.length() > 0) {
+        	String[] lines = numString.split("\n");
+        	Boolean[][] map = new Boolean[lines.length][];
+        	for(int i=0; i<lines.length; i++) {
+        		String l = lines[i];
+        		String[] split = l.split(";");
+        		map[i] = new Boolean[split.length];
+        		for(int x=0; x<split.length; x++) {
+        			map[i][x] = Boolean.parseBoolean(split[x]);
+        		}
+        	}
+            return map;
+        }
+        return null;
+    }
 	//'''''''''''''''''''''''''''''
 	// load specific values
 

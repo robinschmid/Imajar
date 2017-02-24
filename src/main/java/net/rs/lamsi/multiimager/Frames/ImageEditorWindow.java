@@ -51,6 +51,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
@@ -389,7 +390,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				TreePath path = DialogLoggerUtil.showTreeDialogAndChoose(thisFrame, getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION, getModuleTreeImages().getTree().getSelectionPaths())[0];
 				// show dialog with mutliple image view
 				if(path!=null) { 
-					Image2D[] img = getModuleTreeImages().getImageCollection(path);
+					ImageGroupMD img = getModuleTreeImages().getImageCollection(path);
 					if(img!=null) {
 						MultiImageFrame frame = new MultiImageFrame();
 						frame.init(img); 

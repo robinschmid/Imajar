@@ -10,7 +10,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -94,25 +94,22 @@ public class ModuleTree <T> extends Module {
 	 * @param path
 	 * @return
 	 */
-	public Image2D[] getImageCollection(TreePath path) {
+	public ImageGroupMD getImageCollection(TreePath path) {
 		if(path==null) return null;
 		
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
 		if(isImage(node)) {
-			return getImageCollection(path.getParentPath());
+			return ((Image2D)node.getUserObject()).getImageGroup();
 		}
 		else {
-			// collection path found.
-			// get all images of collection
-			Vector<Image2D> list = new Vector<Image2D>();
 			// search all first level child paths
 			for(int i=0; i<node.getChildCount(); i++) {
 				DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
 				if(isImage(child)) 
-					list.add((Image2D)child.getUserObject());
+					return ((Image2D)child.getUserObject()).getImageGroup();
 			}
-			return list.toArray(new Image2D[list.size()]);
 		}
+		return null;
 	}
 
 	public boolean isImage(TreeNode node) {
