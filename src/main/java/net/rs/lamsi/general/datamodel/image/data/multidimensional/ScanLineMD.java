@@ -17,6 +17,9 @@ public class ScanLineMD  implements Serializable  {
 	private static final long serialVersionUID = 1L;
 	//
 	protected float[] x = null;
+	// end x as right edge of line
+	protected float endX = -1;
+	
 	protected Vector<Double[]> intensity = null;
 
 	public ScanLineMD(Vector<Float> x, Vector<Double[]> intensity) {
@@ -32,6 +35,11 @@ public class ScanLineMD  implements Serializable  {
 	public ScanLineMD(float[] x, Double[] i) {
 		super();
 		this.x = x;
+		this.intensity = new Vector<Double[]>();
+		intensity.add(i);
+	}
+	public ScanLineMD(Double[] i) {
+		super();
 		this.intensity = new Vector<Double[]>();
 		intensity.add(i);
 	}
@@ -158,5 +166,25 @@ public class ScanLineMD  implements Serializable  {
 	 */
 	public int getImageCount() {
 		return intensity.size();
+	}
+	
+	/**
+	 * right edge of the last data point (x)
+	 * @return
+	 */
+	public float getEndX() {
+		if(endX==-1)
+			endX = getX(getDPCount()-1)+getWidthDP();
+		return endX;
+	}
+
+	/**
+	 * distace percentage of x to the middle of width
+	 * @param width
+	 * @param x
+	 * @return
+	 */
+	private double distPercent(double width, double x) {
+		return (width/2-x)/width*2;
 	}
 }

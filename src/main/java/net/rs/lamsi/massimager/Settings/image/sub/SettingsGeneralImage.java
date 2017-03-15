@@ -23,7 +23,17 @@ public class SettingsGeneralImage extends Settings {
 	private static final long serialVersionUID = 1L;
 	//
 
-	public static int MODE_IMAGING_ONEWAY = 0, MODE_IMAGING_TWOWAYS = 1;
+	public static enum IMAGING_MODE{
+		MODE_IMAGING_ONEWAY, MODE_IMAGING_TWOWAYS;
+		
+		public static IMAGING_MODE getMode(String value) {
+			if(value.equals("0"))
+				return MODE_IMAGING_ONEWAY;
+			else if(value.equals("1"))
+				return MODE_IMAGING_TWOWAYS;
+			else return IMAGING_MODE.valueOf(value);
+	    }
+	}
 	public static int MODE_SCANS_PER_LINE = 0, MODE_TIME_PER_LINE = 1;
 
 	protected String title = "NODEF", filepath = "";
@@ -31,7 +41,7 @@ public class SettingsGeneralImage extends Settings {
 	// crop marks
 	protected double x0=0,x1=0,y0=0,y1=0;
 	// Imaging Mode
-	protected int imagingMode = 0;
+	protected IMAGING_MODE imagingMode = IMAGING_MODE.MODE_IMAGING_ONEWAY;
 	// reflect 
 	protected boolean reflectHorizontal = false, reflectVertical = false;
 	// rotate 0 90 180 270
@@ -66,7 +76,7 @@ public class SettingsGeneralImage extends Settings {
 		isTriggered = false;
 		timePerLine = 60;
 		deleteCropMarks();
-		imagingMode = MODE_IMAGING_ONEWAY;
+		imagingMode = IMAGING_MODE.MODE_IMAGING_ONEWAY;
 		rotationOfData = 0;
 		reflectHorizontal = false; 
 		reflectVertical = false;
@@ -77,7 +87,7 @@ public class SettingsGeneralImage extends Settings {
 	}
 
 
-	public void setAll(String title, float velocity, float spotsize, int imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
+	public void setAll(String title, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
 		this.title = title;    
@@ -109,7 +119,7 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "title", title); 
 		toXML(elParent, doc, "isTriggered", isTriggered); 
 		toXML(elParent, doc, "timePerLine", timePerLine); 
-		toXML(elParent, doc, "imagingMode", imagingMode); 
+		toXML(elParent, doc, "imagingMode", imagingMode.toString()); 
 		toXML(elParent, doc, "rotationOfData", rotationOfData); 
 		toXML(elParent, doc, "reflectHorizontal", reflectHorizontal); 
 		toXML(elParent, doc, "reflectVertical", reflectVertical); 
@@ -133,7 +143,7 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("title"))title = nextElement.getTextContent();   
 				else if(paramName.equals("isTriggered"))isTriggered = booleanFromXML(nextElement);  
 				else if(paramName.equals("timePerLine"))timePerLine = doubleFromXML(nextElement);  
-				else if(paramName.equals("imagingMode"))imagingMode = intFromXML(nextElement);  
+				else if(paramName.equals("imagingMode"))imagingMode = IMAGING_MODE.getMode(nextElement.getTextContent());  
 				else if(paramName.equals("rotationOfData"))rotationOfData = intFromXML(nextElement);  
 				else if(paramName.equals("reflectHorizontal"))reflectHorizontal = booleanFromXML(nextElement);  
 				else if(paramName.equals("reflectVertical"))reflectVertical = booleanFromXML(nextElement);  
@@ -232,12 +242,12 @@ public class SettingsGeneralImage extends Settings {
 		this.modeTimePerLine = modeTimePerLine;
 	}
 
-	public int getImagingMode() {
+	public IMAGING_MODE getImagingMode() {
 		return imagingMode;
 	}
 
 
-	public void setImagingMode(int imagingMode) {
+	public void setImagingMode(IMAGING_MODE imagingMode) {
 		this.imagingMode = imagingMode;
 	}
 

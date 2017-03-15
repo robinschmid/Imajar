@@ -7,7 +7,7 @@ import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 
@@ -45,7 +45,7 @@ public class TestDataRotationReflection {
 		
 		// rotate
 		img.getSettImage().setRotationOfData(0);
-		img.getSettImage().setImagingMode(SettingsGeneralImage.MODE_IMAGING_TWOWAYS);
+		img.getSettImage().setImagingMode(IMAGING_MODE.MODE_IMAGING_TWOWAYS);
 		img.getSettImage().setReflectHorizontal(true);
 
 		Object[][] norotat = img.toDataArray(ModeData.ONLY_Y, true, false);

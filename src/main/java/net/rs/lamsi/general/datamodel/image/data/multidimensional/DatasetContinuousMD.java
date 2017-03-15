@@ -174,6 +174,17 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		return this.line.getI(index, getIndex(line, dpi));
 	}
 
+
+	@Override
+	public float getEndX(int l) {
+		return getLastXLine(l)+line.getWidthDP();
+	} 
+	@Override
+	public float getLastXLine(int line) {
+		return getX(line, getLineLength(line)-1);
+	}
+	
+	
 	/**
 	 * calculates the data point in the continuous dimension
 	 * @param line

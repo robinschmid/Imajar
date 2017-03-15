@@ -2,7 +2,6 @@ package net.rs.lamsi.general.datamodel.image.interf;
 
 import java.util.Vector;
 
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 
 /**
@@ -77,6 +76,13 @@ public abstract class ImageDataset {
 	public abstract int getAvgDP();
 	
 
+	/**
+	 * right edge of x data
+	 * right edge of last data point
+	 * @param l
+	 * @return
+	 */
+	public abstract float getEndX(int l);
 	
 
 	/**
@@ -125,4 +131,13 @@ public abstract class ImageDataset {
 		if(rawDataChangedListener!=null)
 			rawDataChangedListener.clear();
 	}
+
+	/**
+	 * last x of line (left edge of last data point
+	 * lineLength-1
+	 * @param line
+	 * @return
+	 */
+	public abstract float getLastXLine(int line);
+
 }

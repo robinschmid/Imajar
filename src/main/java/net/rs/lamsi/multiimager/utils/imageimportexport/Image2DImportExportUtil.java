@@ -1,6 +1,7 @@
 package net.rs.lamsi.multiimager.utils.imageimportexport;
 
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,25 +116,37 @@ public class Image2DImportExportUtil {
 				}
 	        }
 	        try {
-				out.finish();
+				File bg = group.getBGImagePath();
+				BufferedImage bgi = (BufferedImage)group.getBGImage();
+				parameters.setFileNameInZip(bg.getName());
+				out.putNextEntry(null, parameters);
+				ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
+				out.closeEntry();
 			} catch (ZipException e) {
 				e.printStackTrace();
+			} finally {
+		        try {
+		        	out.finish();
+		        } catch (ZipException e) {
+					e.printStackTrace();
+				}
 			}
 			out.close();
 
 	        
-	        // copy existing files directly
-			try {
-				ZipFile zipFile = new ZipFile(file);
-		        // copy background image over
-				File bg = group.getBGImagePath();
-				if(bg!=null && bg.exists()) {
-					parameters.setFileNameInZip(bg.getName());
-					zipFile.addFile(bg, parameters);
-				}
-			} catch (ZipException e1) {
-				e1.printStackTrace();
-			}
+//	        // copy existing files directly
+//			try {
+//				ZipFile zipFile = new ZipFile(file);
+//		        // copy background image over
+//				File bg = group.getBGImagePath();
+//				
+//				if(bg!=null && bg.exists()) {
+//					parameters.setFileNameInZip(bg.getName());
+//					zipFile.addFile(bg, parameters);
+//				}
+//			} catch (ZipException e1) {
+//				e1.printStackTrace();
+//			}
 		}
 
 		/**

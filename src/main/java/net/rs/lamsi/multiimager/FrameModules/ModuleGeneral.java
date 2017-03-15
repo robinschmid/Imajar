@@ -9,11 +9,11 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -27,15 +27,11 @@ import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 import org.jfree.chart.plot.XYPlot;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
 
 public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> { 
 	//
@@ -292,8 +288,8 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> {
 		
 		this.getCbBiaryData().setSelected(si.isBinaryData());
 		// 
-		getBtnImagingOneWay().setSelected(settings.getImagingMode()==SettingsGeneralImage.MODE_IMAGING_ONEWAY);
-		getBtnImagingTwoWays().setSelected(settings.getImagingMode()!=SettingsGeneralImage.MODE_IMAGING_ONEWAY);
+		getBtnImagingOneWay().setSelected(settings.getImagingMode()==IMAGING_MODE.MODE_IMAGING_ONEWAY);
+		getBtnImagingTwoWays().setSelected(settings.getImagingMode()!=IMAGING_MODE.MODE_IMAGING_ONEWAY);
 		// reflection
 		getBtnReflectHorizontal().setSelected(settings.isReflectHorizontal());
 		getBtnReflectVertical().setSelected(settings.isReflectVertical());
@@ -313,7 +309,7 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> {
 	public SettingsGeneralImage writeAllToSettings(SettingsGeneralImage settImage) {
 		if(settImage!=null) {
 			try {
-				int imagingMode = getBtnImagingOneWay().isSelected()? SettingsGeneralImage.MODE_IMAGING_ONEWAY : SettingsGeneralImage.MODE_IMAGING_TWOWAYS;
+				IMAGING_MODE imagingMode = getBtnImagingOneWay().isSelected()? IMAGING_MODE.MODE_IMAGING_ONEWAY : IMAGING_MODE.MODE_IMAGING_TWOWAYS;
 				int rotation = 270;
 				if(getRbRotation0().isSelected()) rotation = 0;
 				if(getRbRotation90().isSelected()) rotation = 90;

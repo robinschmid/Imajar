@@ -29,6 +29,7 @@ public class ImageGroupMD  implements Serializable {
 	// background microscopic image
 	protected Image bgImage = null;
 	
+	
 	public ImageGroupMD() {
 		settings = new SettingsImageGroup();
 		images = new Vector<Image2D>();

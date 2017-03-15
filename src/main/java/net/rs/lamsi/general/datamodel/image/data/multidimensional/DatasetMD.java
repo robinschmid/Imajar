@@ -5,10 +5,9 @@ import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralRotation;
 
 /**
  * basic dataset of multiple scan lines
@@ -24,11 +23,16 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	protected int totalDPCount = -1, minDP=-1, maxDP=-1, avgDP=-1;
 	protected ScanLineMD[] lines; 
 	
+	// settings of rotation, reflection, imaging mode
+	protected SettingsGeneralRotation settRot;
+	
 	
 	public DatasetMD(ScanLineMD[] listLines) { 
+		settRot = new SettingsGeneralRotation();
 		lines = listLines;
 	}
 	public DatasetMD(Vector<ScanLineMD> scanLines) {
+		settRot = new SettingsGeneralRotation();
 		lines = new ScanLineMD[scanLines.size()];
 		for(int i=0; i<lines.length; i++)
 			lines[i] = scanLines.get(i); 
@@ -92,6 +96,7 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		}
 		return false;
 	}
+	
 	
 	//##################################################
 	// general ImageDataset
@@ -158,6 +163,17 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		}
 		return maxDP;
 	}
+
+	
+	@Override
+	public float getEndX(int l) {
+		return lines[l].getEndX();
+	} 
+	@Override
+	public float getLastXLine(int line) {
+		return getX(line, getLineLength(line)-1);
+	}
+	
 	/**
 	 * The maximum datapoints of the longest line
 	 * does not uses the first and last line! for calculation

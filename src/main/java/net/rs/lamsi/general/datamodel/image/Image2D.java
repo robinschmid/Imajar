@@ -15,10 +15,6 @@ import javax.swing.ImageIcon;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.Dataset2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
@@ -33,11 +29,11 @@ import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperatio
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -78,13 +74,12 @@ public class Image2D implements Serializable, Collectable2D {
 	// Settings
 	protected SettingsImage2D settings;
 
-
 	//############################################################
 	// data
 	protected ImageDataset data;
+	
 	// index of image in data set: (multidimensional data set)
 	protected int index=0;
-
 
 	// are getting calculated only once or after processing changed
 	// max and min z (intensity)
@@ -307,6 +302,9 @@ public class Image2D implements Serializable, Collectable2D {
 		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
 		if(dp<data.getLineLength(line))
 			return data.getX(line, dp) * (raw? 1 : getSettImage().getVelocity());
+		// end of data x (right edge of last datapoint)
+		else if(dp==data.getLineLength(line))
+			return data.getEndX(l) * (raw? 1 : getSettImage().getVelocity());
 		else {
 			// for the maximum processed line length
 			int overMax = (data.getLineLength(line)-dp+1);
@@ -328,9 +326,9 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param reflectV
 	 * @return
 	 */
-	public double getI(boolean raw, int l, int dp, int imgMode, int rotation, boolean reflectH, boolean reflectV) {
+	public double getI(boolean raw, int l, int dp, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
 		// the usual case
-		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
+		if(imgMode==IMAGING_MODE.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
 			return getIRaw(raw, l, dp);
 		}
 		else if(rotation==180) {
@@ -360,7 +358,7 @@ public class Image2D implements Serializable, Collectable2D {
 					cy = data.getLinesCount()-1-cy;
 				// reflect vertically xor
 				// meander imaging (two ways)
-				if(reflectV ^ (imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && cy%2 != 0)) 
+				if(reflectV ^ (imgMode==IMAGING_MODE.MODE_IMAGING_TWOWAYS && cy%2 != 0)) 
 					cx = data.getLineLength(cy)-1-cx;
 				return getIRaw(raw, cy, cx);
 			}
@@ -378,7 +376,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param reflectV
 	 * @return
 	 */
-	public float getX(boolean raw, int l, int dp, int imgMode, int rotation, boolean reflectH, boolean reflectV) {
+	public float getX(boolean raw, int l, int dp, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
 		// the usual case
 		if(rotation==90 || rotation==270 || rotation==-90) {
 			// return line height of line: dp
@@ -411,15 +409,15 @@ public class Image2D implements Serializable, Collectable2D {
 					cy = data.getLinesCount()-1-cy;
 				// reflect vertically xor
 				// meander imaging (two ways)
-				if(reflectV ^ (imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && cy%2 != 0)) 
+				if(reflectV ^ (imgMode==IMAGING_MODE.MODE_IMAGING_TWOWAYS && cy%2 != 0)) 
 					cx = data.getLineLength(cy)-1-cx;
 
 				float value = getXRaw(raw, cy, cx);
-				float width = getMaxXRaw(raw, cy);
 				// xor ^
 				// imagecreation mode: if twoways -> first reflect every 2. line (x values)
-				if(reflectV ^ (imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && cy%2 != 0)) {
+				if(reflectV ^ (imgMode==IMAGING_MODE.MODE_IMAGING_TWOWAYS && cy%2 != 0)) {
 					// reflect x
+					float width = getMaxXRaw(raw, cy);
 					value += distPercent(width, value) *width; 
 				}
 
@@ -439,7 +437,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param reflectV
 	 * @return
 	 */
-	public float getY(boolean raw, int l, int dp, int imgMode, int rotation, boolean reflectH, boolean reflectV) {
+	public float getY(boolean raw, int l, int dp, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
 		// the usual case
 		if(rotation==0 || rotation==180 || rotation==360) {
 			return getYRaw(raw, l);
@@ -460,6 +458,8 @@ public class Image2D implements Serializable, Collectable2D {
 			}
 		}
 	}
+	
+	
 
 	/**
 	 * the length of lines in respect to reflection and rotation
@@ -564,9 +564,9 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param reflectV
 	 * @return
 	 */
-	public XYIData2D toXYIArray(boolean raw, int imgMode, int rotation, boolean reflectH, boolean reflectV) {
+	public XYIData2D toXYIArray(boolean raw, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
 		// easy?
-		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
+		if(imgMode==IMAGING_MODE.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
 			return toXYIArray(raw);
 		}
 		else if(rotation==180) {
@@ -589,16 +589,14 @@ public class Image2D implements Serializable, Collectable2D {
 				
 				// for lines (that are actually datapoints)
 				int c=0;
-				for(int l=0; l<length.length; l++) {
+				for(int dp=0; dp<data.getLinesCount(); dp++) {
+					for(int l=0; l<length[dp]; l++) {
 					// for dp ( that are actually lines)
-					for(int dp=0; dp<data.getLinesCount(); dp++) {
-						if(l<length[dp]) {
 							x[c] = getX(raw, l, dp);
 							y[c] = getY(raw, l, dp);
 							z[c] = getI(raw, l, dp);
 							
 							c++;
-						}
 					}
 				}
 				return new XYIData2D(x, y, z);
@@ -729,7 +727,7 @@ public class Image2D implements Serializable, Collectable2D {
 				// x = time; NOT distance; 
 				x[currentdp] = Double.valueOf(String.valueOf(getXRaw(raw, iy, ix)));
 				y[currentdp] = Double.valueOf(String.valueOf((getYRaw(raw, iy))));
-				z[currentdp] = Double.valueOf(String.valueOf(getIRaw(raw, iy, ix)));
+				z[currentdp] = getIRaw(raw, iy, ix);
 				currentdp++;
 			} 
 		}
@@ -968,7 +966,6 @@ public class Image2D implements Serializable, Collectable2D {
 		int scanpoints = data.getTotalDPCount(); 
 		double[] z = new double[scanpoints];
 		//
-		ScanLine2D line; 
 		int currentdp = 0;
 		//
 		for(int iy=0; iy<data.getLinesCount(); iy++) {
@@ -1409,7 +1406,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public float getMaxXRaw(boolean raw, int line) {
-		return getXRaw(raw, line, data.getLineLength(line));
+		return data.getLastXLine(line) * (raw? 1 : getSettImage().getVelocity());
 	} 
 	public float getMaxYRaw(boolean raw) {
 		return getYRaw(raw, data.getLinesCount());
@@ -1966,6 +1963,7 @@ public class Image2D implements Serializable, Collectable2D {
 		this.infoData = infoData;
 	}
 
+
 	//###########################################################################
 	// Info graphics> histogram / icons
 	/**
@@ -2067,19 +2065,19 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public static Image2D createTestStandard() {
 		Random rand = new Random(System.currentTimeMillis());
-		ScanLine2D[] lines = new ScanLine2D[24];
+		ScanLineMD[] lines = new ScanLineMD[24];
 		for(int l=0; l<lines.length; l++) { 
-			DataPoint2D[] dp = new DataPoint2D[240];
-			for(int d=0; d<dp.length; d++) {
+			Double[] i = new Double[240];
+			for(int d=0; d<i.length; d++) {
 				// middle the highest
 				double in = (int)(l/4)*200.0;
 				in += Math.abs(rand.nextInt(6000)/100.0);
 				// create dp
-				dp[d] = new DataPoint2D(d*0.1, in);
+				i[d] = in;
 			}
-			lines[l] = new ScanLine2D(dp);
+			lines[l] = new ScanLineMD(i);
 		}
-		Dataset2D data = new Dataset2D(lines);
+		DatasetMD data = new DatasetMD(lines);
 		return new Image2D(data);
 	}
 	// end of visual extras

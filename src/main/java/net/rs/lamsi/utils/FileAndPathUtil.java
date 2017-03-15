@@ -353,7 +353,7 @@ public class FileAndPathUtil {
     	File f = new File(System.getProperty("java.class.path"));
     	File dir = f.getAbsoluteFile().getParentFile(); 
     	return dir; 
-    	 */
+    	 */ 
     	try {
     	File jar = new File(FileAndPathUtil.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
     	return jar.getParentFile();
