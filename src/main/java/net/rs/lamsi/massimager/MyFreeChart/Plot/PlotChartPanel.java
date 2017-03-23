@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JMenu;
@@ -12,16 +13,24 @@ import javax.swing.JMenuItem;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
+import net.rs.lamsi.massimager.Heatmap.ScaleInPlot;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AxesRangeChangedListener;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AxisRangeChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYAnnotation;
+import org.jfree.chart.annotations.XYTitleAnnotation;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.data.Range;
 
 public class PlotChartPanel extends ChartPanel {
 	
-	
+	protected Vector<AxesRangeChangedListener> axesRangeListener;
+	protected AspectRatioListener aspectRatioListener;
 	protected boolean isMouseZoomable = true;
  
 	public PlotChartPanel(JFreeChart chart) {
@@ -29,6 +38,20 @@ public class PlotChartPanel extends ChartPanel {
 		initChartPanel();  
         // Add Export to Excel Menu
         addExportMenu();
+        
+		// try to find in plot scale
+        // set this chart panel
+		List list = chart.getXYPlot().getAnnotations();
+		for(int i=0; i<list.size(); i++) {
+			XYAnnotation ann = (XYAnnotation) list.get(i); 
+			if(XYTitleAnnotation.class.isInstance(ann)) {
+				XYTitleAnnotation annt = (XYTitleAnnotation)ann;
+				if(ScaleInPlot.class.isInstance(annt.getTitle())) {
+					((ScaleInPlot)annt.getTitle()).setChartPanel(this);
+					break;
+				}
+			}
+		}
 	} 
 	
 	/**
@@ -48,6 +71,33 @@ public class PlotChartPanel extends ChartPanel {
 			axis.setRangeType(RangeType.POSITIVE);
 		}
 		*/
+		// axis range changed listener for zooming and so on
+		
+		ValueAxis rangeAxis = this.getChart().getXYPlot().getRangeAxis();
+		ValueAxis domainAxis = this.getChart().getXYPlot().getDomainAxis();
+		rangeAxis.addChangeListener(new AxisRangeChangedListener() {
+			@Override
+			public void axisRangeChanged(ValueAxis axis, Range lastR, Range newR) {
+				// resize
+				if(aspectRatioListener!=null) 
+					aspectRatioListener.resize(chartPanel);
+				if(axesRangeListener!=null)
+					for(AxesRangeChangedListener l : axesRangeListener)
+						l.axesRangeChanged(chartPanel, axis, false, lastR, newR);
+			}
+		});
+		domainAxis.addChangeListener(new AxisRangeChangedListener() {
+			@Override
+			public void axisRangeChanged(ValueAxis axis, Range lastR, Range newR) {
+				// resize
+				if(aspectRatioListener!=null) 
+					aspectRatioListener.resize(chartPanel);
+				if(axesRangeListener!=null)
+					for(AxesRangeChangedListener l : axesRangeListener)
+						l.axesRangeChanged(chartPanel, axis,true, lastR, newR);
+			}
+		});
+		
 		
 		// mouse adapter for scrolling and zooming
 		MouseAdapter mouseAdapter = new MouseAdapter() { 
@@ -133,6 +183,8 @@ public class PlotChartPanel extends ChartPanel {
 	}
 	
 	
+	
+	
 	/*###############################################################
 	 * Export Graphics
 	 */ 
@@ -162,4 +214,22 @@ public class PlotChartPanel extends ChartPanel {
 		this.getPopupMenu().add(menu);
 	}
 
+	public void setAspectRatioListener(AspectRatioListener listener) {
+		aspectRatioListener = listener;
+	}
+	public AspectRatioListener getAspectRatioListener() {
+		return aspectRatioListener;
+	}
+	public void addAxesRangeChangedListener(AxesRangeChangedListener l) {
+		if(axesRangeListener==null) axesRangeListener = new Vector<AxesRangeChangedListener>(1);
+		axesRangeListener.add(l);
+	}
+	public void removeAxesRangeChangedListener(AxesRangeChangedListener l) {
+		if(axesRangeListener!=null)
+			axesRangeListener.remove(l);
+	}
+	public void clearAxesRangeChangedListeners() {
+		if(axesRangeListener!=null)
+			axesRangeListener.clear();
+	}
 }

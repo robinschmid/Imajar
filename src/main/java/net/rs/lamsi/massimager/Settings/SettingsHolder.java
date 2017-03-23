@@ -16,6 +16,7 @@ import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImag
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsExportGraphics;
@@ -76,7 +77,7 @@ public class SettingsHolder extends Settings {
 	// for splitting data in image2dContinous
 	private SettingsImageContinousSplit setSplitImgCon;
 	
-	
+	private SettingsZoom settZoom;
 	
 
 
@@ -123,8 +124,8 @@ public class SettingsHolder extends Settings {
 		settList.add(setSplitImgCon); 
 		
 		// general preferences 
-		setSplitImgCon = new SettingsImageContinousSplit();
-		settList.add(setSplitImgCon); 
+		settZoom = new SettingsZoom();
+		settList.add(settZoom); 
 		
 		setGeneralPreferences = new SettingsGeneralPreferences();
 		settList.add(setGeneralPreferences);
@@ -133,7 +134,7 @@ public class SettingsHolder extends Settings {
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
 				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
 				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
-				SettingsGeneralPreferences.class};
+				SettingsZoom.class, SettingsGeneralPreferences.class};
 		classList = cl;
 	}
 

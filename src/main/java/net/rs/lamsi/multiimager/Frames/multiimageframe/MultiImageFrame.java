@@ -5,10 +5,10 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -34,14 +34,19 @@ import javax.swing.event.ChangeListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.RangeSliderColumn;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
+import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AxesRangeChangedListener;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener.RATIO;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -52,16 +57,17 @@ import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.Range;
 
-public class MultiImageFrame extends JFrame {
+public class MultiImageFrame extends JFrame implements AxesRangeChangedListener {
 
 	private JFrame thisframe;
 	private Font font = new Font("Arial", Font.BOLD, 14);
 	private JPanel contentPane;
 	private JSplitPane split;
 	private JPanel pnGridImg;
-	private GridLayout gridLayout;
 	private int GRID_COL = 2;
 	// data table
 	private JTable table;
@@ -97,6 +103,9 @@ public class MultiImageFrame extends JFrame {
 	private JMenuItem mntmExportData;
 	private JFileChooser chooserMap = new JFileChooser();
 
+	// last width of grid panel
+	private int lastWidthPn = 0;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -107,12 +116,7 @@ public class MultiImageFrame extends JFrame {
 					MultiImageFrame frame = new MultiImageFrame();
 					frame.setVisible(true);
 
-					Image2D[] images = new Image2D[10];
-					for(int i=0; i<10; i++) {
-						images[i] = Image2D.createTestStandard();
-						images[i].getSettImage().setTitle("ABC"+i);
-					}
-					ImageGroupMD group = new ImageGroupMD(images);
+					ImageGroupMD group = TestImageFactory.createTestStandard(10);
 					frame.init(group);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -256,6 +260,18 @@ public class MultiImageFrame extends JFrame {
 		cbKeepAspectRatio = new JCheckBox("Keep aspect ratio");
 		cbKeepAspectRatio.setSelected(true);
 		panel_2.add(cbKeepAspectRatio);
+		cbKeepAspectRatio.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				for(Heatmap map : heat) {
+					AspectRatioListener listener = map.getChartPanel().getAspectRatioListener();
+					if(listener!=null)
+						listener.setKeepRatio(cbKeepAspectRatio.isSelected());
+				}
+
+				updateGridView();
+			}
+		});
 
 		spinnerColumns = new JSpinner();
 		spinnerColumns.addChangeListener(new ChangeListener() {
@@ -271,7 +287,7 @@ public class MultiImageFrame extends JFrame {
 
 		JScrollPane scrollImages = new JScrollPane();
 		panel_1.add(scrollImages);
-		scrollImages.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollImages.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		JPanel panel = new JPanel();
 		scrollImages.setViewportView(panel);
@@ -279,9 +295,45 @@ public class MultiImageFrame extends JFrame {
 
 		pnGridImg = new JPanel();
 		panel.add(pnGridImg, BorderLayout.CENTER);
-		gridLayout = new GridLayout(1, 2, 5, 5);
-		pnGridImg.setLayout(gridLayout);
-
+		//gridLayout = new GridLayout(1, 2, 5, 5);
+		//pnGridImg.setLayout(gridLayout);
+		pnGridImg.setLayout(null);
+		
+		pnGridImg.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if(lastWidthPn!=getPnGridImg().getWidth()) {
+					resizeHeatmaps();
+					lastWidthPn=getPnGridImg().getWidth();
+				}
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			} 
+		});
+		// frame resize
+		this.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				getPnGridImg().setSize(new Dimension(thisframe.getWidth()-30, getPnGridImg().getHeight()));
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			} 
+		});
+		
 		FileTypeFilter filter = new FileTypeFilter("xlsx", "Excel file");
 		chooserMap.addChoosableFileFilter(filter);
 		chooserMap.setFileFilter(filter);
@@ -289,6 +341,48 @@ public class MultiImageFrame extends JFrame {
 		chooserMap.addChoosableFileFilter(new FileTypeFilter("csv", "Comma separated text file"));
 	}
 
+	private void resizeHeatmaps() {
+		int width = (getPnGridImg().getWidth()-22)/GRID_COL;
+		int height = getPnGridImg().getHeight();
+		
+		int size = pn.length;
+		// rows
+		
+		if(height<200) {
+			height = 200;
+		}
+		
+		// save max height to know where to start the next row
+		int maxHeight = 0;
+		int y = 0;
+		// for all pn
+		for(int i=0; i<size; i++) {
+			JPanel p = pn[i];
+			if(p.getComponents().length>0) {
+				PlotChartPanel cp = (PlotChartPanel) p.getComponent(0);
+				
+				// calculate height if keep aspect ratio==true
+				if(getCbKeepAspectRatio().isSelected()) {
+					height = (int) ChartLogics.calcHeightToWidth(cp, width);
+				}
+				if(height>maxHeight) maxHeight = height;
+				// pos
+				int x = width*(i%GRID_COL);
+				// next row
+				if(i>0 && (i%GRID_COL)==0){
+					y += maxHeight;
+					maxHeight = height;
+				}
+					
+				// size
+				Dimension dim = new Dimension(width, height); 
+				p.setBounds(x, y, width, height);
+			}
+		}
+		// set size of parent
+		getPnGridImg().setPreferredSize(new Dimension(getPnGridImg().getWidth(), y+maxHeight));
+	}
+	
 	/**
 	 * sets them visible
 	 * @param selected
@@ -323,7 +417,6 @@ public class MultiImageFrame extends JFrame {
 	protected void setColumns(int s) {
 		ImageEditorWindow.log("Set col: "+s, LOG.DEBUG);
 		GRID_COL = s;
-		gridLayout.setColumns(GRID_COL);
 		updateGridView();
 	}
 
@@ -363,14 +456,6 @@ public class MultiImageFrame extends JFrame {
 			// create new pn as place holder
 			final int index = k;
 			pn[k] = new JPanel(new BorderLayout());
-			pn[k].addComponentListener(new AspectRatioListener() { 
-				@Override
-				public void componentResized(ComponentEvent e) {
-					if(getCbKeepAspectRatio().isSelected() && heat[index] !=null) {
-						resize(heat[index].getChartPanel(), pn[index], RATIO.LIMIT_TO_PN_WIDTH);
-					}
-				}
-			});
 			getPnGridImg().add(pn[k]);
 		}
 
@@ -402,7 +487,7 @@ public class MultiImageFrame extends JFrame {
 		for(int i=0; i<uptodate.length; i++)
 			uptodate[i] = false;
 		// update boolean map for visible pixel
-		updateMap();
+		createNewMap(); // + update
 		// update grid and show charts
 		updateGridView();
 	}
@@ -416,14 +501,10 @@ public class MultiImageFrame extends JFrame {
 
 		ImageDataset data = first.getData();
 		
-		int maxlines = data.getLinesCount();
+		int maxlines = first.getMaxLineCount();
+		int maxdp = first.getMaxDP();
 		
-		boolean different = map==null || maxlines!=map.length;
-		if(!different) {
-			for(int r = 0; r<map.length && !different; r++)
-				if(map[r].length!=data.getLineLength(r))
-					different = true;
-		}
+		boolean different = map==null || maxlines!=map.length || maxdp!=map[0].length;
 		if(different) {
 			settings.setMap(null);
 		}
@@ -454,13 +535,6 @@ public class MultiImageFrame extends JFrame {
 		// empty grid
 		for(JPanel p : pn) 
 			p.removeAll();
-		// count images to show = grid rows 
-		int grows = 0;
-		for(int i=0; i<uptodate.length; i++) 
-			if(tableModel.getRowList().get(i).isShowing()) 
-				grows ++;
-		grows = (int)(grows/GRID_COL)+(grows%GRID_COL==0?0:1);
-		gridLayout.setRows(grows);
 		// gridindex
 		int gi = 0;
 		// go through table, update and add heats
@@ -473,6 +547,8 @@ public class MultiImageFrame extends JFrame {
 				gi++;
 			}
 		}
+		// set sizes
+		resizeHeatmaps();
 		// update fram
 		getPnGridImg().revalidate();
 		getPnGridImg().repaint();
@@ -489,9 +565,11 @@ public class MultiImageFrame extends JFrame {
 		// add to grid view
 		if(heat[imgIndex]!=null) { 
 			final Heatmap h = heat[imgIndex];
-			h.getChartPanel().setPreferredSize(new Dimension(50,50)); 
-			pn[gi].add(heat[imgIndex].getChartPanel(), BorderLayout.CENTER);
+			PlotChartPanel cp = h.getChartPanel();
+			cp.setPreferredSize(new Dimension(50,50)); 
+			pn[gi].add(cp, BorderLayout.CENTER);
 		}
+		doNotListenForAxesRanges = false;
 		if(repaint) {
 			getPnGridImg().revalidate();
 			getPnGridImg().repaint();
@@ -525,9 +603,14 @@ public class MultiImageFrame extends JFrame {
 				// generate heat if not already
 				if(heat[i]==null) {
 					heat[i] = HeatmapFactory.generateHeatmap(group.get(i)); 
+					
 					// show axes?
 					heat[i].getPlot().getDomainAxis().setVisible(getCbShowAxes().isSelected());
 					heat[i].getPlot().getRangeAxis().setVisible(getCbShowAxes().isSelected());
+					
+					// listen for range changes
+					heat[i].getChartPanel().addAxesRangeChangedListener(this);
+					
 					// title?
 					XYPlot plot = heat[i].getPlot();
 					ImageTitle lt = new ImageTitle(group.get(i), font); 
@@ -549,6 +632,30 @@ public class MultiImageFrame extends JFrame {
 		}
 	}
 
+
+	private boolean doNotListenForAxesRanges = false;
+	@Override
+	public void axesRangeChanged(PlotChartPanel chart, ValueAxis axis, boolean isDomainAxis, Range lastR, Range newR) {
+		if(!doNotListenForAxesRanges) {
+			doNotListenForAxesRanges = true;
+			
+			for(Heatmap map : heat) {
+				PlotChartPanel pn = map.getChartPanel();
+				XYPlot plot = pn.getChart().getXYPlot();
+				if(!pn.equals(chart)) {
+					if(isDomainAxis) {
+						plot.getDomainAxis().setRange(newR);
+					}
+					else {
+						plot.getRangeAxis().setRange(newR);
+					}
+				}
+			}
+			doNotListenForAxesRanges = false;
+			resizeHeatmaps();
+		}
+	}
+	
 	/**
 	 * creates new chart for i
 	 * gets called after change in update grid view 
@@ -587,7 +694,7 @@ public class MultiImageFrame extends JFrame {
 			for(int i=0; i<group.size(); i++) {
 				updateChart(i);
 				// export to new file
-				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+group.get(i).getTitle(), ext), group.get(i).toIMatrix(true, true, map), ",");
+				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+group.get(i).getTitle(), ext), group.get(i).toIMatrix(true, map), ",");
 			}
 			// show dialog
 			DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
@@ -627,7 +734,7 @@ public class MultiImageFrame extends JFrame {
 				updateChart(i);
 				// export to new file
 				sheet = writer.getSheet(wb, i+" "+group.get(i).getTitle());
-				writer.writeDataArrayToSheet(sheet, group.get(i).toIMatrix(true, true,map), 0, 0); 
+				writer.writeDataArrayToSheet(sheet, group.get(i).toIMatrix(true,map), 0, 0); 
 			}
 
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);

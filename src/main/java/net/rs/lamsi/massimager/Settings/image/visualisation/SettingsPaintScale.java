@@ -230,9 +230,9 @@ public class SettingsPaintScale extends Settings {
 		case S_KARST_RAINBOW_INVERSE:
 			scale.setMonochrom(false);
 			scale.setLODMonochrome(true);
-			scale.setBrightnessFactor(6.5f);
+			scale.setBrightnessFactor(18);
 			scale.setMinColor(Color.RED);
-			scale.setMaxColor(Color.BLUE); 
+			scale.setMaxColor(new Color(175, 0, 255)); 
 			scale.setUsesBWAsMinMax(false, true);
 			break;
 		case S_RAINBOW_INVERSE:
@@ -409,16 +409,16 @@ public class SettingsPaintScale extends Settings {
 	}
 
 	/**
-	 * absolute
+	 * absolute, relative, percentile
 	 * @return
 	 */
-//	public double getMin() {
-//		return min;
-//	}
+	public double getMin() {
+		return min;
+	}
 	
 
 	/**
-	 * absolute
+	 * absolute, relative, percentile
 	 * @param min
 	 */
 	public void setMin(double min) {
@@ -426,15 +426,15 @@ public class SettingsPaintScale extends Settings {
 	}
 
 	/**
-	 * absolute
+	 * absolute, relative, percentile
 	 * @return
 	 */
-//	public double getMax() {
-//		return max;
-//	}
+	public double getMax() {
+		return max;
+	}
 
 	/**
-	 * absolute
+	 * absolute, relative, percentile
 	 * @param max
 	 */
 	public void setMax(double max) {

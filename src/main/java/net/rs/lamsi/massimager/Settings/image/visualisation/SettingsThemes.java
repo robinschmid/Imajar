@@ -11,6 +11,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import net.rs.lamsi.massimager.Heatmap.Heatmap;
+import net.rs.lamsi.massimager.Heatmap.ScaleInPlot;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
 import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
 import net.rs.lamsi.massimager.Settings.Settings;
@@ -200,6 +202,18 @@ public class SettingsThemes extends Settings {
 		}
 	}
 	
+	@Override
+	public void applyToHeatMap(Heatmap heat) {
+		super.applyToHeatMap(heat);
+		applyToChart(heat.getChart());
+		// 
+		ScaleInPlot s = heat.getScaleInPlot();
+		s.setFactor(theme.getScaleFactor());
+		s.setUnit(theme.getScaleUnit());
+		s.setValue(theme.getScaleValue());
+		s.setVisible(theme.isShowScale());
+		s.setPosition(theme.getScaleXPos(),theme.getScaleYPos());
+	}
 	
 	/**
 	 * applies theme to chart

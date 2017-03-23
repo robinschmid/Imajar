@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.rs.lamsi</groupId>
 	<artifactId>MassImager</artifactId>
-	<version>3.13b</version>
+	<version>3.14b</version>
 	<build>
 		<resources>
 			<resource>
@@ -36,7 +36,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>

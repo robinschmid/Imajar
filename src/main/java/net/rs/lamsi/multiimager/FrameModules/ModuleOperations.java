@@ -346,6 +346,9 @@ public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperati
 		
 	}
 
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
 	//################################################################################################
 	// LOGIC
 	// Paintsclae from Image

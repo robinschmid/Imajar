@@ -117,11 +117,15 @@ public class Image2DImportExportUtil {
 	        }
 	        try {
 				File bg = group.getBGImagePath();
+				if(bg!=null) {
 				BufferedImage bgi = (BufferedImage)group.getBGImage();
-				parameters.setFileNameInZip(bg.getName());
-				out.putNextEntry(null, parameters);
-				ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
-				out.closeEntry();
+				if(bgi!=null) {
+					parameters.setFileNameInZip(bg.getName());
+					out.putNextEntry(null, parameters);
+					ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
+					out.closeEntry();
+				}
+				}
 			} catch (ZipException e) {
 				e.printStackTrace();
 			} finally {
@@ -181,7 +185,7 @@ public class Image2DImportExportUtil {
 						// try to seperate by seperation
 						String[] sep = sline.split(SEPARATION);
 						// data
-						if(sep.length>1) {
+						if(sep.length>0) {
 							if(x==null) {
 								//create new array
 								x = new Vector[sep.length];
@@ -251,8 +255,10 @@ public class Image2DImportExportUtil {
 							}
 						}
 						// create new lines 
-						if(lines.size()==0)
-							for(Vector<Double> xi : y)
+						// lines size can be 0, 1 or the length of y 
+						// depending on the x matrix
+						if(lines.size()<y.length)
+							for(int i=lines.size(); i<y.length; i++)
 								lines.add(new ScanLineMD());
 						
 						// set dimensions

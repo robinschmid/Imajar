@@ -705,6 +705,9 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 		});
 	}
 
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
 	
 	/**
 	 * calculates new minimum percentage/abs

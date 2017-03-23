@@ -142,9 +142,13 @@ public class ImageGroupMD  implements Serializable {
 			map = new Boolean[first.getMaxLineCount()][first.getMaxDP()];
 		}
 		// init as true
-		for(int r = 0; r<map.length; r++)
-			for(int d=0; d<map[r].length; d++)
-				map[r][d] = true;
+		for(int r = 0; r<map.length; r++) {
+			for(int d=0; d<map[r].length; d++) {
+				if(first.isDP(r,d))
+					map[r][d] = true;
+				else map[r][d] = null;
+			}
+		}
 
 		// go through all rows and check if in range
 		for(int i=0; i<sttA.getTableModel().getRowList().size(); i++) {
@@ -167,7 +171,9 @@ public class ImageGroupMD  implements Serializable {
 		// init as 0
 		for(int r = 0; r<bmap.length; r++)
 			for(int d=0; d<bmap[r].length; d++)
-				bmap[r][d] = 0;
+				if(first.isDP(r,d))
+					bmap[r][d] = 0;
+				else bmap[r][d] = null;
 
 		// go through all rows and check if in range
 		SettingsAlphaMap sttA = getSettAlphaMap();

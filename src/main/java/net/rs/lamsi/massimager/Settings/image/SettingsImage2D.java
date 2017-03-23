@@ -1,26 +1,24 @@
 package net.rs.lamsi.massimager.Settings.image;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class SettingsImage2D extends Settings {
 	// do not change the version!
@@ -37,7 +35,9 @@ public class SettingsImage2D extends Settings {
 	// blank subtraction and internal standard
 	protected SettingsImage2DOperations operations;
 	
- 
+	protected SettingsZoom settZoom;
+	
+
 	public SettingsImage2D() {
 		super("SettingsImage2D", "/Settings/Image2d/", "setImg2d"); 
 		settPaintScale = SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE);
@@ -49,6 +49,7 @@ public class SettingsImage2D extends Settings {
 		//
 		this.quantifier = new SettingsImage2DQuantifierLinear();
 		this.operations = new SettingsImage2DOperations();
+		this.settZoom = new SettingsZoom();
 	} 
 
 
@@ -61,6 +62,7 @@ public class SettingsImage2D extends Settings {
 			this.settTheme = new SettingsThemes();
 			this.quantifier = new SettingsImage2DQuantifierLinear();
 			this.operations = new SettingsImage2DOperations();
+			this.settZoom = new SettingsZoom();
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -74,10 +76,33 @@ public class SettingsImage2D extends Settings {
 			this.settTheme = new SettingsThemes();
 			this.quantifier = new SettingsImage2DQuantifierLinear();
 			this.operations = new SettingsImage2DOperations();
+			this.settZoom = new SettingsZoom();
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
 	} 
+	
+
+	public void setCurrentImage(Image2D img) {
+		if(operations!=null)
+			operations.setCurrentImage(img);
+	}
+	
+	@Override
+	public void applyToHeatMap(Heatmap heat) {
+		if(settPaintScale!=null)
+			settPaintScale.applyToHeatMap(heat);
+		if(settImage!=null)
+			settImage.applyToHeatMap(heat);
+		if(settTheme!=null)
+			settTheme.applyToHeatMap(heat);
+		if(quantifier!=null)
+			quantifier.applyToHeatMap(heat);
+		if(operations!=null)
+			operations.applyToHeatMap(heat);
+		if(settZoom!=null)
+			settZoom.applyToHeatMap(heat);
+	}
 
 	@Override
 	public void resetAll() { 
@@ -91,6 +116,8 @@ public class SettingsImage2D extends Settings {
 			quantifier.resetAll();
 		if(operations!=null)
 			operations.resetAll();
+		if(settZoom!=null)
+			settZoom.resetAll();
 	}
 	
 
@@ -108,6 +135,8 @@ public class SettingsImage2D extends Settings {
 			quantifier.appendSettingsToXML(elParent, doc);
 		if(operations!=null)
 			operations.appendSettingsToXML(elParent, doc);
+		if(settZoom!=null)
+			settZoom.appendSettingsToXML(elParent, doc);
 		
 	}
 	
@@ -128,6 +157,8 @@ public class SettingsImage2D extends Settings {
 					quantifier.loadValuesFromXML(nextElement, doc);
 				else if(operations!=null && paramName.equals(operations.getDescription())) 
 					operations.loadValuesFromXML(nextElement, doc);
+				else if(settZoom!=null && paramName.equals(settZoom.getDescription())) 
+					settZoom.loadValuesFromXML(nextElement, doc);
 			}
 		}
 	}
@@ -172,4 +203,15 @@ public class SettingsImage2D extends Settings {
 		this.operations = operations;
 		operations.getBlankQuantifier().getQSameImage().setImg(img);
 	}
+
+
+	public SettingsZoom getSettZoom() {
+		return settZoom;
+	}
+
+
+	public void setSettZoom(SettingsZoom settZoom) {
+		this.settZoom = settZoom;
+	}
+
 }

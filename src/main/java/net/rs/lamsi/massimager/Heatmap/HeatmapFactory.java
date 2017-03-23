@@ -226,8 +226,7 @@ public class HeatmapFactory {
 			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, img); 
 			
 			// add scale legend
-			if(setTheme.getTheme().isShowScale())
-				addScaleInPlot(img, setTheme, chartPanel);
+			ScaleInPlot	scaleInPlot = addScaleInPlot(img, setTheme, chartPanel);
 			
 			// theme
 			img.getSettTheme().applyToChart(chart);
@@ -237,7 +236,7 @@ public class HeatmapFactory {
 			chart.fireChartChanged();
 			 
 			// Heatmap
-			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer);
+			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer, scaleInPlot);
 			
 			// return Heatmap
 	        return heat;
@@ -251,16 +250,18 @@ public class HeatmapFactory {
 	 * @param setTheme
 	 * @param plot
 	 */
-	private static void addScaleInPlot( Image2D img,  SettingsThemes setTheme,  ChartPanel chartPanel) {
+	private static ScaleInPlot addScaleInPlot( Image2D img,  SettingsThemes setTheme,  ChartPanel chartPanel) {
 		// XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
 		float value = setTheme.getTheme().getScaleValue();
 		float factor = setTheme.getTheme().getScaleFactor();
 		String unit = setTheme.getTheme().getScaleUnit(); 
 		
-		ScaleInPlot title = new ScaleInPlot(chartPanel, img, value, factor, unit);
+		ScaleInPlot title = new ScaleInPlot(chartPanel, img,setTheme.getTheme().getScaleXPos(), setTheme.getTheme().getScaleYPos(),
+				value, factor, unit);
 		//XYDrawableAnnotation ta2 = new XYDrawableAnnotation(1000, 1000, legend.getWidth(), legend.getHeight(), legend);
-		XYTitleAnnotation ta = new XYTitleAnnotation(setTheme.getTheme().getScaleXPos(), setTheme.getTheme().getScaleYPos(), title,RectangleAnchor.BOTTOM_RIGHT);  
-		chartPanel.getChart().getXYPlot().addAnnotation(ta);
+		chartPanel.getChart().getXYPlot().addAnnotation(title.getAnnotation());
+		title.setVisible(setTheme.getTheme().isShowScale());
+		return title;
 	}
 
 	// erstellt XYZDataset aus xyz

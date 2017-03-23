@@ -15,6 +15,7 @@ public class SettingsAlphaMap extends Settings {
 
 	private boolean isActive = false;
 	private Boolean[][] map = null;
+	private int realsize = 0;
 	// settings
 	private MultiImageTableModel tableModel;
 
@@ -25,7 +26,7 @@ public class SettingsAlphaMap extends Settings {
 
 	public SettingsAlphaMap(Boolean[][] map) {
 		this();
-		this.map = map;
+		setMap(map);
 	}
 
 
@@ -49,7 +50,7 @@ public class SettingsAlphaMap extends Settings {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("isActive")) isActive = booleanFromXML(nextElement); 
-				else if(paramName.equals("map"))map =  mapFromXML(nextElement);  
+				else if(paramName.equals("map")) setMap(mapFromXML(nextElement));
 			}
 		}
 	}
@@ -57,30 +58,40 @@ public class SettingsAlphaMap extends Settings {
 	public boolean isActive() {
 		return isActive;
 	}
+	
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
+	
 	public Boolean[][] getMap() {
 		return map;
 	}
+	
 	public void setMap(Boolean[][] map) {
 		this.map = map;
+
+		realsize = 0;
+
+		if(map!=null) {
+			for(Boolean[] m : map)
+				for(Boolean b : m)
+					if(b!=null) 
+						realsize++;
+		}
 	}
 	
 	/**
 	 * converts the map to one dimension as line, line,line,line
 	 */
 	public boolean[] convertToLinearMap() {
-		int size = 0;
-		for(Boolean[] m : map)
-			size+=m.length;
-
-		boolean[] maplinear = new boolean[size];
-		int c = 0;
+		boolean[] maplinear = new boolean[realsize];
+		int c = 0; 
 		for(Boolean[] m : map) {
 			for(Boolean b : m) {
-				maplinear[c] = b;
-				c++;
+				if(b!=null) {
+					maplinear[c] = b;
+					c++;
+				}
 			}
 		}
 		return maplinear;

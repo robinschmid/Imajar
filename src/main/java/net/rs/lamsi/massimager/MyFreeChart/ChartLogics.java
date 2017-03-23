@@ -57,7 +57,6 @@ public class ChartLogics {
         ChartRenderingInfo info = myChart.getChartRenderingInfo();
         Rectangle2D dataArea = info.getPlotInfo().getDataArea();
          
-        
         double width2D = axis.lengthToJava2D(dataWidth, dataArea, axisEdge);   
         
 		return width2D;
@@ -72,7 +71,43 @@ public class ChartLogics {
      */
     public static double calcHeightToWidth(ChartPanel myChart, double chartWidth) {  
     	//if(myChart.getChartRenderingInfo()==null || myChart.getChartRenderingInfo().getChartArea()==null || myChart.getChartRenderingInfo().getChartArea().getWidth()==0)
-    		myChart.paintImmediately(myChart.getBounds());
+//    	myChart.setBounds(0, 0, 3000, 3000);	
+    	myChart.setSize((int)chartWidth, (int)chartWidth*3);
+    	myChart.paintImmediately(myChart.getBounds());
+    		
+        XYPlot plot = (XYPlot) myChart.getChart().getPlot();
+        ChartRenderingInfo info = myChart.getChartRenderingInfo();
+        Rectangle2D dataArea = info.getPlotInfo().getDataArea();
+        Rectangle2D chartArea = info.getChartArea(); 
+        
+        // calc title space: will be added later to the right plot size
+        double titleWidth = chartArea.getWidth()-dataArea.getWidth();
+        double titleHeight = chartArea.getHeight()-dataArea.getHeight(); 
+        
+        // calc right plot size with axis dim.
+        // real plot width is given by factor;  
+        double realPW = chartWidth-titleWidth;
+        
+        // ranges
+        ValueAxis domainAxis = plot.getDomainAxis();
+        org.jfree.data.Range x = domainAxis.getRange();
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        org.jfree.data.Range y = rangeAxis.getRange();
+        
+        // real plot height can be calculated by 
+        double realPH = realPW / x.getLength()*y.getLength();
+        
+        double height = realPH + titleHeight; 
+        
+        //return height;
+		return calcHeightToWidth(myChart, chartWidth, height);
+	}
+    
+    private static double calcHeightToWidth(ChartPanel myChart, double chartWidth, double estimatedHeight) {  
+    	//if(myChart.getChartRenderingInfo()==null || myChart.getChartRenderingInfo().getChartArea()==null || myChart.getChartRenderingInfo().getChartArea().getWidth()==0)
+//    	myChart.setBounds(0, 0, 3000, 3000);	
+    	myChart.setSize((int)chartWidth, (int)estimatedHeight);
+    	myChart.paintImmediately(myChart.getBounds());
     		
         XYPlot plot = (XYPlot) myChart.getChart().getPlot();
         ChartRenderingInfo info = myChart.getChartRenderingInfo();

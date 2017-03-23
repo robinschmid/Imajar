@@ -446,6 +446,7 @@ LOOKUP_TABLE default
 	}
 	public static void exportDataReportOnOperations(Image2D img,String classifier, XSSFWorkbook wb, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException { 		
 		// stats 
+		/* TODO
 		XSSFSheet sheetStats = xwriter.getSheet(wb, classifier+"Stats"); 
 		xwriter.writeToCell(sheetStats, 0, 0, "Title:");
 		xwriter.writeToCell(sheetStats, 0, 1, "Path:");
@@ -548,6 +549,7 @@ LOOKUP_TABLE default
 			} 
 			xwriter.writeDataArrayToSheet(sheet, data,1,5); 
 		}
+		*/
 	} 
 
 

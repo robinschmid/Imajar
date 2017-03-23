@@ -41,11 +41,11 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
 	@Override
 	public double calcIntensity(Image2D img,  int line, int dp, double intensity) {
 		if(isApplicable()) {
-			double is = imgIS.getIProcessed(line, dp);
+			double is = imgIS.getI(false, line, dp);
 			if(is==0)
 				return 0;
 			else 
-				return (isActive && isApplicable() && line<imgIS.getLineCount() && dp<imgIS.getLineLength(line))? 
+				return (isActive && isApplicable() && line<imgIS.getLineCount(dp) && dp<imgIS.getLineLength(line))? 
 						intensity/is*concentrationFactor : intensity;
 		} 
 		else return intensity;
@@ -60,12 +60,12 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
 	 * @return
 	 */
 	public double calcIntensity(Image2D img,  int line, int dp, double intensity, boolean blank) {
-		if(isApplicable() && line<imgIS.getLineCount()  && dp<imgIS.getLineLength(line)) {
+		if(isApplicable() && line<imgIS.getLineCount(dp)  && dp<imgIS.getLineLength(line)) {
 			if(blank) {
 				SettingsImage2DBlankSubtraction b = imgIS.getOperations().getBlankQuantifier();
 				boolean tmp = b.isActive();
 				b.setActive(blank);
-				double is = imgIS.getIProcessed(line, dp);
+				double is = imgIS.getI(false, line, dp);
 				if(is==0)
 					return 0;
 				//

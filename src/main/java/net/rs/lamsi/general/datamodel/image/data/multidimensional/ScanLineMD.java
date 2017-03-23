@@ -83,7 +83,7 @@ public class ScanLineMD  implements Serializable  {
 		// add dimension
 		Double[] z = new Double[dp];
 		for(int i=0; i<dp; i++) {
-			z[i] = img.getIRaw(true,line, i);
+			z[i] = img.getIRaw(line, i);
 		}
 		return addDimension(z);
 	}

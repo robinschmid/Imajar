@@ -3,7 +3,6 @@ package net.rs.lamsi.massimager.Settings.image.operations.quantifier;
 import java.io.Serializable;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.massimager.Settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -45,7 +44,7 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 		averageI = 0;
 		
 			// average for all lines
-			averageILines = new double[img.getLineCount()];
+			averageILines = new double[img.getLineCount(lowerBound)];
 			int counterLines = 0;
 			for(int i=0; i<averageILines.length; i++) {
 				averageILines[i]=0;
@@ -54,7 +53,7 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 				if(useStart) {
 					for(int dp=0; dp<lowerBound; dp++) {
 						if((!img.isExcludedDP(i, dp) && img.isSelectedDP(i, dp)) || !useSelectedExcluded) {
-							averageILines[i] += useRawData? img.getIRaw(i, dp) : img.getIProcessed(i, dp);
+							averageILines[i] += img.getI(useRawData,i, dp);
 							counter++;
 						}
 					}
@@ -63,7 +62,7 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 				if(useMiddle) {
 					for(int dp=lowerBound; dp<upperBound; dp++) {
 						if((!img.isExcludedDP(i, dp) && img.isSelectedDP(i, dp)) || !useSelectedExcluded) {
-							averageILines[i] += useRawData? img.getIRaw(i, dp) : img.getIProcessed(i, dp);
+							averageILines[i] += img.getI(useRawData,i, dp);
 							counter++;
 						}
 					}
@@ -72,7 +71,7 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 				if(useEnd && upperBound>=lowerBound) {
 					for(int dp=upperBound; dp<img.getLineLength(line); dp++) {
 						if((!img.isExcludedDP(i, dp) && img.isSelectedDP(i, dp)) || !useSelectedExcluded) {
-							averageILines[i] += useRawData? img.getIRaw(i, dp) : img.getIProcessed(i, dp);
+							averageILines[i] += img.getI(useRawData,i, dp);
 							counter++; 
 						}
 					}
@@ -118,7 +117,7 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 						}
 						// add
 						if(!isDouble && !img.isExcludedDP(l, i)) {
-							averageI += useRawData? img.getIRaw(l, i) : img.getIProcessed(l, i);
+							averageI += img.getI(useRawData,i, i);
 							counter ++;
 						}
 					} 
@@ -127,11 +126,12 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 		}
 		else if(mode==MODE_AVERAGE_BOXES && img.getSelectedData().size()==0) {
 			// all dp except from excluded
-			for(int l=0; l<img.getLineCount(); l++) {
+			// TODO this is wron... Lower Bound! is wrong
+			for(int l=0; l<img.getLineCount(lowerBound); l++) {
 				for (int i = 0; i < img.getLineLength(l); i++) { 
 					// add?
 					if(!img.isExcludedDP(l,i)) {
-						averageI += useRawData? img.getIRaw(l, i) : img.getIProcessed(l, i);
+						averageI += img.getI(useRawData,l, i);
 						counter ++;
 					}
 				}

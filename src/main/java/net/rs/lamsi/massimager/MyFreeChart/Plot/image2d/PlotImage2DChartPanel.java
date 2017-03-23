@@ -3,11 +3,13 @@ package net.rs.lamsi.massimager.MyFreeChart.Plot.image2d;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.massimager.Heatmap.ScaleInPlot;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -16,6 +18,8 @@ import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYAnnotation;
+import org.jfree.chart.annotations.XYTitleAnnotation;
 
 public class PlotImage2DChartPanel extends PlotChartPanel {
 	private Image2D img;

@@ -25,6 +25,9 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	protected ScanLineMD line; 
 	protected int[] lineStart;
 
+	// last x of longest line ( left edge of the datapoint)
+	protected float lastX =-1;
+	
 	protected float maxXWidth = -1;
 	protected int minDP=-1, maxDP=-1, avgDP=-1;
 
@@ -92,6 +95,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		minDP=-1; 
 		maxDP=-1; 
 		avgDP=-1;
+		lastX=-1;
 	}
 
 	//##################################################
@@ -128,7 +132,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 			int c = 0;
 			for(int l=0; l<img.getData().getLinesCount(); l++) {
 				for(int i=0; i<img.getData().getLineLength(l); i++) {
-					z[c] = img.getIRaw(true,l, i);
+					z[c] = img.getIRaw(l, i);
 					c++;
 				}
 			}
@@ -183,7 +187,16 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public float getLastXLine(int line) {
 		return getX(line, getLineLength(line)-1);
 	}
-	
+
+	@Override
+	public float getLastX() {
+		if(lastX==-1) {
+			for(int i=0; i<getLinesCount(); i++)
+				if(getLastXLine(i)>lastX)
+					lastX = getLastXLine(i);
+		}
+		return lastX;
+	}
 	
 	/**
 	 * calculates the data point in the continuous dimension
@@ -261,7 +274,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	}
 
 	@Override
-	public float getMaxXWidth() {
+	public float getMaxXDPWidth() {
 		if(maxXWidth==-1) {
 			// calc min x
 			maxXWidth = Float.NEGATIVE_INFINITY; 

@@ -36,6 +36,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
@@ -102,8 +104,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				try {
 					Image2DSelectDataAreaDialog frame = new Image2DSelectDataAreaDialog(); 
 					TestQuantifier.rand = new Random(System.currentTimeMillis());
-					Image2D[]  img = TestQuantifier.createImageWithBlank(1, 1, 500);
-					frame.startDialog(img[2]);
+					ImageGroupMD img = TestImageFactory.createNonNormalImage(1);
+					frame.startDialog(img.get(0));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -488,7 +490,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			ChartPanel cp = heat.getChartPanel();
 			Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY()); 
  
-			y1 = img.getYAsIndex(pos.getY());
+			y1 = img.getYAsIndex(pos.getY(), pos.getX());
 			x1 = img.getXAsIndex(y1, pos.getX());
 			currentRect.setBounds(x0,y0,x1,y1);
 			// update annotation
@@ -510,7 +512,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		if(e.getButton()==MouseEvent.BUTTON1 && (getBtnChoose().isSelected())) { 
 			ChartPanel cp = heat.getChartPanel();
 			Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY());
-			y1 = img.getYAsIndex(pos.getY());
+			y1 = img.getYAsIndex(pos.getY(), pos.getX());
 			x1 = img.getXAsIndex(y1, pos.getX());
 			currentRect = null;
 			// choose current rect
@@ -559,7 +561,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			if(xrange.contains(pos.getX()) && yrange.contains(pos.getY())) {
 				isPressed = true;
 				// create rect
-				y0 = img.getYAsIndex(pos.getY());
+				y0 = img.getYAsIndex(pos.getY(), pos.getX());
 				x0 = img.getXAsIndex(y0, pos.getX());
 				currentRect = new RectSelection(mode, x0, y0, x0, y0);
 				if(mode == MODE.MODE_EXCLUDE)
@@ -582,7 +584,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			ChartPanel cp = heat.getChartPanel();
 			Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY()); 
 
-			y1 = img.getYAsIndex(pos.getY());
+			y1 = img.getYAsIndex(pos.getY(), pos.getX());
 			x1 = img.getXAsIndex(y1, pos.getX());
 			currentRect.setBounds(x0,y0,x1,y1);
 			// remove

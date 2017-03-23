@@ -109,6 +109,10 @@ public class SettingsImage2DOperations  extends Settings  implements Image2DQuan
 	}
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
+	}
+	public void setCurrentImage(Image2D img) {
+		if(blankQuantifier!=null)
+			blankQuantifier.getQSameImage().setImg(img);
 	} 
 	
 }

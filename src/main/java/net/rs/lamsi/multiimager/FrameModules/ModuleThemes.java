@@ -315,6 +315,15 @@ public class ModuleThemes extends ImageSettingsModule<SettingsThemes> {
 	@Override
 	public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 		//TODO
+		getCbPaintscaleInPlot().addItemListener(il);
+	}
+	
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+		// axes and scale
+		getCbShowScale().addItemListener(il);
+		getCbShowXAxis().addItemListener(il);
+		getCbShowYAxis().addItemListener(il);
 		// general
 		getCbAntiAlias().addItemListener(il);
 		getCbShowTitle().addItemListener(il);
@@ -322,11 +331,6 @@ public class ModuleThemes extends ImageSettingsModule<SettingsThemes> {
 
 		getCbShowXGrid().addItemListener(il); 
 		getCbShowYGrid().addItemListener(il); 
-		// axes and scale
-		getCbShowScale().addItemListener(il);
-		getCbShowXAxis().addItemListener(il);
-		getCbShowYAxis().addItemListener(il);
-		getCbPaintscaleInPlot().addItemListener(il);
 
 		getTxtScaleFactor().getDocument().addDocumentListener(dl);
 		getTxtScaleValue().getDocument().addDocumentListener(dl);
@@ -335,7 +339,7 @@ public class ModuleThemes extends ImageSettingsModule<SettingsThemes> {
 		getSliderScaleXPos().addChangeListener(cl);
 		getSliderScaleYPos().addChangeListener(cl);
 	}
-
+	
 	//################################################################################################
 	// LOGIC
 	@Override

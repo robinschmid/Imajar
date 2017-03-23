@@ -4,12 +4,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 
+import org.jfree.ui.FloatDimension;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
 public class SettingsExportGraphics extends Settings {
@@ -110,6 +112,12 @@ public class SettingsExportGraphics extends Settings {
 	public int getResolution() {
 		return resolution.getResolution();
 	}
+	public DIM_UNIT getUnit() {
+		return resolution.getUnit();
+	}
+	public void setUnit(DIM_UNIT unit) {
+		resolution.setUnit(unit);
+	}
 	public void setResolution(int resolution) {
 		this.resolution.setResolution(resolution);;
 	}
@@ -121,13 +129,29 @@ public class SettingsExportGraphics extends Settings {
 	}
 
 	/**
+	 * width and height in DIM_UNIT
+	 * @return
+	 */
+	public FloatDimension getSizeInUnit() {
+		return resolution.getSizeInUnit();
+	} 
+	/**
 	 * Sets the size in inches by given width and height
 	 * @param width
 	 * @param height
 	 * @param unit
 	 */
-	public void setSize(float width, float height, int unit) { 
-		resolution.setSize(width, height, unit);
+	public void setSize(float width, float height, DIM_UNIT unit) { 
+		resolution.setSizeAndUnit(width, height, unit);
+	}
+	/**
+	 * Sets the size in inches by given width and height
+	 * @param width
+	 * @param height
+	 * @param unit
+	 */
+	public void setSize(double width, double height, DIM_UNIT unit) { 
+		resolution.setSizeAndUnit((float)width, (float)height, unit);
 	}
 	public void setHeight(double height) {
 		resolution.setSize((int)resolution.getSize().getWidth(), (int) height);

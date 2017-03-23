@@ -53,6 +53,9 @@ public class ModuleImage2D extends ImageSettingsModule<SettingsImage2D> {
 	public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 		//TODO
 	}
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
 
 	//################################################################################################
 	// LOGIC

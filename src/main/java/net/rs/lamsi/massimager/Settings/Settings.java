@@ -24,6 +24,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -56,7 +57,12 @@ public abstract class Settings implements Serializable {
 
 	public abstract void resetAll();
 
-	
+	/**
+	 * apply settings to heatmap for repainting
+	 * @param heat
+	 */
+	public void applyToHeatMap(Heatmap heat) {
+	}
 	/**
 	 * add a settings changed listener
 	 * @param listener

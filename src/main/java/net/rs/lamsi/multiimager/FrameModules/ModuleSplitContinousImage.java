@@ -145,6 +145,9 @@ public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImage
 		comboXunit.addItemListener(il);
 		getTxtStartX().getDocument().addDocumentListener(dl);  
 	}
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
 
 	//################################################################################################
 	// LOGIC

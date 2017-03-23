@@ -9,8 +9,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Vector;
 
+import javax.servlet.jsp.tagext.TryCatchFinally;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -35,10 +37,12 @@ import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
+import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.ChartExportUtil;
@@ -47,6 +51,7 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.ui.FloatDimension;
 
 public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
@@ -82,7 +87,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	//###################################################################
 	// Vars
 	private ChartPanel chartPanel;
-	private JFreeChart chart; 
 	private Vector<Image2D> list;
 	private boolean canExport;
 	private final JFileChooser chooser = new JFileChooser();
@@ -118,11 +122,14 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		inst.openDialogI(chart, list); 
 	}
 	protected void openDialogI(JFreeChart chart, Vector<Image2D> list) {
-		inst.chart = chart; 
 		inst.list = list;
-		setVisible(true);
 		//
-		addChartToPanel(new PlotChartPanel(chart));
+		try {
+			addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()));
+			setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	protected void addChartToPanel(ChartPanel chart) { 
@@ -244,7 +251,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			// Size
 			float width = Float.valueOf(getTxtWidth().getText());
 			float height = Float.valueOf(getTxtHeight().getText());
-			int unit = getComboSizeUnit().getSelectedIndex();
+			DIM_UNIT unit = (DIM_UNIT)getComboSizeUnit().getSelectedItem();
 			sett.setSize(width, height, unit); 
 			sett.setUseOnlyWidth(getCbOnlyUseWidth().isSelected());
 			
@@ -272,8 +279,11 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		getTxtFileName().setText(sett.getFileName());
 		getTxtPath().setText(sett.getPath().getAbsolutePath());
 		getTxtManualRes().setText(""+sett.getResolution());
-		getTxtWidth().setText(""+sett.getSize().width);
-		getTxtHeight().setText(""+sett.getSize().height); 
+		getComboSizeUnit().setSelectedItem(sett.getUnit());
+		DecimalFormat form = new DecimalFormat("#.###");
+		FloatDimension size = sett.getSizeInUnit();
+		getTxtWidth().setText(""+form.format(size.getWidth()));
+		getTxtHeight().setText(""+form.format(size.getHeight())); 
 		// not everything set ! TODO cb rb combo
 		getCbOnlyUseWidth().setSelected(sett.isUseOnlyWidth());
 	}
@@ -403,7 +413,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 							}
 							{
 								comboSizeUnit = new JComboBox();
-								comboSizeUnit.setModel(new DefaultComboBoxModel(new String[] {"cm", "mm", "pt", "inch", "px"}));
+								comboSizeUnit.setModel(new DefaultComboBoxModel(DIM_UNIT.values()));
 								panel_1.add(comboSizeUnit, "cell 1 0,growx");
 							}
 							{
@@ -492,6 +502,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 								btnChooseBackgroundColor = new JColorPickerButton(thisframe);  
 								btnChooseBackgroundColor.setPreferredSize(new Dimension(25, 25));
 								panel_1.add(btnChooseBackgroundColor, "cell 0 3");
+								btnChooseBackgroundColor.setColor(Color.BLUE);
 							}
 						}
 					}
@@ -523,7 +534,25 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				btnRenewPreview = new JButton("Renew Preview");
 				btnRenewPreview.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						repaint();
+						// set dimensions to chartpanel
+						// set height
+						try {
+							setAllSettings(SettingsHolder.getSettings());
+							SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
+
+							DecimalFormat form = new DecimalFormat("#.###");
+							if(sett.isUseOnlyWidth()) {
+								double height = (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth()));
+								sett.setSize(Float.valueOf(getTxtWidth().getText()), height, sett.getUnit());
+								getTxtHeight().setText(""+form.format(sett.getSizeInUnit().getHeight())); 
+							}
+							else {
+								chartPanel.setSize((int)sett.getSize().getWidth(), (int)sett.getSize().getHeight());
+								chartPanel.paintImmediately(chartPanel.getBounds());
+							}
+						} catch(Exception ex) {
+							ex.printStackTrace();
+						}
 					}
 				});
 				buttonPane.add(btnRenewPreview);

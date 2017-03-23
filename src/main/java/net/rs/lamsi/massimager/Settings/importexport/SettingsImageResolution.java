@@ -2,12 +2,14 @@ package net.rs.lamsi.massimager.Settings.importexport;
 
 import java.awt.Dimension;
 
+import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.utils.useful.FloatDim;
+
+import org.jfree.ui.FloatDimension;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import net.rs.lamsi.massimager.Settings.Settings;
 
 import com.itextpdf.text.Utilities;
 
@@ -16,11 +18,14 @@ public class SettingsImageResolution extends Settings {
     private static final long serialVersionUID = 1L;
     //
 	//
-	public static final int UNIT_CM = 0, UNIT_MM = 1, UNIT_PT = 2, UNIT_INCH = 3, UNIT_PX = 4;
+	public static enum DIM_UNIT {
+		CM, MM, PT, INCH, PX;
+	}
 	//
 	private String fileName = ""; 
 	
 	// resolution
+	private DIM_UNIT unit = DIM_UNIT.CM; 
 	private int resolution = 300;
 	private Dimension size; 
 	
@@ -33,6 +38,8 @@ public class SettingsImageResolution extends Settings {
 	@Override
 	public void resetAll() { 
 		size = new Dimension(0,0); 
+		unit = DIM_UNIT.CM; 
+		 resolution = 300;
 	} 
 	public int getResolution() {
 		return resolution;
@@ -46,6 +53,7 @@ public class SettingsImageResolution extends Settings {
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		toXML(elParent, doc, "resolution", resolution); 
+		toXML(elParent, doc, "unit", unit); 
 		toXML(elParent, doc, "width", size.getWidth()); 
 		toXML(elParent, doc, "height", size.getHeight()); 
 	}
@@ -58,6 +66,7 @@ public class SettingsImageResolution extends Settings {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("resolution")) resolution = intFromXML(nextElement); 
+				else if(paramName.equals("unit")) unit = DIM_UNIT.valueOf(nextElement.getTextContent()); 
 				else if(paramName.equals("width"))size.setSize(doubleFromXML(nextElement), size.getHeight());  
 				else if(paramName.equals("height"))size.setSize(size.getWidth(), doubleFromXML(nextElement));
 			}
@@ -71,31 +80,64 @@ public class SettingsImageResolution extends Settings {
 	public Dimension getSize() {
 		return size;
 	}  
-	
+
+	/**
+	 * 
+	 * @return size in given unit
+	 */
+	public FloatDimension getSizeInUnit() {
+		return getSizeInUnit(size, unit);
+	}  
+	/**
+	 * 
+	 * @return size in given unit
+	 */
+	public static FloatDimension getSizeInUnit(Dimension size, DIM_UNIT unit) {
+		float w=0, h=0;
+		switch(unit) {
+		case CM:
+			w = Utilities.pointsToMillimeters((float)size.getWidth())/10.f;
+			h = Utilities.pointsToMillimeters((float)size.getHeight())/10.f;
+			break;
+		case MM:
+			w = Utilities.pointsToMillimeters((float)size.getWidth());
+			h = Utilities.pointsToMillimeters((float)size.getHeight());
+			break;
+		case INCH:
+			w = Utilities.pointsToInches((float)size.getWidth());
+			h = Utilities.pointsToInches((float)size.getHeight());
+			break; 
+		case PX:
+		case PT:
+			w = (float) size.getWidth();
+			h = (float) size.getHeight();
+		}
+		return new FloatDimension(w, h);
+	} 
 	/**
 	 * Sets the size in inches by given width and height
 	 * @param width
 	 * @param height
 	 * @param unit
 	 */
-	public void setSize(float width, float height, int unit) { 
+	public void setSizeAndUnit(float width, float height, DIM_UNIT unit) { 
+		setUnit(unit);
 		// convert to pt
 		switch(unit) {
-		case UNIT_CM:
+		case CM:
 			width = Utilities.millimetersToPoints(width*10.f);
 			height = Utilities.millimetersToPoints(height*10.f);
 			break;
-		case UNIT_MM:
+		case MM:
 			width = Utilities.millimetersToPoints(width);
 			height = Utilities.millimetersToPoints(height);
 			break;
-		case UNIT_INCH:
+		case INCH:
 			width = Utilities.inchesToPoints(width);
 			height = Utilities.inchesToPoints(height);
 			break; 
-		case UNIT_PX:
-			width = width;
-			height = height;
+		case PX:
+		case PT:
 			break;
 		}
 		
@@ -117,6 +159,13 @@ public class SettingsImageResolution extends Settings {
 	}
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+	}
+
+	public DIM_UNIT getUnit() {
+		return unit;
 	}  
+	public void setUnit(DIM_UNIT unit) {
+		this.unit = unit;
+	}
 	
 }

@@ -78,7 +78,6 @@ public class Window {
 	// DAs Programm
 	private static Window window; 
 	private LogicRunner runner;
-	private OESPanel runnerOES; 
 	// other frames
 	private DataSaverFrame frameDataSaver;
 	private GeneralSettingsFrame frameGeneralSettings;
@@ -348,9 +347,6 @@ public class Window {
         					if(getCurrentMode()==MODE_MS) {
         						runner.getListSpecFiles().remove(sel[i]-i);
         					}
-        					else if(getCurrentMode()==MODE_OES) {
-        						runnerOES.getListOESFiles().remove(sel[i]-i);
-        					}
         				}
         			}
         			//  set index to 0 and show
@@ -437,16 +433,11 @@ public class Window {
         CenterContent.add(pnOESCenterContent, BorderLayout.WEST);
         pnOESCenterContent.setLayout(new BorderLayout(0, 0));
         pnOESCenterContent.setVisible(false);
-        
-        runnerOES = new OESPanel(this);
-        pnOESCenterContent.add(runnerOES, BorderLayout.CENTER); 
-        runnerOES.setVisible(true);
 	}
 	
 	protected void setNewFileSelectedInMode(int selectedIndex) {
 		// TODO Auto-generated method stub
 		if(currentMode == MODE_MS)  runner.setNewFileSelectedAndShowAll(selectedIndex);
-		if(currentMode == MODE_OES)  runnerOES.setSelectedOESFile(selectedIndex);
 	}
 
 	// shows and hides the files panel at west
@@ -756,9 +747,6 @@ public class Window {
     	if(currentMode == MODE_MS) {
     		runner.loadFiles();
     	}
-    	else {
-    		runnerOES.loadFiles();
-    	}
 	}
 
 	// Load and save FC FileChooser
@@ -801,14 +789,6 @@ public class Window {
 	            	((DefaultListModel)listFiles.getModel()).removeAllElements(); 
 	            	// Files wieder rein tun
 			    	runner.setAsCurrentMode(listFiles);
-	            }
-	            else if(!isMS && currentMode!=MODE_OES) {
-	            	center.add(getPnOESCenterContent(), BorderLayout.CENTER); 
-		    		// Beide regeln selbst was alles gemacht werden muss. 
-		    		// Files aus Liste raus  
-	            	((DefaultListModel)listFiles.getModel()).removeAllElements(); 
-	            	// Files wieder rein tun 
-			    	runnerOES.setAsCurrentMode(listFiles);
 	            }
 	    		// Panel an und aus
 	    		getPnOESCenterContent().setVisible(!isMS);
@@ -858,8 +838,8 @@ public class Window {
 		// daten des aktuellen modes speichern mit den einstellungen 
 		if(currentMode == MODE_MS) 
 			return getLogicRunner().saveDataFile(setDataSaver, excelWriter);
-		else  
-			return runnerOES.saveDataFile(setDataSaver, excelWriter);
+		
+		return false;
 	}
     
 	// Send image2d to Imageeditor for further work

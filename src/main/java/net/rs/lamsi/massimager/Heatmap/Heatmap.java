@@ -5,7 +5,9 @@ import java.awt.Color;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.multiimager.FrameModules.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 
@@ -24,7 +26,7 @@ public class Heatmap {
 	// Title
 	 
 	// just a bunch of visual stuff
-	private ChartPanel chartPanel;
+	private PlotImage2DChartPanel chartPanel;
 	private PaintScale paintScale;
 	private JFreeChart chart;
 	private ImageRenderer renderer;
@@ -32,6 +34,8 @@ public class Heatmap {
 	private PaintScaleLegend legend;
 	// the raw data and settings
 	private Image2D image;
+	private ScaleInPlot scaleInPlot;
+	
 	// stats
 	private boolean isShowingSelectedExcludedRects = false, isShowingBlankMinMax = false;
 	// list of annotations for later removing 
@@ -41,9 +45,9 @@ public class Heatmap {
 	private ValueMarker lowerMarker, upperMarker;
 	
 	// Construct
-	public Heatmap(IXYZDataset dataset, int colorSteps, ChartPanel chartPanel,
+	public Heatmap(IXYZDataset dataset, int colorSteps, PlotImage2DChartPanel chartPanel,
 			PaintScale paintScale, JFreeChart chart, XYPlot plot,
-			PaintScaleLegend legend, Image2D image, ImageRenderer renderer) {
+			PaintScaleLegend legend, Image2D image, ImageRenderer renderer, ScaleInPlot scaleInPlot) {
 		super();
 		this.dataset = dataset; 
 		this.chartPanel = chartPanel;
@@ -53,6 +57,7 @@ public class Heatmap {
 		this.legend = legend;
 		this.setImage(image);
 		this.renderer = renderer;
+		this.scaleInPlot = scaleInPlot;
 		// 
 		showBlankMinMax(image.getOperations().getBlankQuantifier().isShowInChart());
 	}
@@ -67,11 +72,11 @@ public class Heatmap {
 		this.dataset = dataset;
 	} 
 
-	public ChartPanel getChartPanel() {
+	public PlotChartPanel getChartPanel() {
 		return chartPanel;
 	}
 
-	public void setChartPanel(ChartPanel chartPanel) {
+	public void setChartPanel(PlotImage2DChartPanel chartPanel) {
 		this.chartPanel = chartPanel;
 	}
 
@@ -192,5 +197,17 @@ public class Heatmap {
 
 		// fire change event
 		chart.fireChartChanged();
+	}
+
+
+
+	public ScaleInPlot getScaleInPlot() {
+		return scaleInPlot;
+	}
+
+
+
+	public void setScaleInPlot(ScaleInPlot scaleInPlot) {
+		setScaleInPlot(scaleInPlot);
 	} 
 }

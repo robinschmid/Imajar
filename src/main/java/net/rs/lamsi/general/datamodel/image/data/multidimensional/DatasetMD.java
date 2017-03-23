@@ -23,6 +23,9 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	protected int totalDPCount = -1, minDP=-1, maxDP=-1, avgDP=-1;
 	protected ScanLineMD[] lines; 
 	
+	// last x of longest line ( left edge of the datapoint)
+	protected float lastX =-1;
+	
 	// settings of rotation, reflection, imaging mode
 	protected SettingsGeneralRotation settRot;
 	
@@ -109,15 +112,6 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	public int getLineLength(int i) {
 		return lines[i].getDPCount();
 	}
-	@Override
-	public float getX(int line, int idp) {
-		return lines[line].getX(idp);
-	}
-	@Override
-	public double getI(int index, int line, int ix) {
-		// TODO Auto-generated method stub
-		return lines[line].getI(index, ix);
-	}
 
 	public ScanLineMD getLine(int line) {
 		return lines[line];
@@ -138,6 +132,42 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	}
 	
 
+	@Override
+	public double getI(int index, int line, int ix) {
+		// TODO Auto-generated method stub
+		return lines[line].getI(index, ix);
+	}
+
+	@Override
+	public float getX(int line, int idp) {
+		if(hasOnlyOneXColumn())
+			return lines[0].getX(idp);
+		else return lines[line].getX(idp);
+	}
+	
+	@Override
+	public float getEndX(int l) {
+		if(hasOnlyOneXColumn())
+			return lines[0].getEndX();
+		else return lines[l].getEndX();
+	} 
+	@Override
+	public float getLastXLine(int line) {
+		return getX(line, getLineLength(line)-1);
+	}
+	@Override
+	public float getLastX() {
+		if(lastX==-1) {
+			if(hasOnlyOneXColumn())
+				lastX = getLastXLine(0);
+			else {
+				for(int i=0; i<lines.length; i++)
+					if(getLastXLine(i)>lastX)
+						lastX = getLastXLine(i);
+			}
+		}
+		return lastX;
+	}
 
 	@Override
 	public int getTotalDPCount() {
@@ -163,16 +193,6 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		}
 		return maxDP;
 	}
-
-	
-	@Override
-	public float getEndX(int l) {
-		return lines[l].getEndX();
-	} 
-	@Override
-	public float getLastXLine(int line) {
-		return getX(line, getLineLength(line)-1);
-	}
 	
 	/**
 	 * The maximum datapoints of the longest line
@@ -181,11 +201,11 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	 */
 	public int getMinDP() {
 		if(minDP==-1) {
-		minDP = Integer.MAX_VALUE;
-		for(int i=1; i<lines.length-1; i++) {
-			ScanLineMD l = lines[i];
-			if(l.getDPCount()<minDP) minDP = l.getDPCount();
-		}
+			minDP = Integer.MAX_VALUE;
+			for(int i=1; i<lines.length-1; i++) {
+				ScanLineMD l = lines[i];
+				if(l.getDPCount()<minDP) minDP = l.getDPCount();
+			}
 		}
 		return minDP;
 	}
@@ -207,7 +227,7 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	}
 	
 	@Override
-	public float getMaxXWidth() {
+	public float getMaxXDPWidth() {
 		if(maxXWidth==-1) {
 			// calc min x
 			maxXWidth = Float.NEGATIVE_INFINITY;
@@ -219,6 +239,9 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 					if(width>maxXWidth)
 						maxXWidth = width;
 				}
+				// stop if only one x col
+				if(hasOnlyOneXColumn())
+					break;
 			}
 		}
 		return maxXWidth;
@@ -233,7 +256,7 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	 */
 	public boolean hasOnlyOneXColumn() { 
 		if(hasXData()){
-			return !(lines.length>=2 && lines[1]!=null && lines[1].hasXData() && lines[1].equals(lines[0]));
+			return !(lines.length>=2 && lines[1]!=null && lines[1].hasXData() && !lines[1].getX().equals(lines[0].getX()));
 		}
 		else return false;
 	}

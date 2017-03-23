@@ -39,6 +39,16 @@ public abstract class ImageModule extends Module {
 	 * @param il
 	 */
 	public abstract void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il);
+	/**
+	 * init with listeners for changes of settings in the modules 
+	 * autoUpdater calls SettingsExtraction from modules for REPAINTING the current heatmap
+	 * @param al
+	 * @param cl
+	 * @param dl
+	 * @param ccl
+	 * @param il
+	 */
+	public abstract void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il);
 
 
 	//################################################################################################

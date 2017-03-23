@@ -70,11 +70,14 @@ public class MultiImgTableRow {
 		if(isUseRange() && (max!=upper || min != lower)) {
 			// lines
 			for(int l = 0; l<map.length; l++) {
-				for(int d = 0; d<map[l].length && d<img.getLineLength(l); d++) {
-					// check if img.intensity out of range 
-					if(l<img.getLineCount(d))
-						if(!inRange(img.getI(false,l, d)))
-							map[l][d] = false;
+				for(int d = 0; d<map[l].length; d++) {
+					// only if Boolean is defined (if not - there is no dp)
+					if(map[l][d]!=null) {
+						// check if img.intensity out of range 
+						double tmp = img.getI(false,l, d);
+						if(!Double.isNaN(tmp) && !inRange(tmp))
+								map[l][d] = false;
+					}
 				}
 			}
 		}
@@ -94,11 +97,16 @@ public class MultiImgTableRow {
 		if(isUseRange() && (max!=upper || min != lower)) {
 			// lines
 			for(int l = 0; l<map.length; l++) {
-				for(int d = 0; d<map[l].length && d<img.getLineLength(l); d++) {
-					// check if img.intensity out of range
-					if(l<img.getLineCount(d))
-						if(inRange(img.getI(false,l, d)))
-							map[l][d] += (int)Math.pow(2, i);
+				for(int d = 0; d<map[l].length; d++) {
+					// only if Integer is defined (if not - there is no dp)
+					if(map[l][d]!=null) {
+						// check if img.intensity out of range
+						if(l<img.getLineCount(d)) {
+							double tmp = img.getI(false,l, d);
+							if(!Double.isNaN(tmp) && inRange(tmp))
+								map[l][d] += (int)Math.pow(2, i);
+						}
+					}
 				}
 			}
 		}

@@ -49,7 +49,7 @@ public abstract class ImageDataset {
 	 * usually only interesting for delta Time
 	 * @return maximum x distance between two data points in a line
 	 */
-	public abstract float getMaxXWidth();
+	public abstract float getMaxXDPWidth();
 
 	/**
 	 * 
@@ -139,5 +139,13 @@ public abstract class ImageDataset {
 	 * @return
 	 */
 	public abstract float getLastXLine(int line);
+
+	/**
+	 * last x of the longest line (left edge of last data point
+	 * lineLength-1
+	 * @param line
+	 * @return
+	 */
+	public abstract float getLastX();
 
 }

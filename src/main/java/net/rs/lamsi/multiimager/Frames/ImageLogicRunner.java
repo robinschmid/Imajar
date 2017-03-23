@@ -191,7 +191,7 @@ public class ImageLogicRunner {
 //	}
 
 
-	protected IconNode[] addCollection2D(ImageGroupMD img, DefaultMutableTreeNode parent) {
+	public IconNode[] addCollection2D(ImageGroupMD img, DefaultMutableTreeNode parent) {
 		// only one image? do not create subnodes
 		if(img==null || img.getImages().size()==0) {
 			return null;
@@ -201,13 +201,15 @@ public class ImageLogicRunner {
 			// create subnode with image name
 			DefaultMutableTreeNode sub = null;
 			String last = null;
+			Image2D lastI = null;
 			IconNode[] nodes = new IconNode[img.getImages().size()];
 			int c = 0;
 
 			// create img nodes
 			for(Image2D i : img.getImages()) {
-				if(sub==null || (!last.equals(i.getSettImage().getRAWFolder()))) {
-					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder());
+				if(sub==null || (last==null && !lastI.hasSameData(i)) || (last!=null && !last.equals(i.getSettImage().getRAWFolder()))) { 
+					String name = i.getSettImage().getRAWFolder()==null? "NODEF" : i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder(); 
+					sub = new IconNode(name);
 					parent.add(sub);
 					last = i.getSettImage().getRAWFolder(); 
 				}
@@ -215,6 +217,7 @@ public class ImageLogicRunner {
 				nodes[c] = inode;
 				sub.add(inode);
 				c++;
+				lastI = i;
 			} 
 			img.setNode(sub);
 			return nodes;
@@ -259,8 +262,10 @@ public class ImageLogicRunner {
 	public Heatmap renewImage2DView() { 
 		if(selectedImage!=null) {
 			try{  
+				ImageEditorWindow.log("Create Heatmap", LOG.DEBUG); 
 				// show heatmap in Center
 				currentHeat = heatFactory.generateHeatmap(selectedImage);
+				selectedImage.getSettingsImage2D().applyToHeatMap(currentHeat);
 				ChartPanel myChart = currentHeat.getChartPanel(); 
 				myChart.setMouseWheelEnabled(true);  
 				// remove all and add

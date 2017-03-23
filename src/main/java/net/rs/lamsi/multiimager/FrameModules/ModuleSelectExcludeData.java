@@ -133,4 +133,7 @@ public class ModuleSelectExcludeData extends ImageModule {
 	@Override
 	public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 	}
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
 }

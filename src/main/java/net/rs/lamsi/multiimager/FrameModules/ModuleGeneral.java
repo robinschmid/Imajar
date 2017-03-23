@@ -270,6 +270,9 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> {
 		getBtnImagingTwoWays().addActionListener(al);
 	}
 
+	@Override
+	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
 	//################################################################################################
 	// LOGIC
 	// Paintsclae from Image
