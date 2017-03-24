@@ -18,6 +18,8 @@ import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
@@ -39,8 +41,6 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
 import org.jfree.chart.ChartPanel;
-
-import com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.image.ImageComponent2DURLIOListener;
 
 public class ImageLogicRunner {
 	//##################################################################################
@@ -206,18 +206,31 @@ public class ImageLogicRunner {
 			int c = 0;
 
 			// create img nodes
-			for(Image2D i : img.getImages()) {
-				if(sub==null || (last==null && !lastI.hasSameData(i)) || (last!=null && !last.equals(i.getSettImage().getRAWFolder()))) { 
-					String name = i.getSettImage().getRAWFolder()==null? "NODEF" : i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder(); 
-					sub = new IconNode(name);
-					parent.add(sub);
-					last = i.getSettImage().getRAWFolder(); 
+			for(Collectable2D c2d : img.getImages()) {
+				if(Image2D.class.isInstance(c2d)) {
+					Image2D i = (Image2D) c2d;
+					if(sub==null || (last==null && !lastI.hasSameData(i)) || (last!=null && !last.equals(i.getSettImage().getRAWFolder()))) { 
+						String name = i.getSettImage().getRAWFolder()==null? "NODEF" : i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder(); 
+						sub = new IconNode(name);
+						parent.add(sub);
+						last = i.getSettImage().getRAWFolder(); 
+					}
+					IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
+					nodes[c] = inode;
+					sub.add(inode);
+					c++;
+					lastI = i;
 				}
-				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
-				nodes[c] = inode;
-				sub.add(inode);
-				c++;
-				lastI = i;
+			} 
+			// add overlays afterwards
+			for(Collectable2D c2d : img.getImages()) {
+				if(ImageOverlay.class.isInstance(c2d)) {
+					ImageOverlay i = (ImageOverlay) c2d;
+					IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
+					nodes[c] = inode;
+					sub.add(inode);
+					c++;
+				}
 			} 
 			img.setNode(sub);
 			return nodes;

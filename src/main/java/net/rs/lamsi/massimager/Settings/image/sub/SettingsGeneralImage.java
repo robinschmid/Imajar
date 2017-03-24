@@ -55,9 +55,6 @@ public class SettingsGeneralImage extends Settings {
 	// Metadata
 	protected String metadata = "";
 	
-	// background iamges
-	protected File bgImagePath = null;
-	protected boolean usesBGImage = false;
 
 
 	public SettingsGeneralImage(String path, String fileEnding) {
@@ -81,9 +78,6 @@ public class SettingsGeneralImage extends Settings {
 		reflectHorizontal = false; 
 		reflectVertical = false;
 		isBinaryData = false;
-		//new
-		bgImagePath = null;
-		usesBGImage = false;
 	}
 
 
@@ -125,9 +119,6 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "reflectVertical", reflectVertical); 
 		toXML(elParent, doc, "isBinaryData", isBinaryData); 
 		toXML(elParent, doc, "filepath", filepath); 
-		if(bgImagePath!=null)
-			toXML(elParent, doc, "bgImagePath", bgImagePath.getAbsolutePath()); 
-		toXML(elParent, doc, "usesBGImage", usesBGImage); 
 	}
 
 	@Override
@@ -149,8 +140,6 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("reflectVertical"))reflectVertical = booleanFromXML(nextElement);  
 				else if(paramName.equals("isBinaryData"))isBinaryData = booleanFromXML(nextElement);  
 				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
-				else if(paramName.equals("bgImagePath"))bgImagePath = new File(nextElement.getTextContent()); 
-				else if(paramName.equals("usesBGImage"))usesBGImage = booleanFromXML(nextElement);  
 			}
 		}
 	}
@@ -321,16 +310,4 @@ public class SettingsGeneralImage extends Settings {
 		this.isBinaryData = isBinaryData;
 	}
 	
-	public void setBGImagePath(File pathBGImage) {
-		this.bgImagePath = pathBGImage;
-	}
-	public File getBGImagePath() {
-		return bgImagePath;
-	}
-	public void setUseBGImage(boolean b) {
-		usesBGImage = b;
-	}
-	public boolean usesBGImage() {
-		return usesBGImage;
-	}
 }

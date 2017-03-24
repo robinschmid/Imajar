@@ -113,7 +113,7 @@ public class TestImage2DRotationOverlay extends JFrame {
 						try {
 							ImageGroupMD[] groups = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true);
 
-							Image2D img = groups[0].get(0);
+							Image2D img = (Image2D)groups[0].get(0);
 							img.getSettPaintScale().setUsesMinAsInvisible(true);
 							
 							map = HeatmapFactory.generateHeatmap(img);

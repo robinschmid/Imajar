@@ -292,4 +292,8 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public boolean hasXData() { 
 		return line!=null && line.hasXData();
 	}	
+	@Override
+	public int size() {
+		return line!=null? line.getImageCount() : 0;
+	}
 }

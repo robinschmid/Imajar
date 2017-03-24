@@ -3,7 +3,9 @@ import java.awt.Color;
 import java.awt.Image;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
@@ -32,7 +34,16 @@ public class HeatmapFactory {
 	
 
 	// Image2D to Heatmap Image
-	public static Heatmap generateHeatmap(Image2D image)  throws Exception { 
+	public static Heatmap generateHeatmap(Collectable2D image)  throws Exception { 
+		if(Image2D.class.isInstance(image))
+			return generateHeatmapFromImage2D((Image2D)image);
+		else if(ImageOverlay.class.isInstance(image))
+			return generateHeatmapFromImageOverlay((ImageOverlay)image);
+		else
+			return null;
+	}
+	
+	private static Heatmap generateHeatmapFromImage2D(Image2D image)  throws Exception { 
 		SettingsPaintScale setPaint = image.getSettPaintScale();
 		SettingsGeneralImage setImg = image.getSettImage();
 		// get rotated and reflected dataset
@@ -43,6 +54,14 @@ public class HeatmapFactory {
 		return h;
 	}
 	
+	private static Heatmap generateHeatmapFromImageOverlay(ImageOverlay image)  throws Exception { 
+		// get rotated and reflected dataset
+		XYIData2D[] dat = image.getDataSets();
+		// Heatmap erzeugen
+		Heatmap h = createChartOverlay(image, createDatasetOverlay("Overlay", dat), "x", "y");
+		// TODO WHY?
+		return h;
+	}
 	/*
 	// For Triggered Scan Data
 	// A File = A Line
@@ -126,6 +145,113 @@ public class HeatmapFactory {
 	}
 	*/
 
+	
+	// erstellt ein JFreeChart Plot der heatmap
+	// bwidth und bheight (BlockWidth) sind die Maximalwerte
+	private static Heatmap createChartOverlay(ImageOverlay img, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
+        // this min max values in array
+        double zmin = dataset.getZMin();
+        double zmax = dataset.getZMax();
+        // no data!
+        if(zmin == zmax || zmax == 0) {
+        	throw new Exception("Every data point has the same intensity of "+zmin);
+        }
+        else { 
+	    	SettingsThemes setTheme = img.getSettTheme();
+			// XAchse
+	        NumberAxis xAxis = new NumberAxis(xTitle);
+	        xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+	        xAxis.setLowerMargin(0.0);
+	        xAxis.setUpperMargin(0.0);
+	        // Y Achse
+	        NumberAxis yAxis = new NumberAxis(yTitle);
+	        yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+	        yAxis.setLowerMargin(0.0);
+	        yAxis.setUpperMargin(0.0);
+	        // XYBlockRenderer
+	        ImageRenderer renderer = new ImageRenderer();
+	        
+	        // PaintScale für farbe? TODO mit Settings!
+	        // TODO upper and lower value setzen!!!!
+	        //two ways of min or max z value: 
+	        // min max values by filter
+	        if(settings.getModeMin().equals(ValueMode.PERCENTILE)) {
+	        	// uses filter for min
+	        	img.applyCutFilterMin(settings.getMinFilter());
+	        	settings.setMin(img.getMinZFiltered());
+	        }
+	        if(settings.getModeMax().equals(ValueMode.PERCENTILE)) {
+	        	// uses filter for min
+	        	img.applyCutFilterMax(settings.getMaxFilter());
+	        	settings.setMax(img.getMaxZFiltered());
+	        }
+	        // creation of scale
+	        // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
+	        PaintScale scale = null;
+	        scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, settings); 
+	        renderer.setPaintScale(scale);
+	        renderer.setAutoPopulateSeriesFillPaint(true);
+	        renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+	        // TODO nicht feste Blockwidth!
+	        // erstmal feste BlockWidth 
+	        renderer.setBlockWidth(img.getMaxBlockWidth(settImage.getRotationOfData())); 
+	        renderer.setBlockHeight(img.getMaxBlockHeight(settImage.getRotationOfData())); 
+	        // Plot erstellen mit daten
+	        XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
+	        plot.setBackgroundPaint(Color.lightGray);
+	        plot.setDomainGridlinesVisible(false);
+	        plot.setRangeGridlinePaint(Color.white);
+	        
+	        // set background image
+	        if(img.getSettTheme().usesBGImage() && img.getImageGroup()!=null) {
+	        	Image bg = img.getImageGroup().getBGImage();
+	        	if(bg!=null)
+	        		plot.setBackgroundImage(bg);
+	        }
+	        
+	        // create chart
+	        JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
+	        // remove lower legend - wie farbskala rein? TODO
+	        chart.removeLegend();
+	        chart.setBackgroundPaint(Color.white);
+	        
+	        // Legend Generieren
+	        PaintScale scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings); 
+			PaintScaleLegend legend = createScaleLegend(img, scaleBar, createScaleAxis(settings, dataset), settings.getLevels());   
+			// adding legend in plot or outside
+			if(setTheme.getTheme().isPaintScaleInPlot()) { // inplot
+				XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
+				ta.setMaxWidth(1);
+				plot.addAnnotation(ta);
+			}
+			else chart.addSubtitle(legend);
+			//
+			chart.setBorderVisible(true); 
+	
+			
+			// ChartPanel
+			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, img); 
+			
+			// add scale legend
+			ScaleInPlot	scaleInPlot = addScaleInPlot(img, setTheme, chartPanel);
+			
+			// theme
+			img.getSettTheme().applyToChart(chart);
+			
+	 		//ChartUtilities.applyCurrentTheme(chart);
+			//defaultChartTheme.apply(chart);
+			chart.fireChartChanged();
+			 
+			// Heatmap
+			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer, scaleInPlot);
+			
+			// return Heatmap
+	        return heat;
+        }
+    } 
+	
+	
+	
 	// Diese wird aufgerufen um Heatmap zu generieren.
 	// test heatmap bei ColorPicker Dialog
 	public static Heatmap generateHeatmap(SettingsPaintScale settings, SettingsGeneralImage settImage,  String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
@@ -138,7 +264,7 @@ public class HeatmapFactory {
 	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset)  throws Exception  {
     	return createChart(img, settings, settImage, dataset, "x", "y");
     }
-	
+
 	// erstellt ein JFreeChart Plot der heatmap
 	// bwidth und bheight (BlockWidth) sind die Maximalwerte
 	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
@@ -196,7 +322,7 @@ public class HeatmapFactory {
 	        plot.setRangeGridlinePaint(Color.white);
 	        
 	        // set background image
-	        if(settImage.usesBGImage() && img.getImageGroup()!=null) {
+	        if(img.getSettTheme().usesBGImage() && img.getImageGroup()!=null) {
 	        	Image bg = img.getImageGroup().getBGImage();
 	        	if(bg!=null)
 	        		plot.setBackgroundImage(bg);
@@ -270,7 +396,26 @@ public class HeatmapFactory {
         dataset.addSeries(title, new double[][] { xvalues, yvalues, zvalues });
         return dataset;
     } 
-	
+
+	/**
+	 * 
+	 * @param title
+	 * @param xvalues
+	 * @param yvalues
+	 * @param zvalues
+	 * @return
+	 */
+	private static IXYZDataset createDatasetOverlay(String title, XYIData2D[] dat) {  
+        IXYZDataset dataset = new IXYZDataset();
+        // add one black layer / white layer
+        // TODO for overlay
+        
+        // add all series
+        for(XYIData2D d : dat)
+        	dataset.addSeries(title, new double[][] { d.getX(), d.getY(), d.getI() });
+        // might need one dataset for each ?
+        return dataset;
+    } 
 	 
 	// Eine PaintScaleLegend generieren
 	private static PaintScaleLegend createScaleLegend(Image2D img, PaintScale scale, NumberAxis scaleAxis, int stepCount) { 

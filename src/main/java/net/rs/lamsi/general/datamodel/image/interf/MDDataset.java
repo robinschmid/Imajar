@@ -41,4 +41,6 @@ public interface MDDataset {
 	 * @return
 	 */
 	public abstract boolean hasXData();
+	
+	public abstract int size();
 }

@@ -53,13 +53,10 @@ import org.jfree.data.statistics.HistogramDataset;
 
 // XY raw data! 
 // have to be multiplied with velocity and spot size
-public class Image2D implements Serializable, Collectable2D {	 
+public class Image2D extends Collectable2D implements Serializable {	 
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
-	// image group: Multi dimensional data sets create an ImageGroupMD
-	// this controls image operations
-	protected ImageGroupMD imageGroup = null;
 
 	// Parent image with master settings
 	protected Image2D parent;
@@ -2091,6 +2088,7 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param maxh
 	 * @return
 	 */
+	@Override
 	public Icon getIcon(int maxw, int maxh) {
 		try {
 			applyCutFilterMin(2.5);
@@ -2156,17 +2154,6 @@ public class Image2D implements Serializable, Collectable2D {
 		return index;
 	}
 
-	/**
-	 * image is marked as a group member in an image group. 
-	 * This group handles  multi dimensional data sets (not only)
-	 * @param imageGroupMD
-	 */
-	public void setImageGroup(ImageGroupMD imageGroup) {
-		this.imageGroup = imageGroup;
-	}
-	public ImageGroupMD getImageGroup() {
-		return this.imageGroup;
-	} 
 	public void setSettingsImage2D(SettingsImage2D settings) {
 		this.settings = settings;
 		settings.setCurrentImage(this);

@@ -2,30 +2,26 @@ package net.rs.lamsi.multiimager.test;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Vector;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
-import javax.swing.JButton;
-
 import org.jfree.chart.plot.PlotOrientation;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class TestImage2DRotation extends JFrame {
 
@@ -108,7 +104,7 @@ public class TestImage2DRotation extends JFrame {
 					// add
 						try {
 							ImageGroupMD[] groups = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true);
-							map = HeatmapFactory.generateHeatmap(groups[0].get(0));
+							map = HeatmapFactory.generateHeatmap((Image2D)groups[0].get(0));
 							panel.add(map.getChartPanel(), BorderLayout.CENTER);
 							panel.revalidate();
 						} catch (Exception e) {

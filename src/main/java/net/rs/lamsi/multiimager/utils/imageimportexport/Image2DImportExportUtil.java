@@ -66,7 +66,7 @@ public class Image2DImportExportUtil {
 	        //DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
 	        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 	        
-	        Vector<Image2D> images = group.getImages();
+	        Vector<Image2D> images = group.getImagesOnly();
 
 			// zip file 
 			parameters.setSourceExternalStream(true); 
@@ -309,7 +309,7 @@ public class Image2DImportExportUtil {
 				
 				// set settings to images
 				for(int i=0; i<group.getImages().size(); i++)
-					group.getImages().get(i).setSettingsImage2D(settings.get(i));
+					((Image2D)group.getImages().get(i)).setSettingsImage2D(settings.get(i));
 		        // return group
 		        return group;
 			}
@@ -578,7 +578,7 @@ public class Image2DImportExportUtil {
 		DatasetMD data = new DatasetMD(scanLines);
 		ImageGroupMD group = data.createImageGroup();
 		for(int i=0;i<group.getImages().size() && i<titles.size(); i++) 
-			setSettingsImage2D(group.getImages().get(i), flist.get(i), titles.get(i), meta.get(i));
+			setSettingsImage2D(((Image2D)group.getImages().get(i)), flist.get(i), titles.get(i), meta.get(i));
 		//return image 
 		return group;
 	}

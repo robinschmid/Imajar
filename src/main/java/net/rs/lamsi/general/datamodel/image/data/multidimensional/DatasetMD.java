@@ -260,5 +260,9 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		}
 		else return false;
 	}
+	@Override
+	public int size() {
+		return lines!=null && lines.length>0? lines[0].getImageCount() : 0;
+	}
 	
 }

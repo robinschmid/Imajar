@@ -105,7 +105,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 					Image2DSelectDataAreaDialog frame = new Image2DSelectDataAreaDialog(); 
 					TestQuantifier.rand = new Random(System.currentTimeMillis());
 					ImageGroupMD img = TestImageFactory.createNonNormalImage(1);
-					frame.startDialog(img.get(0));
+					frame.startDialog((Image2D)img.get(0));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

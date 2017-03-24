@@ -36,7 +36,7 @@ public class TestDataRotationReflection {
 		DatasetMD data = new DatasetMD(lines);
 		
 		ImageGroupMD group = data.createImageGroup();
-		Image2D img = group.get(0);
+		Image2D img = (Image2D)group.get(0);
 		
 		File f = new File("C:\\DATA\\test\\imgtest.csv");
 		

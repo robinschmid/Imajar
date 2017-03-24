@@ -1026,10 +1026,15 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				public void axesRangeChanged(PlotChartPanel chart, ValueAxis axis,
 						boolean isDomainAxis, Range lastR, Range newR) {
 					// save to zoom settings
+					logicRunner.setIS_UPDATING(false);
 					if(isDomainAxis)
 						heat.getImage().getSettZoom().setXrange(newR);
 					else 
 						heat.getImage().getSettZoom().setYrange(newR);
+					
+					// set to module
+					moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+					logicRunner.setIS_UPDATING(true);
 				}
 			});
 			

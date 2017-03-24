@@ -535,7 +535,7 @@ public class DirectImageLogicRunner implements Runnable {
 		if(!autoScale) {
 			// reset to img max (reverse effect of autoscale)
 			for(DIATask task : tasks) {
-				for(Image2D img : task.getImg().getImages()) { 
+				for(Image2D img : task.getImg().getImagesOnly()) { 
 					img.getSettPaintScale().setUsesMinMax(true);
 					img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
 					img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
