@@ -5,7 +5,10 @@ import java.awt.Color;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.multiimager.FrameModules.ModuleSelectExcludeData;
@@ -26,14 +29,14 @@ public class Heatmap {
 	// Title
 	 
 	// just a bunch of visual stuff
-	private PlotImage2DChartPanel chartPanel;
-	private PaintScale paintScale;
+	private PlotChartPanel chartPanel;
+	private PaintScale[] paintScale;
 	private JFreeChart chart;
 	private ImageRenderer renderer;
 	private XYPlot plot;
 	private PaintScaleLegend legend;
 	// the raw data and settings
-	private Image2D image;
+	private Collectable2D image;
 	private ScaleInPlot scaleInPlot;
 	
 	// stats
@@ -51,7 +54,7 @@ public class Heatmap {
 		super();
 		this.dataset = dataset; 
 		this.chartPanel = chartPanel;
-		this.paintScale = paintScale;
+		this.paintScale = new PaintScale[]{paintScale};
 		this.chart = chart;
 		this.plot = plot;
 		this.legend = legend;
@@ -61,9 +64,23 @@ public class Heatmap {
 		// 
 		showBlankMinMax(image.getOperations().getBlankQuantifier().isShowInChart());
 	}
+	
+	public Heatmap(IXYZDataset dataset, PlotChartPanel chartPanel,
+			PaintScale[] paintScale, JFreeChart chart, XYPlot plot,
+			//PaintScaleLegend legend, 
+			ImageOverlay image, ImageRenderer renderer, ScaleInPlot scaleInPlot) {
+		super();
+		this.dataset = dataset; 
+		this.chartPanel = chartPanel;
+		this.paintScale = paintScale;
+		this.chart = chart;
+		this.plot = plot;
+		// this.legend = legend;
+		this.setImage(image);
+		this.renderer = renderer;
+		this.scaleInPlot = scaleInPlot;
+	}
 
-	
-	
 	public IXYZDataset getDataset() {
 		return dataset;
 	}
@@ -80,12 +97,18 @@ public class Heatmap {
 		this.chartPanel = chartPanel;
 	}
 
-	public PaintScale getPaintScale() {
+	public PaintScale getPaintScale(int i) {
+		return paintScale[i];
+	}
+	public PaintScale[] getPaintScales() {
 		return paintScale;
 	}
 
-	public void setPaintScale(PaintScale paintScale) {
+	public void setPaintScales(PaintScale[] paintScale) {
 		this.paintScale = paintScale;
+	}
+	public void setPaintScales(PaintScale paintScale, int i) {
+		this.paintScale[i] = paintScale;
 	}
 
 	public JFreeChart getChart() {
@@ -114,12 +137,15 @@ public class Heatmap {
 
 
 
-	public void setImage(Image2D image) {
+	public void setImage(Collectable2D image) {
 		this.image = image;
 	} 
-	public Image2D getImage() {
+	public Collectable2D getImage() {
 		return image;
 	} 
+	public boolean isImage2D() {
+		return Image2D.class.isInstance(image);
+	}
 
 	public ImageRenderer getRenderer() {
 		return renderer;
@@ -129,30 +155,33 @@ public class Heatmap {
 	 * update the rects in the chartpanel
 	 */
 	public void updateSelectedExcludedRects() {
-		// remove all annotations
-		for(XYBoxAnnotation a : selected)
-			plot.removeAnnotation(a, false);
-		for(XYBoxAnnotation a : excluded)
-			plot.removeAnnotation(a, false);
-		selected.removeAllElements();
-		excluded.removeAllElements();
-		// add them
-		if(isShowingSelectedExcludedRects) {
-			for(RectSelection r : image.getSelectedData()) {  
-				XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
-														image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1,r.getMaxX()+1),  new BasicStroke(1.5f), Color.BLACK);
-				selected.add(box);
-				plot.addAnnotation(box, false);
+		if(isImage2D()) { // TODO
+			Image2D image = (Image2D) this.image;
+			// remove all annotations
+			for(XYBoxAnnotation a : selected)
+				plot.removeAnnotation(a, false);
+			for(XYBoxAnnotation a : excluded)
+				plot.removeAnnotation(a, false);
+			selected.removeAllElements();
+			excluded.removeAllElements();
+			// add them
+			if(isShowingSelectedExcludedRects) {
+				for(RectSelection r : image.getSelectedData()) {  
+					XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
+															image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1,r.getMaxX()+1),  new BasicStroke(1.5f), Color.BLACK);
+					selected.add(box);
+					plot.addAnnotation(box, false);
+				}
+				for(RectSelection r : image.getExcludedData()) {
+					XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
+							image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1, r.getMaxX()+1),  new BasicStroke(1.5f), Color.RED);
+					excluded.add(box);
+					plot.addAnnotation(box, false);
+				}
 			}
-			for(RectSelection r : image.getExcludedData()) {
-				XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
-						image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1, r.getMaxX()+1),  new BasicStroke(1.5f), Color.RED);
-				excluded.add(box);
-				plot.addAnnotation(box, false);
-			}
+			// fire change event
+			chart.fireChartChanged();
 		}
-		// fire change event
-		chart.fireChartChanged();
 	}
 	/**
 	 * Show the rects in the heatmap / chartpanel
@@ -178,25 +207,28 @@ public class Heatmap {
 	}
 	
 	public void updateShowBlankMinMax() {
-		// remove
-		if(upperMarker!=null) 
-			plot.removeDomainMarker(upperMarker);
-		if(lowerMarker!=null) 
-			plot.removeDomainMarker(lowerMarker);
-		
-		if(isShowingBlankMinMax) {
-			// add
-			double lower = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getLowerBound());
-			plot.addDomainMarker(lowerMarker = new ValueMarker(lower,Color.BLUE,new BasicStroke(1.5f)));
+		if(isImage2D()) { // TODO
+				Image2D image = (Image2D) this.image;
+			// remove
+			if(upperMarker!=null) 
+				plot.removeDomainMarker(upperMarker);
+			if(lowerMarker!=null) 
+				plot.removeDomainMarker(lowerMarker);
 			
-			if(image.getOperations().getBlankQuantifier().getQSameImage().isUseEnd()) {
-				double upper = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getUpperBound());
-				plot.addDomainMarker(upperMarker = new ValueMarker(upper,Color.BLUE,new BasicStroke(1.5f)));
+			if(isShowingBlankMinMax) {
+				// add
+				double lower = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getLowerBound());
+				plot.addDomainMarker(lowerMarker = new ValueMarker(lower,Color.BLUE,new BasicStroke(1.5f)));
+				
+				if(image.getOperations().getBlankQuantifier().getQSameImage().isUseEnd()) {
+					double upper = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getUpperBound());
+					plot.addDomainMarker(upperMarker = new ValueMarker(upper,Color.BLUE,new BasicStroke(1.5f)));
+				}
 			}
+	
+			// fire change event
+			chart.fireChartChanged();
 		}
-
-		// fire change event
-		chart.fireChartChanged();
 	}
 
 

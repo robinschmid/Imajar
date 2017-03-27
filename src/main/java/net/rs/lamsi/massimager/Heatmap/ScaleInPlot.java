@@ -8,6 +8,8 @@ import java.awt.geom.Rectangle2D;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
+import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
@@ -20,8 +22,8 @@ import org.jfree.ui.RectangleEdge;
 
 public class ScaleInPlot extends Title {
 
+	protected SettingsThemes theme;
 	protected XYTitleAnnotation annotation;
-	protected Image2D img;
 	protected ChartPanel chartPanel;
 	protected XYPlot plot;
 	protected float value = 1;
@@ -31,16 +33,16 @@ public class ScaleInPlot extends Title {
 	//
 	protected double width = 0;
 	
-	public ScaleInPlot(ChartPanel chartPanel, Image2D img,float x, float y, float value, float factor, String unit){
-		this.img = img;
+	public ScaleInPlot(ChartPanel chartPanel, SettingsThemes theme){
 		this.chartPanel = chartPanel;
+		this.theme = theme;
 		this.plot = chartPanel.getChart().getXYPlot();
-		this.value = value;
-		this.factor = factor;
-		this.unit = unit; 
-		this.xp = x;
-		this.yp = y;
-		annotation = new XYTitleAnnotation(x,y, this,RectangleAnchor.BOTTOM_RIGHT); 
+		this.value = theme.getTheme().getScaleValue();
+		this.factor = theme.getTheme().getScaleFactor();
+		this.unit = theme.getTheme().getScaleUnit();
+		this.xp = theme.getTheme().getScaleXPos();
+		this.yp = theme.getTheme().getScaleYPos();
+		annotation = new XYTitleAnnotation(xp,yp, this,RectangleAnchor.BOTTOM_RIGHT); 
 	}
 
 	
@@ -48,7 +50,7 @@ public class ScaleInPlot extends Title {
 	@Override
 	public Object draw(Graphics2D g, Rectangle2D area, Object params) {
 		if(isVisible()) {
-			MyStandardChartTheme theme = img.getSettTheme().getTheme();
+			MyStandardChartTheme theme = this.theme.getTheme();
 			ValueAxis xaxis =  chartPanel.getChart().getXYPlot().getDomainAxis();
 			RectangleEdge edge = chartPanel.getChart().getXYPlot().getDomainAxisEdge();
 			ChartRenderingInfo info = chartPanel.getChartRenderingInfo();
@@ -90,14 +92,6 @@ public class ScaleInPlot extends Title {
 	
 	public double getDataScaleWidth() {
 		return value*factor;
-	}
-
-	public Image2D getImg() {
-		return img;
-	}
-
-	public void setImg(Image2D img) {
-		this.img = img;
 	}
 
 	public XYPlot getPlot() {

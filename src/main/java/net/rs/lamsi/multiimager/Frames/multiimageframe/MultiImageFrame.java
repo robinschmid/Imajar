@@ -460,7 +460,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		}
 
 		// add raw data changed listener for direct imaging 
-		group.get(group.size()-1).addRawDataChangedListener(new RawDataChangedListener() { 
+		group.getLastImage2D().addRawDataChangedListener(new RawDataChangedListener() { 
 			@Override
 			public void rawDataChangedEvent(ImageDataset data) {
 				if(data.getLinesCount()>0) { 
@@ -497,7 +497,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 	 */
 	protected void createNewMap() {
 		// only if different size
-		Image2D first = group.get(0);
+		Image2D first = group.getFirstImage2D();
 
 		ImageDataset data = first.getData();
 		

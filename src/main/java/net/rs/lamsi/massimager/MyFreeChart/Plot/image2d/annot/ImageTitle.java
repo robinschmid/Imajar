@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 
 import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.block.BlockBorder;
@@ -17,11 +18,11 @@ public class ImageTitle extends TextTitle {
 	
 	private static final long serialVersionUID = 1L;
 	// keep track of title changes
-	private Image2D img;
+	private Collectable2D img;
 	private XYTitleAnnotation ta;
 
 	
-	public ImageTitle(Image2D img, Font font) {
+	public ImageTitle(Collectable2D img, Font font) {
 		super(img.getTitle(), font);
 		this.img = img;
 		 

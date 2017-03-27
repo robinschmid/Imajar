@@ -12,6 +12,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Heatmap.ScaleInPlot;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
@@ -195,7 +196,7 @@ public class PlotChartPanel extends ChartPanel {
 		exportGraphics.addActionListener(new ActionListener() { 
 			@Override
 			public void actionPerformed(ActionEvent e) { 
-				Vector<Image2D> list = ImageEditorWindow.getImages();
+				Vector<Collectable2D> list = ImageEditorWindow.getImages();
 				// open export Graphics dialog 
 				GraphicsExportDialog.openDialog(getChart(), list); 
 			}

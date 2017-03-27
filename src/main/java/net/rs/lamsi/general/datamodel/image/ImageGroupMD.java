@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageGroup;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImgTableRow;
@@ -21,7 +22,7 @@ public class ImageGroupMD  implements Serializable {
 	private static final long serialVersionUID = 1L;
 	// settings
 	protected SettingsImageGroup settings;
-	
+
 	// dataset
 	protected MDDataset data = null;
 	protected Vector<Collectable2D> images;
@@ -29,8 +30,8 @@ public class ImageGroupMD  implements Serializable {
 	protected DefaultMutableTreeNode node = null;
 	// background microscopic image
 	protected Image bgImage = null;
-	
-	
+
+
 	public ImageGroupMD() {
 		settings = new SettingsImageGroup();
 		images = new Vector<Collectable2D>();
@@ -58,7 +59,7 @@ public class ImageGroupMD  implements Serializable {
 
 	//################################################
 	// vector methods
-	
+
 	/**
 	 * add an image to this group and sets a unique imagegroup parameter to this image object
 	 * @param img
@@ -66,13 +67,16 @@ public class ImageGroupMD  implements Serializable {
 	public void add(Collectable2D c2d) {
 		if(Image2D.class.isInstance(c2d)){
 			Image2D img = (Image2D)c2d;
-		if(MDDataset.class.isInstance(img.getData())) {
-			if(data==null) data = (MDDataset) img.getData();
-			if(data.equals(img.getData())){
-				images.addElement(img);
-				img.setImageGroup(this); 
+			if(MDDataset.class.isInstance(img.getData())) {
+				if(data==null) data = (MDDataset) img.getData();
+				if(data.equals(img.getData())){
+					images.add(image2dCount(),img);
+					img.setImageGroup(this); 
+				}
 			}
 		}
+		else {
+			images.addElement(c2d);
 		}
 	}
 	public boolean remove(Collectable2D img) {
@@ -85,15 +89,15 @@ public class ImageGroupMD  implements Serializable {
 				for(int i=index+1; i<size(); i++)
 					if(Image2D.class.isInstance(images.get(i)))
 						((Image2D)images.get(i)).shiftIndex(-1);
-					
+
 				return images.remove(index);
 			}
 			else return null;
 		}
 		else return null;
 	}
-	
-	
+
+
 
 	public void setBackgroundImage(Image image, File pathBGImage) {
 		this.bgImage = image;
@@ -130,6 +134,22 @@ public class ImageGroupMD  implements Serializable {
 		return settings.getPathBGImage();
 	}
 
+	// ######################################################################################
+	// sizing
+	/**
+	 * according to rotation of data
+	 * @return
+	 */
+	public int getWidthAsMaxDP() {
+		return getFirstImage2D().getWidthAsMaxDP();
+	}
+	/**
+	 * according to rotation of data
+	 * @return
+	 */
+	public int getHeightAsMaxDP() {
+		return getFirstImage2D().getHeightAsMaxDP();
+	}
 
 	// #######################################################################################
 	// ALPHA MAP STUFF
@@ -163,7 +183,7 @@ public class ImageGroupMD  implements Serializable {
 			// thorws exeption if not the same dimensions
 			row.applyToMap(map);
 		}
-		
+
 		sttA.setMap(map);
 		return map;
 	}
@@ -195,15 +215,21 @@ public class ImageGroupMD  implements Serializable {
 
 		return bmap;
 	}
-	
+
 	public Image2D getFirstImage2D() {
 		for(Collectable2D c2d : images)
 			if(Image2D.class.isInstance(c2d))
 				return (Image2D) c2d;
 		return null;
 	}
-	
-	
+
+	public Image2D getLastImage2D() {
+		for(int i=images.size()-1; i>=0; i--)
+			if(Image2D.class.isInstance(images.get(i)))
+				return (Image2D) images.get(i);
+		return null;
+	}
+
 	// #######################################################################################
 	// GETTERS AND SETTERS
 	/**
@@ -218,9 +244,9 @@ public class ImageGroupMD  implements Serializable {
 	 * @return
 	 */
 	public int image2dCount() {
-		return getData().size();
+		return Math.min(getData().size(), images.size());
 	}
-	
+
 	public Vector<Collectable2D> getImages() {
 		return images;
 	}

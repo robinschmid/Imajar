@@ -5,6 +5,8 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.CrosshairState;
@@ -16,10 +18,12 @@ import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYZDataset;
 
+import com.Ostermiller.util.BadLineEndingException;
+
 public class ImageRenderer extends XYBlockRenderer {
 
 	// 
-	private boolean[] map = null;
+	protected boolean[] map = null;
 	
 	
 	/**
@@ -44,11 +48,19 @@ public class ImageRenderer extends XYBlockRenderer {
             ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
             int series, int item, CrosshairState crosshairState, int pass) {
     	// only if in map or if there is no map
-    	if(map==null || (item<map.length && map[item]==true)) {
+    	if(isMapTrue(item)) {
 	        super.drawItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item, crosshairState, pass);
 	    } 
     }
 
+    /**
+     * only draw item if true
+     * @param item
+     * @return
+     */
+    public boolean isMapTrue(int item) {
+    	return map==null || (item<map.length && map[item]==true);
+    }
 
 	public boolean[] getMap() {
 		return map;
@@ -57,4 +69,5 @@ public class ImageRenderer extends XYBlockRenderer {
 		this.map = map;
 		this.fireChangeEvent();
 	} 
+    
 }

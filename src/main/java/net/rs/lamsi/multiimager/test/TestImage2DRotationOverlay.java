@@ -137,7 +137,7 @@ public class TestImage2DRotationOverlay extends JFrame {
 
 					        // XYBlockRenderer
 					        ImageRenderer renderer = new ImageRenderer();
-					        renderer.setPaintScale(map.getPaintScale());
+					        renderer.setPaintScale(map.getPaintScale(0));
 					        renderer.setAutoPopulateSeriesFillPaint(true);
 					        renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 					        // TODO nicht feste Blockwidth!

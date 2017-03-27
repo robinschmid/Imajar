@@ -84,7 +84,7 @@ public class ModuleZoom extends ImageSettingsModule<SettingsZoom> {
 	public void setCurrentHeatmap(Heatmap heat) {
 		super.setCurrentHeatmap(heat);
 		// extract
-		if(heat!=null) {
+		if(heat!=null && getSettings()!=null) {
 			getSettings().setXrange(heat.getPlot().getDomainAxis().getRange());
 			getSettings().setYrange(heat.getPlot().getRangeAxis().getRange());
 			

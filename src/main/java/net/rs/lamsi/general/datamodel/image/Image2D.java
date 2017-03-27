@@ -1216,23 +1216,29 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * Given image img will be setup like this image
 	 * @param img will get all settings from master image
 	 */
-	public void applySettingsToOtherImage(Image2D img) {
+	@Override
+	public void applySettingsToOtherImage(Collectable2D img2) {
+		if(img2.isImage2D()) {
+			Image2D img = (Image2D) img2;
+		
 		try {
 			// save name and path
 			String name = img.getTitle();
 			String path = img.getSettImage().getRAWFilepath();
 			// copy all TODO
 			img.setSettImage(BinaryWriterReader.deepCopy(this.getSettImage()));
-			img.setSettPaintScale((BinaryWriterReader.deepCopy(this.getSettPaintScale())));
-			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
-			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
-			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
-			img.setSettZoom(BinaryWriterReader.deepCopy(this.getSettZoom()));
+			// there should be no need for this
+//			img.setSettPaintScale((BinaryWriterReader.deepCopy(this.getSettPaintScale())));
+//			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
+//			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
+//			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
+//			img.setSettZoom(BinaryWriterReader.deepCopy(this.getSettZoom()));
 			// set name and path
 			img.getSettImage().setTitle(name);
 			img.getSettImage().setRAWFilepath(path);
 		} catch (Exception e) { 
 			e.printStackTrace();
+		}
 		}
 	}
 
@@ -1538,9 +1544,13 @@ public class Image2D extends Collectable2D implements Serializable {
 	// apply filter to cut off first or last values of intensity
 	// only apply if not already done
 	private double lastAppliedMinFilter=-1, lastAppliedMaxFilter = -1;
-	public void applyCutFilterMin(double f) {
+	/**
+	 * 
+	 * @param f in percent ( 5 % as 5 not 0.05)
+	 * @return
+	 */
+	public double applyCutFilterMin(double f) {
 		if(f!=lastAppliedMinFilter) {
-			lastAppliedMinFilter = f;
 			// apply filter
 			//sort all z values
 			double[] z = null;
@@ -1552,11 +1562,17 @@ public class Image2D extends Collectable2D implements Serializable {
 			// save in var
 			minZFiltered =  z[(int)(size*f/100.0)];
 			getSettPaintScale().setMin(minZFiltered);
+			lastAppliedMinFilter = f;
 		}
+		return minZFiltered;
 	}
-	public void applyCutFilterMax(double f) {
+	/**
+	 * 
+	 * @param f in percent ( 5 % as 5 not 0.05)
+	 * @return
+	 */
+	public double applyCutFilterMax(double f) {
 		if(f!=lastAppliedMaxFilter) {
-			lastAppliedMaxFilter = f;
 			// apply filter
 			//sort all z values
 			double[] z = null;
@@ -1568,7 +1584,27 @@ public class Image2D extends Collectable2D implements Serializable {
 			// save in var --> cut from max 1-p
 			maxZFiltered = z[size-(int)(size*f/100.0)];
 			getSettPaintScale().setMax(maxZFiltered);
+			lastAppliedMaxFilter = f;
 		}
+		return maxZFiltered;
+	}
+	
+	/**
+	 * does not apply the cut filter to this image
+	 * @param f in percent ( 5 % as 5 not 0.05)
+	 * @return
+	 */
+	public double getValueCutFilter(double f, boolean useMinMaxFromSelection) {
+			// apply filter
+			//sort all z values
+			double[] z = null;
+			if(!useMinMaxFromSelection) z = toIArray(false);
+			else z = getSelectedDataAsArray(false, true);
+			Arrays.sort(z);
+			// cut off percent f/100.f
+			int size = z.length-1;
+			// save in var --> cut from max 1-p
+			return z[size-(int)(size*f/100.0)];
 	}
 
 	//##################################################################################### 
@@ -2194,4 +2230,8 @@ public class Image2D extends Collectable2D implements Serializable {
 				&& data.getTotalDPCount()==i.getData().getTotalDPCount();
 	}
 
+	@Override
+	public Settings getSettings() {
+		return getSettingsImage2D();
+	}
 }

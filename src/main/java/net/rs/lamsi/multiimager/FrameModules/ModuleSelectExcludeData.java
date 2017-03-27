@@ -18,6 +18,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageModule;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
@@ -93,9 +94,10 @@ public class ModuleSelectExcludeData extends ImageModule {
 							if(currentHeat!=null) {
 								currentHeat.updateSelectedExcludedRects();
 								// show stats
-								getLbSelectedRects().setText(String.valueOf(currentHeat.getImage().getSelectedData().size()));
-								getLbExcludedRects().setText(String.valueOf(currentHeat.getImage().getExcludedData().size()));
-								double used = Math.round(currentHeat.getImage().getSelectedDPCount(true)*1000.0/currentHeat.getImage().getTotalDPCount())/10.0;
+								Image2D img = ((Image2D)currentHeat.getImage());
+								getLbSelectedRects().setText(String.valueOf(img.getSelectedData().size()));
+								getLbExcludedRects().setText(String.valueOf(img.getExcludedData().size()));
+								double used = Math.round(img.getSelectedDPCount(true)*1000.0/img.getTotalDPCount())/10.0;
 								getLbUsedDataPerc().setText(String.valueOf(used));
 							}
 						}

@@ -20,6 +20,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
@@ -29,6 +30,7 @@ import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
@@ -59,11 +61,11 @@ public class ImageLogicRunner {
 	// last file for filechooser
 	private File lastPath = null;
 	// List of Images
-	private ModuleTree<Image2D> treeImg;
+	private ModuleTree<Collectable2D> treeImg;
 	// get parent IconNode by String keys (parent only)
 	private HashMap<String, IconNode> mapNodes;
 	// private Vector<Image2D> listImages = new Vector<Image2D>();
-	private Image2D selectedImage = null;
+	private Collectable2D selectedImage = null;
 	private Heatmap currentHeat = null;
 	//
 
@@ -84,8 +86,8 @@ public class ImageLogicRunner {
 					TreePath path = treeImg.getTree().getSelectionPath();
 					if(path!=null) {
 						DefaultMutableTreeNode img = (DefaultMutableTreeNode) path.getLastPathComponent();
-						if(Image2D.class.isInstance(img.getUserObject())) { 
-							setSelectedImageAndShow((Image2D)img.getUserObject());
+						if(Collectable2D.class.isInstance(img.getUserObject())) { 
+							setSelectedImageAndShow((Collectable2D)img.getUserObject());
 						}
 					}
 				}catch(Exception ex) { 
@@ -151,7 +153,7 @@ public class ImageLogicRunner {
 	 * @param i
 	 * @param parent
 	 */
-	public IconNode addImage(Image2D i, DefaultMutableTreeNode parent) {  
+	public IconNode addImage(Collectable2D i, DefaultMutableTreeNode parent) {  
 		//
 		SettingsGeneralPreferences sett = SettingsHolder.getSettings().getSetGeneralPreferences();
 		IconNode node = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(sett.getIconWidth(), sett.getIconHeight()) : null);
@@ -246,21 +248,24 @@ public class ImageLogicRunner {
 	 * sets the selected Image 
 	 * creates and shows a heatmap in chartpanel in centerView
 	 */
-	public void setSelectedImageAndShow(Image2D image2d) { 
+	public void setSelectedImageAndShow(Collectable2D c2d) { 
 		// 
-		if(image2d == null) {
+		if(c2d == null) {
 			ImageEditorWindow.log("REMOVE VIEWED IMAGE2D", LOG.DEBUG);
-			selectedImage= image2d;
+			selectedImage= c2d;
 			// TODO set image2D -> null?
 			// remove heatmap von central 
 			window.getPnCenterImageView().removeAll(); 
 		}
-		else if(this.selectedImage!=image2d) {
+		else if(this.selectedImage!=c2d) {
 			ImageEditorWindow.log("UPDATE IMAGE2D", LOG.DEBUG); 
 			//
-			selectedImage= image2d;
+			selectedImage= c2d;
 			// Renew all Modules
-			window.setImage2D(image2d); 
+			if(Image2D.class.isInstance(c2d))
+				window.setImage2D((Image2D)c2d); 
+			else if(ImageOverlay.class.isInstance(c2d))
+				window.setImageOverlay((ImageOverlay)c2d); 
 			// create new heatmap
 			renewImage2DView();
 		}
@@ -278,7 +283,7 @@ public class ImageLogicRunner {
 				ImageEditorWindow.log("Create Heatmap", LOG.DEBUG); 
 				// show heatmap in Center
 				currentHeat = heatFactory.generateHeatmap(selectedImage);
-				selectedImage.getSettingsImage2D().applyToHeatMap(currentHeat);
+				
 				ChartPanel myChart = currentHeat.getChartPanel(); 
 				myChart.setMouseWheelEnabled(true);  
 				// remove all and add
@@ -287,8 +292,8 @@ public class ImageLogicRunner {
 			}catch(Exception ex) {
 				ex.printStackTrace();
 				// Dialog
-				ImageEditorWindow.log("Cannot create image from "+selectedImage.getSettImage().toListName()+"; "+ex.getMessage(),LOG.ERROR);
-				JOptionPane.showMessageDialog(window, "cannot create image from "+selectedImage.getSettImage().toListName()+"; "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
+				ImageEditorWindow.log("Cannot create image from "+selectedImage.getTitle()+"; "+ex.getMessage(),LOG.ERROR);
+				JOptionPane.showMessageDialog(window, "cannot create image from "+selectedImage.getTitle()+"; "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
 				return null;
 			}
 		}
@@ -306,10 +311,11 @@ public class ImageLogicRunner {
 		boolean state = DialogLoggerUtil.showDialogYesNo(window, "Change settings of all images in list?", "Attention: You are about to replace all settings of all images! Ok?");
 		if(state && getSelectedImage()!=null) {
 			// current settings as image 
+			
 			// get List of images
-			for(Image2D img : getListImages()) { 
+			for(Collectable2D img : getListImages()) { 
 				// for each replace all settings	
-				getSelectedImage().applySettingsToOtherImage(img);
+				getSelectedImage().applySettingsToOtherImage((img));
 			}
 		}
 	} 
@@ -519,9 +525,11 @@ public class ImageLogicRunner {
 			File file = chooser.getSelectedFile();
 			if(file!=null && getSelectedImage()!=null) {
 				try {
-					ImageEditorWindow.log("Exporting data report to "+FileAndPathUtil.getRealFilePath(file.getParentFile(), file.getName(), "xlsx").getAbsolutePath(), LOG.MESSAGE);
-					DataExportUtil.exportDataReportOnOperations(getSelectedImage(), file.getParentFile(), file.getName());
-					ImageEditorWindow.log("Exporting finished", LOG.MESSAGE);
+					if(Image2D.class.isInstance(selectedImage)) {
+						ImageEditorWindow.log("Exporting data report to "+FileAndPathUtil.getRealFilePath(file.getParentFile(), file.getName(), "xlsx").getAbsolutePath(), LOG.MESSAGE);
+						DataExportUtil.exportDataReportOnOperations((Image2D) selectedImage, file.getParentFile(), file.getName());
+						ImageEditorWindow.log("Exporting finished", LOG.MESSAGE);
+					}
 				} catch (Exception e) { 
 					e.printStackTrace(); 
 				}
@@ -529,6 +537,32 @@ public class ImageLogicRunner {
 		}
 	}
 
+	
+
+	/**
+	 * creates an overlay of the currently selected group
+	 */
+	public void createOverlay() {
+
+		if(selectedImage!=null) {
+			try {
+				ImageGroupMD group = selectedImage.getImageGroup();
+				if(group!=null) {
+
+					// add overlay
+						SettingsImageOverlay settings = new SettingsImageOverlay();
+						ImageOverlay ov = new ImageOverlay(group.getImagesOnly(), settings);
+						group.add(ov);
+
+						addImage(ov, selectedImage.getImageGroup().getNode());
+						// update tree
+						treeImg.reload();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 	/**
 	 * imports a down sampled microscopic image to the selected image group
@@ -568,8 +602,8 @@ public class ImageLogicRunner {
 					}
 					
 					// create image
-					int index = ((MDDataset)selectedImage.getData()).addDimension(data);
-					Image2D result = new Image2D(selectedImage.getData(), index);
+					int index = ((MDDataset)selectedImage.getImageGroup().getData()).addDimension(data);
+					Image2D result = new Image2D((ImageDataset)selectedImage.getImageGroup().getData(), index);
 					
 					result.getSettImage().setTitle(file.getName());
 					result.getSettImage().setRAWFilepath(file.getAbsolutePath());
@@ -625,11 +659,19 @@ public class ImageLogicRunner {
 	//##################################################################################
 	//GETTERS AND SETTERS
 
-	public Vector<Image2D> getListImages() {
+	public Vector<Collectable2D> getListImages() {
 		return treeImg.toList();
 	}
 
-	public Image2D getSelectedImage() {
+	public Vector<Image2D> getListImage2DOnly() {
+		Vector<Image2D> list = new Vector<Image2D>();
+		for(Collectable2D c : getListImages())
+			if(c.isImage2D())
+				list.add((Image2D)c);
+		return list;
+	}
+
+	public Collectable2D getSelectedImage() {
 		return selectedImage;
 	}
 
@@ -651,7 +693,7 @@ public class ImageLogicRunner {
 		this.currentHeat = currentHeat;
 	}
 
-	public ModuleTree<Image2D> getTree() {
+	public ModuleTree<Collectable2D> getTree() {
 		return treeImg;
 	}
 

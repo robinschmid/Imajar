@@ -1,13 +1,17 @@
 package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
 import java.awt.Image;
+import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
@@ -27,16 +31,15 @@ import org.jfree.ui.RectangleInsets;
 
 
 
-
-
 public class HeatmapFactory {
 	// Variablen 
 	
 
 	// Image2D to Heatmap Image
 	public static Heatmap generateHeatmap(Collectable2D image)  throws Exception { 
-		if(Image2D.class.isInstance(image))
-			return generateHeatmapFromImage2D((Image2D)image);
+		if(Image2D.class.isInstance(image)) {
+			return generateHeatmapFromImage2D((Image2D)image); 
+		}
 		else if(ImageOverlay.class.isInstance(image))
 			return generateHeatmapFromImageOverlay((ImageOverlay)image);
 		else
@@ -51,6 +54,8 @@ public class HeatmapFactory {
 		// Heatmap erzeugen
 		Heatmap h = createChart(image, setPaint, setImg, createDataset(image.getSettImage().getTitle(), dat.getX(), dat.getY(), dat.getI()));
 		// TODO WHY?
+		
+		image.getSettingsImage2D().applyToHeatMap(h);
 		return h;
 	}
 	
@@ -58,8 +63,10 @@ public class HeatmapFactory {
 		// get rotated and reflected dataset
 		XYIData2D[] dat = image.getDataSets();
 		// Heatmap erzeugen
-		Heatmap h = createChartOverlay(image, createDatasetOverlay("Overlay", dat), "x", "y");
+		Heatmap h = createChartOverlay(image, createDatasetOverlay(image.getTitles(), dat), "x", "y");
 		// TODO WHY?
+		
+		image.getSettings().applyToHeatMap(h);
 		return h;
 	}
 	/*
@@ -149,15 +156,10 @@ public class HeatmapFactory {
 	// erstellt ein JFreeChart Plot der heatmap
 	// bwidth und bheight (BlockWidth) sind die Maximalwerte
 	private static Heatmap createChartOverlay(ImageOverlay img, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
-        // this min max values in array
-        double zmin = dataset.getZMin();
-        double zmax = dataset.getZMax();
-        // no data!
-        if(zmin == zmax || zmax == 0) {
-        	throw new Exception("Every data point has the same intensity of "+zmin);
-        }
-        else { 
+        SettingsImageOverlay settings = img.getSettings();
+		int seriesCount = dataset.getSeriesCount();
 	    	SettingsThemes setTheme = img.getSettTheme();
+	    	
 			// XAchse
 	        NumberAxis xAxis = new NumberAxis(xTitle);
 	        xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
@@ -169,36 +171,63 @@ public class HeatmapFactory {
 	        yAxis.setLowerMargin(0.0);
 	        yAxis.setUpperMargin(0.0);
 	        // XYBlockRenderer
-	        ImageRenderer renderer = new ImageRenderer();
+	        ImageOverlayRenderer renderer = new ImageOverlayRenderer(seriesCount);
 	        
-	        // PaintScale für farbe? TODO mit Settings!
-	        // TODO upper and lower value setzen!!!!
-	        //two ways of min or max z value: 
-	        // min max values by filter
-	        if(settings.getModeMin().equals(ValueMode.PERCENTILE)) {
-	        	// uses filter for min
-	        	img.applyCutFilterMin(settings.getMinFilter());
-	        	settings.setMin(img.getMinZFiltered());
-	        }
-	        if(settings.getModeMax().equals(ValueMode.PERCENTILE)) {
-	        	// uses filter for min
-	        	img.applyCutFilterMax(settings.getMaxFilter());
-	        	settings.setMax(img.getMaxZFiltered());
+	        Vector<PaintScale> psList = new Vector<PaintScale>();
+	        // create one paintscale for each active image
+	        int counter = 0;
+	        for(int i=0; i<img.getImages().size(); i++) {
+	        	if(settings.isActive(i)) {
+	        		Image2D cimg = img.getImages().get(i);
+	        		SettingsPaintScale ps = settings.getSettPaintScale(i);
+			        // PaintScale für farbe? TODO mit Settings!
+			        // TODO upper and lower value setzen!!!!
+	                double zmin = dataset.getZMin(counter);
+	                double zmax = dataset.getZMax(counter);
+			        //two ways of min or max z value: 
+			        // min max values by filter
+			        if(ps.getModeMin().equals(ValueMode.PERCENTILE)) {
+			        	// uses filter for min
+			        	double nmin = cimg.getValueCutFilter(ps.getMinFilter(), ps.isUsesMinMaxFromSelection());
+			        	ps.setMin(nmin);
+			        }
+			        if(ps.getModeMax().equals(ValueMode.PERCENTILE)) {
+			        	// uses filter for min
+			        	double nmax = cimg.getValueCutFilter(ps.getMaxFilter(), ps.isUsesMinMaxFromSelection());
+			        	ps.setMax(nmax);
+			        }
+
+			        // TODO delete this
+			        // ps.setUsesMinMax(false);
+			        ps.setUsesBAsMax(true);
+			        ps.setInverted(true);
+			        ps.setUsesWAsMin(false);
+			        PaintScale scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, ps); 
+			        psList.add(scale);
+
+			        // TODO nicht feste Blockwidth!
+			        // erstmal feste BlockWidth 
+			        renderer.setBlockWidth(counter, cimg.getMaxBlockWidth(cimg.getSettImage().getRotationOfData())); 
+			        renderer.setBlockHeight(counter, cimg.getMaxBlockHeight(cimg.getSettImage().getRotationOfData())); 
+			        
+
+			        renderer.setSeriesPaint(counter, ps.getMinColor());
+
+			        counter++;
+	        	}
 	        }
 	        // creation of scale
 	        // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
-	        PaintScale scale = null;
-	        scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, settings); 
-	        renderer.setPaintScale(scale);
+	        PaintScale[] scales = psList.toArray(new PaintScale[psList.size()]);
+	        
+	        // set all paint scales
+	        renderer.setPaintScales(scales);
 	        renderer.setAutoPopulateSeriesFillPaint(true);
 	        renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
-	        // TODO nicht feste Blockwidth!
-	        // erstmal feste BlockWidth 
-	        renderer.setBlockWidth(img.getMaxBlockWidth(settImage.getRotationOfData())); 
-	        renderer.setBlockHeight(img.getMaxBlockHeight(settImage.getRotationOfData())); 
+	        
 	        // Plot erstellen mit daten
 	        XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
-	        plot.setBackgroundPaint(Color.lightGray);
+	        plot.setBackgroundPaint(Color.BLACK);
 	        plot.setDomainGridlinesVisible(false);
 	        plot.setRangeGridlinePaint(Color.white);
 	        
@@ -212,28 +241,18 @@ public class HeatmapFactory {
 	        // create chart
 	        JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
 	        // remove lower legend - wie farbskala rein? TODO
-	        chart.removeLegend();
+//	        chart.removeLegend();
 	        chart.setBackgroundPaint(Color.white);
 	        
-	        // Legend Generieren
-	        PaintScale scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings); 
-			PaintScaleLegend legend = createScaleLegend(img, scaleBar, createScaleAxis(settings, dataset), settings.getLevels());   
-			// adding legend in plot or outside
-			if(setTheme.getTheme().isPaintScaleInPlot()) { // inplot
-				XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
-				ta.setMaxWidth(1);
-				plot.addAnnotation(ta);
-			}
-			else chart.addSubtitle(legend);
 			//
 			chart.setBorderVisible(true); 
 	
 			
 			// ChartPanel
-			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, img); 
+			PlotChartPanel chartPanel = new PlotChartPanel(chart); 
 			
 			// add scale legend
-			ScaleInPlot	scaleInPlot = addScaleInPlot(img, setTheme, chartPanel);
+			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
 			
 			// theme
 			img.getSettTheme().applyToChart(chart);
@@ -243,11 +262,10 @@ public class HeatmapFactory {
 			chart.fireChartChanged();
 			 
 			// Heatmap
-			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer, scaleInPlot);
+			Heatmap heat = new Heatmap(dataset, chartPanel, scales, chart, plot, img, renderer, scaleInPlot);
 			
 			// return Heatmap
 	        return heat;
-        }
     } 
 	
 	
@@ -352,7 +370,7 @@ public class HeatmapFactory {
 			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, img); 
 			
 			// add scale legend
-			ScaleInPlot	scaleInPlot = addScaleInPlot(img, setTheme, chartPanel);
+			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
 			
 			// theme
 			img.getSettTheme().applyToChart(chart);
@@ -376,14 +394,10 @@ public class HeatmapFactory {
 	 * @param setTheme
 	 * @param plot
 	 */
-	private static ScaleInPlot addScaleInPlot( Image2D img,  SettingsThemes setTheme,  ChartPanel chartPanel) {
+	private static ScaleInPlot addScaleInPlot(SettingsThemes setTheme,  ChartPanel chartPanel) {
 		// XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
-		float value = setTheme.getTheme().getScaleValue();
-		float factor = setTheme.getTheme().getScaleFactor();
-		String unit = setTheme.getTheme().getScaleUnit(); 
 		
-		ScaleInPlot title = new ScaleInPlot(chartPanel, img,setTheme.getTheme().getScaleXPos(), setTheme.getTheme().getScaleYPos(),
-				value, factor, unit);
+		ScaleInPlot title = new ScaleInPlot(chartPanel, setTheme);
 		//XYDrawableAnnotation ta2 = new XYDrawableAnnotation(1000, 1000, legend.getWidth(), legend.getHeight(), legend);
 		chartPanel.getChart().getXYPlot().addAnnotation(title.getAnnotation());
 		title.setVisible(setTheme.getTheme().isShowScale());
@@ -405,15 +419,17 @@ public class HeatmapFactory {
 	 * @param zvalues
 	 * @return
 	 */
-	private static IXYZDataset createDatasetOverlay(String title, XYIData2D[] dat) {  
+	private static IXYZDataset createDatasetOverlay(String[] title, XYIData2D[] dat) {  
         IXYZDataset dataset = new IXYZDataset();
         // add one black layer / white layer
         // TODO for overlay
         
         // add all series
-        for(XYIData2D d : dat)
-        	dataset.addSeries(title, new double[][] { d.getX(), d.getY(), d.getI() });
-        // might need one dataset for each ?
+        for(int i=0; i<dat.length; i++) {
+        	XYIData2D d  = dat[i];
+        	dataset.addSeries(title[i], new double[][] { d.getX(), d.getY(), d.getI() });
+        }
+        	// might need one dataset for each ?
         return dataset;
     } 
 	 

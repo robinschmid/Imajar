@@ -60,9 +60,9 @@ import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
 import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation.MZChargeCalculatorMZMine;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.sf.mzmine.datamodel.Feature;
@@ -691,7 +691,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																																// send image to imageeditor // TODO
 																																if(currentHeat!=null && currentHeat.getImage()!=null) {
 																																	// TODO txtID.getText()
-																																	window.sendImage2DToImageEditor(currentHeat.getImage(), getTxtImgGroupID().getText());
+																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(), getTxtImgGroupID().getText());
 																																}
 																															}
 																														});

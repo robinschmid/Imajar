@@ -201,7 +201,7 @@ public class SettingsPaintScale extends Settings {
 		this.usesBAsMax = true;
 		this.usesMinMax = true;
 		this.usesMinAsInvisible = false;
-		this. usesMaxAsInvisible = false;
+		this.usesMaxAsInvisible = false;
 		this.min = 0;
 		this.max = 0;
 		this.minColor = Color.CYAN;
@@ -212,6 +212,7 @@ public class SettingsPaintScale extends Settings {
 		this.modeMax = ValueMode.PERCENTILE;
 		this.modeMin = ValueMode.PERCENTILE;
 		usesMinMaxFromSelection = false;
+		isLODMonochrome = false;
 	}
 
 	//##############################################################################################

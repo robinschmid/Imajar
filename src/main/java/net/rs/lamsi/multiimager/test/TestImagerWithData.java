@@ -7,8 +7,10 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -41,6 +43,11 @@ public class TestImagerWithData {
 					IconNode fnode = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
 					
 					ImageGroupMD img = TestImageFactory.createNonNormalImage(4);
+					
+					window.getLogicRunner().addCollection2D(img, fnode);
+					window.getLogicRunner().getTree().addNodeToRoot(fnode);
+					
+					img = TestImageFactory.createOverlayTest();
 					
 					window.getLogicRunner().addCollection2D(img, fnode);
 					window.getLogicRunner().getTree().addNodeToRoot(fnode);

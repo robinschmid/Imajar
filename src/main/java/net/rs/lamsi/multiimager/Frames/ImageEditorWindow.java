@@ -50,11 +50,10 @@ import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.data.Range;
-
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
@@ -67,8 +66,8 @@ import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
-import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AxesRangeChangedListener;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener.RATIO;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AxesRangeChangedListener;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
@@ -86,6 +85,9 @@ import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.WindowStyleUtil;
+
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.data.Range;
 
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
 public class ImageEditorWindow extends JFrame implements Runnable {
@@ -255,7 +257,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		mntmSaveDataAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// open data export dialog
-				DialogDataSaver.startDialogWith(logicRunner.getListImages(), logicRunner.getSelectedImage());
+				Collectable2D img = logicRunner.getSelectedImage();
+				if(img.isImage2D())
+					DialogDataSaver.startDialogWith(logicRunner.getListImage2DOnly(),(Image2D)img);
+				else log("Select a standard image for data export (e.g. image overlay currently selected)", LOG.ERROR);
 			}
 		});
 		mntmSaveDataAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK));
@@ -356,6 +361,16 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		mnAction.add(mntmSplitImages);
 
 
+		JMenuItem btnCreateOverlay = new JMenuItem("Create overlay");
+		btnCreateOverlay.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				logicRunner.createOverlay();
+			}
+		});
+		mnAction.add(btnCreateOverlay);
+		
 		JMenuItem btnImportMicroscopic = new JMenuItem("Add down sampled microscopic image");
 		btnImportMicroscopic.addActionListener(new ActionListener() {
 			@Override
@@ -964,9 +979,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			if(repaintOnly) {
 				ImageEditorWindow.log("Write all Settings from all Modules --> REPAINT ONLY", LOG.DEBUG);
 				Heatmap heat = logicRunner.getCurrentHeat();
-				Image2D img = logicRunner.getSelectedImage();
+				Collectable2D img = logicRunner.getSelectedImage();
 				if(heat!=null && img!=null) {
-					img.getSettingsImage2D().applyToHeatMap(heat);
+					img.getSettings().applyToHeatMap(heat);
 
 					heat.getChartPanel().revalidate();
 					heat.getChartPanel().repaint();
@@ -988,6 +1003,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbAuto.setSelected(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
+		// TODO
+		// show all modules for images
+		
 		// set
 		for(ImageModule m : listImageSettingsModules) {
 			m.setCurrentImage(img); 
@@ -996,6 +1014,28 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		ImageLogicRunner.setIS_UPDATING(true);
 		cbAuto.setSelected(isauto);
 	} 
+	/**
+	 * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
+	 * @param img
+	 */
+	public void setImageOverlay(ImageOverlay img) { 
+		boolean isauto = cbAuto.isSelected();
+		cbAuto.setSelected(false); 
+		// finished
+		ImageLogicRunner.setIS_UPDATING(false);
+		// TODO
+		// show all modules for ImageOverlays
+		
+		// set
+//		for(ImageModule m : listImageSettingsModules) {
+//			m.setCurrentImage(img); 
+//		} 
+		// finished
+		ImageLogicRunner.setIS_UPDATING(true);
+		cbAuto.setSelected(isauto);
+	} 
+	
+	
 	
 	/**
 	 * Visualization:
@@ -1230,7 +1270,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * the list of images or null if the editor is not initialized
 	 * @return
 	 */
-	public static Vector<Image2D> getImages() { 
+	public static Vector<Collectable2D> getImages() { 
 		if(getEditor()==null)
 			return null;
 		else {

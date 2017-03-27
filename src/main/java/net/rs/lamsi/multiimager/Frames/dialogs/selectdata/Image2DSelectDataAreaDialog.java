@@ -346,7 +346,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		if(img!=null) { 
 			try {
 				heat = HeatmapFactory.generateHeatmap(img);
-				this.img = heat.getImage();
+				this.img = (Image2D) heat.getImage();
 				// get all existing rects
 				map = new HashMap<RectSelection, XYBoxAnnotation>();
 				rects = img.getSelectedData();  

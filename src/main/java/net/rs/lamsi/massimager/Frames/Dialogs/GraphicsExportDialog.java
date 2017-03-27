@@ -30,6 +30,7 @@ import javax.swing.border.EmptyBorder;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
@@ -86,7 +87,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	//###################################################################
 	// Vars
 	private ChartPanel chartPanel;
-	private Vector<Image2D> list;
+	private Vector<Collectable2D> list;
 	private boolean canExport;
 	private final JFileChooser chooser = new JFileChooser();
 	private JPanel pnChartPreview;
@@ -117,10 +118,10 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	public static void openDialog2(JFreeChart chart) {
 		inst.openDialogI(chart, null); 
 	}
-	public static void openDialog(JFreeChart chart, Vector<Image2D> list) {
+	public static void openDialog(JFreeChart chart, Vector<Collectable2D> list) {
 		inst.openDialogI(chart, list); 
 	}
-	protected void openDialogI(JFreeChart chart, Vector<Image2D> list) {
+	protected void openDialogI(JFreeChart chart, Vector<Collectable2D> list) {
 		inst.list = list;
 		//
 		try {
@@ -191,14 +192,17 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 					File path = sett.getPath();
 					String fileName = sett.getFileName(); 
 					// import all
-					for(Image2D img : list) { 
+					for(Collectable2D img : list) { 
 						try {
 							// create chart
 							Heatmap heat = HeatmapFactory.generateHeatmap(img);
 							// TODO maybe you have to put it on the chartpanel and show it? 
 							addChartToPanel(heat.getChartPanel());
 							// set the name and path 
-							String sub = FileAndPathUtil.eraseFormat(img.getSettImage().getRAWFileName());
+							String sub = img.getTitle();
+							if(Image2D.class.isInstance(img)) {
+								FileAndPathUtil.eraseFormat(((Image2D)img).getSettImage().getRAWFileName());
+							}
 							sett.setPath(new File(path,sub));
 							// title as filename
 							sett.setFileName(fileName+img.getTitle());

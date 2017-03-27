@@ -102,7 +102,7 @@ public class PaintScaleGenerator {
 			return paintScale;  
 	}
 
-	// Unterschiedlicher PaintScales FOR LEGEND
+	//  PaintScales FOR LEGEND
 	public static PaintScale generateStepPaintScaleForLegend(double min, double max, SettingsPaintScale settings) {   
 		if(min==max) {
 			LookupPaintScale paintScale = new LookupPaintScale(min,max,Color.lightGray); 
@@ -152,6 +152,9 @@ public class PaintScaleGenerator {
 			}
 		}
 		else {
+			// uses black or white not both and is monochrome
+			boolean monochromeOneSided = settings.isMonochrom() && ((settings.isUsesBAsMax() ^ settings.isUsesWAsMin()));
+			
 			// adding steps to the middle
 			for(; i<settings.getLevels(); i++) {
 				// current value
@@ -159,10 +162,13 @@ public class PaintScaleGenerator {
 				float p = i/(settings.getLevels()-1.0f);
 				// Invert?
 				if(settings.isInverted()) p = (1-p);
-				// 
+				// Monochrome two sided
 				if(settings.isMonochrom()) { 
 					// brightness and saturation 
-					paintScale.add(value, interpolateMonochrom(settings.getMinColor(), p, 2.f, settings.isGrey()));
+					if(monochromeOneSided)
+						paintScale.add(value, interpolateMonochromOneSided(settings.getMinColor(), p, settings.isUsesBAsMax()));
+					else 
+						paintScale.add(value, interpolateMonochrom(settings.getMinColor(), p, 2.f, settings.isGrey()));
 				} 
 				else if(settings.isUsesBAsMax() || settings.isUsesWAsMin()) { 
 					paintScale.add(value, interpolateWithBlackAndWhite(settings.getMinColor(), settings.getMaxColor(), p, settings.getBrightnessFactor(),settings.isUsesWAsMin(), settings.isUsesBAsMax())); 
@@ -303,6 +309,33 @@ public class PaintScaleGenerator {
 			
 			return Color.getHSBColor(hue, saturation, brightness);
 		}
+	}
+	/*
+	 * Hue and saturation 
+	 * white: hsb = -01
+	 * black: hsb = -10
+	 * color: hsb = ?11
+	 * increasing saturation
+	 */
+	private static Color interpolateMonochromOneSided(Color start, float p, boolean black) {		    
+			// HSB
+			float[] startHSB = Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), null);  
+			// Saturation schnell hoch; Hue between lowHue and highHue --> auf 0 und 100%; Brightness am ende schnell runter;
+			float saturation = 1;
+			// brightness
+			float brightness = (1-p);
+			if(brightness>=1.f) 
+				brightness=1.f;
+			if(brightness<=0.f) 
+				brightness=0.f; 
+			
+			// hue
+			float hue = startHSB[0];  
+			
+			if(black)
+				return Color.getHSBColor(hue, saturation, brightness);
+			else
+				return Color.getHSBColor(hue, brightness, brightness);
 	}
 
 }
