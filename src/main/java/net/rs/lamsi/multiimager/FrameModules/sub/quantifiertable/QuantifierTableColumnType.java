@@ -17,7 +17,7 @@
  * Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-package net.rs.lamsi.multiimager.FrameModules.quantifiertable;
+package net.rs.lamsi.multiimager.FrameModules.sub.quantifiertable;
 
 import javax.swing.JButton;
 

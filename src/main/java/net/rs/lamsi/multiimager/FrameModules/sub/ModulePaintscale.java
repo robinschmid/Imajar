@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.Color;
@@ -39,17 +39,17 @@ import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorPicker2;
 import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
 import net.rs.lamsi.massimager.Frames.FrameWork.listener.DelayedDocumentListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
-import net.rs.lamsi.multiimager.FrameModules.paintscale.PaintScaleHistogram;
-import net.rs.lamsi.multiimager.FrameModules.paintscale.PaintscaleIcon;
+import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
+import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
-public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
+public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
 	//################################################################################################
 	// MY STUFF
 	protected ColorPicker2 colorPickerDialog; 
@@ -124,7 +124,7 @@ public class ModulePaintscale extends ImageSettingsModule<SettingsPaintScale> {
 	 * Create the panel.
 	 */
 	public ModulePaintscale() { 
-		super("Paintscale", false, SettingsPaintScale.class); 
+		super("Paintscale", false, SettingsPaintScale.class, Image2D.class); 
 		getPnContent().setLayout(new MigLayout("", "[188px,grow]", "[176px][][294.00px][][55.00][]"));
 		
 		formatAbs.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));

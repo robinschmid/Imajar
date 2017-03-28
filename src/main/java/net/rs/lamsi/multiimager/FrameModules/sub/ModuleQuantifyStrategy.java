@@ -1,9 +1,8 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
@@ -29,13 +28,13 @@ import javax.swing.event.ListSelectionEvent;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.Quantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierMultiPoints;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
-import net.rs.lamsi.multiimager.FrameModules.quantifiertable.PnTableQuantifier;
+import net.rs.lamsi.multiimager.FrameModules.sub.quantifiertable.PnTableQuantifier;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
@@ -43,7 +42,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaD
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
-public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQuantifier> { 
+public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<SettingsImage2DQuantifier, Image2D> { 
 	//
 	private int lastMode = 0;
 	// save img IS 
@@ -73,7 +72,7 @@ public class ModuleQuantifyStrategy extends ImageSettingsModule<SettingsImage2DQ
 	 * Create the panel.
 	 */
 	public ModuleQuantifyStrategy(ImageEditorWindow wnd) {
-		super("Quantifier", false, SettingsImage2DQuantifier.class);  
+		super("Quantifier", false, SettingsImage2DQuantifier.class, Image2D.class);  
 		//
 		window = wnd;
 		

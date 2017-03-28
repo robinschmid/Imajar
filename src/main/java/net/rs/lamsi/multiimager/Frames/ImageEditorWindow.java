@@ -57,8 +57,8 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
@@ -72,12 +72,12 @@ import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
-import net.rs.lamsi.multiimager.FrameModules.ModuleGeneral;
-import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
-import net.rs.lamsi.multiimager.FrameModules.ModuleOperations;
-import net.rs.lamsi.multiimager.FrameModules.ModulePaintscale;
-import net.rs.lamsi.multiimager.FrameModules.ModuleThemes;
-import net.rs.lamsi.multiimager.FrameModules.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleImage2D;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
@@ -107,10 +107,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 	// save all frames for updating style etc
 	private Vector<Component> listFrames = new Vector<Component>();
-	// list of all Modules
-	private Vector<ImageModule> listImageSettingsModules = new Vector<ImageModule>();
-	
 
+	// MODULES
+	private ModuleImage2D modImage2D;
+	
 	// Autoupdate after a given time
 	private final long AUTO_UPDATE_TIME = 1500;
 	private long lastAutoUpdateTime = -1;
@@ -142,14 +142,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	
 	// AUTOGEN 
 	//
-	private JCheckBox cbAuto;
-	private ModuleImage2D modImage2D;
-	private ModuleGeneral moduleGeneral;
-	private ModuleZoom moduleZoom;
-	private ModulePaintscale modulePaintscale;
-	private ModuleThemes moduleThemes;
+	private ModuleTreeWithOptions<Collectable2D> moduleTreeImages;
+	
+	
 	private JPanel pnCenterImageView;	
-	private ModuleTreeWithOptions<Image2D> moduleTreeImages;
+	private JCheckBox cbAuto;
+	
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JRadioButtonMenuItem menuRbImagingAnalysis;
 	private JRadioButtonMenuItem menuRbDirectImagingAnalysis;
@@ -163,7 +161,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private JTextField txtDirectTime;
 	private JTextField txtDirectFileFilter;
 	private JTextField txtDirectStartsWith;
-	private ModuleOperations moduleOperations;
 	private JCheckBox cbSumTasks;
 	private JCheckBoxMenuItem cbDebug;
 	private JCheckBoxMenuItem cbKeepAspectRatio;
@@ -425,6 +422,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				TreePath path = DialogLoggerUtil.showTreeDialogAndChoose(thisFrame, getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION, getModuleTreeImages().getTree().getSelectionPaths())[0];
 				// show dialog with mutliple image view
 				if(path!=null) { 
+					// TODO correct?
 					ImageGroupMD img = getModuleTreeImages().getImageCollection(path);
 					if(img!=null) {
 						MultiImageFrame frame = new MultiImageFrame();
@@ -528,6 +526,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		modImage2D = new ModuleImage2D(this);
 		east.add(modImage2D, BorderLayout.CENTER);
 
+		// add buttons to this module
 		JPanel pnTitleSettings = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
 		flowLayout.setHgap(4);
@@ -553,46 +552,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbAuto = new JCheckBox("auto");
 		cbAuto.setSelected(true);
 		pnTitleSettings.add(cbAuto);
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		modImage2D.getPnContent().add(scrollPane, BorderLayout.EAST);
-
-		JPanel gridsettings = new JPanel();
-		gridsettings.setAlignmentY(0.0f);
-		gridsettings.setAlignmentX(0.0f);
-		scrollPane.setViewportView(gridsettings);
-		gridsettings.setLayout(new BoxLayout(gridsettings, BoxLayout.Y_AXIS));
-
-		moduleGeneral = new ModuleGeneral(this);
-		moduleGeneral.setAlignmentY(Component.TOP_ALIGNMENT);
-		gridsettings.add(moduleGeneral);
-
-		moduleZoom = new ModuleZoom();
-		gridsettings.add(moduleZoom);
 		
-		modulePaintscale = new ModulePaintscale();
-		gridsettings.add(modulePaintscale);
-
-		moduleThemes = new ModuleThemes();
-		gridsettings.add(moduleThemes);
-
-		moduleOperations = new ModuleOperations(this);
-		gridsettings.add(moduleOperations);
-
-		// add all modules for Image settings TODO add all mods
-		listImageSettingsModules.addElement(modImage2D);
-		listImageSettingsModules.addElement(moduleGeneral);
-		listImageSettingsModules.addElement(moduleGeneral.getModSplitConImg());
-		listImageSettingsModules.addElement(moduleZoom);
-		
-		listImageSettingsModules.addElement(modulePaintscale);
-		listImageSettingsModules.addElement(moduleThemes);
-		listImageSettingsModules.addElement(moduleOperations);
-		listImageSettingsModules.addElement(moduleOperations.getModQuantifier());
-		listImageSettingsModules.addElement(moduleOperations.getModSelectExcludeData());
-
+		// split pane
 		splitPane = new JSplitPane(); 
 		pnNorthContent.add(splitPane, BorderLayout.CENTER);
 		splitPane.setOneTouchExpandable(true);
@@ -603,7 +564,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		west.setLayout(new BorderLayout(0, 0));
 
 		// TODO richtig so?  
-		moduleTreeImages = new ModuleTreeWithOptions<Image2D>("", true);
+		moduleTreeImages = new ModuleTreeWithOptions<Collectable2D>("", true);
 		moduleTreeImages.getTree().setCellRenderer(new IconNodeRenderer());
 		moduleTreeImages.getTree().setRowHeight(0);
 		moduleTreeImages.getLbTitle().setText("Tree of images");
@@ -854,7 +815,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			}
 		};
 		// add to MODULES TODO 
-		for(ImageModule m : listImageSettingsModules) {
+		for(ImageSettingsModule m : listImageSettingsModules) {
 			m.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
 		}  
 		
@@ -899,7 +860,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			}
 		};
 		// add to MODULES TODO 
-		for(ImageModule m : listImageSettingsModules) {
+		for(ImageSettingsModule m : listImageSettingsModules) {
 			m.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);
 		}  
 	} 
@@ -970,9 +931,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		// 
 		ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
 		// TODO Write all to Settings 
-		for(ImageModule m : listImageSettingsModules) {
-			if(m instanceof ImageSettingsModule)
-				((ImageSettingsModule)m).writeAllToSettings();
+		for(ImageSettingsModule m : listImageSettingsModules) {
+			if(m instanceof SettingsModule)
+				((SettingsModule)m).writeAllToSettings();
 		}  
 		// show Image 
 		if(ImageLogicRunner.IS_UPDATING()) {
@@ -1007,7 +968,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		// show all modules for images
 		
 		// set
-		for(ImageModule m : listImageSettingsModules) {
+		for(ImageSettingsModule m : listImageSettingsModules) {
 			m.setCurrentImage(img); 
 		} 
 		// finished
@@ -1093,7 +1054,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		ChartLogics.setZoomDomainAxis(heat.getChartPanel(), ChartLogics.getZoomDomainAxis(heat.getChartPanel()), false); 
 		// set heatmap for all modules 
-		for(ImageModule m : listImageSettingsModules) {
+		for(ImageSettingsModule m : listImageSettingsModules) {
 			m.setCurrentHeatmap(heat);
 		}  
 	}
@@ -1202,16 +1163,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public JCheckBox getCbAuto() {
 		return cbAuto;
 	}
-	public ModuleGeneral getModuleGeneral() {
-		return moduleGeneral;
-	}
-	public ModuleZoom getModuleZoom() {
-		return moduleZoom;
-	}
-
-	public ModulePaintscale getModulePaintscale() {
-		return modulePaintscale;
-	}
 	public ImageLogicRunner getLogicRunner() {
 		return logicRunner;
 	}
@@ -1266,6 +1217,16 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		return moduleOperations;
 	}
 
+	public ModuleGeneral getModuleGeneral() {
+		return moduleGeneral;
+	}
+	public ModuleZoom getModuleZoom() {
+		return moduleZoom;
+	}
+
+	public ModulePaintscale getModulePaintscale() {
+		return modulePaintscale;
+	}
 	/**
 	 * the list of images or null if the editor is not initialized
 	 * @return

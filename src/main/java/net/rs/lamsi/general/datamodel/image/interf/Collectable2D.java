@@ -5,8 +5,15 @@ import javax.swing.Icon;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
+import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
+import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 
 public abstract class Collectable2D {
@@ -51,6 +58,19 @@ public abstract class Collectable2D {
 	public abstract SettingsZoom getSettZoom();
 	
 	public abstract Settings getSettings();
+	
+	/**
+	 * set settings by class
+	 * @param settings
+	 */
+	public abstract void setSettings(Settings settings);
+
+	/**
+	 * get settings by class
+	 * @param classsettings
+	 * @return
+	 */
+	public abstract Settings getSettingsByClass(Class classsettings);
 	
 	/**
 	 * Given image img will be setup like this image

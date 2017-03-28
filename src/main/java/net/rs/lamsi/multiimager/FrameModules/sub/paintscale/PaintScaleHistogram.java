@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules.paintscale;
+package net.rs.lamsi.multiimager.FrameModules.sub.paintscale;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

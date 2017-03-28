@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules.quantifiertable;
+package net.rs.lamsi.multiimager.FrameModules.sub.quantifiertable;
 
 import java.math.RoundingMode;
 import java.text.NumberFormat;

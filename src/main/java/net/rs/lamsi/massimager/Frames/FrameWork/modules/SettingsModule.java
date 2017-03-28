@@ -10,8 +10,6 @@ import javax.swing.JMenuItem;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
-import loci.formats.FilePattern;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.Settings.Settings;
@@ -25,13 +23,14 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 
-public abstract class ImageSettingsModule<T> extends ImageModule implements SettingsChangedListener {
+public abstract class SettingsModule<T> extends Module implements SettingsChangedListener {
  
-	protected Class classsettings;
+	protected final Class classsettings;
+
 	protected T settings; 
 	protected int presetindex = 4;
 	
-	public ImageSettingsModule(String title, boolean westside, Class csettings) { 
+	public SettingsModule(String title, boolean westside, Class csettings) { 
 		super(title, westside);
 		classsettings = csettings;
 		createMenu(csettings);
@@ -70,7 +69,30 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 		
 		this.addPopupMenu(menu);
 	} 
-	
+
+	//################################################################################################
+	// Autoupdate
+	/**
+	 * init with listeners for changes of settings in the modules 
+	 * autoUpdater calls SettingsExtraction from modules for creation of a new heatmap
+	 * @param al
+	 * @param cl
+	 * @param dl
+	 * @param ccl
+	 * @param il
+	 */
+	public abstract void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il);
+	/**
+	 * init with listeners for changes of settings in the modules 
+	 * autoUpdater calls SettingsExtraction from modules for REPAINTING the current heatmap
+	 * @param al
+	 * @param cl
+	 * @param dl
+	 * @param ccl
+	 * @param il
+	 */
+	public abstract void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il);
+
 	
 	
 	/**
@@ -105,16 +127,6 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 		this.setSettings((T)settings);
 	}
 	
-	// from ImageModule
-	@Override
-	public void setCurrentImage(Image2D img) {
-		super.setCurrentImage(img);
-		setSettings((T) img.getSettingsByClass(classsettings));
-	}
-	
-		//################################################################################################
-		// Autoupdate
-		public abstract void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il);
 
 		//################################################################################################
 		// LOGIC
@@ -147,7 +159,6 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 		 */
 		public void setSettings(T settings) {
 			this.settings = settings;
-			if(currentImage!=null) currentImage.setSettings((Settings)settings); 
 			if(settings!=null) {
 				setAllViaExistingSettings(settings);
 				// transfer to Settingsholder
@@ -184,6 +195,9 @@ public abstract class ImageSettingsModule<T> extends ImageModule implements Sett
 
 		public void setPresetindex(int presetindex) {
 			this.presetindex = presetindex;
+		} 
+
+		public Class getSettingsClass() {
+			return classsettings;
 		}
-		
 }

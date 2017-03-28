@@ -11,7 +11,7 @@ import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
-import net.rs.lamsi.multiimager.FrameModules.ModuleSelectExcludeData;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 
 import org.jfree.chart.ChartPanel;

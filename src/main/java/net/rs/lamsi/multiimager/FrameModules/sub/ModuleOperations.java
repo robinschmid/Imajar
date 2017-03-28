@@ -1,46 +1,40 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JRadioButton;
-import javax.swing.ButtonGroup;
-import javax.swing.JTabbedPane;
-import javax.swing.JSpinner;
-import javax.swing.JSlider;
-
-import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-
-import javax.swing.event.ChangeEvent;
-
-public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperations> { 
+public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2DOperations, Image2D> { 
 	//data mode: img or start of this image
 	private int lastModeBlank = 0;
 	protected Image2D imgBlank, imgIS;
@@ -75,7 +69,7 @@ public class ModuleOperations extends ImageSettingsModule<SettingsImage2DOperati
 	 * Create the panel.
 	 */
 	public ModuleOperations(ImageEditorWindow wnd) {
-		super("Operations", false, SettingsImage2DOperations.class);
+		super("Operations", false, SettingsImage2DOperations.class, Image2D.class);
 
 		window = wnd;
 		modQuantifier = new ModuleQuantifyStrategy(wnd);

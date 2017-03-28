@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
@@ -26,8 +26,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
@@ -57,7 +60,7 @@ import java.awt.Font;
 import javax.swing.Box;
 import javax.swing.JSlider;
 
-public class ModuleThemes extends ImageSettingsModule<SettingsThemes> {
+public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Collectable2D> {
 	// mystuff
 	protected boolean isForPrint = true;
 	
@@ -84,7 +87,7 @@ public class ModuleThemes extends ImageSettingsModule<SettingsThemes> {
 	 * Create the panel.
 	 */
 	public ModuleThemes() {
-		super("Themes", false, SettingsThemes.class);    
+		super("Themes", false, SettingsThemes.class, Collectable2D.class);    
 		
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, BorderLayout.CENTER);

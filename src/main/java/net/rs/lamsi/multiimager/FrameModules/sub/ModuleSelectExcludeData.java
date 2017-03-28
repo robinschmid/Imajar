@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
@@ -20,12 +20,12 @@ import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DModule;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
 
-public class ModuleSelectExcludeData extends ImageModule { 
+public class ModuleSelectExcludeData extends Collectable2DModule { 
 	//
 	private ImageEditorWindow window;
 	private JLabel lbExcludedRects;

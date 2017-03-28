@@ -11,6 +11,7 @@ import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -63,8 +64,8 @@ public class ModuleTree <T> extends Module {
 				//
 				getTreeModel().removeNodeFromParent(node);  
 				// image? remove data
-				if(isImage(node)) {
-					Image2D image = (Image2D) node.getUserObject();
+				if(isCollectable2D(node)) {
+					Collectable2D image = (Collectable2D) node.getUserObject();
 					if(image.getImageGroup()!=null) {
 						image.getImageGroup().remove(image);
 					}
@@ -80,10 +81,10 @@ public class ModuleTree <T> extends Module {
 	 * @param path
 	 * @return
 	 */
-	public Image2D getImageFromPath(TreePath path) {
+	public Collectable2D getImageFromPath(TreePath path) {
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-		if(isImage(node)) {
-			return (Image2D) node.getUserObject();
+		if(isCollectable2D(node)) {
+			return (Collectable2D) node.getUserObject();
 		}
 		else return null;
 	}
@@ -98,28 +99,25 @@ public class ModuleTree <T> extends Module {
 		if(path==null) return null;
 		
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-		if(isImage(node)) {
-			return ((Image2D)node.getUserObject()).getImageGroup();
+		if(isCollectable2D(node)) {
+			return ((Collectable2D)node.getUserObject()).getImageGroup();
 		}
 		else {
 			// search all first level child paths
 			for(int i=0; i<node.getChildCount(); i++) {
 				DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
-				if(isImage(child)) 
-					return ((Image2D)child.getUserObject()).getImageGroup();
+				if(isCollectable2D(child)) 
+					return ((Collectable2D)child.getUserObject()).getImageGroup();
 			}
 		}
 		return null;
 	}
 
-	public boolean isImage(TreeNode node) {
-		return Image2D.class.isInstance(((DefaultMutableTreeNode)node).getUserObject());
-	}
-	public boolean isImage(DefaultMutableTreeNode node) {
-		return Image2D.class.isInstance(node.getUserObject());
+	public boolean isCollectable2D(DefaultMutableTreeNode node) {
+		return Collectable2D.class.isInstance(node.getUserObject());
 	}
 	public boolean isCollection(DefaultMutableTreeNode node) {
-		return !isImage(node);
+		return !isCollectable2D(node);
 	}
 	
 	public Vector<T> toList() {

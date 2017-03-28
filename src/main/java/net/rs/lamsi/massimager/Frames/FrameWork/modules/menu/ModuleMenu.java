@@ -19,7 +19,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
@@ -78,7 +78,7 @@ public class ModuleMenu extends JButton {
 	/*
 	 * creation of specific menus
 	 */
-	public static ModuleMenu createLoadSaveOptionsMenu(final ImageSettingsModule mod, final Class settingsClass, final SettingsChangedListener settingsChangedListener) {
+	public static ModuleMenu createLoadSaveOptionsMenu(final SettingsModule mod, final Class settingsClass, final SettingsChangedListener settingsChangedListener) {
 		ModuleMenu menu = new ModuleMenu();
 
 		JMenuItem load = new JMenuItem("Load options");

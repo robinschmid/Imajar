@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
@@ -23,8 +23,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
@@ -33,7 +34,7 @@ import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 import org.jfree.chart.plot.XYPlot;
 
-public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> { 
+public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralImage, Image2D> { 
 	//
 	private ImageEditorWindow window;
 	
@@ -58,7 +59,7 @@ public class ModuleGeneral extends ImageSettingsModule<SettingsGeneralImage> {
 	 * Create the panel.
 	 */
 	public ModuleGeneral(ImageEditorWindow wnd) {
-		super("General", false, SettingsGeneralImage.class);  
+		super("General", false, SettingsGeneralImage.class, Image2D.class);  
 		window = wnd;
 		
 		JPanel pnNorth = new JPanel();

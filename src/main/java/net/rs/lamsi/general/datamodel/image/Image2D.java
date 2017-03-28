@@ -1156,6 +1156,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * 
 	 * @param settings any image settings
 	 */
+	@Override
 	public void setSettings(Settings settings) {
 		try {
 			if(settings== null)
@@ -1191,6 +1192,7 @@ public class Image2D extends Collectable2D implements Serializable {
 		}
 	} 
 
+	@Override
 	public Settings getSettingsByClass(Class classsettings) {
 		// TODO -- add other settings here
 		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 

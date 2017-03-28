@@ -9,11 +9,19 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
+import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
+import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
+import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
@@ -105,7 +113,7 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 				// save name and path
 				String name = img.getTitle();
 				// copy all TODO
-				img.setSettings((SettingsImageOverlay) settings.copy());
+				img.setSettingsOverlay((SettingsImageOverlay) settings.copy());
 				// set name and path
 				img.getSettings().setTitle(name);
 			} catch (Exception e) { 
@@ -151,8 +159,44 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	public SettingsImageOverlay getSettings() {
 		return settings;
 	}
-	public void setSettings(SettingsImageOverlay settings) {
+	public void setSettingsOverlay(SettingsImageOverlay settings) {
 		this.settings = settings;
+	}
+	
+	@Override
+	public void setSettings(Settings sett) {
+		try {
+			if(settings==null)
+				return;
+			// TODO --> set all settings in one: 
+			// TODO --> complete!!!
+			if(SettingsPaintScale.class.isAssignableFrom(sett.getClass())) 
+				settings.setCurrentSettPaintScale((SettingsPaintScale) sett);
+			else if(SettingsImageOverlay.class.isAssignableFrom(sett.getClass())) {
+				setSettingsOverlay((SettingsImageOverlay) sett);
+			}
+			else if(SettingsZoom.class.isAssignableFrom(sett.getClass())) {
+				settings.setSettZoom((SettingsZoom) sett);
+			}
+			else if(SettingsThemes.class.isAssignableFrom(sett.getClass())) 
+				settings.setSettTheme((SettingsThemes) sett);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	} 
+
+	@Override
+	public Settings getSettingsByClass(Class classsettings) {
+		// TODO -- add other settings here
+		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 
+			return settings.getCurrentSettPaintScale();
+		else if(SettingsImageOverlay.class.isAssignableFrom(classsettings))
+			return settings;
+		else if(SettingsZoom.class.isAssignableFrom(classsettings)) 
+			return getSettZoom();
+		else if(SettingsThemes.class.isAssignableFrom(classsettings)) 
+			return getSettTheme();
+		return null;
 	}
 	public SettingsThemes getSettTheme() {
 		return settings.getSettTheme();

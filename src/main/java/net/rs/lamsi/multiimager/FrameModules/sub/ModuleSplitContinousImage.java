@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
@@ -20,13 +20,13 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
-public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImageContinousSplit> {
+public class ModuleSplitContinousImage extends Collectable2DSettingsModule<SettingsImageContinousSplit, Image2D> {
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JTextField txtSplitValue;
 	private JTextField txtAdd;
@@ -41,7 +41,7 @@ public class ModuleSplitContinousImage extends ImageSettingsModule<SettingsImage
 	 * Create the panel.
 	 */
 	public ModuleSplitContinousImage(ImageEditorWindow wnd) {
-		super("Split continous data", false, SettingsImageContinousSplit.class);    
+		super("Split continous data", false, SettingsImageContinousSplit.class, Image2D.class);    
 		window = wnd;
 		
 		JPanel panel = new JPanel();

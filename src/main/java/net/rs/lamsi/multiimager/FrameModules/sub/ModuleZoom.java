@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules;
+package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
@@ -14,16 +14,17 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 import org.jfree.data.Range;
 
-public class ModuleZoom extends ImageSettingsModule<SettingsZoom> { 
+public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collectable2D> { 
 	//
 	private JTextField txtXLower;
 	private JTextField txtXUpper;
@@ -36,7 +37,7 @@ public class ModuleZoom extends ImageSettingsModule<SettingsZoom> {
 	 * Create the panel.
 	 */
 	public ModuleZoom() {
-		super("Zoom", false, SettingsZoom.class);  
+		super("Zoom", false, SettingsZoom.class, Collectable2D.class);  
 		getLbTitle().setText("Zoom");
 		
 		JPanel panel = new JPanel();
@@ -92,11 +93,6 @@ public class ModuleZoom extends ImageSettingsModule<SettingsZoom> {
 		}
 	}
 	
-	@Override
-	public void setSettings(SettingsZoom settings) {
-		// TODO Auto-generated method stub
-		super.setSettings(settings);
-	}
 	
 	//################################################################################################
 	// Autoupdate

@@ -29,6 +29,8 @@ public class SettingsImageOverlay extends Settings {
 	
 	protected SettingsZoom settZoom;
 	
+	// the currently edited paintscale
+	protected int currentPaintScale = 0;
 	// overlay settings
 	protected String title = "";
 	// colors for paintscales
@@ -223,5 +225,25 @@ public class SettingsImageOverlay extends Settings {
 	public void setSettPaintScale(Vector<SettingsPaintScale> psSettings) {
 		this.psSettings = psSettings;
 	}
+
+	public void setCurrentSettPaintScale(SettingsPaintScale sett) {
+		if(psSettings==null || currentPaintScale<0 || currentPaintScale>=psSettings.size())
+			return;
+		else {
+			psSettings.remove(currentPaintScale);
+			psSettings.add(currentPaintScale, sett);
+		}
+	}
 	
+	public SettingsPaintScale getCurrentSettPaintScale() {
+		return psSettings==null || currentPaintScale<0 || currentPaintScale>=psSettings.size()? null : psSettings.get(currentPaintScale);
+	}
+
+	public int getCurrentPaintScale() {
+		return currentPaintScale;
+	}
+
+	public void setCurrentPaintScale(int currentPaintScale) {
+		this.currentPaintScale = currentPaintScale;
+	}
 }
