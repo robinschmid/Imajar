@@ -19,6 +19,7 @@ import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 /**
@@ -106,10 +107,21 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 				for(Module m : listSettingsModules) {
 					if(SettingsModule.class.isInstance(m)) {
 						SettingsModule sm = ((SettingsModule)m);
-						Settings sett = st.getSettingsByClass(sm.getSettingsClass());
-						if(sett!=null)
+						// try to find settings in collection2d
+						Settings sett = getCurrentImage().getSettingsByClass(sm.getSettingsClass());
+						if(sett==null) {
+							// try to find in parent settings
+							 sett = st.getSettingsByClass(sm.getSettingsClass());
+						}
+						
+						if(sett!=null) { 
 							sm.setAllViaExistingSettings(sett);
-						else throw new Exception(sm.getSettingsClass()+" Settings==null; should not happen. Initialize all settings of this container");
+							sm.setVisible(true);
+						}
+						else {
+							sm.setVisible(false);
+							ImageEditorWindow.log("No Settings for "+sm.getSettingsClass(), LOG.DEBUG);
+						}
 					}
 				}
 				// finished
@@ -125,7 +137,11 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 					for(Module m : listSettingsModules) {
 						if(SettingsModule.class.isInstance(m)) {
 							SettingsModule sm = ((SettingsModule)m);
-							Settings sett = st.getSettingsByClass(sm.getSettingsClass());
+							Settings sett = getCurrentImage().getSettingsByClass(sm.getSettingsClass());
+							if(sett==null) {
+								// try to find in parent settings
+								 sett = st.getSettingsByClass(sm.getSettingsClass());
+							}
 							
 							sm.writeAllToSettings(sett);
 						}

@@ -293,13 +293,13 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		
 		this.getCbBiaryData().setSelected(si.isBinaryData());
 		// 
-		getBtnImagingOneWay().setSelected(settings.getImagingMode()==IMAGING_MODE.MODE_IMAGING_ONEWAY);
-		getBtnImagingTwoWays().setSelected(settings.getImagingMode()!=IMAGING_MODE.MODE_IMAGING_ONEWAY);
+		getBtnImagingOneWay().setSelected(si.getImagingMode()==IMAGING_MODE.MODE_IMAGING_ONEWAY);
+		getBtnImagingTwoWays().setSelected(si.getImagingMode()!=IMAGING_MODE.MODE_IMAGING_ONEWAY);
 		// reflection
-		getBtnReflectHorizontal().setSelected(settings.isReflectHorizontal());
-		getBtnReflectVertical().setSelected(settings.isReflectVertical());
+		getBtnReflectHorizontal().setSelected(si.isReflectHorizontal());
+		getBtnReflectVertical().setSelected(si.isReflectVertical());
 		// rotation
-		switch(settings.getRotationOfData()) {
+		switch(si.getRotationOfData()) {
 		case 0: getRbRotation0().setSelected(true); break;
 		case 90: getRbRotation90().setSelected(true); break;
 		case 180: getRbRotation180().setSelected(true); break;
