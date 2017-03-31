@@ -619,15 +619,14 @@ public class Image2DImportExportUtil {
 			if(titleLine!=null && titleLine.length>=realImages.length+1)
 				realImages[i] = createImage2D(parent, titleLine[i+1], metadata, data, i, continuous && !hardsplit);  
 			else realImages[i] = createImage2D(parent, "", metadata, data, i, continuous && !hardsplit);  
-			// continuous?
-			if(continuous && !hardsplit) {
-				// set split settings for continuous data (non hardsplit)
-				DatasetContinuousMD data2 = ((DatasetContinuousMD)realImages[i].getData());
-				data2.setSplitSettings(new SettingsImageContinousSplit(sett.getSplitAfter(), sett.getSplitStart(), sett.getSplitUnit()));
-			}
-
 			// add to group (also sets the group for this image)
 			group.add(realImages[i]);
+		}
+		
+		if(continuous && !hardsplit) {
+			// set split settings for continuous data (non hardsplit)
+			DatasetContinuousMD data2 = (DatasetContinuousMD)data;
+			data2.setSplitSettings(new SettingsImageContinousSplit(sett.getSplitAfter(), sett.getSplitStart(), sett.getSplitUnit()));
 		}
 
 		//return image

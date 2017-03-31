@@ -134,8 +134,9 @@ public abstract class SettingsModule<T> extends Module implements SettingsChange
 		/**
 		 * set all settings --> panel
 		 * @param si
+		 * @throws Exception 
 		 */
-		public abstract void setAllViaExistingSettings(T si);
+		public abstract void setAllViaExistingSettings(T si) throws Exception;
 		
 		/**
 		 * set all panel --> settings
@@ -160,9 +161,13 @@ public abstract class SettingsModule<T> extends Module implements SettingsChange
 		public void setSettings(T settings) {
 			this.settings = settings;
 			if(settings!=null) {
-				setAllViaExistingSettings(settings);
-				// transfer to Settingsholder
-				SettingsHolder.getSettings().setSetByClass((Settings)settings);
+				try {
+					setAllViaExistingSettings(settings);
+					// transfer to Settingsholder
+					SettingsHolder.getSettings().setSetByClass((Settings)settings);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 

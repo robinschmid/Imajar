@@ -26,12 +26,14 @@ public class SettingsImageContinousSplit extends Settings {
 
 	public SettingsImageContinousSplit(int splitAfterDP) {
 		this();
+		resetAll();
 		this.splitAfterDP = splitAfterDP;
 	}
 
 
 	public SettingsImageContinousSplit(float splitAfter, float splitStart, XUNIT splitUnit) {
 		this();
+		resetAll();
 		this.splitAfterX = splitAfter;
 		this.splitAfterDP = Math.round(splitAfter);
 		this.startX = splitStart;

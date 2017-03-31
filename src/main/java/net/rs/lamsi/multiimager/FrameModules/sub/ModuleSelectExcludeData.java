@@ -83,9 +83,9 @@ public class ModuleSelectExcludeData extends Collectable2DModule {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// open dialog with image ex
-				if(currentImage!=null) {
+				if(currentImage!=null && currentImage.isImage2D()) {
 					Image2DSelectDataAreaDialog dialog = new Image2DSelectDataAreaDialog();
-					dialog.startDialog(currentImage);
+					dialog.startDialog((Image2D) currentImage);
 					WindowAdapter wl = new WindowAdapter() {
 						@Override
 						public void windowClosed(WindowEvent e) { 

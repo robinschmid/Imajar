@@ -41,11 +41,8 @@ public class SettingsGeneralImage extends Settings {
 	// crop marks
 	protected double x0=0,x1=0,y0=0,y1=0;
 	// Imaging Mode
-	protected IMAGING_MODE imagingMode = IMAGING_MODE.MODE_IMAGING_ONEWAY;
-	// reflect 
-	protected boolean reflectHorizontal = false, reflectVertical = false;
+	protected SettingsGeneralRotation rotation;
 	// rotate 0 90 180 270
-	protected int rotationOfData = 0;
 	//
 	protected double timePerLine = 1;
 	protected int modeTimePerLine = MODE_TIME_PER_LINE; 
@@ -54,14 +51,15 @@ public class SettingsGeneralImage extends Settings {
 	protected boolean allFiles, isBinaryData = false;
 	// Metadata
 	protected String metadata = "";
-	
-
 
 	public SettingsGeneralImage(String path, String fileEnding) {
 		super("SettingsGeneralImage", path, fileEnding); 
+		rotation = new SettingsGeneralRotation();
+		resetAll();
 	}
+
 	public SettingsGeneralImage() {
-		super("SettingsGeneralImage", "/Settings/OESImage/", "setGIMG"); 
+		this("/Settings/OESImage/", "setGIMG"); 
 	} 
 
 	@Override
@@ -73,10 +71,8 @@ public class SettingsGeneralImage extends Settings {
 		isTriggered = false;
 		timePerLine = 60;
 		deleteCropMarks();
-		imagingMode = IMAGING_MODE.MODE_IMAGING_ONEWAY;
-		rotationOfData = 0;
-		reflectHorizontal = false; 
-		reflectVertical = false;
+		
+		rotation.resetAll();
 		isBinaryData = false;
 	}
 
@@ -84,12 +80,8 @@ public class SettingsGeneralImage extends Settings {
 	public void setAll(String title, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
-		this.title = title;    
-		this.rotationOfData = rotationOfData;
-		this.reflectHorizontal = reflectHoriz; 
-		this.reflectVertical = reflectVert;
 		this.isBinaryData = isBinaryData; 
-		this.imagingMode = imagingMode;
+		rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
 		// imaging path? TODO
 	}
 
@@ -113,12 +105,10 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "title", title); 
 		toXML(elParent, doc, "isTriggered", isTriggered); 
 		toXML(elParent, doc, "timePerLine", timePerLine); 
-		toXML(elParent, doc, "imagingMode", imagingMode.toString()); 
-		toXML(elParent, doc, "rotationOfData", rotationOfData); 
-		toXML(elParent, doc, "reflectHorizontal", reflectHorizontal); 
-		toXML(elParent, doc, "reflectVertical", reflectVertical); 
 		toXML(elParent, doc, "isBinaryData", isBinaryData); 
 		toXML(elParent, doc, "filepath", filepath); 
+		
+		rotation.appendSettingsToXML(elParent, doc);
 	}
 
 	@Override
@@ -134,12 +124,10 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("title"))title = nextElement.getTextContent();   
 				else if(paramName.equals("isTriggered"))isTriggered = booleanFromXML(nextElement);  
 				else if(paramName.equals("timePerLine"))timePerLine = doubleFromXML(nextElement);  
-				else if(paramName.equals("imagingMode"))imagingMode = IMAGING_MODE.getMode(nextElement.getTextContent());  
-				else if(paramName.equals("rotationOfData"))rotationOfData = intFromXML(nextElement);  
-				else if(paramName.equals("reflectHorizontal"))reflectHorizontal = booleanFromXML(nextElement);  
-				else if(paramName.equals("reflectVertical"))reflectVertical = booleanFromXML(nextElement);  
 				else if(paramName.equals("isBinaryData"))isBinaryData = booleanFromXML(nextElement);  
 				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
+				else if(paramName.equals(rotation.getDescription())) 
+					rotation.loadValuesFromXML(nextElement, doc);
 			}
 		}
 	}
@@ -232,42 +220,42 @@ public class SettingsGeneralImage extends Settings {
 	}
 
 	public IMAGING_MODE getImagingMode() {
-		return imagingMode;
+		return rotation.getImagingMode();
 	}
 
 
 	public void setImagingMode(IMAGING_MODE imagingMode) {
-		this.imagingMode = imagingMode;
+		rotation.setImagingMode(imagingMode);
 	}
 
 
 	public boolean isReflectHorizontal() {
-		return reflectHorizontal;
+		return rotation.isReflectHorizontal();
 	}
 
 
 	public void setReflectHorizontal(boolean reflectHorizontal) {
-		this.reflectHorizontal = reflectHorizontal;
+		rotation.setReflectHorizontal(reflectHorizontal);
 	}
 
 
 	public boolean isReflectVertical() {
-		return reflectVertical;
+		return rotation.isReflectVertical();
 	}
 
 
 	public void setReflectVertical(boolean reflectVertical) {
-		this.reflectVertical = reflectVertical;
+		rotation.setReflectVertical(reflectVertical);
 	}
 
 
 	public int getRotationOfData() {
-		return rotationOfData;
+		return rotation.getRotationOfData();
 	}
 
 
 	public void setRotationOfData(int rotationOfData) {
-		this.rotationOfData = rotationOfData;
+		rotation.setRotationOfData(rotationOfData);
 	}
 
 

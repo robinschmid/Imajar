@@ -273,6 +273,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
 	@Override
 	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+		modSplitConImg.addAutoRepainter(al, cl, dl, ccl, il);
 	}
 	//################################################################################################
 	// LOGIC

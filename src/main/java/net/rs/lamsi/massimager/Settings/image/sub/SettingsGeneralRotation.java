@@ -46,12 +46,11 @@ public class SettingsGeneralRotation extends Settings {
 	}
 
 
-	public void setAll(String title, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
+	public void setAll(IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData) { 
 		this.rotationOfData = rotationOfData;
 		this.reflectHorizontal = reflectHoriz; 
 		this.reflectVertical = reflectVert;
 		this.imagingMode = imagingMode;
-		// imaging path? TODO
 	}
 
 

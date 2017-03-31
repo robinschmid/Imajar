@@ -43,6 +43,13 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public void setSplitSettings(SettingsImageContinousSplit sett) {
 		this.sett = sett;
 		reset();
+		
+		if(sett.getSplitMode()==XUNIT.DP && sett.getSplitAfterDP()==0) {
+			
+		}
+		else if(sett.getSplitMode()==XUNIT.s && sett.getSplitAfterX()==0) {
+			
+		}
 		// split data TODO
 		if(sett.getSplitMode()==XUNIT.s) {
 			lineStart = new int[getLinesCount()];

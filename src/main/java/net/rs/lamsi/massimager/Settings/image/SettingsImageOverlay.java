@@ -7,7 +7,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
@@ -17,9 +17,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xml.bind.api.impl.NameConverter.Standard;
-
-public class SettingsImageOverlay extends Settings {
+public class SettingsImageOverlay extends SettingsContainerSettings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     private static Vector<Color> STANDARD_COLORS;
@@ -46,6 +44,10 @@ public class SettingsImageOverlay extends Settings {
 		this.settTheme = new SettingsThemes(ChartThemeFactory.THEME_DARKNESS);
 		//
 		this.settZoom = new SettingsZoom();
+
+		// TODO add sub settings
+		list.addElement(settTheme);
+		list.addElement(settZoom);
 		
 		resetAll();
 	} 
@@ -78,23 +80,14 @@ public class SettingsImageOverlay extends Settings {
 
 
 	@Override
-	public void applyToHeatMap(Heatmap heat) {
-		if(settTheme!=null)
-			settTheme.applyToHeatMap(heat);
-		if(settZoom!=null)
-			settZoom.applyToHeatMap(heat);
-	}
-
-	@Override
 	public void resetAll() { 
+		super.resetAll();
 		title = "";
 		setToStandardColors();
 		psSettings.clear();
 		active = null;
 		// other
-			settTheme = new SettingsThemes(ChartThemeFactory.THEME_DARKNESS);
-		if(settZoom!=null)
-			settZoom.resetAll();
+		settTheme = new SettingsThemes(ChartThemeFactory.THEME_DARKNESS);
 	}
 
 	@Override
@@ -108,13 +101,10 @@ public class SettingsImageOverlay extends Settings {
 			for(int i=0; i<active.size(); i++)
 				toXML(elParent, doc, "activeXX"+i, active.get(i)); 
 
-		
-		if(settTheme!=null)
-			settTheme.appendSettingsToXML(elParent, doc);
-		if(settZoom!=null)
-			settZoom.appendSettingsToXML(elParent, doc);
 		for(int i=0; i<psSettings.size(); i++)
 			psSettings.get(i).appendSettingsToXML(elParent, doc);
+		
+		super.appendSettingsValuesToXML(elParent, doc);
 	}
 	
 	@Override
@@ -133,10 +123,6 @@ public class SettingsImageOverlay extends Settings {
 				if(paramName.equals("title")) title = nextElement.getTextContent();
 				else if(paramName.startsWith("colorXX")) colors.add(colorFromXML(nextElement));
 				else if(paramName.startsWith("activeXX")) active.add(booleanFromXML(nextElement));
-				else if(paramName.equals(settTheme.getDescription())) 
-					settTheme.loadValuesFromXML(nextElement, doc);
-				else if(settZoom!=null && paramName.equals(settZoom.getDescription())) 
-					settZoom.loadValuesFromXML(nextElement, doc);
 				else if(paramName.equals(ps.getDescription())) {
 					SettingsPaintScale ps2 = new SettingsPaintScale();
 					ps2.loadValuesFromXML(nextElement, doc);
@@ -146,6 +132,21 @@ public class SettingsImageOverlay extends Settings {
 		}
 		if(colors.isEmpty())
 			setToStandardColors();
+		
+		// load sub settings
+		super.loadValuesFromXML(el, doc);
+	}
+	
+	
+
+	
+	public Settings getSettingsByClass(Class classsettings) {
+		// TODO -- add other settings here
+		if(SettingsPaintScale.class.isAssignableFrom(classsettings))
+			return getCurrentSettPaintScale();
+		else {
+			return super.getSettingsByClass(classsettings);
+		}
 	}
 	
 	/**
@@ -168,15 +169,21 @@ public class SettingsImageOverlay extends Settings {
 	public SettingsThemes getSettTheme() {
 		return settTheme;
 	}
-	public void setSettTheme(SettingsThemes settTheme) {
-		this.settTheme = settTheme;
-	}
 	public SettingsZoom getSettZoom() {
 		return settZoom;
 	}
 	public void setSettZoom(SettingsZoom settZoom) {
+		list.remove(this.settZoom);
 		this.settZoom = settZoom;
+		list.add(settZoom);
 	}
+	public void setSettTheme(SettingsThemes settTheme) {
+		list.remove(this.settTheme);
+		this.settTheme = settTheme;
+		list.add(settTheme);
+	}
+	
+	
 	public String getTitle() {
 		return title;
 	}
@@ -184,11 +191,9 @@ public class SettingsImageOverlay extends Settings {
 		this.title = title;
 	}
 
-
 	public Vector<Color> getColors() {
 		return colors;
 	}
-
 
 	public void setColors(Vector<Color> colors) {
 		this.colors = colors;

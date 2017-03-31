@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -37,7 +36,6 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -57,9 +55,9 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
@@ -72,8 +70,9 @@ import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
+import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
+import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
@@ -110,6 +109,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 	// MODULES
 	private ModuleImage2D modImage2D;
+	private ModuleImageOverlay modImageOverlay;
+	/**
+	 * the module container that is active (imageoverlay or image2d)
+	 * first set the image or imageoverlay and this will be set
+	 */
+	private SettingsModuleContainer activeModuleContainer;
 	
 	// Autoupdate after a given time
 	private final long AUTO_UPDATE_TIME = 1500;
@@ -524,7 +529,13 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		east.setLayout(new BorderLayout(0, 0));
 
 		modImage2D = new ModuleImage2D(this);
-		east.add(modImage2D, BorderLayout.CENTER);
+		east.add(modImage2D, BorderLayout.NORTH);
+		modImage2D.setVisible(false);
+		
+		modImageOverlay = new ModuleImageOverlay(this);
+		east.add(modImageOverlay, BorderLayout.CENTER);
+		modImageOverlay.setVisible(false);
+		
 
 		// add buttons to this module
 		JPanel pnTitleSettings = new JPanel();
@@ -814,10 +825,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				if(getCbAuto().isSelected()) startAutoUpdater(false); 
 			}
 		};
-		// add to MODULES TODO 
-		for(ImageSettingsModule m : listImageSettingsModules) {
-			m.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
-		}  
+		
 		
 		// ##################################################################
 		// init auto repainter
@@ -860,9 +868,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			}
 		};
 		// add to MODULES TODO 
-		for(ImageSettingsModule m : listImageSettingsModules) {
-			m.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);
-		}  
+		modImage2D.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
+		modImage2D.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);
 	} 
 	
 	/**
@@ -931,10 +938,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		// 
 		ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
 		// TODO Write all to Settings 
-		for(ImageSettingsModule m : listImageSettingsModules) {
-			if(m instanceof SettingsModule)
-				((SettingsModule)m).writeAllToSettings();
-		}  
+		((SettingsModule)modImage2D).writeAllToSettings();
+		
 		// show Image 
 		if(ImageLogicRunner.IS_UPDATING()) {
 			if(repaintOnly) {
@@ -955,6 +960,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		}
 	} 
 	
+	
 	/**
 	 * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
 	 * @param img
@@ -964,16 +970,21 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbAuto.setSelected(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
-		// TODO
 		// show all modules for images
+		if(activeModuleContainer!=null)
+			activeModuleContainer.setVisible(false);
+		
+		activeModuleContainer = modImage2D;
+		activeModuleContainer.setVisible(true);
 		
 		// set
-		for(ImageSettingsModule m : listImageSettingsModules) {
-			m.setCurrentImage(img); 
-		} 
+		modImage2D.setCurrentImage(img); 
+		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		cbAuto.setSelected(isauto);
+		
+		this.revalidate();
 	} 
 	/**
 	 * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
@@ -984,16 +995,21 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbAuto.setSelected(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
-		// TODO
 		// show all modules for ImageOverlays
+		if(activeModuleContainer!=null)
+			activeModuleContainer.setVisible(false);
+		
+		activeModuleContainer = modImageOverlay;
+		activeModuleContainer.setVisible(true);
 		
 		// set
-//		for(ImageModule m : listImageSettingsModules) {
-//			m.setCurrentImage(img); 
-//		} 
+		modImageOverlay.setCurrentImage(img); 
+		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		cbAuto.setSelected(isauto);
+		
+		this.revalidate();
 	} 
 	
 	
@@ -1004,8 +1020,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * Adds a heatmap to all imagemodules
 	 * called from {@link ImageLogicRunner#renewImage2DView()}.
 	 * @param heat 
+	 * @throws Exception 
 	 */
-	public void addHeatmapToPanel(final Heatmap heat) { 
+	public void addHeatmapToPanel(final Heatmap heat) throws Exception { 
 
 		ImageEditorWindow.log("Add Heatmap to panel", LOG.DEBUG); 
 		
@@ -1034,7 +1051,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 						heat.getImage().getSettZoom().setYrange(newR);
 					
 					// set to module
-					moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+					ModuleZoom moduleZoom = getModuleZoom();
+					if(moduleZoom!=null) {
+						moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+					}
 					logicRunner.setIS_UPDATING(true);
 				}
 			});
@@ -1054,9 +1074,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		ChartLogics.setZoomDomainAxis(heat.getChartPanel(), ChartLogics.getZoomDomainAxis(heat.getChartPanel()), false); 
 		// set heatmap for all modules 
-		for(ImageSettingsModule m : listImageSettingsModules) {
-			m.setCurrentHeatmap(heat);
-		}  
+		if(activeModuleContainer!=null)
+			activeModuleContainer.setCurrentHeatmap(heat);
+		else  {
+			throw new Exception("No module container is active. First set the Image or overlay - then the heatmap");
+		}
 	}
 
 	//##########################################################################################
@@ -1213,20 +1235,15 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public JTextField getTxtDirectFileFilter() {
 		return txtDirectFileFilter;
 	}
-	public ModuleOperations getModuleOperations() {
-		return moduleOperations;
-	}
 
-	public ModuleGeneral getModuleGeneral() {
-		return moduleGeneral;
-	}
 	public ModuleZoom getModuleZoom() {
-		return moduleZoom;
+		return (ModuleZoom) (activeModuleContainer==null? null : activeModuleContainer.getModuleByClass(ModuleZoom.class));
+	}
+	
+	public ModuleThemes getModuleThemes() {
+		return (ModuleThemes) (activeModuleContainer==null? null : activeModuleContainer.getModuleByClass(ModuleThemes.class));
 	}
 
-	public ModulePaintscale getModulePaintscale() {
-		return modulePaintscale;
-	}
 	/**
 	 * the list of images or null if the editor is not initialized
 	 * @return
