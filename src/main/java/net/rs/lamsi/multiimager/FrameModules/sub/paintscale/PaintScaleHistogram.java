@@ -34,13 +34,11 @@ public class PaintScaleHistogram extends JPanel {
 	}
 	public void setImg(Image2D img) {
 		this.img = img;
-		updateHisto();
 	}
 	
-	public void updateHisto() {
+	public void updateHisto(SettingsPaintScale ps) {
 		if(img!=null) {
 		try {
-			SettingsPaintScale ps = img.getSettPaintScale();
 		double min = ps.getMinIAbs(img);
 		double max = ps.getMaxIAbs(img);
 		

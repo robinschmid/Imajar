@@ -146,7 +146,7 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	}
 	
 	@Override
-	public float getEndX(int l) {
+	public float getRightEdgeX(int l) {
 		if(hasOnlyOneXColumn())
 			return lines[0].getEndX();
 		else return lines[l].getEndX();

@@ -53,6 +53,7 @@ public class ImageRenderer extends XYBlockRenderer {
 	    } 
     }
 
+    
     /**
      * only draw item if true
      * @param item

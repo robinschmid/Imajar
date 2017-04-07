@@ -292,7 +292,7 @@ public class Image2D extends Collectable2D implements Serializable {
 			return data.getX(line, dp) * (raw? 1 : getSettImage().getVelocity());
 		// end of data x (right edge of last datapoint)
 		else if(dp==data.getLineLength(line))
-			return data.getEndX(l) * (raw? 1 : getSettImage().getVelocity());
+			return data.getRightEdgeX(l) * (raw? 1 : getSettImage().getVelocity());
 		else {
 			// for the maximum processed line length
 			int overMax = (data.getLineLength(line)-dp+1);
@@ -1450,7 +1450,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	} 
 
 	/**
-	 * The maximum x value (right edge) --> length
+	 * The maximum x value (left edge) --> length
 	 * @param raw
 	 * @param line
 	 * @return
@@ -1459,7 +1459,30 @@ public class Image2D extends Collectable2D implements Serializable {
 		return data.getLastX() * (xFactor(raw));
 	} 
 
+	/**
+	 * left edge maximum of y (bottom edge)
+	 * @param raw
+	 * @return
+	 */
 	public float getMaxYRaw(boolean raw) {
+		return getYRaw(raw, data.getLinesCount());
+	}
+	
+	/**
+	 * width of the image 
+	 * @param raw
+	 * @return
+	 */
+	public float getWidth(boolean raw) {
+		return data.getWidthX() * xFactor(raw);
+	}
+	
+	/**
+	 * height of the image
+	 * @param raw
+	 * @return
+	 */
+	public float getHeight(boolean raw) {
 		return getYRaw(raw, data.getLinesCount());
 	}
 
@@ -1471,7 +1494,6 @@ public class Image2D extends Collectable2D implements Serializable {
 	private float xFactor(boolean raw) {
 		return raw? 1 : getSettImage().getVelocity();
 	}
-
 
 	/**
 	 * 1 or velocity
@@ -1606,7 +1628,7 @@ public class Image2D extends Collectable2D implements Serializable {
 			// cut off percent f/100.f
 			int size = z.length-1;
 			// save in var --> cut from max 1-p
-			return z[size-(int)(size*f/100.0)];
+			return z[(int)(size*f/100.0)];
 	}
 
 	//##################################################################################### 

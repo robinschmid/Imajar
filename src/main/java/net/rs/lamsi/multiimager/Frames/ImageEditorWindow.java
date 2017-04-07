@@ -152,7 +152,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	
 	private JPanel pnCenterImageView;	
 	private JCheckBox cbAuto;
-	
+	private JPanel east;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JRadioButtonMenuItem menuRbImagingAnalysis;
 	private JRadioButtonMenuItem menuRbDirectImagingAnalysis;
@@ -524,16 +524,14 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JPanel pnNorthContent = new JPanel(); 
 		pnNorthContent.setLayout(new BorderLayout(0, 0));
 
-		JPanel east = new JPanel();
+		east = new JPanel();
 		pnNorthContent.add(east, BorderLayout.EAST);
 		east.setLayout(new BorderLayout(0, 0));
 
-		modImage2D = new ModuleImage2D(this);
-		east.add(modImage2D, BorderLayout.NORTH);
+		modImage2D = new ModuleImage2D(this); 
 		modImage2D.setVisible(false);
 		
 		modImageOverlay = new ModuleImageOverlay(this);
-		east.add(modImageOverlay, BorderLayout.CENTER);
 		modImageOverlay.setVisible(false);
 		
 
@@ -543,6 +541,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		flowLayout.setHgap(4);
 		flowLayout.setVgap(0);
 		modImage2D.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
+		modImageOverlay.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
 
 		JButton btnApplySettingsToAll = new JButton("apply to all");
 		btnApplySettingsToAll.addActionListener(new ActionListener() {
@@ -869,7 +868,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		};
 		// add to MODULES TODO 
 		modImage2D.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
-		modImage2D.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);
+		modImage2D.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);	
+		
+
+		modImageOverlay.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
+		modImageOverlay.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);
 	} 
 	
 	/**
@@ -936,26 +939,29 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 */ 
 	private void writeAllSettingsFromModules(boolean repaintOnly) {
 		// 
-		ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
-		// TODO Write all to Settings 
-		((SettingsModule)modImage2D).writeAllToSettings();
-		
-		// show Image 
-		if(ImageLogicRunner.IS_UPDATING()) {
-			if(repaintOnly) {
-				ImageEditorWindow.log("Write all Settings from all Modules --> REPAINT ONLY", LOG.DEBUG);
-				Heatmap heat = logicRunner.getCurrentHeat();
-				Collectable2D img = logicRunner.getSelectedImage();
-				if(heat!=null && img!=null) {
-					img.getSettings().applyToHeatMap(heat);
-
-					heat.getChartPanel().revalidate();
-					heat.getChartPanel().repaint();
+		if(activeModuleContainer!=null) {
+			ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
+			
+			// show Image 
+			if(ImageLogicRunner.IS_UPDATING()) {
+				// TODO Write all to Settings 
+				activeModuleContainer.writeAllToSettings();
+				
+				if(repaintOnly) {
+					ImageEditorWindow.log("Write all Settings from all Modules --> REPAINT ONLY", LOG.DEBUG);
+					Heatmap heat = logicRunner.getCurrentHeat();
+					Collectable2D img = logicRunner.getSelectedImage();
+					if(heat!=null && img!=null) {
+						img.getSettings().applyToHeatMap(heat);
+	
+						heat.getChartPanel().revalidate();
+						heat.getChartPanel().repaint();
+					}
 				}
-			}
-			else {
-				ImageEditorWindow.log("Write all Settings from all Modules --> CREATE NEW", LOG.DEBUG);
-				Heatmap heat = logicRunner.renewImage2DView();
+				else {
+					ImageEditorWindow.log("Write all Settings from all Modules --> CREATE NEW", LOG.DEBUG);
+					Heatmap heat = logicRunner.renewImage2DView();
+				}
 			}
 		}
 	} 
@@ -976,6 +982,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		activeModuleContainer = modImage2D;
 		activeModuleContainer.setVisible(true);
+		east.add(activeModuleContainer, BorderLayout.CENTER);
 		
 		// set
 		modImage2D.setCurrentImage(img); 
@@ -1001,6 +1008,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		activeModuleContainer = modImageOverlay;
 		activeModuleContainer.setVisible(true);
+		east.add(activeModuleContainer, BorderLayout.CENTER);
 		
 		// set
 		modImageOverlay.setCurrentImage(img); 

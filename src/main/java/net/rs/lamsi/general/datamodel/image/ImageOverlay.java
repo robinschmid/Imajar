@@ -166,7 +166,7 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	@Override
 	public void setSettings(Settings sett) {
 		try {
-			if(settings==null)
+			if(sett==null)
 				return;
 			// TODO --> set all settings in one: 
 			// TODO --> complete!!!

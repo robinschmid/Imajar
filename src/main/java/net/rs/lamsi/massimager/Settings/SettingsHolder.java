@@ -10,6 +10,7 @@ import javax.swing.filechooser.FileFilter;
 
 import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
@@ -79,6 +80,9 @@ public class SettingsHolder extends Settings {
 	
 	private SettingsZoom settZoom;
 	
+	private SettingsImage2D settImg;
+	private SettingsImageOverlay settImgOver;
+	
 
 
 	public SettingsHolder() {
@@ -129,12 +133,20 @@ public class SettingsHolder extends Settings {
 		
 		setGeneralPreferences = new SettingsGeneralPreferences();
 		settList.add(setGeneralPreferences);
+		
+		settImgOver = new SettingsImageOverlay();
+		settList.add(settImgOver);
+		
+		settImg = new SettingsImage2D();
+		settList.add(settImg);
+		
+		
 
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
 				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
 				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
-				SettingsZoom.class, SettingsGeneralPreferences.class};
+				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class};
 		classList = cl;
 	}
 
@@ -323,7 +335,7 @@ public class SettingsHolder extends Settings {
 				return;
 			}
 		}
-		System.err.println("FAILED TO SET newOne "+newOne.getClass().getName());
+		System.err.println("FAILED TO SET newOne in SettingsHolder "+newOne.getClass().getName());
 	}
 
 

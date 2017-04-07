@@ -1,35 +1,16 @@
 package net.rs.lamsi.multiimager.FrameModules;
 
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
-import java.util.Vector;
-
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentListener;
-
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.HeatmapSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscaleOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
-public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImage2D, ImageOverlay> {
+public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOverlay, ImageOverlay> {
 	private ImageEditorWindow window;
 
 	private ModuleZoom moduleZoom;
@@ -42,7 +23,7 @@ public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImage2D,
 	 * Create the panel.
 	 */
 	public ModuleImageOverlay(ImageEditorWindow wnd) {
-		super("", false, SettingsImage2D.class, ImageOverlay.class);    
+		super("", false, SettingsImageOverlay.class, ImageOverlay.class);    
 		window = wnd;
 		
 		moduleZoom = new ModuleZoom();

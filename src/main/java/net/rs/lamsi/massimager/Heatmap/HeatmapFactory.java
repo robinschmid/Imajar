@@ -1,6 +1,9 @@
 package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -19,12 +22,18 @@ import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYImageAnnotation;
 import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.title.PaintScaleLegend;
+import org.jfree.ui.Layer;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
@@ -193,7 +202,7 @@ public class HeatmapFactory {
 			        }
 			        if(ps.getModeMax().equals(ValueMode.PERCENTILE)) {
 			        	// uses filter for min
-			        	double nmax = cimg.getValueCutFilter(ps.getMaxFilter(), ps.isUsesMinMaxFromSelection());
+			        	double nmax = cimg.getValueCutFilter(100.0-ps.getMaxFilter(), ps.isUsesMinMaxFromSelection());
 			        	ps.setMax(nmax);
 			        }
 
@@ -285,7 +294,7 @@ public class HeatmapFactory {
 
 	// erstellt ein JFreeChart Plot der heatmap
 	// bwidth und bheight (BlockWidth) sind die Maximalwerte
-	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
+	private static Heatmap createChart(final Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
         // this min max values in array
         double zmin = dataset.getZMin();
         double zmax = dataset.getZMax();
@@ -342,8 +351,63 @@ public class HeatmapFactory {
 	        // set background image
 	        if(img.getSettTheme().usesBGImage() && img.getImageGroup()!=null) {
 	        	Image bg = img.getImageGroup().getBGImage();
-	        	if(bg!=null)
-	        		plot.setBackgroundImage(bg);
+	        	if(bg!=null) {
+	        		//plot.setBackgroundImage(bg);
+	        		XYImageAnnotation ann = new XYImageAnnotation(0, 0, bg, RectangleAnchor.BOTTOM_LEFT){
+	        			@Override
+	        			public void draw(Graphics2D g2, XYPlot plot,
+	        					Rectangle2D dataArea, ValueAxis domainAxis,
+	        					ValueAxis rangeAxis, int rendererIndex,
+	        					PlotRenderingInfo info) {
+
+
+	        		        PlotOrientation orientation = plot.getOrientation();
+	        		        AxisLocation domainAxisLocation = plot.getDomainAxisLocation();
+	        		        AxisLocation rangeAxisLocation = plot.getRangeAxisLocation();
+	        		        RectangleEdge domainEdge
+	        		            = Plot.resolveDomainAxisLocation(domainAxisLocation, orientation);
+	        		        RectangleEdge rangeEdge
+	        		            = Plot.resolveRangeAxisLocation(rangeAxisLocation, orientation);
+	        		        float j2DX
+	        		            = (float) domainAxis.valueToJava2D(this.getX(), dataArea, domainEdge);
+	        		        float j2DY
+	        		            = (float) rangeAxis.valueToJava2D(this.getY(), dataArea, rangeEdge);
+	        		        float xx = 0.0f;
+	        		        float yy = 0.0f;
+	        		        if (orientation == PlotOrientation.HORIZONTAL) {
+	        		            xx = j2DY;
+	        		            yy = j2DX;
+	        		        }
+	        		        else if (orientation == PlotOrientation.VERTICAL) {
+	        		            xx = j2DX;
+	        		            yy = j2DY;
+	        		        }
+	        		        int w = this.getImage().getWidth(null);
+	        		        int h = this.getImage().getHeight(null);
+
+	        		        double fw = domainAxis.getRange().getLength()/img.getWidth(false);
+	        		        double fh = rangeAxis.getRange().getLength()/img.getHeight(false);
+	        		        
+	        		        w = (int) (w/fw);
+	        		        h = (int) (h/fh);
+	        		        
+	        		        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, w, h);
+	        		        Point2D anchorPoint = RectangleAnchor.coordinates(imageRect, getImageAnchor());
+	        		        xx = xx - (float) anchorPoint.getX();
+	        		        yy = yy - (float) anchorPoint.getY();
+	        		        g2.drawImage(this.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH), (int) xx, (int) yy, null);
+
+	        		        String toolTip = getToolTipText();
+	        		        String url = getURL();
+	        		        if (toolTip != null || url != null) {
+	        		            addEntity(info, new Rectangle2D.Float(xx, yy, w, h), rendererIndex,
+	        		                    toolTip, url);
+	        		        }
+	        			}
+	        		};
+	        		
+	        		renderer.addAnnotation(ann, Layer.BACKGROUND);
+	        	}
 	        }
 	        
 	        // create chart

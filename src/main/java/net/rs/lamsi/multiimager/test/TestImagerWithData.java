@@ -7,10 +7,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -39,6 +38,20 @@ public class TestImagerWithData {
 					
 					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, ",", false);
 					window.getLogicRunner().importTextDataToImage(settingsDataImport, files);
+					
+					// import non triggered
+					settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, "\t", false);
+					settingsDataImport.setExcludeColumns("1,2");
+					settingsDataImport.setModeImport(IMPORT.CONTINOUS_DATA_TXT_CSV);
+					settingsDataImport.setSplitUnit(XUNIT.DP);
+					settingsDataImport.setSplitAfter(150);
+					settingsDataImport.setUseHardSplit(false);
+					settingsDataImport.setNoXData(true);
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, new File[] {new File("C:\\DATA\\TOF-Werk_AKK\\LC_image_3 mm x7.5 mm_07.26-13h52m39s_AS.h5__BufWriteProfiles_Segment_31P,32S,34S,42Ca,44Ca.txt")});
+					
+					// hard split
+					settingsDataImport.setUseHardSplit(true);
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, new File[] {new File("C:\\DATA\\TOF-Werk_AKK\\LC_image_3 mm x7.5 mm_07.26-13h52m39s_AS.h5__BufWriteProfiles_Segment_31P,32S,34S,42Ca,44Ca.txt")});
 
 					IconNode fnode = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
 					

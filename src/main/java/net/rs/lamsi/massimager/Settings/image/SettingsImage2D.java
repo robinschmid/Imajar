@@ -76,12 +76,11 @@ public class SettingsImage2D extends SettingsContainerSettings {
 			
 			//	
 			list.addElement(this.settPaintScale);
+			list.addElement(settImage);
 			list.addElement(settTheme);
 			list.addElement(quantifier);
 			list.addElement(operations);
 			list.addElement(settZoom);
-			list.addElement(settImage);
-			list.addElement(settImage)
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}

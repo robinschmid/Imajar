@@ -77,6 +77,7 @@ public class ImageGroupMD  implements Serializable {
 		}
 		else {
 			images.addElement(c2d);
+			c2d.setImageGroup(this); 
 		}
 	}
 	public boolean remove(Collectable2D img) {

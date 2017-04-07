@@ -78,11 +78,33 @@ public abstract class ImageDataset {
 
 	/**
 	 * right edge of x data
-	 * right edge of last data point
+	 * right edge of last data point (for later width calc
 	 * @param l
 	 * @return
 	 */
-	public abstract float getEndX(int l);
+	public abstract float getRightEdgeX(int l);
+	
+	/**
+	 * width / right edge of the image
+	 * @return
+	 */
+	public float getRightEdgeX() {
+		float max = 0;
+		for(int i=0; i<getLinesCount(); i++) {
+			float n = getRightEdgeX(i);
+			if(max<n)
+				max = n;
+		}
+		return max;
+	}
+	
+	/**
+	 * Width of the image
+	 * @return
+	 */
+	public float getWidthX() {
+		return getRightEdgeX();
+	}
 	
 
 	/**

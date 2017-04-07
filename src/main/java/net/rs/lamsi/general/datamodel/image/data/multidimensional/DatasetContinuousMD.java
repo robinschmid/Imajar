@@ -187,7 +187,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 
 
 	@Override
-	public float getEndX(int l) {
+	public float getRightEdgeX(int l) {
 		return getLastXLine(l)+line.getWidthDP();
 	} 
 	@Override

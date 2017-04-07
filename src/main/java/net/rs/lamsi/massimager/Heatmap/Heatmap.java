@@ -17,6 +17,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYBoxAnnotation;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
@@ -38,7 +39,6 @@ public class Heatmap {
 	// the raw data and settings
 	private Collectable2D image;
 	private ScaleInPlot scaleInPlot;
-	
 	// stats
 	private boolean isShowingSelectedExcludedRects = false, isShowingBlankMinMax = false;
 	// list of annotations for later removing 
