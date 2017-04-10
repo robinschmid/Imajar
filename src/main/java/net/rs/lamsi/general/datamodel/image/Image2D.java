@@ -1861,18 +1861,25 @@ public class Image2D extends Collectable2D implements Serializable {
 	}
 
 
-
+	/**
+	 * returns all data points in intensity range (max/min) (processed)
+	 * uses the PaintScaleSettings of this image
+	 * @return
+	 */
+	public double[] getIInIRange() {
+		return getIInIRange(getSettPaintScale());
+	}
 	/**
 	 * returns all data points in intensity range (max/min) (processed)
 	 * @return
 	 */
-	public double[] getIInIRange() {
-		double[] list = new double[countIInIRange()];
+	public double[] getIInIRange(SettingsPaintScale ps) {
+		double[] list = new double[countIInIRange(ps)];
 
 		double[] inten = toIArray(false);
 		int counter = 0;
 		for(double d : inten) {
-			if(getSettPaintScale().isInIRange(this, d)) {
+			if(ps.isInIRange(this, d)) {
 				list[counter] = d;
 				counter++;
 			} 
@@ -1881,13 +1888,21 @@ public class Image2D extends Collectable2D implements Serializable {
 	}
 	/**
 	 * returns number of data points in intensity range (max/min)
+	 * uses the PaintScaleSettings of this image
 	 * @return
 	 */
 	public int countIInIRange() {
+		return countIInIRange(getSettPaintScale());
+	}
+	/**
+	 * returns number of data points in intensity range (max/min)
+	 * @return
+	 */
+	public int countIInIRange(SettingsPaintScale ps) {
 		int counter = 0;
 		double[] inten = toIArray(false);
 		for(double d : inten) {
-			if(getSettPaintScale().isInIRange(this, d)) {
+			if(ps.isInIRange(this, d)) {
 				counter++;
 			} 
 		}

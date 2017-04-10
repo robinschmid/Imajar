@@ -2,6 +2,7 @@ package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
 import java.awt.Paint;
 
+import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 
 import org.jfree.chart.renderer.GrayPaintScale;
@@ -14,7 +15,7 @@ public class PaintScaleGenerator {
 
 
 
-	// Unterschiedlicher PaintScales
+	// old version PaintScales
 	public static PaintScale generateStepPaintScale(double min, double max, double promin, double promax, Color cmin, Color cmax, int stepCount) {  
 		// Min ist pormin von max
 		double realmin = max*promin;
@@ -34,7 +35,7 @@ public class PaintScaleGenerator {
 		return paintScale; 
 	}
 
-	// Unterschiedlicher PaintScales
+	// new version PaintScales
 	/**
 	 * 
 	 * @param min z value in dataset
@@ -51,53 +52,64 @@ public class PaintScaleGenerator {
 			
 
 			// error when min == max
-			if(realmin==realmax || realmax<realmin) {
+			if(realmax<=realmin) {
 				realmin = realmax-0.001;
 			} 
-			// 
+			// with minimum and maximum bounds
 			LookupPaintScale paintScale = new LookupPaintScale(min,max,Color.lightGray); 
-			// Index schon festlegen
+			// Index
 			int i=0; 
 			// add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
-			if(settings.isUsesMinMax() && settings.isUsesMinAsInvisible()) {
-				// Invisible or  White / Black
-				// 0 and min to Invis
-				paintScale.add(min, new Color(0, 0, 0, 0)); 
-				paintScale.add(realmin, new Color(0, 0, 0, 0));
-				i++;
-			} // black or white asminimum if monochrome or if set
-			else if(settings.isLODMonochrome() || (settings.isUsesWAsMin() && !settings.isInverted()) || (settings.isUsesBAsMax() && settings.isInverted()) || settings.isMonochrom()) { 
-				// Black or white as start (also in monochroms)
-				Color color = (settings.isInverted()? Color.BLACK : Color.WHITE);
-				paintScale.add(min, color); 
-				paintScale.add(realmin, color);  
-				i++;
+			Color firstc = null;
+			Color lastc = null;
+			// Invisible or  White / Black or min color
+			// color as min for one sided monochrome
+			if(settings.isMonochrom() && (settings.isUsesWAsMin() ^ settings.isUsesBAsMax())) {
+				Color c = settings.getMinColor();
+				firstc = settings.isInverted()? (settings.isUsesBAsMax()? Color.BLACK : c) : (settings.isUsesWAsMin()? Color.WHITE : c);
+				lastc = !settings.isInverted()? (settings.isUsesBAsMax()? Color.BLACK : c) : (settings.isUsesWAsMin()? Color.WHITE : c);
 			}
 			else {
-				// normale Farbe als start
-				float p = settings.isInverted()? 1:0;
-				paintScale.add(min, interpolate(settings.getMinColor(), settings.getMaxColor(), p)); 
-				paintScale.add(realmin, interpolate(settings.getMinColor(), settings.getMaxColor(), p));
-				i++;
+				// Black or white as start (also in monochroms)
+				if(settings.isLODMonochrome() || settings.isMonochrom() || 
+						(settings.isUsesWAsMin() && !settings.isInverted()) || 
+						(settings.isUsesBAsMax() && settings.isInverted()))
+					firstc = settings.isInverted()? Color.BLACK : Color.WHITE;
+				// min/max: inverted color as start
+				else 
+					firstc = interpolate(settings.getMinColor(), settings.getMaxColor(), settings.isInverted()? 1:0);
+				
+				// last color
+				if(settings.isMonochrom() || 
+						(settings.isUsesWAsMin() && settings.isInverted()) || 
+						(settings.isUsesBAsMax() && !settings.isInverted()))
+					lastc = !settings.isInverted()? Color.BLACK : Color.WHITE;
+				// min/max: inverted color as start
+				else 
+					lastc = interpolate(settings.getMinColor(), settings.getMaxColor(), settings.isInverted()? 0:1);
 			}
+			
+			
+			// 0 and min to Invis
+			if(settings.isUsesMinMax() && settings.isUsesMinAsInvisible())
+				firstc = new Color(0, 0, 0, 0);
+			if(settings.isUsesMinMax() && settings.isUsesMaxAsInvisible())
+				lastc = new Color(0, 0, 0, 0);
+			
+			// add first two color steps
+			paintScale.add(min, firstc); 
+			paintScale.add(realmin, firstc);
+			i++;
+			
 			// adding color steps in middle 
 			addColorsteps(realmin, realmax, settings, paintScale, i);
-			// end
+			
+			// add end color step
 			if(max>settings.getMaxIAbs(min,max) && settings.isUsesMinMax()) {
-				if(settings.isUsesMaxAsInvisible()) {
-					paintScale.add(realmax+Double.MIN_VALUE,  new Color(0, 0, 0, 0));  
-					paintScale.add(max, new Color(0, 0, 0, 0)); 
-				}
-				else if((settings.isUsesWAsMin() && settings.isInverted()) || (settings.isUsesBAsMax() && !settings.isInverted()) || settings.isMonochrom()) { 
-					// end to black or white
-					Color color = (settings.isInverted()? Color.WHITE : Color.BLACK); 
-
-					paintScale.add(max, color);  
-					i++;
-				}
-				else // end color to real end color without BnW
-					paintScale.add(max, settings.getMaxColor()); 
+				paintScale.add(realmax+Double.MIN_VALUE,  lastc);  
+				paintScale.add(max, lastc); 
 			}
+			
 			//
 			return paintScale;  
 	}
@@ -134,12 +146,13 @@ public class PaintScaleGenerator {
 			for(; i<LODlevels; i++) { 
 				double value = realmin+step*i;
 				if(i==LODlevels-1) value = lod;
-				float p = i/(LODlevels-1.0f)/2;
+				float p = i/(LODlevels-1.0f)/4*3;
 				// Invert? 
 				if(settings.isInverted()) p = (1-p);
 				float brightness = (1-p);
 				paintScale.add(value, Color.getHSBColor(0, 0, brightness));
 			}
+
 			// HUE / Color
 			for(; i<settings.getLevels(); i++) { 
 				// current value
@@ -205,6 +218,10 @@ public class PaintScaleGenerator {
 		hueMax = endHSB[0];
 
 		float hue = ((hueMax - hueMin) * p) + hueMin;
+		
+		// TODO add brightness and saturation modifiers
+		//brightness = 1.f - 0.25f/10.f*pb;
+		//saturation = 1.f - 0.25f/10.f*pb;
 
 		return Color.getHSBColor(hue, saturation, brightness);
 	}
@@ -335,7 +352,7 @@ public class PaintScaleGenerator {
 			if(black)
 				return Color.getHSBColor(hue, saturation, brightness);
 			else
-				return Color.getHSBColor(hue, brightness, brightness);
+				return Color.getHSBColor(hue, 1-brightness, 1);
 	}
 
 }

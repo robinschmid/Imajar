@@ -1,9 +1,9 @@
 package net.rs.lamsi.massimager.MyFreeChart.Plot.image2d;
 
-import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
@@ -23,6 +23,9 @@ public class ImageOverlayRenderer extends ImageRenderer {
 	protected double[] blockWidths, blockHeights;
 	protected PaintScale scales[];
 	
+	// paint all to image and then flush to g2d
+	protected BufferedImage image = null;
+	protected Graphics2D gimg;
 	
 	public ImageOverlayRenderer(int size) {
 		super();
@@ -51,16 +54,31 @@ public class ImageOverlayRenderer extends ImageRenderer {
             Rectangle2D dataArea, PlotRenderingInfo info, XYPlot plot,
             ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
             int series, int item, CrosshairState crosshairState, int pass) {
+    	
+    	// create new graphics 2d 
+    	if(item==state.getFirstItemIndex()) {
+    		image = new BufferedImage((int)Math.ceil(dataArea.getWidth())*2, (int)Math.ceil(dataArea.getHeight())*2, BufferedImage.TYPE_INT_ARGB);
+    		gimg = image.createGraphics();
+    	}
+    	
+    	
+    	
     	// only if in map or if there is no map
     	if(isMapTrue(item)) {
     		// background is either an image or black
     		BlendComposite blend = BlendComposite.Add; 
     		
-	        drawItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item, crosshairState, pass, blend);
+	        drawItem(gimg, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item, crosshairState, pass, blend);
 	    } 
+    	
+    	// last item?
+    	if(state.getLastItemIndex()==item) {
+    		// flush in mode
+    		BlendComposite blend = BlendComposite.Add; 
+    		g2.setComposite(blend);
+    		g2.drawImage(image, 0, 0,null);
+    	}
     }
-    
-    
 
 	
 	/**
@@ -125,6 +143,7 @@ public class ImageOverlayRenderer extends ImageRenderer {
         double transY = rangeAxis.valueToJava2D(y, dataArea,
                 plot.getRangeAxisEdge());        
         // TODO ERROR DATASET INDEX TWICE
+        // still seems to work fine
         updateCrosshairValues(crosshairState, x, y, datasetIndex,
                 datasetIndex, transX, transY, orientation);
 
