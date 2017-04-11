@@ -436,10 +436,10 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		else {
 			// new table model
 			tableModel = new MultiImageTableModel(this); 
-			// for all images
-			for(int k =0; k<group.size(); k++) 
+			// for all images2d (first in list)
+			for(int k =0; k<group.image2dCount(); k++) 
 				// put them into the table
-				tableModel.addRow(new MultiImgTableRow(k, group.get(k)));
+				tableModel.addRow(new MultiImgTableRow(k, (Image2D)group.get(k)));
 		}
 		table.setModel(tableModel);
 		settings.setTableModel(tableModel);
@@ -539,8 +539,10 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		int gi = 0;
 		// go through table, update and add heats
 		for(int i=0; i<uptodate.length; i++) {
-			MultiImgTableRow row = tableModel.getRowList().get(i);
-			if(row.isShowing()) {
+			MultiImgTableRow row = null;
+			if(i<tableModel.getRowCount()) row = tableModel.getRowList().get(i);
+			// if row==null -> image overlay
+			if(row==null || row.isShowing()) {
 				// update needed?
 				updateGrid(gi, i, false);
 				// increment
@@ -581,6 +583,9 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 	 * @param imgIndex
 	 */
 	private void updateGrid(int imgIndex) {
+		// is overlay? 
+		if(imgIndex>=tableModel.getRowCount())
+			updateGrid(imgIndex, imgIndex, true);
 		// gridindex
 		int gi = 0;
 		// go through table
@@ -599,7 +604,6 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 	 */
 	private void updateChart(int i) {
 		try {
-			if(group.get(i).getData().getLinesCount()>0) {
 				// generate heat if not already
 				if(heat[i]==null) {
 					heat[i] = HeatmapFactory.generateHeatmap(group.get(i)); 
@@ -625,7 +629,6 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 				heat[i].getChart().fireChartChanged();
 				// set uptodate
 				uptodate[i] = true;
-			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -691,10 +694,10 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 				saveBinaryMapToTxt(new File(fname+"_multimap"), ext); 
 
 			// save all img
-			for(int i=0; i<group.size(); i++) {
+			for(int i=0; i<group.image2dCount(); i++) {
 				updateChart(i);
 				// export to new file
-				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+group.get(i).getTitle(), ext), group.get(i).toIMatrix(true, map), ",");
+				writer.writeDataArrayToFile(FileAndPathUtil.getRealFileName(fname+"_"+i+"_"+group.get(i).getTitle(), ext), ((Image2D)group.get(i)).toIMatrix(true, map), ",");
 			}
 			// show dialog
 			DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
@@ -730,11 +733,11 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 			}
 
 			// write all images 
-			for(int i=0; i<group.size(); i++) {
+			for(int i=0; i<group.image2dCount(); i++) {
 				updateChart(i);
 				// export to new file
 				sheet = writer.getSheet(wb, i+" "+group.get(i).getTitle());
-				writer.writeDataArrayToSheet(sheet, group.get(i).toIMatrix(true,map), 0, 0); 
+				writer.writeDataArrayToSheet(sheet, ((Image2D)group.get(i)).toIMatrix(true,map), 0, 0); 
 			}
 
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);

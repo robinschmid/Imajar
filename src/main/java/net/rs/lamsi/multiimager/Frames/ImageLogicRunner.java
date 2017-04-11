@@ -586,18 +586,38 @@ public class ImageLogicRunner {
 					Graphics2D graphics = scaled.createGraphics();
 					graphics.drawImage(ti, 0, 0, null);
 					
+					int rot = selectedImage.getImageGroup().getFirstImage2D().getSettImage().getRotationOfData();
+					
 					// generate dataset
 					Vector<Double[]> data = new Vector<Double[]>();
-					for(int l = 0; l<th; l++) {
-						data.add(new Double[tw]);
-						for(int dp=0; dp<tw; dp++) {
-							int rgb = scaled.getRGB(dp, l);
-							int r = (rgb >> 16) & 0xFF;
-							int g = (rgb >> 8) & 0xFF;
-							int b = (rgb & 0xFF);
-							double gray = (r + g + b) / 3.0;
-							
-							data.get(l)[dp] = 255.0-gray;
+					
+					if(rot==0 || rot==180) {
+						
+						for(int l = 0; l<th; l++) {
+							data.add(new Double[tw]);
+							for(int dp=0; dp<tw; dp++) {
+								int rgb = scaled.getRGB(dp, l);
+								int r = (rgb >> 16) & 0xFF;
+								int g = (rgb >> 8) & 0xFF;
+								int b = (rgb & 0xFF);
+								double gray = (r + g + b) / 3.0;
+								
+								data.get(l)[dp] = 255.0-gray;
+							}
+						}
+						}
+					else {
+						for(int l = 0; l<tw; l++) {
+							data.add(new Double[th]);
+							for(int dp=0; dp<th; dp++) {
+								int rgb = scaled.getRGB(l, dp);
+								int r = (rgb >> 16) & 0xFF;
+								int g = (rgb >> 8) & 0xFF;
+								int b = (rgb & 0xFF);
+								double gray = (r + g + b) / 3.0;
+								
+								data.get(l)[dp] = 255.0-gray;
+							}
 						}
 					}
 					
