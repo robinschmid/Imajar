@@ -164,7 +164,7 @@ public class HeatmapFactory {
 	
 	// erstellt ein JFreeChart Plot der heatmap
 	// bwidth und bheight (BlockWidth) sind die Maximalwerte
-	private static Heatmap createChartOverlay(ImageOverlay img, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
+	private static Heatmap createChartOverlay(final ImageOverlay img, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
         SettingsImageOverlay settings = img.getSettings();
 		int seriesCount = dataset.getSeriesCount();
 	    	SettingsThemes setTheme = img.getSettTheme();
@@ -185,9 +185,9 @@ public class HeatmapFactory {
 	        Vector<PaintScale> psList = new Vector<PaintScale>();
 	        // create one paintscale for each active image
 	        int counter = 0;
-	        for(int i=0; i<img.getImages().size(); i++) {
+	        for(int i=0; i<img.size(); i++) {
 	        	if(settings.isActive(i)) {
-	        		Image2D cimg = img.getImages().get(i);
+	        		Image2D cimg = img.get(i);
 	        		SettingsPaintScale ps = settings.getSettPaintScale(i);
 			        // PaintScale für farbe? TODO mit Settings!
 			        // TODO upper and lower value setzen!!!!
@@ -243,8 +243,76 @@ public class HeatmapFactory {
 	        // set background image
 	        if(img.getSettTheme().usesBGImage() && img.getImageGroup()!=null) {
 	        	Image bg = img.getImageGroup().getBGImage();
-	        	if(bg!=null)
-	        		plot.setBackgroundImage(bg);
+	        	if(bg!=null) {
+	        		//plot.setBackgroundImage(bg);
+	        		XYImageAnnotation ann = new XYImageAnnotation(0, 0, bg, RectangleAnchor.BOTTOM_LEFT){
+	        			@Override
+	        			public void draw(Graphics2D g2, XYPlot plot,
+	        					Rectangle2D dataArea, ValueAxis domainAxis,
+	        					ValueAxis rangeAxis, int rendererIndex,
+	        					PlotRenderingInfo info) {
+
+
+	        		        PlotOrientation orientation = plot.getOrientation();
+	        		        AxisLocation domainAxisLocation = plot.getDomainAxisLocation();
+	        		        AxisLocation rangeAxisLocation = plot.getRangeAxisLocation();
+	        		        RectangleEdge domainEdge
+	        		            = Plot.resolveDomainAxisLocation(domainAxisLocation, orientation);
+	        		        RectangleEdge rangeEdge
+	        		            = Plot.resolveRangeAxisLocation(rangeAxisLocation, orientation);
+	        		        float j2DX
+	        		            = (float) domainAxis.valueToJava2D(this.getX(), dataArea, domainEdge);
+	        		        float j2DY
+	        		            = (float) rangeAxis.valueToJava2D(this.getY(), dataArea, rangeEdge);
+	        		        float xx = 0.0f;
+	        		        float yy = 0.0f;
+	        		        if (orientation == PlotOrientation.HORIZONTAL) {
+	        		            xx = j2DY;
+	        		            yy = j2DX;
+	        		        }
+	        		        else if (orientation == PlotOrientation.VERTICAL) {
+	        		            xx = j2DX;
+	        		            yy = j2DY;
+	        		        }
+	        		        // real image width and height
+	        		        double w = this.getImage().getWidth(null);
+	        		        double h = this.getImage().getHeight(null);
+	        		        
+	        		        // resized by width statement in imagegroup
+	        		        double realw = img.getImageGroup().getSettings().getBgWidth();
+	        		        if(realw==0) {
+	        		        	w = dataArea.getWidth();
+	        		        	h = dataArea.getHeight();
+	        		        }
+	        		        else {
+	        		        	double f = realw/img.getWidth(false);
+	        		        	w = dataArea.getWidth()*f;
+	        		        	h = dataArea.getHeight()*f;
+	        		        }
+
+	        		        double fw = domainAxis.getRange().getLength()/img.getWidth(false);
+	        		        double fh = rangeAxis.getRange().getLength()/img.getHeight(false);
+	        		        
+	        		        w = (int) (w/fw);
+	        		        h = (int) (h/fh);
+	        		        
+	        		        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, w, h);
+	        		        Point2D anchorPoint = RectangleAnchor.coordinates(imageRect, getImageAnchor());
+	        		        xx = xx - (float) anchorPoint.getX();
+	        		        yy = yy - (float) anchorPoint.getY();
+	        		        g2.drawImage(this.getImage().getScaledInstance((int)w, (int)h, Image.SCALE_SMOOTH), (int) xx, (int) yy, null);
+
+	        		        String toolTip = getToolTipText();
+	        		        String url = getURL();
+	        		        if (toolTip != null || url != null) {
+	        		            addEntity(info, new Rectangle2D.Float(xx, yy, (float)w, (float)h), rendererIndex,
+	        		                    toolTip, url);
+	        		        }
+	        			}
+	        		};
+	        		
+	        		renderer.addAnnotation(ann, Layer.BACKGROUND);
+	        	}
 	        }
 	        
 	        // create chart
@@ -382,8 +450,21 @@ public class HeatmapFactory {
 	        		            xx = j2DX;
 	        		            yy = j2DY;
 	        		        }
-	        		        int w = this.getImage().getWidth(null);
-	        		        int h = this.getImage().getHeight(null);
+	        		        // real image width and height
+	        		        double w = this.getImage().getWidth(null);
+	        		        double h = this.getImage().getHeight(null);
+	        		        
+	        		        // resized by width statement in imagegroup
+	        		        double realw = img.getImageGroup().getSettings().getBgWidth();
+	        		        if(realw==0) {
+	        		        	w = dataArea.getWidth();
+	        		        	h = dataArea.getHeight();
+	        		        }
+	        		        else {
+	        		        	double f = realw/img.getWidth(false);
+	        		        	w = dataArea.getWidth()*f;
+	        		        	h = dataArea.getHeight()*f;
+	        		        }
 
 	        		        double fw = domainAxis.getRange().getLength()/img.getWidth(false);
 	        		        double fh = rangeAxis.getRange().getLength()/img.getHeight(false);
@@ -395,12 +476,12 @@ public class HeatmapFactory {
 	        		        Point2D anchorPoint = RectangleAnchor.coordinates(imageRect, getImageAnchor());
 	        		        xx = xx - (float) anchorPoint.getX();
 	        		        yy = yy - (float) anchorPoint.getY();
-	        		        g2.drawImage(this.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH), (int) xx, (int) yy, null);
+	        		        g2.drawImage(this.getImage().getScaledInstance((int)w, (int)h, Image.SCALE_SMOOTH), (int) xx, (int) yy, null);
 
 	        		        String toolTip = getToolTipText();
 	        		        String url = getURL();
 	        		        if (toolTip != null || url != null) {
-	        		            addEntity(info, new Rectangle2D.Float(xx, yy, w, h), rendererIndex,
+	        		            addEntity(info, new Rectangle2D.Float(xx, yy, (float)w, (float)h), rendererIndex,
 	        		                    toolTip, url);
 	        		        }
 	        			}

@@ -103,8 +103,9 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	private final Border errorBorder = BorderFactory.createLineBorder(Color.red, 3);
 	private final Border emptyBorder = BorderFactory.createEmptyBorder();
 	
-	//
-	private DelayedDocumentListener listenerMinAbs, listenerMinPerc, listenerMaxPerc, listenerMaxAbs, listenerMaxFilter, listenerMinFilter;
+	// delayed document listener for min and max values
+	private DelayedDocumentListener listenerMinAbs, listenerMaxAbs, listenerMaxFilter, listenerMaxPerc, listenerMinFilter, listenerMinPerc;
+	private DelayedDocumentListener[] delayedDListener;
 	
 	/**
 	 * Create the panel.
@@ -189,37 +190,18 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		    public void itemStateChanged(ItemEvent event) {
 		       if (event.getStateChange() == ItemEvent.SELECTED) {
 		    	   ValueMode mode = (ValueMode)comboMinValType.getSelectedItem();
-		    	   switch(mode) {
-		    	   case ABSOLUTE: 
-			    	   applyNewMinimum();
-		    		   getTxtMinimum().setEditable(true);
-		    		   getTxtMinFilter().setEditable(false);
-		    		   getTxtMinPerc().setEditable(false);
-		    		   getSliderMinimum().setEnabled(false);
-		    		   listenerMinAbs.setActive(true);
-		    		   listenerMinPerc.setActive(false);
-		    		   listenerMinFilter.setActive(false);
-		    		   break;
-		    	   case PERCENTILE:
-		    		   getTxtMinimum().setEditable(false);
-		    		   getTxtMinFilter().setEditable(true);
-		    		   getTxtMinPerc().setEditable(false);
-		    		   getSliderMinimum().setEnabled(false);
-		    		   listenerMinAbs.setActive(false);
-		    		   listenerMinPerc.setActive(false);
-		    		   listenerMinFilter.setActive(true);
-		    		   break;
-		    	   case RELATIVE: 
-			    	   applyNewMinimum();
-		    		   getTxtMinimum().setEditable(false);
-		    		   getTxtMinFilter().setEditable(false);
-		    		   getTxtMinPerc().setEditable(true);
-		    		   getSliderMinimum().setEnabled(true);
-		    		   listenerMinAbs.setActive(false);
-		    		   listenerMinPerc.setActive(true);
-		    		   listenerMinFilter.setActive(false);
-		    		   break;
-		    	   }
+					switch(mode) {
+					case ABSOLUTE: 
+						applyNewMinimum();
+						break;
+					case PERCENTILE:
+						break;
+					case RELATIVE: 
+						applyNewMinimum();
+						break;
+					}
+					// apply
+					applyMinMode(mode);
 		       }
 		       if(ImageLogicRunner.IS_UPDATING)
 		    	   writeAllToSettings();
@@ -285,37 +267,18 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 			    public void itemStateChanged(ItemEvent event) {
 			       if (event.getStateChange() == ItemEvent.SELECTED) {
 			    	   ValueMode mode = (ValueMode)comboMaxValType.getSelectedItem();
-			    	   switch(mode) {
-			    	   case ABSOLUTE: 
-			    		   applyNewMaximum();
-			    		   getTxtMaximum().setEditable(true);
-			    		   getTxtMaxFilter().setEditable(false);
-			    		   getTxtMaxPerc().setEditable(false);
-			    		   getSliderMaximum().setEnabled(false);
-			    		   listenerMaxAbs.setActive(true);
-			    		   listenerMaxPerc.setActive(false);
-			    		   listenerMaxFilter.setActive(false);
-			    		   break;
-			    	   case PERCENTILE:
-			    		   getTxtMaximum().setEditable(false);
-			    		   getTxtMaxFilter().setEditable(true);
-			    		   getTxtMaxPerc().setEditable(false);
-			    		   getSliderMaximum().setEnabled(false);
-			    		   listenerMaxAbs.setActive(false);
-			    		   listenerMaxPerc.setActive(false);
-			    		   listenerMaxFilter.setActive(true);
-			    		   break;
-			    	   case RELATIVE: 
-			    		   applyNewMaximum();
-			    		   getTxtMaximum().setEditable(false);
-			    		   getTxtMaxFilter().setEditable(false);
-			    		   getTxtMaxPerc().setEditable(true);
-			    		   getSliderMaximum().setEnabled(true);
-			    		   listenerMaxAbs.setActive(false);
-			    		   listenerMaxPerc.setActive(true);
-			    		   listenerMaxFilter.setActive(false);
-			    		   break;
-			    	   }
+						switch(mode) {
+						case ABSOLUTE: 
+							applyNewMaximum(); 
+							break;
+						case PERCENTILE: 
+							break;
+						case RELATIVE: 
+							applyNewMaximum(); 
+							break;
+						}
+						// apply
+						applyMaxMode(mode);
 			       }
 			       if(ImageLogicRunner.IS_UPDATING)
 			    	   writeAllToSettings();
@@ -487,6 +450,34 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		}
 	}
 
+	/**
+	 * enables text fields and listeners 
+	 * @param mode
+	 */
+	private void applyMinMode(ValueMode mode) {
+		getTxtMinimum().setEditable(mode.equals(ValueMode.ABSOLUTE));
+		getTxtMinFilter().setEditable(mode.equals(ValueMode.PERCENTILE));
+		getTxtMinPerc().setEditable(mode.equals(ValueMode.RELATIVE));
+		getSliderMinimum().setEnabled(mode.equals(ValueMode.RELATIVE));
+		listenerMinAbs.setActive(mode.equals(ValueMode.ABSOLUTE));
+		listenerMinPerc.setActive(mode.equals(ValueMode.RELATIVE));
+		listenerMinFilter.setActive(mode.equals(ValueMode.PERCENTILE));
+	}
+
+	/**
+	 * enables text fields and listeners 
+	 * @param mode
+	 */
+	private void applyMaxMode(ValueMode mode) {
+		getTxtMaximum().setEditable(mode.equals(ValueMode.ABSOLUTE));
+		getTxtMaxFilter().setEditable(mode.equals(ValueMode.PERCENTILE));
+		getTxtMaxPerc().setEditable(mode.equals(ValueMode.RELATIVE));
+		getSliderMaximum().setEnabled(mode.equals(ValueMode.RELATIVE));
+		listenerMaxAbs.setActive(mode.equals(ValueMode.ABSOLUTE));
+		listenerMaxPerc.setActive(mode.equals(ValueMode.RELATIVE));
+		listenerMaxFilter.setActive(mode.equals(ValueMode.PERCENTILE));
+	}
+	
 	//################################################################################################
 	// Autoupdate  TODO
 	@Override
@@ -514,51 +505,61 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		//getComboMaxValType().addItemListener(il);
 		//getComboMinValType().addItemListener(il);
 		
-		getTxtMinimum().getDocument().addDocumentListener(listenerMinAbs = new DelayedDocumentListener() {
+		listenerMinAbs = new DelayedDocumentListener() {
 			@Override
 			public void documentChanged(DocumentEvent e) {
 				applyNewMinimum();
 				al.actionPerformed(null);
 			}
-		});
-		getTxtMaximum().getDocument().addDocumentListener(listenerMaxAbs = new DelayedDocumentListener() {
+		};
+		listenerMaxAbs = new DelayedDocumentListener() {
 			@Override
 			public void documentChanged(DocumentEvent e) {
 				applyNewMaximum();
 				al.actionPerformed(null);
 			}
-		});
-		
-		getTxtMaxPerc().getDocument().addDocumentListener(listenerMaxPerc = new DelayedDocumentListener() {
+		};
+		listenerMaxPerc = new DelayedDocumentListener() {
 			@Override
 			public void documentChanged(DocumentEvent e) {
 				applyNewMaximum();
 				al.actionPerformed(null);
 			}
-		});
-		getTxtMinPerc().getDocument().addDocumentListener(listenerMinPerc = new DelayedDocumentListener() {
+		};
+		listenerMinPerc = new DelayedDocumentListener() {
 			@Override 
 			public void documentChanged(DocumentEvent e) {
 				applyNewMinimum();
 				al.actionPerformed(null);
 			}
-		});
-		
-		// filter
-		getTxtMaxFilter().getDocument().addDocumentListener(listenerMaxFilter = new DelayedDocumentListener() {
+		};
+		listenerMaxFilter = new DelayedDocumentListener() {
 			@Override 
 			public void documentChanged(DocumentEvent e) {
 				applyMaxFilter();
 				al.actionPerformed(null);
 			}
-		});
-		getTxtMinFilter().getDocument().addDocumentListener(listenerMinFilter = new DelayedDocumentListener() {
+		};
+		listenerMinFilter = new DelayedDocumentListener() {
 			@Override 
 			public void documentChanged(DocumentEvent e) {
 				applyMinFilter();
 				al.actionPerformed(null);
 			}
-		});
+		};
+		
+		getTxtMinimum().getDocument().addDocumentListener(listenerMinAbs);
+		getTxtMaximum().getDocument().addDocumentListener(listenerMaxAbs);
+		
+		getTxtMaxPerc().getDocument().addDocumentListener(listenerMaxPerc);
+		getTxtMinPerc().getDocument().addDocumentListener(listenerMinPerc);
+		
+		// filter
+		getTxtMaxFilter().getDocument().addDocumentListener(listenerMaxFilter);
+		getTxtMinFilter().getDocument().addDocumentListener(listenerMinFilter);
+		
+		// TODO add to list
+		delayedDListener = new DelayedDocumentListener[] {listenerMinAbs, listenerMaxAbs, listenerMaxFilter, listenerMaxPerc, listenerMinFilter, listenerMinPerc};
 	}
 
 	@Override
@@ -627,6 +628,22 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		}
 	}
 
+	/**
+	 * stops all delayed documentlistener
+	 */
+		public void stopDelayedListener() {
+			for(DelayedDocumentListener dl : delayedDListener)
+				dl.stop();
+		}
+		/**
+		 * sets the active state for all delayed listeners
+		 * @param state
+		 */
+		public void setDelayedListenerActive(boolean state) {
+			for(DelayedDocumentListener dl : delayedDListener)
+				dl.setActive(state);
+		}
+	
 	//################################################################################################
 	// LOGIC
 	// Paintsclae from Image 
@@ -641,15 +658,10 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 			ps.resetAll();
 		}
 		// stop auto updating
-			listenerMinAbs.stop();
-			listenerMinPerc.stop();
-			listenerMaxPerc.stop();
-			listenerMaxAbs.stop();
-			listenerMaxFilter.stop();
-			listenerMinFilter.stop();
+		stopDelayedListener();
+		setDelayedListenerActive(false);
 		
 		//rb
-
 		this.getCbWhiteAsMin().setSelected(ps.isUsesWAsMin()); 
 		this.getCbBlackAsMax().setSelected(ps.isUsesBAsMax()); 
 		this.getCbInvert().setSelected(ps.isInverted()); 
@@ -665,13 +677,8 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		this.getPnMinMax().setVisible(ps.isUsesMinMax());
 		
 		// 
-
-		
 		this.getTxtLevels().setText(String.valueOf(ps.getLevels()));
 		
-		// comboboxes
-		getComboMinValType().setSelectedItem(ps.getModeMin());
-		getComboMaxValType().setSelectedItem(ps.getModeMax());
 		//max
 		double minFilter = ps.getMinFilter();
 		double maxFilter = ps.getMaxFilter();
@@ -684,13 +691,43 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		if(ps.getMaxIAbs(currentImage)==0 && ps.getMinIAbs(currentImage)==0 && ps.getModeMin().equals(ValueMode.PERCENTILE))
 			applyMinFilter();
 
-		// set values
-		setMinimumValue(ps.getMinIAbs(currentImage), true);
-		setMaximumValue(ps.getMaxIAbs(currentImage), true);
-		setMinimumValuePercentage(ps.getMinIRel(currentImage), true);
-		setMaximumValuePercentage(ps.getMaxIRel(currentImage), true);
+		// set values and force!
+		if(ps.getModeMin().equals(ValueMode.ABSOLUTE)) {
+			// absolute at last
+			setMinimumValuePercentage(ps.getMinIRel(currentImage), true);
+			setMinimumValue(ps.getMinIAbs(currentImage), true);
+		}
+		else {
+			// percentage last
+			setMinimumValue(ps.getMinIAbs(currentImage), true);
+			setMinimumValuePercentage(ps.getMinIRel(currentImage), true);
+		}
+
+		if(ps.getModeMax().equals(ValueMode.ABSOLUTE)) {
+			// absolute at last
+			setMaximumValuePercentage(ps.getMaxIRel(currentImage), true);
+			setMaximumValue(ps.getMaxIAbs(currentImage), true);
+		}
+		else {
+			// percentage last
+			setMaximumValue(ps.getMaxIAbs(currentImage), true);
+			setMaximumValuePercentage(ps.getMaxIRel(currentImage), true);
+		}
+		
+		// comboboxes
+		getComboMinValType().setSelectedItem(ps.getModeMin());
+		getComboMaxValType().setSelectedItem(ps.getModeMax());
+		applyMinMode(ps.getModeMin());
+		applyMaxMode(ps.getModeMax());
+		
 		/// renew histo
 		getPnHistogram().updateHisto(ps);
+		
+		// just in case 
+		stopDelayedListener();
+		// stop auto updating
+		setDelayedListenerActive(true);
+		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		ImageEditorWindow.getEditor().fireUpdateEvent(true);
@@ -734,8 +771,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		if(settings!=null) {
 			try {
 				setAllViaExistingSettings(settings);
-				// transfer to Settingsholder
-				SettingsHolder.getSettings().setSetByClass((Settings)settings);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

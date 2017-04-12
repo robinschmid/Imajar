@@ -99,7 +99,7 @@ public class TestImageFactory {
 		// add overlay
 		try {
 			SettingsImageOverlay settings = new SettingsImageOverlay();
-			ImageOverlay ov = new ImageOverlay(img.getImagesOnly(), settings);
+			ImageOverlay ov = new ImageOverlay(img, settings);
 			img.add(ov);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -13,20 +13,23 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
-import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipOutputStream;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
+import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
@@ -66,7 +69,7 @@ public class Image2DImportExportUtil {
 	        //DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
 	        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 	        
-	        Vector<Image2D> images = group.getImagesOnly();
+	        Image2D[] images = group.getImagesOnly();
 
 			// zip file 
 			parameters.setSourceExternalStream(true); 
@@ -74,9 +77,9 @@ public class Image2DImportExportUtil {
 			
 	        // export xmatrix
 			// intensity matrix
-	        if(MDDataset.class.isInstance(images.firstElement().getData())) {
-	        	if(((MDDataset)images.firstElement().getData()).hasXData()) {
-		            String xmatrix = images.firstElement().toXCSV(true, SEPARATION, false);
+	        if(MDDataset.class.isInstance(images[0].getData())) {
+	        	if(((MDDataset)images[0].getData()).hasXData()) {
+		            String xmatrix = images[0].toXCSV(true, SEPARATION, false);
 		    		try {
 						parameters.setFileNameInZip("xmatrix.csv");
 						out.putNextEntry(null, parameters);
@@ -104,7 +107,7 @@ public class Image2DImportExportUtil {
 					out.closeEntry();
 					
 		        	// export settings
-					SettingsImage2D sett = img.getSettingsImage2D();
+					Settings sett = img.getSettingsImage2D();
 					parameters.setFileNameInZip(FileAndPathUtil.addFormat(img.getTitle(), sett.getFileEnding()));
 					out.putNextEntry(null, parameters);
 					sett.saveToXML(out);
@@ -115,6 +118,23 @@ public class Image2DImportExportUtil {
 					e.printStackTrace();
 				}
 	        }
+	        // for all overlays
+	        Collectable2D[] c2d = group.getOtherThanImagesOnly();
+	        for(Collectable2D img : c2d) {	
+	        	try {
+		        	// export settings
+					Settings sett = img.getSettings();
+					parameters.setFileNameInZip(FileAndPathUtil.addFormat(img.getTitle(), sett.getFileEnding()));
+					out.putNextEntry(null, parameters);
+					sett.saveToXML(out);
+					out.closeEntry();
+				} catch (ZipException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+	        }
+	        
 	        try {
 				File bg = group.getBGImagePath();
 				if(bg!=null) {
@@ -165,6 +185,9 @@ public class Image2DImportExportUtil {
 			// try to find xmatrix
 			Vector<ScanLineMD> lines = new Vector<ScanLineMD>();
 			Vector<SettingsImage2D> settings = new Vector<SettingsImage2D>();
+			
+			// only setting sno data for iamge overlays
+			Vector<SettingsImageOverlay> overlays = new Vector<SettingsImageOverlay>();
 			
 			// background image
 			Image bgimg = null;
@@ -224,7 +247,7 @@ public class Image2DImportExportUtil {
 	        for (String fileName : files.keySet()) {
 	        	if(!fileName.equals("xmatrix.csv") && fileName.endsWith(".csv")) {
 		            ImageEditorWindow.log("reading file: "+fileName, LOG.MESSAGE);
-	        		System.out.print("read file: " + fileName);
+	        		System.out.println("read file: " + fileName);
 	        		
 					Vector<Double>[] y = null;
 	        		
@@ -280,7 +303,7 @@ public class Image2DImportExportUtil {
 					InputStream isSett = files.get(FileAndPathUtil.getRealFileName(fileName, sett.getFileEnding()));
 					if(isSett!=null) {
 			            ImageEditorWindow.log("reading settings file of: "+fileName, LOG.MESSAGE);
-		        		System.out.print("read settings file of: " + fileName);
+		        		System.out.println("read settings file of: " + fileName);
 		        		
 						settings.add(new SettingsImage2D());
 						settings.lastElement().loadFromXML(isSett);
@@ -297,6 +320,7 @@ public class Image2DImportExportUtil {
 					}
 	        	}
 	        }
+	        
 
 			// add new Image to image group
 			if(lines.size()>0) {
@@ -310,6 +334,32 @@ public class Image2DImportExportUtil {
 				// set settings to images
 				for(int i=0; i<group.getImages().size(); i++)
 					((Image2D)group.getImages().get(i)).setSettingsImage2D(settings.get(i));
+		        
+
+		        // image overlays
+				// settings
+				SettingsImageOverlay tmpov = new SettingsImageOverlay();
+
+				// y data
+		        for (String fileName : files.keySet()) {
+		        	if(fileName.endsWith(tmpov.getFileEnding())) {
+			            ImageEditorWindow.log("reading overlay file: "+fileName, LOG.MESSAGE);
+		        		System.out.println("read overlay file: " + fileName);
+		        		
+		        		// 
+		        		InputStream isSett = files.get(fileName);
+		        		SettingsImageOverlay settov = new SettingsImageOverlay();
+						settov.loadFromXML(isSett);
+						
+						ImageOverlay newov;
+						try {
+							newov = new ImageOverlay(group, settov);
+							group.add(newov);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+		        	}
+		        }
 		        // return group
 		        return group;
 			}

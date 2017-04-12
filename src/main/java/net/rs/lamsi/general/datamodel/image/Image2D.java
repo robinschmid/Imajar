@@ -1474,7 +1474,11 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public float getWidth(boolean raw) {
-		return data.getWidthX() * xFactor(raw);
+		int rot = getSettImage().getRotationOfData();
+		if(rot==0 || rot==180) 
+			return data.getWidthX() * xFactor(raw);
+		else
+			return getYRaw(raw, data.getLinesCount());
 	}
 	
 	/**
@@ -1483,7 +1487,11 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public float getHeight(boolean raw) {
-		return getYRaw(raw, data.getLinesCount());
+		int rot = getSettImage().getRotationOfData();
+		if(rot==90 || rot==270) 
+			return data.getWidthX() * xFactor(raw);
+		else
+			return getYRaw(raw, data.getLinesCount());
 	}
 
 	/**
@@ -2166,9 +2174,9 @@ public class Image2D extends Collectable2D implements Serializable {
 	@Override
 	public Icon getIcon(int maxw, int maxh) {
 		try {
-			applyCutFilterMin(2.5);
-			applyCutFilterMax(0.2);
-			PaintScale scale = PaintScaleGenerator.generateStepPaintScale(minZFiltered, maxZFiltered, getSettPaintScale()); 
+			double min = getValueCutFilter(2.5, false);
+			double max = getValueCutFilter(100.0-0.2, false);
+			PaintScale scale = PaintScaleGenerator.generateStepPaintScale(min, max, getSettPaintScale()); 
 
 			// scale in x
 			float sx = 1;

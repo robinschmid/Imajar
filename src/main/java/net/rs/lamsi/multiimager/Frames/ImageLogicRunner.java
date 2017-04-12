@@ -551,7 +551,7 @@ public class ImageLogicRunner {
 
 					// add overlay
 						SettingsImageOverlay settings = new SettingsImageOverlay();
-						ImageOverlay ov = new ImageOverlay(group.getImagesOnly(), settings);
+						ImageOverlay ov = new ImageOverlay(group, settings);
 						group.add(ov);
 
 						addImage(ov, selectedImage.getImageGroup().getNode());

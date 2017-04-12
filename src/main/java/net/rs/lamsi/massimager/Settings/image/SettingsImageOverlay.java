@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
 import net.rs.lamsi.massimager.Settings.Settings;
@@ -16,6 +17,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sparshui.server.Group;
 
 public class SettingsImageOverlay extends SettingsContainerSettings {
 	// do not change the version!
@@ -39,7 +42,7 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 	
 
 	public SettingsImageOverlay() {
-		super("SettingsImage2D", "/Settings/Image2d/", "setImg2d"); 
+		super("SettingsImageOverlay", "/Settings/ImageOv/", "setImgOv"); 
 		// standard theme
 		this.settTheme = new SettingsThemes(ChartThemeFactory.THEME_DARKNESS);
 		//
@@ -58,10 +61,11 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 	 * @param images
 	 * @throws Exception 
 	 */
-	public void setImagesCopyPS(Vector<Image2D> images) throws Exception {
+	public void init(ImageGroupMD group) throws Exception {
 		psSettings.clear();
 		int c = 0;
-		for(Image2D i : images) {
+		for(int f=0; f<group.image2dCount(); f++) {
+			Image2D i = (Image2D)group.get(f);
 			SettingsPaintScale ps =( SettingsPaintScale) i.getSettPaintScale().copy();
 			psSettings.add(ps);
 			// monochrome and color
@@ -73,11 +77,37 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 		}
 		
 		// create active array
-		active = new Vector<Boolean>(images.size());
-		for(int i=0; i<images.size(); i++)
+		active = new Vector<Boolean>(group.size());
+		for(int i=0; i<group.size(); i++)
 			active.add(new Boolean(true));
 	}
-
+	
+	public boolean isInitialised() {
+		return psSettings.size()>0;
+	}
+	
+	/**
+	 * add image2d 
+	 * @throws Exception 
+	 */
+	public void addImage(Image2D i) throws Exception { 
+		SettingsPaintScale ps =( SettingsPaintScale) i.getSettPaintScale().copy();
+		psSettings.add(ps);
+		// monochrome and color
+		ps.setMonochrom(true);
+		ps.setMinColor(colors.get(active.size()%colors.size()));
+		ps.setMaxColor(colors.get(active.size()%colors.size()));
+		//
+		active.add(new Boolean(false));
+	}
+	/**
+	 * add image2d 
+	 * @throws Exception 
+	 */
+	public void removeImage(int i) throws Exception { 
+		psSettings.remove(i);
+		active.remove(i);
+	}
 
 	@Override
 	public void resetAll() { 

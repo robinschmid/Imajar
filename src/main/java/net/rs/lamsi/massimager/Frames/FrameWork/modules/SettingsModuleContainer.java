@@ -155,7 +155,6 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 		
 		@Override
 		public void setCurrentHeatmap(Heatmap heat) {
-			super.setCurrentHeatmap(heat);
 			for(Module m : listSettingsModules) {
 				if(HeatmapSettingsModule.class.isInstance(m)) {
 					HeatmapSettingsModule sm = ((HeatmapSettingsModule)m);
@@ -163,11 +162,11 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 					sm.setCurrentHeatmap(heat);
 				}
 			}
+			super.setCurrentHeatmap(heat);
 		}
 		
 		@Override 
 		public void setCurrentImage(S img) {
-			super.setCurrentImage(img);
 			for(Module m : listSettingsModules) {
 				if(Collectable2DSettingsModule.class.isInstance(m)) {
 					Collectable2DSettingsModule sm = ((Collectable2DSettingsModule)m);
@@ -175,5 +174,6 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 					sm.setCurrentImage(img);
 				}
 			}
+			super.setCurrentImage(img);
 		}
 }

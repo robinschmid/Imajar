@@ -151,28 +151,27 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		super.setCurrentImage(img);
 		// set all images to all paintscale modules
 		// TODO
-		Vector<Image2D> psList = img.getImages();
 		// create new
-		if(modPSList==null || modPSList.length!=psList.size()) {
+		if(modPSList==null || modPSList.length!=img.size()) {
 
 			tabbedPaintScales.removeAll();
-			modPSList = new ModulePaintscaleOverlaySub[psList.size()];
+			modPSList = new ModulePaintscaleOverlaySub[img.size()];
 			
-			for(int i=0; i<psList.size(); i++) {
+			for(int i=0; i<img.size(); i++) {
 				modPSList[i] = new ModulePaintscaleOverlaySub();
 				modPSList[i].addAutoupdater(al, cl, dl, ccl, il);
 				
-				modPSList[i].setCurrentImage(psList.get(i));
+				modPSList[i].setCurrentImage(img.get(i));
 				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i));
 				
-				tabbedPaintScales.add(psList.get(i).getTitle(), modPSList[i]);
+				tabbedPaintScales.add(img.get(i).getTitle(), modPSList[i]);
 			}
 		}
 		else {
-			for(int i=0; i<psList.size(); i++) {
-				modPSList[i].setCurrentImage(psList.get(i));
+			for(int i=0; i<img.size(); i++) {
+				modPSList[i].setCurrentImage(img.get(i));
 				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i));
-				tabbedPaintScales.setTitleAt(i, psList.get(i).getTitle());
+				tabbedPaintScales.setTitleAt(i, img.get(i).getTitle());
 			}
 		}
 	}

@@ -71,7 +71,15 @@ public class ImageGroupMD  implements Serializable {
 				if(data==null) data = (MDDataset) img.getData();
 				if(data.equals(img.getData())){
 					images.add(image2dCount(),img);
-					img.setImageGroup(this); 
+					img.setImageGroup(this);
+					// add to all overlays
+					for(int i=image2dCount(); i<size(); i++)
+						if(ImageOverlay.class.isInstance(get(i)))
+							try {
+								((ImageOverlay)get(i)).addImage(img);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 				}
 			}
 		}
@@ -88,12 +96,20 @@ public class ImageGroupMD  implements Serializable {
 		if(index>=0 && index<size()) {
 			if(data.removeDimension(index)) {
 				for(int i=index+1; i<size(); i++)
-					if(Image2D.class.isInstance(images.get(i)))
+					if(Image2D.class.isInstance(images.get(i))) {
 						((Image2D)images.get(i)).shiftIndex(-1);
+					}
 
-				return images.remove(index);
-			}
-			else return null;
+				// remove from all overlays
+				for(int f=image2dCount(); f<size(); f++)
+					if(ImageOverlay.class.isInstance(get(f)))
+						try {
+							((ImageOverlay)get(f)).removeImage(index);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+			} 
+			return images.remove(index);
 		}
 		else return null;
 	}
@@ -231,6 +247,7 @@ public class ImageGroupMD  implements Serializable {
 		return null;
 	}
 
+
 	// #######################################################################################
 	// GETTERS AND SETTERS
 	/**
@@ -283,11 +300,22 @@ public class ImageGroupMD  implements Serializable {
 	 * a vector of all iamges
 	 * @return
 	 */
-	public Vector<Image2D> getImagesOnly() {
-		Vector<Image2D> img = new Vector<Image2D>();
-		for(Collectable2D c : images)
-			if(Image2D.class.isInstance(c))
-				img.add((Image2D) c);
+	public Image2D[] getImagesOnly() {
+		Image2D[] img = new Image2D[image2dCount()];
+		for(int i=0; i<image2dCount(); i++)
+			if(Image2D.class.isInstance(images.get(i)))
+				img[i] = ((Image2D) images.get(i));
+		return img;
+	}
+	/**
+	 * 
+	 * @return a list of non image2d entries (like overlays)
+	 */
+	public Collectable2D[] getOtherThanImagesOnly() {
+		int size = images.size()-image2dCount();
+		Collectable2D[] img = new Collectable2D[size];
+		for(int i=0; i<size; i++)
+			img[i] = (images.get(i+image2dCount()));
 		return img;
 	}
 }

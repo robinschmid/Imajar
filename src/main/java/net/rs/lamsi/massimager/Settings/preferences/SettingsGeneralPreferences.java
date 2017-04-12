@@ -10,6 +10,7 @@ import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import net.rs.lamsi.utils.FileAndPathUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -46,7 +47,7 @@ public class SettingsGeneralPreferences extends Settings {
 
 	public SettingsGeneralPreferences() {
 		super("GeneralPreferences", "/Settings/General/", "settPrefer");  
-		generalPrefFile = new File(getPathSettingsFile()+"preferences."+getFileEnding());
+		generalPrefFile = new File(FileAndPathUtil.getPathOfJar(), getPathSettingsFile()+"preferences."+getFileEnding());
 		resetAll();
 
 		// init filechooser 

@@ -30,6 +30,9 @@ public class SettingsImageGroup extends Settings {
     private static final long serialVersionUID = 1L;
     //
 	protected File pathBGImage = null;
+	
+	// width of bg image
+	protected float bgWidth = 0;
     
     // paint scale
 	protected SettingsAlphaMap settAlphaMap;
@@ -52,6 +55,7 @@ public class SettingsImageGroup extends Settings {
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		toXML(elParent, doc, "pathBGImage", pathBGImage); 
+		toXML(elParent, doc, "bgWidth", bgWidth); 
 		// other settings
 		if(settAlphaMap!=null)
 			settAlphaMap.appendSettingsToXML(elParent, doc);
@@ -67,6 +71,8 @@ public class SettingsImageGroup extends Settings {
 				// import settings
 				if(paramName.equals("pathBGImage")) 
 					pathBGImage = new File(nextElement.getTextContent());
+				else if(paramName.equals("bgWidth")) 
+					bgWidth = floatFromXML(nextElement);
 				// other settings
 				else if(paramName.equals(settAlphaMap.getDescription())) 
 					settAlphaMap.loadValuesFromXML(nextElement, doc);
@@ -86,5 +92,13 @@ public class SettingsImageGroup extends Settings {
 	}
 	public void setPathBGImage(File pathBGImage) {
 		this.pathBGImage = pathBGImage;
+	}
+
+	public float getBgWidth() {
+		return bgWidth;
+	}
+
+	public void setBgWidth(float bgWidth) {
+		this.bgWidth = bgWidth;
 	}
 }

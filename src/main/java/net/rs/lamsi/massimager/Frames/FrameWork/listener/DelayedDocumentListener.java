@@ -42,7 +42,7 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 	}
 	@Override
 	public void run() {
-		while(true && !isStopped) {
+		while(!isStopped) {
 			if(lastAutoUpdateTime+dalay<=System.currentTimeMillis()) {
 				documentChanged(lastEvent);
 				lastAutoUpdateTime=-1;

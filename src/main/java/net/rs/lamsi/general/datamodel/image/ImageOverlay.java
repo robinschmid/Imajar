@@ -31,19 +31,18 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
+	protected ImageGroupMD group;
 	// images for the overlay
-	protected Vector<Image2D> images;
-
 	protected SettingsImageOverlay settings;
 
 
-	public ImageOverlay(Vector<Image2D> images, SettingsImageOverlay settings) throws Exception {
-		super();
-		this.images = images;
+	public ImageOverlay(ImageGroupMD group, SettingsImageOverlay settings) throws Exception {
+		super(); 
 		this.settings = settings;
-
+		this.group = group;
 		// set images to settings to copy current paintscales
-		settings.setImagesCopyPS(images);
+		if(!settings.isInitialised())
+			settings.init(group);
 	}
 	/**
 	 * returns an easy icon
@@ -125,12 +124,42 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	// ######################################################################################
 	// sizing
 	/**
+	 * maximum width of this overlay
+	 * @param raw
+	 * @return
+	 */
+	public float getWidth(boolean raw) {
+		float max = 0;
+		for(int i=0; i<group.image2dCount(); i++) {
+			Image2D img = (Image2D) group.get(i);
+			if(max<img.getWidth(raw))
+				max = img.getWidth(raw);
+		}
+		return max;
+	}
+	/**
+	 * maximum height of this overlay
+	 * @param raw
+	 * @return
+	 */
+	public float getHeight(boolean raw) {
+		float max = 0;
+		for(int i=0; i<group.image2dCount(); i++) {
+			Image2D img = (Image2D) group.get(i);
+			if(max<img.getHeight(raw))
+				max = img.getHeight(raw);
+		}
+		return max;
+	}
+	
+	/**
 	 * according to rotation of data
 	 * @return
 	 */
 	public int getWidthAsMaxDP() {
 		int max = 0;
-		for(Image2D img : images) {
+		for(int i=0; i<group.image2dCount(); i++) {
+			Image2D img = (Image2D) group.get(i);
 			if(max<img.getWidthAsMaxDP())
 				max = img.getWidthAsMaxDP();
 		}
@@ -142,7 +171,8 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	 */
 	public int getHeightAsMaxDP() {
 		int max = 0;
-		for(Image2D img : images) {
+		for(int i=0; i<group.image2dCount(); i++) {
+			Image2D img = (Image2D) group.get(i);
 			if(max<img.getHeightAsMaxDP())
 				max = img.getHeightAsMaxDP();
 		}
@@ -150,17 +180,32 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	}
 
 
-	public Vector<Image2D> getImages() {
-		return images;
-	}
-	public void setImages(Vector<Image2D> images) {
-		this.images = images;
-	}
+	public Image2D[] getImages() {
+		return group.getImagesOnly();
+	} 
 	public SettingsImageOverlay getSettings() {
 		return settings;
 	}
 	public void setSettingsOverlay(SettingsImageOverlay settings) {
 		this.settings = settings;
+	}
+	
+	public int size()  { 
+		return group.image2dCount();
+	}
+	/**
+	 * add image2d 
+	 * @throws Exception 
+	 */
+	public void addImage(Image2D i) throws Exception { 
+		settings.addImage(i);
+	}
+	/**
+	 * add image2d 
+	 * @throws Exception 
+	 */
+	public void removeImage(int i) throws Exception { 
+		settings.removeImage(i);
 	}
 	
 	@Override
@@ -212,9 +257,9 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	public XYIData2D[] getDataSets() {
 		XYIData2D[] dat = new XYIData2D[countActive()];
 		int c = 0;
-		for(int i=0; i<images.size(); i++) {
+		for(int i=0; i<group.image2dCount(); i++) {
 			if(settings.isActive(i)) {
-				dat[c] = images.get(i).toXYIArray(false, true); 
+				dat[c] = ((Image2D)group.get(i)).toXYIArray(false, true); 
 				c++;
 			}
 		}
@@ -224,7 +269,7 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	
 	public int countActive() {
 		int c = 0;
-		for(int i=0; i<images.size(); i++) {
+		for(int i=0; i<group.image2dCount(); i++) {
 			if(settings.isActive(i)) {
 				c++;
 			}
@@ -245,9 +290,9 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 
 		String[] dat = new String[countActive()];
 		int c = 0;
-		for(int i=0; i<images.size(); i++) {
+		for(int i=0; i<group.image2dCount(); i++) {
 			if(settings.isActive(i)) {
-				dat[c] = images.get(i).getTitle();
+				dat[c] = group.get(i).getTitle();
 				String tt = dat[c];
 				int tmp = 2;
 				// check if title exists
@@ -266,5 +311,14 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 			}
 		}
 		return dat;
+	}
+	public ImageGroupMD getGroup() {
+		return group;
+	}
+	public void setGroup(ImageGroupMD group) {
+		this.group = group;
+	}
+	public Image2D get(int i) {
+		return i<group.image2dCount()? (Image2D)group.get(i) : null;
 	}
 }
