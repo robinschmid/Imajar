@@ -1,6 +1,7 @@
 package net.rs.lamsi.massimager.Settings;
 
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -164,6 +165,11 @@ public abstract class Settings implements Serializable {
 		    else if(File.class.isInstance(o)) {
 		    	paramElement.setTextContent(((File)o).getAbsolutePath());
 		    } 
+		    else if(Point2D.class.isInstance(o)) {
+		    	Point2D p = (Point2D)o;
+		    	String s = String.valueOf(p.getX())+";"+String.valueOf(p.getY());
+		    	paramElement.setTextContent(s);
+		    }
 		    else paramElement.setTextContent(String.valueOf(o));
 		}
 	}
@@ -272,6 +278,22 @@ public abstract class Settings implements Serializable {
         final String numString = el.getTextContent();
         if (numString.length() > 0) {
             return Double.parseDouble(numString);
+        }
+        return null;
+    }
+    
+    /**
+     * 
+     * @param el
+     * @return null if no value was found
+     */
+    public static Point2D point2DDoubleFromXML(final Element el) {
+        final String numString = el.getTextContent();
+        if (numString.length() > 0) {
+        	String[] split = numString.split(";");
+        	if(split.length==2) {
+        		return new Point2D.Double(Double.parseDouble(split[0]), Double.parseDouble(split[1]));
+        	}
         }
         return null;
     }

@@ -67,6 +67,25 @@ public abstract class SettingsContainerSettings extends Settings {
 	}	
 	
 	/**
+	 * replaces the current sub settings
+	 * @param sett
+	 * @return
+	 */
+	public boolean replaceSettings(Settings sett) {
+		for(int i=0; i<list.size(); i++) {
+			Settings s = list.get(i);
+			if(s.getClass().isInstance(sett)) {
+				list.remove(i);
+				list.add(sett);
+				return true;
+			}
+		}
+		// add without replacing
+		list.add(sett);
+		return false;
+	}
+	
+	/**
 	 * 
 	 * @param classsettings
 	 * @return

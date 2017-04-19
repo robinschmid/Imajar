@@ -20,7 +20,7 @@ public class SettingsAlphaMap extends Settings {
 	private MultiImageTableModel tableModel;
 
 	public SettingsAlphaMap() {
-		super("SettingsAlphaMap", "Settings/Image/Operations/", "setAlphaMap");  
+		super("SettingsAlphaMap", "Settings/Visualization/", "setAlphaMap");  
 		resetAll();
 	}
 

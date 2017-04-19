@@ -118,7 +118,7 @@ public class ImageGroupMD  implements Serializable {
 
 	public void setBackgroundImage(Image image, File pathBGImage) {
 		this.bgImage = image;
-		settings.setPathBGImage(pathBGImage);
+		settings.getSettBGImg().setPathBGImage(pathBGImage);
 		for(Collectable2D img : images) {
 			img.getSettTheme().setBGImagePath(pathBGImage);
 			img.getSettTheme().setUseBGImage(pathBGImage!=null);
@@ -144,11 +144,11 @@ public class ImageGroupMD  implements Serializable {
 	 * @return path or null
 	 */
 	public File getBGImagePath() {
-		if(settings.getPathBGImage()==null) {
+		if(settings.getSettBGImg().getPathBGImage()==null) {
 			if(images!=null && images.size()>0)
-				settings.setPathBGImage(images.get(0).getSettTheme().getBGImagePath());
+				settings.getSettBGImg().setPathBGImage(images.get(0).getSettTheme().getBGImagePath());
 		}
-		return settings.getPathBGImage();
+		return settings.getSettBGImg().getPathBGImage();
 	}
 
 	// ######################################################################################

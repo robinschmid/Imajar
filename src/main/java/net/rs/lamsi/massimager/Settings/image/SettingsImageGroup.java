@@ -2,65 +2,41 @@ package net.rs.lamsi.massimager.Settings.image;
 
 import java.io.File;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
+import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsBackgroundImg;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
-import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
-
-public class SettingsImageGroup extends Settings {
+public class SettingsImageGroup extends SettingsContainerSettings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
-	protected File pathBGImage = null;
-	
-	// width of bg image
-	protected float bgWidth = 0;
+    protected SettingsBackgroundImg settBGImg;
     
-    // paint scale
+	// paint scale
 	protected SettingsAlphaMap settAlphaMap;
 
 	// constructors
 	public SettingsImageGroup() {
 		super("SettingsImageGroup", "/Settings/Image2d/", "setImgGroup"); 
 		settAlphaMap = new SettingsAlphaMap();
+		settBGImg = new SettingsBackgroundImg();
+		
+		list.addElement(settAlphaMap);
+		list.addElement(settBGImg);
 	} 
 
 	@Override
 	public void resetAll() { 
-		pathBGImage = null;
-		
-		if(settAlphaMap!=null)
-			settAlphaMap.resetAll();
+		super.resetAll();
+		// reset 
 	}
 
 	// xml
-	@Override
-	public void appendSettingsValuesToXML(Element elParent, Document doc) {
-		toXML(elParent, doc, "pathBGImage", pathBGImage); 
-		toXML(elParent, doc, "bgWidth", bgWidth); 
-		// other settings
-		if(settAlphaMap!=null)
-			settAlphaMap.appendSettingsToXML(elParent, doc);
-	}
-	
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
 		NodeList list = el.getChildNodes();
@@ -69,36 +45,35 @@ public class SettingsImageGroup extends Settings {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 				// import settings
+				// older settings format
 				if(paramName.equals("pathBGImage")) 
-					pathBGImage = new File(nextElement.getTextContent());
+					settBGImg.setPathBGImage(new File(nextElement.getTextContent()));
 				else if(paramName.equals("bgWidth")) 
-					bgWidth = floatFromXML(nextElement);
-				// other settings
-				else if(paramName.equals(settAlphaMap.getDescription())) 
-					settAlphaMap.loadValuesFromXML(nextElement, doc);
+					settBGImg.setBgWidth(floatFromXML(nextElement));
 			}
 		}
+		// load all sub settings
+		super.loadValuesFromXML(el, doc);
 	}
 	
 	// getters and setters
 	public SettingsAlphaMap getSettAlphaMap() {
 		return settAlphaMap;
 	}
+    public SettingsBackgroundImg getSettBGImg() {
+		return settBGImg;
+	}
 	public void setSettAlphaMap(SettingsAlphaMap settAlphaMap) {
+		list.remove(this.settAlphaMap);
 		this.settAlphaMap = settAlphaMap;
+		list.add(this.settAlphaMap);
 	}
-	public File getPathBGImage() {
-		return pathBGImage;
-	}
-	public void setPathBGImage(File pathBGImage) {
-		this.pathBGImage = pathBGImage;
-	}
-
-	public float getBgWidth() {
-		return bgWidth;
+	public void setSettBGImg(SettingsBackgroundImg settBGImg) {
+		list.remove(this.settBGImg);
+		this.settBGImg = settBGImg;
+		list.add(this.settBGImg);
 	}
 
-	public void setBgWidth(float bgWidth) {
-		this.bgWidth = bgWidth;
-	}
+	
+	
 }
