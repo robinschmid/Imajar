@@ -2,14 +2,14 @@ package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
 import java.io.Serializable;
 
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 
 public class RectSelection implements Serializable { 
 	private static final long serialVersionUID = 1L;
-	private MODE mode;
+	private SelectionMode mode;
 	private int x,y,xe,ye;
 	
-	public RectSelection(MODE mode, int x, int y, int xe, int ye) {
+	public RectSelection(SelectionMode mode, int x, int y, int xe, int ye) {
 		super();
 		this.mode = mode;
 		this.x = x;
@@ -145,10 +145,10 @@ public class RectSelection implements Serializable {
 		assureX();
 		assureY();
 	} 
-	public MODE getMode() {
+	public SelectionMode getMode() {
 		return mode;
 	} 
-	public void setMode(MODE mode) {
+	public void setMode(SelectionMode mode) {
 		this.mode = mode;
 	}
 }

@@ -173,6 +173,19 @@ public abstract class Settings implements Serializable {
 		    else paramElement.setTextContent(String.valueOf(o));
 		}
 	}
+	public static void toXML(Element elParent, Document doc, String name, Object o, String[] attributes, Object[] attValues) {
+		if(o!=null) {
+		    //Element paramElement = doc.createElement(parameterElement);
+		    //paramElement.setAttribute(nameAttribute, name);
+			Element paramElement = doc.createElement(name);
+		    elParent.appendChild(paramElement); 
+		    
+		    paramElement.setTextContent(String.valueOf(o));
+		    for(int i=0; i<attributes.length; i++) {
+		    	paramElement.setAttribute(attributes[i], String.valueOf(attValues[i]));
+		    }
+		}
+	}
 	public static void toXMLArray(Element elParent, Document doc, String name, Object[][] o) {
 		if(o!=null) {
 		    //Element paramElement = doc.createElement(parameterElement);

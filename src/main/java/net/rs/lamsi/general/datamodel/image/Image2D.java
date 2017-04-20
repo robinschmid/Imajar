@@ -37,7 +37,7 @@ import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.DataMinMaxAvg;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
@@ -1925,7 +1925,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public double[] getIRect(RectSelection rect, boolean raw) {
 		int size = rect.getWidth()*rect.getHeight();
 
-		if(rect.getMode()==MODE.MODE_SELECT)
+		if(rect.getMode()==SelectionMode.SELECT)
 			size = countSelectedNonExcludedDPInRect(rect);
 
 		double[] i = new double[size];
@@ -1933,7 +1933,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		int counter = 0;
 		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
 			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=MODE.MODE_SELECT || !isExcludedDP(y, x)) {
+				if(rect.getMode()!=SelectionMode.SELECT || !isExcludedDP(y, x)) {
 					i[counter] = getI(raw, y, x);
 					counter++;
 				}
@@ -1952,7 +1952,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		//TODO sort in ar right way        
 		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
 			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=MODE.MODE_SELECT || !isExcludedDP(y, x))
+				if(rect.getMode()!=SelectionMode.SELECT || !isExcludedDP(y, x))
 					i[y-rect.getMinY()][x-rect.getMinX()] = getI(raw, y, x);
 			}
 		}

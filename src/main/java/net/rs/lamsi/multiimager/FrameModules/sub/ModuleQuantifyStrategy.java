@@ -38,7 +38,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.quantifiertable.PnTableQuantifi
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
@@ -367,8 +367,8 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 						Image2D copy = img.getCopyChild();
 						// set area: exclude all but not lastSplit to i-1
 						if(lastSplit!=0)
-							copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
-						copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,i, copy.getData().getMaxDP()-1, copy.getLineCount(0)-1));
+							copy.getExcludedData().add(new RectSelection(SelectionMode.EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
+						copy.getExcludedData().add(new RectSelection(SelectionMode.EXCLUDE, 0,i, copy.getData().getMaxDP()-1, copy.getLineCount(0)-1));
 						// add
 						getPnTable().addQuantifier(copy);
 						// 						
@@ -392,7 +392,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 					// copy and set parent
 					Image2D copy = img.getCopyChild();
 					// set area: exclude all but not lastSplit to i-1
-					copy.getExcludedData().add(new RectSelection(MODE.MODE_EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
+					copy.getExcludedData().add(new RectSelection(SelectionMode.EXCLUDE, 0,0, copy.getData().getMaxDP()-1,lastSplit-1)); 
 					// add
 					getPnTable().addQuantifier(copy);
 				} catch (Exception e) { 

@@ -445,7 +445,6 @@ public class Image2DImportExportUtil {
 		int xcol = -1, ycol=-1; 
 
 		ModeData mode = sett.getModeData();
-		
 		int xmatrix = -1;
 		
 		if(mode.equals(ModeData.X_MATRIX_STANDARD)) {

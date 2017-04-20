@@ -59,11 +59,11 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		SHRINK, SHIFT, ENLARGE
 	}
 	// what to draw or do
-	public enum MODE {
-		MODE_EXCLUDE("EXCLUDE"), MODE_SELECT("SELECT"), MODE_INFO("INFO");
+	public enum SelectionMode {
+		EXCLUDE("EXCLUDE"), SELECT("SELECT"), INFO("INFO");
 		
 		private String title;
-		MODE(String title) {
+		SelectionMode(String title) {
 			this.title = title;
 		}
 		@Override
@@ -71,7 +71,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			return title;
 		}
 	}
-	private MODE mode = MODE.MODE_SELECT;
+	private SelectionMode mode = SelectionMode.SELECT;
 	// mystuff
 	private Heatmap heat;
 	private Image2D img;
@@ -141,7 +141,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		btnRect.setToolTipText("Selection rectangles are used for selecting data. All data points outside of the sum of selctions are excluded from processing (for example blank reduction)");
 		btnRect.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				if(((JToggleButton)e.getSource()).isSelected()) mode = MODE.MODE_SELECT;
+				if(((JToggleButton)e.getSource()).isSelected()) mode = SelectionMode.SELECT;
 			}
 		});
 		
@@ -149,7 +149,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		btnInfoRect.setToolTipText("Info rectangles are used for data analysis.");
 		btnInfoRect.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				if(((JToggleButton)e.getSource()).isSelected()) mode = MODE.MODE_INFO;
+				if(((JToggleButton)e.getSource()).isSelected()) mode = SelectionMode.INFO;
 			}
 		});
 		buttonGroup.add(btnInfoRect);
@@ -169,7 +169,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		btnExclude.setToolTipText("Exclude rectangles are excluding data points from calculation.");
 		btnExclude.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				if(((JToggleButton)e.getSource()).isSelected()) mode = MODE.MODE_EXCLUDE;
+				if(((JToggleButton)e.getSource()).isSelected()) mode = SelectionMode.EXCLUDE;
 			}
 		});
 		buttonGroup.add(btnExclude);
@@ -426,13 +426,13 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		
 		Color c = null;
 		switch(r.getMode()) {
-		case MODE_EXCLUDE:
+		case EXCLUDE:
 			c = Color.RED;
 			break;
-		case MODE_SELECT:
+		case SELECT:
 			c = Color.BLACK;
 			break;
-		case MODE_INFO:
+		case INFO:
 			c = Color.gray;
 			break;
 		} 
@@ -453,7 +453,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	 */
 	protected void updateSelection() {
 		// Update rects
-		if(currentRect!=null && currentRect.getMode()==MODE.MODE_EXCLUDE) {
+		if(currentRect!=null && currentRect.getMode()==SelectionMode.EXCLUDE) {
 			// update all selection rects
 			for(RectSelection sel : rects) 
 				update(sel);
@@ -521,7 +521,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 					// found rect
 					currentRect = rects.get(i);
 					currentAnn = map.get(currentRect);
-					mode = MODE.MODE_SELECT;
+					mode = SelectionMode.SELECT;
 					return;
 				}
 			}
@@ -531,7 +531,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 					// found rect
 					currentRect = rectsExclude.get(i);
 					currentAnn = map.get(currentRect);
-					mode = MODE.MODE_EXCLUDE;
+					mode = SelectionMode.EXCLUDE;
 					return;
 				}
 			}
@@ -541,7 +541,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 					// found rect
 					currentRect = rectsInfo.get(i);
 					currentAnn = map.get(currentRect);
-					mode = MODE.MODE_INFO;
+					mode = SelectionMode.INFO;
 					return;
 				}
 			}
@@ -564,9 +564,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				y0 = img.getYAsIndex(pos.getY(), pos.getX());
 				x0 = img.getXAsIndex(y0, pos.getX());
 				currentRect = new RectSelection(mode, x0, y0, x0, y0);
-				if(mode == MODE.MODE_EXCLUDE)
+				if(mode == SelectionMode.EXCLUDE)
 					rectsExclude.add(currentRect);
-				else if(mode==MODE.MODE_SELECT) rects.add(currentRect);
+				else if(mode==SelectionMode.SELECT) rects.add(currentRect);
 				else rectsInfo.add(currentRect);
 				addSelection(currentRect);
 				updateSelection();

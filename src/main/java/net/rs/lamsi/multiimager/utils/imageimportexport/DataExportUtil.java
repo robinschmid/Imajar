@@ -381,15 +381,15 @@ LOOKUP_TABLE default
 				String title = "";
 				SelectionTableRow row = tableRows.get(r);
 				switch(row.getRect().getMode()) {
-				case MODE_SELECT: 
+				case SELECT: 
 					select++; 
 					title = "Sel"+select;
 					break;
-				case MODE_EXCLUDE: 
+				case EXCLUDE: 
 					exclude++; 
 					title = "Excl"+exclude;
 					break;
-				case MODE_INFO: 
+				case INFO: 
 					info++; 
 					title = "Info"+info;
 					break;
