@@ -75,6 +75,19 @@ public class Image2DImportExportUtil {
 			parameters.setSourceExternalStream(true); 
 			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
 			
+			// export group settings
+			try {
+				Settings sett = group.getSettings();
+				parameters.setFileNameInZip(FileAndPathUtil.addFormat("group", sett.getFileEnding()));
+				out.putNextEntry(null, parameters);
+				sett.saveToXML(out);
+				out.closeEntry();
+			} catch (ZipException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 	        // export xmatrix
 			// intensity matrix
 	        if(MDDataset.class.isInstance(images[0].getData())) {
@@ -107,7 +120,7 @@ public class Image2DImportExportUtil {
 					out.closeEntry();
 					
 		        	// export settings
-					Settings sett = img.getSettingsImage2D();
+					Settings sett = img.getSettings();
 					parameters.setFileNameInZip(FileAndPathUtil.addFormat(img.getTitle(), sett.getFileEnding()));
 					out.putNextEntry(null, parameters);
 					sett.saveToXML(out);
@@ -155,6 +168,8 @@ public class Image2DImportExportUtil {
 					e.printStackTrace();
 				}
 			}
+	        
+	        // end 
 			out.close();
 
 	        
@@ -333,7 +348,7 @@ public class Image2DImportExportUtil {
 				
 				// set settings to images
 				for(int i=0; i<group.getImages().size(); i++)
-					((Image2D)group.getImages().get(i)).setSettingsImage2D(settings.get(i));
+					((Image2D)group.getImages().get(i)).setSettings(settings.get(i));
 		        
 
 		        // image overlays
@@ -360,6 +375,14 @@ public class Image2DImportExportUtil {
 						}
 		        	}
 		        }
+		        // load group settings
+				InputStream isSett = files.get(FileAndPathUtil.getRealFileName("group", group.getSettings().getFileEnding()));
+				if(isSett!=null) {
+		            ImageEditorWindow.log("reading settings file of: "+group, LOG.MESSAGE);
+	        		System.out.println("read settings file of: " + group);
+	        		
+					group.getSettings().loadFromXML(isSett);
+	        	}
 		        // return group
 		        return group;
 			}
@@ -1229,9 +1252,9 @@ public class Image2DImportExportUtil {
 	 * @return
 	 */
 	private static Image2D setSettingsImage2D(Image2D img, File file, String title, String metadata) {
-		img.setSettPaintScale(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
+		img.setSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
 		// Generate Image2D from scanLines
-		SettingsGeneralImage general = img.getSettImage();
+		SettingsGeneralImage general = img.getSettings().getSettImage();
 		// Metadata 
 		general.setRAWFilepath(file.getPath());
 		if(title=="") {

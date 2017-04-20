@@ -54,15 +54,6 @@ public class SettingsGeneralRotation extends Settings {
 	}
 
 
-	@Override
-	public void applyToImage(Image2D img) throws Exception {
-		// dont copy name
-		String name = img.getTitle();
-		String path = img.getSettImage().getRAWFilepath();
-		super.applyToImage(img);
-		img.getSettImage().setTitle(name);
-		img.getSettImage().setRAWFilepath(path);
-	}
 	//##########################################################
 	// xml input/output
 	@Override

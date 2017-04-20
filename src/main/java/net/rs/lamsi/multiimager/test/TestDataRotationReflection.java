@@ -44,9 +44,9 @@ public class TestDataRotationReflection {
 		sett.setUseReflectRotate(true);
 		
 		// rotate
-		img.getSettImage().setRotationOfData(0);
-		img.getSettImage().setImagingMode(IMAGING_MODE.MODE_IMAGING_TWOWAYS);
-		img.getSettImage().setReflectHorizontal(true);
+		img.getSettings().getSettImage().setRotationOfData(0);
+		img.getSettings().getSettImage().setImagingMode(IMAGING_MODE.MODE_IMAGING_TWOWAYS);
+		img.getSettings().getSettImage().setReflectHorizontal(true);
 
 		Object[][] norotat = img.toDataArray(ModeData.ONLY_Y, true, false);
 		Object[][] dataar = img.toDataArray(ModeData.ONLY_Y, true, true);

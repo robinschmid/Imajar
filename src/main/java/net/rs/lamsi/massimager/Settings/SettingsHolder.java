@@ -18,6 +18,7 @@ import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsExportGraphics;
@@ -83,6 +84,8 @@ public class SettingsHolder extends Settings {
 	private SettingsImage2D settImg;
 	private SettingsImageOverlay settImgOver;
 	
+	private SettingsBackgroundImg settBGImg;
+	
 
 
 	public SettingsHolder() {
@@ -140,13 +143,14 @@ public class SettingsHolder extends Settings {
 		settImg = new SettingsImage2D();
 		settList.add(settImg);
 		
-		
+		settBGImg = new SettingsBackgroundImg();
+		settList.add(settBGImg);
 
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
 				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
 				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
-				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class};
+				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class, SettingsBackgroundImg.class};
 		classList = cl;
 	}
 
@@ -322,7 +326,7 @@ public class SettingsHolder extends Settings {
 		for(Settings s : settList)
 			if(c.isAssignableFrom(s.getClass()))
 				return s;
-		System.err.println("FAILED TO get settings "+c.getName());
+		System.err.println("FAILED TO get settings from SettingsHolder "+c.getName());
 		return null;
 	}
 

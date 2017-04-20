@@ -1,44 +1,25 @@
 package net.rs.lamsi.general.datamodel.image;
 
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.util.Vector;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
-import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
-import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
-import org.jfree.chart.renderer.PaintScale;
-
-public class ImageOverlay  extends Collectable2D implements Serializable {	 
+public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implements Serializable {	 
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
 	protected ImageGroupMD group;
-	// images for the overlay
-	protected SettingsImageOverlay settings;
-
 
 	public ImageOverlay(ImageGroupMD group, SettingsImageOverlay settings) throws Exception {
-		super(); 
-		this.settings = settings;
+		super(settings); 
 		this.group = group;
 		// set images to settings to copy current paintscales
 		if(!settings.isInitialised())
@@ -112,7 +93,7 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 				// save name and path
 				String name = img.getTitle();
 				// copy all TODO
-				img.setSettingsOverlay((SettingsImageOverlay) settings.copy());
+				img.setSettings(settings.copy());
 				// set name and path
 				img.getSettings().setTitle(name);
 			} catch (Exception e) { 
@@ -183,12 +164,6 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 	public Image2D[] getImages() {
 		return group.getImagesOnly();
 	} 
-	public SettingsImageOverlay getSettings() {
-		return settings;
-	}
-	public void setSettingsOverlay(SettingsImageOverlay settings) {
-		this.settings = settings;
-	}
 	
 	public int size()  { 
 		return group.image2dCount();
@@ -214,17 +189,14 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 			if(sett==null)
 				return;
 			// TODO --> set all settings in one: 
-			// TODO --> complete!!!
 			if(SettingsPaintScale.class.isAssignableFrom(sett.getClass())) 
 				settings.setCurrentSettPaintScale((SettingsPaintScale) sett);
 			else if(SettingsImageOverlay.class.isAssignableFrom(sett.getClass())) {
-				setSettingsOverlay((SettingsImageOverlay) sett);
+				this.settings = (SettingsImageOverlay)sett;
 			}
-			else if(SettingsZoom.class.isAssignableFrom(sett.getClass())) {
-				settings.setSettZoom((SettingsZoom) sett);
+			else {
+				super.setSettings(sett);
 			}
-			else if(SettingsThemes.class.isAssignableFrom(sett.getClass())) 
-				settings.setSettTheme((SettingsThemes) sett);
 		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
@@ -235,13 +207,9 @@ public class ImageOverlay  extends Collectable2D implements Serializable {
 		// TODO -- add other settings here
 		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 
 			return settings.getCurrentSettPaintScale();
-		else if(SettingsImageOverlay.class.isAssignableFrom(classsettings))
-			return settings;
-		else if(SettingsZoom.class.isAssignableFrom(classsettings)) 
-			return getSettZoom();
-		else if(SettingsThemes.class.isAssignableFrom(classsettings)) 
-			return getSettTheme();
-		return null;
+		else {
+			return super.getSettingsByClass(classsettings);
+		}
 	}
 	public SettingsThemes getSettTheme() {
 		return settings.getSettTheme();

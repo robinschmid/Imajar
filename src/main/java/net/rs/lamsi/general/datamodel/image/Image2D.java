@@ -53,7 +53,7 @@ import org.jfree.data.statistics.HistogramDataset;
 
 // XY raw data! 
 // have to be multiplied with velocity and spot size
-public class Image2D extends Collectable2D implements Serializable {	 
+public class Image2D extends Collectable2D<SettingsImage2D> implements Serializable {	 
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
@@ -68,7 +68,7 @@ public class Image2D extends Collectable2D implements Serializable {
 
 	//############################################################
 	// Settings
-	protected SettingsImage2D settings;
+	//protected SettingsImage2D settings;
 
 	//############################################################
 	// data
@@ -94,13 +94,12 @@ public class Image2D extends Collectable2D implements Serializable {
 	protected Vector<RectSelection> infoData = null;
 
 	public Image2D() { 
-		setSettingsImage2D(new SettingsImage2D());
+		super((new SettingsImage2D()));
 	}
 
 	public Image2D(SettingsImage2D settings) {
-		super();
-		setSettingsImage2D(settings);
-		setSettPaintScale(settings.getSettPaintScale());
+		super(settings);
+		setSettings(settings);
 	}
 
 	public Image2D(ImageDataset data) {
@@ -179,8 +178,8 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public float getY(boolean raw, int l, int dp) { 
-		return getY(raw, l, dp, getSettImage().getImagingMode(), 
-				getSettImage().getRotationOfData(), getSettImage().isReflectHorizontal(), getSettImage().isReflectVertical());
+		return getY(raw, l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
 	}
 
 	/**
@@ -206,20 +205,20 @@ public class Image2D extends Collectable2D implements Serializable {
 		checkForUpdateInParentIProcessing();
 
 		// get raw i
-		double i = getI(l, dp, getSettImage().getImagingMode(), 
-				getSettImage().getRotationOfData(), getSettImage().isReflectHorizontal(), getSettImage().isReflectVertical());
+		double i = getI(l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
 
 		// TODO process intensity
 		if(raw || Double.isNaN(i)) return i;
 		else {
 			// TODO dead end / replace!
 			// subtract blank and apply IS
-			if(getOperations()!=null) {
-				i = getOperations().calcIntensity(this, l, dp, i);
+			if(settings.getOperations()!=null) {
+				i = settings.getOperations().calcIntensity(this, l, dp, i);
 			}
 			// quantify
-			if(getQuantifier()!=null && getQuantifier().isActive())  {
-				i = getQuantifier().calcIntensity(this, l, dp, i); 
+			if(settings.getQuantifier()!=null && settings.getQuantifier().isActive())  {
+				i = settings.getQuantifier().calcIntensity(this, l, dp, i); 
 			}
 			return i;
 		}
@@ -240,20 +239,20 @@ public class Image2D extends Collectable2D implements Serializable {
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing(); 
 		// get raw i
-		double i = getI(l, dp, getSettImage().getImagingMode(), 
-				getSettImage().getRotationOfData(), getSettImage().isReflectHorizontal(), getSettImage().isReflectVertical());
+		double i = getI(l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
 
 		// TODO dead end / replace!
 		// subtract blank and apply IS
-		if(getOperations()!=null) {
-			i = getOperations().calcIntensity(this, l, dp, i, blank, IS);
+		if(settings.getOperations()!=null) {
+			i = settings.getOperations().calcIntensity(this, l, dp, i, blank, IS);
 		}
 		// quantify
-		if(getQuantifier()!=null && quantify)  {
-			boolean tmp = getQuantifier().isActive();
-			getQuantifier().setActive(true);
-			i = getQuantifier().calcIntensity(this, l, dp, i); 
-			getQuantifier().setActive(tmp);
+		if(settings.getQuantifier()!=null && quantify)  {
+			boolean tmp = settings.getQuantifier().isActive();
+			settings.getQuantifier().setActive(true);
+			i = settings.getQuantifier().calcIntensity(this, l, dp, i); 
+			settings.getQuantifier().setActive(tmp);
 		}
 		return i;
 	}
@@ -276,8 +275,8 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public float getX(boolean raw, int l, int dp) { 
-		return getX(raw, l, dp, getSettImage().getImagingMode(), 
-				getSettImage().getRotationOfData(), getSettImage().isReflectHorizontal(), getSettImage().isReflectVertical());
+		return getX(raw, l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
 	} 
 
 	/**
@@ -289,17 +288,17 @@ public class Image2D extends Collectable2D implements Serializable {
 	public float getXRaw(boolean raw, int l, int dp) { 
 		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
 		if(dp<data.getLineLength(line))
-			return data.getX(line, dp) * (raw? 1 : getSettImage().getVelocity());
+			return data.getX(line, dp) * (raw? 1 : settings.getSettImage().getVelocity());
 		// end of data x (right edge of last datapoint)
 		else if(dp==data.getLineLength(line))
-			return data.getRightEdgeX(l) * (raw? 1 : getSettImage().getVelocity());
+			return data.getRightEdgeX(l) * (raw? 1 : settings.getSettImage().getVelocity());
 		else {
 			// for the maximum processed line length
 			int overMax = (data.getLineLength(line)-dp+1);
 			ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
 			//return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
 			// tmp change
-			return (((data.getX(line, data.getLineLength(line)-1)) * (raw? 1 : getSettImage().getVelocity())));
+			return (((data.getX(line, data.getLineLength(line)-1)) * (raw? 1 : settings.getSettImage().getVelocity())));
 		}
 	}
 
@@ -449,7 +448,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getLineLength(int l) {
-		return getLineLength(l, getSettImage().getRotationOfData(), getSettImage().isReflectHorizontal());
+		return getLineLength(l, settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal());
 	}
 	/**
 	 * the length of lines in respect to reflection and rotation
@@ -474,7 +473,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getLineCount(int dp) {
-		return getLineCount(dp, getSettImage().getRotationOfData(), getSettImage().isReflectHorizontal());
+		return getLineCount(dp, settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal());
 	}
 	/**
 	 * the count of lines in respect to reflection and rotation
@@ -516,8 +515,8 @@ public class Image2D extends Collectable2D implements Serializable {
 	 */
 	public XYIData2D toXYIArray(boolean raw, boolean useSettings) {
 		if(useSettings)
-			return toXYIArray(raw, getSettImage().getImagingMode(), getSettImage().getRotationOfData(), 
-					getSettImage().isReflectHorizontal(), getSettImage().isReflectVertical() );
+			return toXYIArray(raw, settings.getSettImage().getImagingMode(), settings.getSettImage().getRotationOfData(), 
+					settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical() );
 		else return toXYIArrayNoRot();
 	}
 
@@ -581,7 +580,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	private int[] getLineLenghts() {
-		int rotation = getSettImage().getRotationOfData();
+		int rotation = settings.getSettImage().getRotationOfData();
 		int[] length = new int[data.getLinesCount()];
 		if((rotation==90 || rotation==270 || rotation == -90))
 			// all line length
@@ -852,7 +851,7 @@ public class Image2D extends Collectable2D implements Serializable {
 		// if lines>1 --> otherwise it is x csv
 		if(useSettings) {
 			// rotation
-			int rotation = getSettImage().getRotationOfData();
+			int rotation = settings.getSettImage().getRotationOfData();
 			if(rotation==90 || rotation==270 || rotation == -90) {
 				if(cols!=1)
 					cols = rows;
@@ -892,7 +891,7 @@ public class Image2D extends Collectable2D implements Serializable {
 		// if lines>1 --> otherwise it is x csv
 		if(useSettings) {
 			// rotation
-			int rotation = getSettImage().getRotationOfData();
+			int rotation = settings.getSettImage().getRotationOfData();
 			if(rotation==90 || rotation==270 || rotation == -90) {
 				if(cols!=1)
 					cols = rows;
@@ -1002,25 +1001,25 @@ public class Image2D extends Collectable2D implements Serializable {
 	 */
 	public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
 		// time only once?
-			int cols = getMaxLineCount();
-			int rows = getMaxDP();
+		int cols = getMaxLineCount();
+		int rows = getMaxDP();
 
-			Object[][] dataExp = new Object[rows][cols]; 
-			// c for lines
-			for(int c=0; c<cols; c++) {
-				// r for data points
-				for(int r = 0; r<rows; r++) {
-					// only if not null: write Intensity
-					// only if not null: write Intensity
-					boolean state = c<map.length && r<map[c].length && map[c][r];
-					if(state) {
-						double tmp = getI(raw,c,r);
-						dataExp[r][c] = !Double.isNaN(tmp)? tmp : "";
-					}
-					else dataExp[r][c] = "";
-				} 
-			}
-			return dataExp;
+		Object[][] dataExp = new Object[rows][cols]; 
+		// c for lines
+		for(int c=0; c<cols; c++) {
+			// r for data points
+			for(int r = 0; r<rows; r++) {
+				// only if not null: write Intensity
+				// only if not null: write Intensity
+				boolean state = c<map.length && r<map[c].length && map[c][r];
+				if(state) {
+					double tmp = getI(raw,c,r);
+					dataExp[r][c] = !Double.isNaN(tmp)? tmp : "";
+				}
+				else dataExp[r][c] = "";
+			} 
+		}
+		return dataExp;
 	}
 
 
@@ -1033,11 +1032,11 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getYAsIndex(double y, double x) {
-		int rotation = getSettImage().getRotationOfData();
-		boolean reflectH = getSettImage().isReflectHorizontal();
+		int rotation = settings.getSettImage().getRotationOfData();
+		boolean reflectH = settings.getSettImage().isReflectHorizontal();
 		return getYAsIndex(y,x, rotation, reflectH);
 	} 
-	
+
 	private int getYAsIndex(double y, double x, int rotation, boolean reflectH) { 
 		// XOR
 		reflectH = rotation==180 ^ reflectH;
@@ -1046,28 +1045,28 @@ public class Image2D extends Collectable2D implements Serializable {
 			// get line 
 			int line = getYAsIndex(x,y, 0, reflectH);
 			// y --> x and invert reflectV
-			return getXAsIndex(line, y, 0, !getSettImage().isReflectVertical(), getSettImage().getImagingMode());
+			return getXAsIndex(line, y, 0, !settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
 		}
 		else if(rotation==-90 || rotation==270) {
 			// get line 
 			int line = getYAsIndex(x,y, 0, !reflectH);
 			// y --> x and invert reflectV
-			return getXAsIndex(line, y, 0, getSettImage().isReflectVertical(), getSettImage().getImagingMode());
+			return getXAsIndex(line, y, 0, settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
 		}
 		else if(!reflectH) {
 			// standard: 0 or (180 with reflect)
 			if(y<=0) return 0;
-			int l = (int)(y/getSettImage().getSpotsize());
+			int l = (int)(y/settings.getSettImage().getSpotsize());
 			return l<data.getLinesCount()? l : data.getLinesCount()-1;
 		}
 		else {
 			// reflect
 			if(y<0) return 0;
-			int l = (int)(y/getSettImage().getSpotsize());
+			int l = (int)(y/settings.getSettImage().getSpotsize());
 			l = data.getLinesCount()-l-1;
 			if(l<data.getLinesCount()-1)
 				return l>=0? l: 0;
-			else return data.getLinesCount()-1;
+				else return data.getLinesCount()-1;
 		} 
 	}  
 	/**
@@ -1077,7 +1076,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getXAsIndex(int line, double x) {
-		double rx = x/getSettImage().getVelocity();
+		double rx = x/settings.getSettImage().getVelocity();
 		for(int i=1; i<data.getLineLength(line); i++) {
 			if(data.getX(line, i)>=rx)
 				return i-1;
@@ -1093,32 +1092,32 @@ public class Image2D extends Collectable2D implements Serializable {
 			// get line 
 			int line = getYAsIndex(x,y, 0, reflectV);
 			// y --> x and invert reflectV
-			return getXAsIndex(line, y, 0, !getSettImage().isReflectVertical(), getSettImage().getImagingMode());
+			return getXAsIndex(line, y, 0, !settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
 		}
 		else if(rotation==-90 || rotation==270) {
 			// get line 
 			int line = getYAsIndex(x,y, 0, !reflectV);
 			// y --> x and invert reflectV
-			return getXAsIndex(line, y, 0, getSettImage().isReflectVertical(), getSettImage().getImagingMode());
+			return getXAsIndex(line, y, 0, settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
 		}
 		else if(!reflectV) {
 			// standard: 0 or (180 with reflect)
 			if(y<=0) return 0;
-			int l = (int)(y/getSettImage().getSpotsize());
+			int l = (int)(y/settings.getSettImage().getSpotsize());
 			return l<data.getLinesCount()? l : data.getLinesCount()-1;
 		}
 		else {
 			// reflect
 			if(y<0) return 0;
-			int l = (int)(y/getSettImage().getSpotsize());
+			int l = (int)(y/settings.getSettImage().getSpotsize());
 			l = data.getLinesCount()-l-1;
 			if(l<data.getLinesCount()-1)
 				return l>=0? l: 0;
-			else return data.getLinesCount()-1;
+				else return data.getLinesCount()-1;
 		} 
 	}
 	private int getXAsIndex(int line, double x, int rotation, boolean reflectV, IMAGING_MODE mode) {
-		double rx = x/getSettImage().getVelocity();
+		double rx = x/settings.getSettImage().getVelocity();
 		for(int i=1; i<data.getLineLength(line); i++) {
 			if(data.getX(line, i)>=rx)
 				return i-1;
@@ -1138,7 +1137,7 @@ public class Image2D extends Collectable2D implements Serializable {
 
 	// a name for lists
 	public String toListName() { 
-		return getSettImage().toListName();
+		return settings.getSettImage().toListName();
 	} 
 
 	@Override
@@ -1147,7 +1146,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	}
 
 	public String getTitle() { 
-		return getSettImage().getTitle();
+		return settings.getSettImage().getTitle();
 	} 
 
 	//#########################################################################################################
@@ -1158,61 +1157,24 @@ public class Image2D extends Collectable2D implements Serializable {
 	 */
 	@Override
 	public void setSettings(Settings settings) {
-		try {
-			if(settings== null)
-				return;
-			// TODO --> set all settings in one: 
-			// TODO --> complete!!!
-			if(SettingsPaintScale.class.isAssignableFrom(settings.getClass())) 
-				setSettPaintScale((SettingsPaintScale) settings);
-			else if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
-				setSettingsImage2D((SettingsImage2D) settings);
-				fireIntensityProcessingChanged();
-			}
-			else if(SettingsZoom.class.isAssignableFrom(settings.getClass())) {
-				setSettZoom((SettingsZoom) settings);
-			}
-			else if(SettingsGeneralImage.class.isAssignableFrom(settings.getClass())) 
-				setSettImage((SettingsGeneralImage) settings);
-			else if(SettingsThemes.class.isAssignableFrom(settings.getClass())) 
-				setSettTheme((SettingsThemes) settings);
-			else if(SettingsImage2DOperations.class.isAssignableFrom(settings.getClass()))  {
-				setOperations((SettingsImage2DOperations) settings);
-				fireIntensityProcessingChanged();
-			}
-			else if(SettingsImage2DQuantifier.class.isAssignableFrom(settings.getClass())) {
-				setQuantifier((SettingsImage2DQuantifier) settings);
-				fireIntensityProcessingChanged();
-			}
-			else if(SettingsImageContinousSplit.class.isAssignableFrom(settings.getClass())) 
-				if(DatasetContinuousMD.class.isInstance(data)) 
-					((DatasetContinuousMD)data).setSplitSettings((SettingsImageContinousSplit)settings);
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
-	} 
+		if(settings== null)
+			return;
 
-	@Override
-	public Settings getSettingsByClass(Class classsettings) {
-		// TODO -- add other settings here
-		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 
-			return getSettPaintScale();
-		else if(SettingsImage2D.class.isAssignableFrom(classsettings))
-			return settings;
-		else if(SettingsGeneralImage.class.isAssignableFrom(classsettings)) 
-			return getSettImage();
-		else if(SettingsZoom.class.isAssignableFrom(classsettings)) 
-			return getSettZoom();
-		else if(SettingsThemes.class.isAssignableFrom(classsettings)) 
-			return getSettTheme();
-		else if(SettingsImage2DOperations.class.isAssignableFrom(classsettings)) 
-			return getOperations();
-		else if(SettingsImage2DQuantifier.class.isAssignableFrom(classsettings)) 
-			return getQuantifier();
-		else if(SettingsImageContinousSplit.class.isAssignableFrom(classsettings)) 
-			return DatasetContinuousMD.class.isInstance(data)? ((DatasetContinuousMD)data).getSplitSettings() : null;
-		return null;
-	}
+		super.setSettings(settings);
+
+		if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
+			((SettingsImage2D) settings).setCurrentImage(this);
+			fireIntensityProcessingChanged();
+		} 
+		else if(SettingsImage2DOperations.class.isAssignableFrom(settings.getClass()) ||
+				SettingsImage2DQuantifier.class.isAssignableFrom(settings.getClass()))  {
+			getSettings().replaceSettings(settings);
+			fireIntensityProcessingChanged();
+		}
+		else if(SettingsImageContinousSplit.class.isAssignableFrom(settings.getClass())) 
+			if(DatasetContinuousMD.class.isInstance(data)) 
+				((DatasetContinuousMD)data).setSplitSettings((SettingsImageContinousSplit)settings);
+	} 
 
 	/**
 	 * Given image img will be setup like this image
@@ -1222,25 +1184,25 @@ public class Image2D extends Collectable2D implements Serializable {
 	public void applySettingsToOtherImage(Collectable2D img2) {
 		if(img2.isImage2D()) {
 			Image2D img = (Image2D) img2;
-		
-		try {
-			// save name and path
-			String name = img.getTitle();
-			String path = img.getSettImage().getRAWFilepath();
-			// copy all TODO
-			img.setSettImage(BinaryWriterReader.deepCopy(this.getSettImage()));
-			// there should be no need for this
-//			img.setSettPaintScale((BinaryWriterReader.deepCopy(this.getSettPaintScale())));
-//			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
-//			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
-//			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
-//			img.setSettZoom(BinaryWriterReader.deepCopy(this.getSettZoom()));
-			// set name and path
-			img.getSettImage().setTitle(name);
-			img.getSettImage().setRAWFilepath(path);
-		} catch (Exception e) { 
-			e.printStackTrace();
-		}
+
+			try {
+				// save name and path
+				String name = img.getTitle();
+				String path = img.getSettings().getSettImage().getRAWFilepath();
+				// copy all TODO
+				img.setSettings(BinaryWriterReader.deepCopy(this.settings.getSettImage()));
+				// there should be no need for this
+				//			img.setSettPaintScale((BinaryWriterReader.deepCopy(this.getSettPaintScale())));
+				//			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
+				//			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
+				//			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
+				//			img.setSettZoom(BinaryWriterReader.deepCopy(this.getSettZoom()));
+				// set name and path
+				img.getSettings().getSettImage().setTitle(name);
+				img.getSettings().getSettImage().setRAWFilepath(path);
+			} catch (Exception e) { 
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -1256,7 +1218,7 @@ public class Image2D extends Collectable2D implements Serializable {
 			double min =  Double.POSITIVE_INFINITY;
 
 			int[] length = getLineLenghts();
-			int rotation = getSettImage().getRotationOfData();
+			int rotation = settings.getSettImage().getRotationOfData();
 			if((rotation==90 || rotation==270 || rotation == -90)) {
 				// for lines (that are actually datapoints)
 				for(int dp=0; dp<data.getLinesCount(); dp++) {
@@ -1290,7 +1252,7 @@ public class Image2D extends Collectable2D implements Serializable {
 				double pi;
 
 				int[] length = getLineLenghts();
-				int rotation = getSettImage().getRotationOfData();
+				int rotation = settings.getSettImage().getRotationOfData();
 				if((rotation==90 || rotation==270 || rotation == -90)) {
 					// for lines (that are actually datapoints)
 					for(int dp=0; dp<data.getLinesCount(); dp++) {
@@ -1326,7 +1288,7 @@ public class Image2D extends Collectable2D implements Serializable {
 			double max =  Double.NEGATIVE_INFINITY;
 
 			int[] length = getLineLenghts();
-			int rotation = getSettImage().getRotationOfData();
+			int rotation = settings.getSettImage().getRotationOfData();
 			if((rotation==90 || rotation==270 || rotation == -90)) {
 				// for lines (that are actually datapoints)
 				for(int dp=0; dp<data.getLinesCount(); dp++) {
@@ -1363,7 +1325,7 @@ public class Image2D extends Collectable2D implements Serializable {
 				double pi;
 
 				int[] length = getLineLenghts();
-				int rotation = getSettImage().getRotationOfData();
+				int rotation = settings.getSettImage().getRotationOfData();
 				if((rotation==90 || rotation==270 || rotation == -90)) {
 					// for lines (that are actually datapoints)
 					for(int dp=0; dp<data.getLinesCount(); dp++) {
@@ -1467,27 +1429,27 @@ public class Image2D extends Collectable2D implements Serializable {
 	public float getMaxYRaw(boolean raw) {
 		return getYRaw(raw, data.getLinesCount());
 	}
-	
+
 	/**
 	 * width of the image 
 	 * @param raw
 	 * @return
 	 */
 	public float getWidth(boolean raw) {
-		int rot = getSettImage().getRotationOfData();
+		int rot = settings.getSettImage().getRotationOfData();
 		if(rot==0 || rot==180) 
 			return data.getWidthX() * xFactor(raw);
 		else
 			return getYRaw(raw, data.getLinesCount());
 	}
-	
+
 	/**
 	 * height of the image
 	 * @param raw
 	 * @return
 	 */
 	public float getHeight(boolean raw) {
-		int rot = getSettImage().getRotationOfData();
+		int rot = settings.getSettImage().getRotationOfData();
 		if(rot==90 || rot==270) 
 			return data.getWidthX() * xFactor(raw);
 		else
@@ -1500,7 +1462,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	private float xFactor(boolean raw) {
-		return raw? 1 : getSettImage().getVelocity();
+		return raw? 1 : settings.getSettImage().getVelocity();
 	}
 
 	/**
@@ -1509,7 +1471,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	private float yFactor(boolean raw) {
-		return raw? 1 : getSettImage().getSpotsize();
+		return raw? 1 : settings.getSettImage().getSpotsize();
 	}
 
 	/**
@@ -1517,7 +1479,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getWidthAsMaxDP() {
-		SettingsGeneralImage sg = getSettImage();
+		SettingsGeneralImage sg = settings.getSettImage();
 		return (sg.getRotationOfData()==-90 || sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? 
 				data.getLinesCount() : data.getMaxDP();
 	}
@@ -1526,7 +1488,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getHeightAsMaxDP() {
-		SettingsGeneralImage sg = getSettImage();
+		SettingsGeneralImage sg = settings.getSettImage();
 		return (sg.getRotationOfData()==-90 || sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? 
 				data.getMaxDP() : data.getLinesCount();	
 	}
@@ -1538,7 +1500,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	public double getMaxBlockWidth(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockHeight(0);
 		else {
-			return data.getMaxXDPWidth()*getSettImage().getVelocity();
+			return data.getMaxXDPWidth()*settings.getSettImage().getVelocity();
 		}
 	}
 	/**
@@ -1549,7 +1511,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	public double getMaxBlockHeight(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockWidth(0);
 		else { 
-			return getSettImage().getSpotsize();
+			return settings.getSettImage().getSpotsize();
 		}
 	}
 
@@ -1560,7 +1522,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getMaxDP() { 
-		int angle = getSettImage().getRotationOfData();
+		int angle = settings.getSettImage().getRotationOfData();
 		return (angle==90 || angle==270 || angle==-90)? data.getLinesCount() : data.getMaxDP();
 	}
 	/**
@@ -1568,7 +1530,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int getMaxLineCount() { 
-		int angle = getSettImage().getRotationOfData();
+		int angle = settings.getSettImage().getRotationOfData();
 		return (angle==90 || angle==270 || angle==-90)? data.getMaxDP() : data.getLinesCount();
 	}
 
@@ -1586,14 +1548,14 @@ public class Image2D extends Collectable2D implements Serializable {
 			// apply filter
 			//sort all z values
 			double[] z = null;
-			if(!getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray(false);
+			if(!settings.getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray(false);
 			else z = getSelectedDataAsArray(false, true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
 			// save in var
 			minZFiltered =  z[(int)(size*f/100.0)];
-			getSettPaintScale().setMin(minZFiltered);
+			settings.getSettPaintScale().setMin(minZFiltered);
 			lastAppliedMinFilter = f;
 		}
 		return minZFiltered;
@@ -1608,35 +1570,35 @@ public class Image2D extends Collectable2D implements Serializable {
 			// apply filter
 			//sort all z values
 			double[] z = null;
-			if(!getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray(false);
+			if(!settings.getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray(false);
 			else z = getSelectedDataAsArray(false, true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
 			// save in var --> cut from max 1-p
 			maxZFiltered = z[size-(int)(size*f/100.0)];
-			getSettPaintScale().setMax(maxZFiltered);
+			settings.getSettPaintScale().setMax(maxZFiltered);
 			lastAppliedMaxFilter = f;
 		}
 		return maxZFiltered;
 	}
-	
+
 	/**
 	 * does not apply the cut filter to this image
 	 * @param f in percent ( 5 % as 5 not 0.05)
 	 * @return
 	 */
 	public double getValueCutFilter(double f, boolean useMinMaxFromSelection) {
-			// apply filter
-			//sort all z values
-			double[] z = null;
-			if(!useMinMaxFromSelection) z = toIArray(false);
-			else z = getSelectedDataAsArray(false, true);
-			Arrays.sort(z);
-			// cut off percent f/100.f
-			int size = z.length-1;
-			// save in var --> cut from max 1-p
-			return z[(int)(size*f/100.0)];
+		// apply filter
+		//sort all z values
+		double[] z = null;
+		if(!useMinMaxFromSelection) z = toIArray(false);
+		else z = getSelectedDataAsArray(false, true);
+		Arrays.sort(z);
+		// cut off percent f/100.f
+		int size = z.length-1;
+		// save in var --> cut from max 1-p
+		return z[(int)(size*f/100.0)];
 	}
 
 	//##################################################################################### 
@@ -1652,28 +1614,6 @@ public class Image2D extends Collectable2D implements Serializable {
 	public double getIntensitySpan(boolean onlySelected) {
 		return getMaxIntensity(onlySelected)-getMinIntensity(onlySelected);
 	} 
-	public SettingsPaintScale getSettPaintScale() {
-		return settings.getSettPaintScale();
-	} 
-	public void setSettPaintScale(SettingsPaintScale ps) {
-		settings.setSettPaintScale(ps);
-		if(ps.getModeMax().equals(ValueMode.PERCENTILE) && ps.getMaxIAbs(this)==0 && ps.getMinIAbs(this)==0)
-			applyCutFilterMax(ps.getMaxFilter());
-		if(ps.getModeMin().equals(ValueMode.PERCENTILE) && ps.getMaxIAbs(this)==0 && ps.getMinIAbs(this)==0)
-			applyCutFilterMin(ps.getMinFilter());
-	} 
-	public SettingsGeneralImage getSettImage() {
-		return settings.getSettImage();
-	} 
-	public void setSettImage(SettingsGeneralImage settImgLaser) {
-		settings.setSettImage(settImgLaser);
-	} 
-	public SettingsThemes getSettTheme() {
-		return settings.getSettTheme();
-	}
-	public void setSettTheme(SettingsThemes settTheme) {
-		settings.setSettTheme(settTheme);
-	}
 	public double getMinZFiltered() {
 		return minZFiltered;
 	}
@@ -1681,25 +1621,8 @@ public class Image2D extends Collectable2D implements Serializable {
 		return maxZFiltered;
 	} 
 
-	// if something changes - change the averageI
-	public SettingsImage2DQuantifier getQuantifier() {
-		return settings.getQuantifier();
-	}
-	public void setQuantifier(SettingsImage2DQuantifier quantifier) {
-		settings.setQuantifier(quantifier);
-	}
-	public SettingsImage2DQuantifierIS getInternalQuantifierIS() {
-		return settings.getInternalQuantifierIS();
-	}
-	public void setInternalQuantifierIS(SettingsImage2DQuantifierIS isQ) {
-		settings.setInternalQuantifierIS(isQ);
-	}
-	public SettingsImage2DOperations getOperations() {
-		return settings.getOperations();
-	}
-	public void setOperations(SettingsImage2DOperations operations) {
-		settings.setOperations(operations, this);
-	}
+
+
 	/**
 	 * Calcs the average I for this img
 	 * @return
@@ -1772,16 +1695,16 @@ public class Image2D extends Collectable2D implements Serializable {
 		// applyCutFilter?
 		lastAppliedMaxFilter = -1;
 		lastAppliedMinFilter = -1;
-		if(getSettPaintScale().getModeMin().equals(ValueMode.PERCENTILE))
-			applyCutFilterMin(getSettPaintScale().getMinFilter());
-		if(getSettPaintScale().getModeMax().equals(ValueMode.PERCENTILE))
-			applyCutFilterMax(getSettPaintScale().getMaxFilter());
+		if(settings.getSettPaintScale().getModeMin().equals(ValueMode.PERCENTILE))
+			applyCutFilterMin(settings.getSettPaintScale().getMinFilter());
+		if(settings.getSettPaintScale().getModeMax().equals(ValueMode.PERCENTILE))
+			applyCutFilterMax(settings.getSettPaintScale().getMaxFilter());
 		// IS
-		SettingsImage2DQuantifierIS internalQ = getInternalQuantifierIS();
+		SettingsImage2DQuantifierIS internalQ = settings.getInternalQuantifierIS();
 		if(internalQ!=null && internalQ.getImgIS()!=null) { 
-			if(internalQ.getImgIS().getOperations()==null)
-				internalQ.getImgIS().setOperations(new SettingsImage2DOperations());
-			internalQ.getImgIS().getOperations().setBlankQuantifier(getOperations().getBlankQuantifier());
+			if(internalQ.getImgIS().getSettings().getOperations()==null)
+				internalQ.getImgIS().getSettings().replaceSettings(new SettingsImage2DOperations());
+			internalQ.getImgIS().getSettings().getOperations().setBlankQuantifier(settings.getOperations().getBlankQuantifier());
 			internalQ.getImgIS().fireIntensityProcessingChanged();
 		}
 	}
@@ -1808,11 +1731,11 @@ public class Image2D extends Collectable2D implements Serializable {
 		}
 		else if(parent!=this.parent) {
 			// point at the settings of parent TODO
-			this.setSettImage(parent.getSettImage());
-			this.setSettPaintScale((parent.getSettPaintScale()));
-			this.setSettTheme(parent.getSettTheme());
-			this.setOperations(parent.getOperations());
-			this.setQuantifier(parent.getQuantifier());
+			settings.replaceSettings(parent.getSettings().getSettImage());
+			settings.replaceSettings(parent.getSettings().getSettPaintScale());
+			settings.replaceSettings(parent.getSettings().getSettTheme());
+			settings.replaceSettings(parent.getSettings().getOperations());
+			settings.replaceSettings(parent.getSettings().getQuantifier());
 			fireIntensityProcessingChanged();
 		}
 		// set parent 
@@ -1875,7 +1798,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public double[] getIInIRange() {
-		return getIInIRange(getSettPaintScale());
+		return getIInIRange(settings.getSettPaintScale());
 	}
 	/**
 	 * returns all data points in intensity range (max/min) (processed)
@@ -1900,7 +1823,7 @@ public class Image2D extends Collectable2D implements Serializable {
 	 * @return
 	 */
 	public int countIInIRange() {
-		return countIInIRange(getSettPaintScale());
+		return countIInIRange(settings.getSettPaintScale());
 	}
 	/**
 	 * returns number of data points in intensity range (max/min)
@@ -2176,7 +2099,7 @@ public class Image2D extends Collectable2D implements Serializable {
 		try {
 			double min = getValueCutFilter(2.5, false);
 			double max = getValueCutFilter(100.0-0.2, false);
-			PaintScale scale = PaintScaleGenerator.generateStepPaintScale(min, max, getSettPaintScale()); 
+			PaintScale scale = PaintScaleGenerator.generateStepPaintScale(min, max, settings.getSettPaintScale()); 
 
 			// scale in x
 			float sx = 1;
@@ -2236,20 +2159,6 @@ public class Image2D extends Collectable2D implements Serializable {
 	public int getIndex() {
 		return index;
 	}
-
-	public void setSettingsImage2D(SettingsImage2D settings) {
-		this.settings = settings;
-		settings.setCurrentImage(this);
-	}
-	public SettingsImage2D getSettingsImage2D() {
-		return settings;
-	}
-	public void setSettZoom(SettingsZoom settings) {
-		this.settings.setSettZoom(settings);
-	}
-	public SettingsZoom getSettZoom() {
-		return settings.getSettZoom();
-	}
 	//############################################################
 	// listener
 	/**
@@ -2277,8 +2186,4 @@ public class Image2D extends Collectable2D implements Serializable {
 				&& data.getTotalDPCount()==i.getData().getTotalDPCount();
 	}
 
-	@Override
-	public Settings getSettings() {
-		return getSettingsImage2D();
-	}
 }

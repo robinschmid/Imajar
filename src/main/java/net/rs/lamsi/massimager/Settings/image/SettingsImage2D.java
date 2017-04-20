@@ -1,5 +1,6 @@
 package net.rs.lamsi.massimager.Settings.image;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -23,43 +24,20 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsImage2D extends SettingsContainerSettings {
+public class SettingsImage2D extends SettingsContainerCollectable2D {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
-    
-    // paint scale
-	protected SettingsPaintScale settPaintScale;
-	// LaserVelocity and spot size 
-	protected SettingsGeneralImage settImage;
-	// theme settings
-	protected SettingsThemes settTheme; 
-	protected SettingsImage2DQuantifier quantifier;
-	// blank subtraction and internal standard
-	protected SettingsImage2DOperations operations;
-	
-	protected SettingsZoom settZoom;
-	
 
 	public SettingsImage2D() {
 		super("SettingsImage2D", "/Settings/Image2d/", "setImg2d"); 
-		settPaintScale = SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE);
-		settPaintScale.resetAll();
-		settImage = new SettingsGeneralImage();
-		settImage.resetAll(); 
-		// standard theme
-		this.settTheme = new SettingsThemes();  
-		//
-		this.quantifier = new SettingsImage2DQuantifierLinear();
-		this.operations = new SettingsImage2DOperations();
-		this.settZoom = new SettingsZoom();
-		//	
-		list.addElement(settPaintScale);
-		list.addElement(settImage);
-		list.addElement(settTheme);
-		list.addElement(quantifier);
-		list.addElement(operations);
-		list.addElement(settZoom);
+		
+		addSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
+		addSettings(new SettingsGeneralImage());
+		addSettings(new SettingsThemes());
+		addSettings(new SettingsImage2DQuantifierLinear());
+		addSettings(new SettingsImage2DOperations());
+		addSettings(new SettingsZoom());
 	} 
 
 
@@ -67,20 +45,12 @@ public class SettingsImage2D extends SettingsContainerSettings {
 	public SettingsImage2D(SettingsPaintScale settPaintScale) {  
 		super("SettingsImage2D", "/Settings/Image2d/", "setImg2d"); 
 		try { 
-			this.settPaintScale = (SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale); 
-			// standard theme
-			this.settTheme = new SettingsThemes();
-			this.quantifier = new SettingsImage2DQuantifierLinear();
-			this.operations = new SettingsImage2DOperations();
-			this.settZoom = new SettingsZoom();
-			
-			//	
-			list.addElement(this.settPaintScale);
-			list.addElement(settImage);
-			list.addElement(settTheme);
-			list.addElement(quantifier);
-			list.addElement(operations);
-			list.addElement(settZoom);
+			addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
+			addSettings(new SettingsGeneralImage());
+			addSettings(new SettingsThemes());
+			addSettings(new SettingsImage2DQuantifierLinear());
+			addSettings(new SettingsImage2DOperations());
+			addSettings(new SettingsZoom());
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -88,22 +58,12 @@ public class SettingsImage2D extends SettingsContainerSettings {
 	public SettingsImage2D(SettingsPaintScale settPaintScale, SettingsGeneralImage setImage) {  
 		super("SettingsImage2D", "/Settings/Image2d/", "setImg2d"); 
 		try {
-			settImage = (SettingsGeneralImage) BinaryWriterReader.deepCopy(setImage);
-			this.settPaintScale = (SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale); 
-			// standard theme
-			this.settTheme = new SettingsThemes();
-			this.quantifier = new SettingsImage2DQuantifierLinear();
-			this.operations = new SettingsImage2DOperations();
-			this.settZoom = new SettingsZoom();
-			//
-
-			//	
-			list.addElement(this.settPaintScale);
-			list.addElement(this.settImage);
-			list.addElement(settTheme);
-			list.addElement(quantifier);
-			list.addElement(operations);
-			list.addElement(settZoom);
+			addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
+			addSettings((SettingsGeneralImage) BinaryWriterReader.deepCopy(setImage));
+			addSettings(new SettingsThemes());
+			addSettings(new SettingsImage2DQuantifierLinear());
+			addSettings(new SettingsImage2DOperations());
+			addSettings(new SettingsZoom());
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -111,43 +71,23 @@ public class SettingsImage2D extends SettingsContainerSettings {
 	
 
 	public void setCurrentImage(Image2D img) {
-		if(operations!=null)
-			operations.setCurrentImage(img);
+		if(getOperations()!=null)
+			getOperations().setCurrentImage(img);
 	}
 	
 	public SettingsPaintScale getSettPaintScale() {
-		return settPaintScale;
-	} 
-	public void setSettPaintScale(SettingsPaintScale settPaintScale) {
-		list.remove(this.settPaintScale);
-		this.settPaintScale = settPaintScale;
-		list.add(settPaintScale);
+		return (SettingsPaintScale) list.get(SettingsPaintScale.class);
 	} 
 	public SettingsGeneralImage getSettImage() {
-		return settImage;
-	} 
-	public void setSettImage(SettingsGeneralImage settImgLaser) {
-		list.remove(this.settImage);
-		this.settImage = settImgLaser;
-		list.add(settImage);
+		return (SettingsGeneralImage) list.get(SettingsGeneralImage.class);
 	} 
 	public SettingsThemes getSettTheme() {
-		return settTheme;
-	}
-	public void setSettTheme(SettingsThemes settTheme) {
-		list.remove(this.settTheme);
-		this.settTheme = settTheme;
-		list.add(settTheme);
+		return (SettingsThemes) list.get(SettingsThemes.class);
 	}
 
 	// if something changes - change the averageI
 	public SettingsImage2DQuantifier getQuantifier() {
-		return quantifier;
-	}
-	public void setQuantifier(SettingsImage2DQuantifier quantifier) {
-		list.remove(this.quantifier);
-		this.quantifier = quantifier;
-		list.add(quantifier);
+		return (SettingsImage2DQuantifier) list.get(SettingsImage2DQuantifier.class);
 	}
 	public SettingsImage2DQuantifierIS getInternalQuantifierIS() {
 		return getOperations().getInternalQuantifier();
@@ -156,24 +96,10 @@ public class SettingsImage2D extends SettingsContainerSettings {
 		getOperations().setInternalQuantifier(isQ);
 	}
 	public SettingsImage2DOperations getOperations() {
-		return operations;
-	}
-	public void setOperations(SettingsImage2DOperations operations, Image2D img) {
-		list.remove(this.operations);
-		this.operations = operations;
-		operations.getBlankQuantifier().getQSameImage().setImg(img);
-		list.add(operations);
-	}
-
+		return (SettingsImage2DOperations) list.get(SettingsImage2DOperations.class);
+	} 
 
 	public SettingsZoom getSettZoom() {
-		return settZoom;
+		return (SettingsZoom) getSettingsByClass(SettingsZoom.class);
 	}
-
-	public void setSettZoom(SettingsZoom settZoom) {
-		list.remove(this.settZoom);
-		this.settZoom = settZoom;
-		list.add(settZoom);
-	}
-
 }

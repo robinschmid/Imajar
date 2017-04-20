@@ -282,15 +282,17 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 		}
 		else { 
 			getTxtISTitle().setText(img.getTitle());
-			getTxtISPath().setText(img.getSettImage().getRAWFilepath()); 
+			getTxtISPath().setText(img.getSettings().getSettImage().getRAWFilepath()); 
 			// check IS and sample (currentImage) for blank
-			if(currentImage!=null && img.getOperations().getBlankQuantifier().isActive()) {
+			SettingsImage2DOperations opImg = img.getSettings().getOperations();
+			SettingsImage2DOperations opCurrentImage = img.getSettings().getOperations();
+			if(currentImage!=null && opImg.getBlankQuantifier().isActive()) {
 				// image gets recreated so makes no sense
 				// currentImage.getOperations().setBlankQuantifier(img.getOperations().getBlankQuantifier());
-				setAllViaExistingSettingsBlank(img.getOperations().getBlankQuantifier());
+				setAllViaExistingSettingsBlank(opImg.getBlankQuantifier());
 			}
-			else if(currentImage!=null && currentImage.getOperations().getBlankQuantifier().isActive()) {
-				img.getOperations().setBlankQuantifier(currentImage.getOperations().getBlankQuantifier());
+			else if(currentImage!=null && opCurrentImage.getBlankQuantifier().isActive()) {
+				opImg.setBlankQuantifier(opCurrentImage.getBlankQuantifier());
 			}
 		}
 		// update settings
@@ -304,7 +306,7 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 		}
 		else { 
 			getTxtBlankTitle().setText(img.getTitle());
-			getTxtBlankPath().setText(img.getSettImage().getRAWFilepath());
+			getTxtBlankPath().setText(img.getSettings().getSettImage().getRAWFilepath());
 			
 			if(getRbBlankActualDataPoint().isSelected() && (img.getLineCount(0)!=currentImage.getLineCount(0) || img.getData().getAvgDP()!=currentImage.getData().getAvgDP()))
 				getRbBlankAveragePerLine().setSelected(true);
@@ -376,7 +378,7 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 			getTxtBlankTitle().setText("");
 		}
 		else { 
-			getTxtBlankPath().setText(q.getImgBlank().getSettImage().getRAWFilepath());
+			getTxtBlankPath().setText(q.getImgBlank().getSettings().getSettImage().getRAWFilepath());
 			getTxtBlankTitle().setText(q.getImgBlank().getTitle());
 		}
 		// set tab starting data same image
@@ -411,7 +413,7 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 			imgIS=null;
 		}
 		else {
-			getTxtISPath().setText(IS.getImgIS().getSettImage().getRAWFilepath());
+			getTxtISPath().setText(IS.getImgIS().getSettings().getSettImage().getRAWFilepath());
 			getTxtISTitle().setText(IS.getImgIS().getTitle());
 			getCbUseIS().setSelected(IS.isActive()); 
 			

@@ -15,19 +15,13 @@ public class SettingsImageGroup extends SettingsContainerSettings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
-    protected SettingsBackgroundImg settBGImg;
-    
-	// paint scale
-	protected SettingsAlphaMap settAlphaMap;
 
 	// constructors
 	public SettingsImageGroup() {
 		super("SettingsImageGroup", "/Settings/Image2d/", "setImgGroup"); 
-		settAlphaMap = new SettingsAlphaMap();
-		settBGImg = new SettingsBackgroundImg();
 		
-		list.addElement(settAlphaMap);
-		list.addElement(settBGImg);
+		addSettings(new SettingsAlphaMap());
+		addSettings(new SettingsBackgroundImg());
 	} 
 
 	@Override
@@ -47,9 +41,9 @@ public class SettingsImageGroup extends SettingsContainerSettings {
 				// import settings
 				// older settings format
 				if(paramName.equals("pathBGImage")) 
-					settBGImg.setPathBGImage(new File(nextElement.getTextContent()));
+					getSettBGImg().setPathBGImage(new File(nextElement.getTextContent()));
 				else if(paramName.equals("bgWidth")) 
-					settBGImg.setBgWidth(floatFromXML(nextElement));
+					getSettBGImg().setBgWidth(floatFromXML(nextElement));
 			}
 		}
 		// load all sub settings
@@ -58,22 +52,10 @@ public class SettingsImageGroup extends SettingsContainerSettings {
 	
 	// getters and setters
 	public SettingsAlphaMap getSettAlphaMap() {
-		return settAlphaMap;
+		return (SettingsAlphaMap) getSettingsByClass(SettingsAlphaMap.class);
 	}
     public SettingsBackgroundImg getSettBGImg() {
-		return settBGImg;
+		return (SettingsBackgroundImg) getSettingsByClass(SettingsBackgroundImg.class);
 	}
-	public void setSettAlphaMap(SettingsAlphaMap settAlphaMap) {
-		list.remove(this.settAlphaMap);
-		this.settAlphaMap = settAlphaMap;
-		list.add(this.settAlphaMap);
-	}
-	public void setSettBGImg(SettingsBackgroundImg settBGImg) {
-		list.remove(this.settBGImg);
-		this.settBGImg = settBGImg;
-		list.add(this.settBGImg);
-	}
-
-	
 	
 }

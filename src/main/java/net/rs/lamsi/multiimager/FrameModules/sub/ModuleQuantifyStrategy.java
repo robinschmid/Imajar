@@ -226,8 +226,8 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 		JButton btnShowRegression = new JButton("Show regression");
 		btnShowRegression.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(currentImage.getQuantifier().getMode()==SettingsImage2DQuantifierMultiPoints.MODE_MULTIPLE_POINTS)
-					((SettingsImage2DQuantifierMultiPoints) currentImage.getQuantifier()).openRegressionDialog();
+				if(currentImage.getSettings().getQuantifier().getMode()==SettingsImage2DQuantifierMultiPoints.MODE_MULTIPLE_POINTS)
+					((SettingsImage2DQuantifierMultiPoints) currentImage.getSettings().getQuantifier()).openRegressionDialog();
 			}
 		});
 		panel_2.add(btnShowRegression, "cell 1 1,growx");
@@ -318,7 +318,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 		}
 		else { 
 			getTxtExTitle().setText(img.getTitle());
-			getTxtExPath().setText(img.getSettImage().getRAWFilepath());
+			getTxtExPath().setText(img.getSettings().getSettImage().getRAWFilepath());
 		}
 		// update settings
 		imgEx = img;
@@ -461,12 +461,12 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 			break;
 		case SettingsImage2DQuantifier.MODE_ONE_POINT:
 			getTabbedPane().setSelectedComponent(getTabOnePoint());
-			if(currentImage!=null && currentImage.getQuantifier()!=null) {
-				SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) currentImage.getQuantifier();
+			if(currentImage!=null && currentImage.getSettings().getQuantifier()!=null) {
+				SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) currentImage.getSettings().getQuantifier();
 				imgEx = ex.getImgEx().getImg();
 				if(imgEx!=null) {
 					getTxtExTitle().setText(imgEx.getTitle());
-					getTxtExPath().setText(imgEx.getSettImage().getRAWFilepath());
+					getTxtExPath().setText(imgEx.getSettings().getSettImage().getRAWFilepath());
 					// mode of ex
 					getRbExAverage().setSelected(ex.getImgEx().getMode()==Quantifier.MODE_AVERAGE);
 					getRbExAverageSelectedAreas().setSelected(ex.getImgEx().getMode()==Quantifier.MODE_AVERAGE_BOXES);
@@ -477,8 +477,8 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 			break;
 		case SettingsImage2DQuantifier.MODE_MULTIPLE_POINTS:
 			getTabbedPane().setSelectedComponent(getTabMultiPoint());
-			if(currentImage!=null && currentImage.getQuantifier()!=null) {
-				SettingsImage2DQuantifierMultiPoints multi = (SettingsImage2DQuantifierMultiPoints) currentImage.getQuantifier();
+			if(currentImage!=null && currentImage.getSettings().getQuantifier()!=null) {
+				SettingsImage2DQuantifierMultiPoints multi = (SettingsImage2DQuantifierMultiPoints) currentImage.getSettings().getQuantifier();
 				// conc
 				getTxtMultiConc().setText(String.valueOf(multi.getFactor()));
 				// add all Quantifiers

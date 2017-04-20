@@ -24,6 +24,7 @@ import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
@@ -39,6 +40,7 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 	private ModuleZoom moduleZoom;
 	private ModulePaintscale modulePaintscale;
 	private ModuleThemes moduleThemes;
+	private ModuleBackgroundImg moduleBG;
 	private ModuleOperations moduleOperations;
 	//
 
@@ -59,6 +61,9 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 		modulePaintscale = new ModulePaintscale();
 		addModule(modulePaintscale);
 
+		moduleBG = new ModuleBackgroundImg();
+		addModule(moduleBG);
+		
 		moduleThemes = new ModuleThemes();
 		addModule(moduleThemes);
 
@@ -89,5 +94,8 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 	}
 	public ModuleThemes getModuleThemes() {
 		return moduleThemes;
+	}
+	public ModuleBackgroundImg getModuleBackground() {
+		return moduleBG;
 	}
 }

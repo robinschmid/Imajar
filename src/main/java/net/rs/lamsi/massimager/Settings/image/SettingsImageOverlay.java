@@ -20,7 +20,7 @@ import org.w3c.dom.NodeList;
 
 import com.sparshui.server.Group;
 
-public class SettingsImageOverlay extends SettingsContainerSettings {
+public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     private static Vector<Color> STANDARD_COLORS;
@@ -49,8 +49,8 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 		this.settZoom = new SettingsZoom();
 
 		// TODO add sub settings
-		list.addElement(settTheme);
-		list.addElement(settZoom);
+		addSettings(settTheme);
+		addSettings(settZoom);
 		
 		resetAll();
 	} 
@@ -66,7 +66,7 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 		int c = 0;
 		for(int f=0; f<group.image2dCount(); f++) {
 			Image2D i = (Image2D)group.get(f);
-			SettingsPaintScale ps =( SettingsPaintScale) i.getSettPaintScale().copy();
+			SettingsPaintScale ps =( SettingsPaintScale) i.getSettings().getSettPaintScale().copy();
 			psSettings.add(ps);
 			// monochrome and color
 			ps.setMonochrom(true);
@@ -91,7 +91,7 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 	 * @throws Exception 
 	 */
 	public void addImage(Image2D i) throws Exception { 
-		SettingsPaintScale ps =( SettingsPaintScale) i.getSettPaintScale().copy();
+		SettingsPaintScale ps =( SettingsPaintScale) i.getSettings().getSettPaintScale().copy();
 		psSettings.add(ps);
 		// monochrome and color
 		ps.setMonochrom(true);
@@ -195,24 +195,6 @@ public class SettingsImageOverlay extends SettingsContainerSettings {
 		colors = STANDARD_COLORS;
 		return STANDARD_COLORS;
 	}
-
-	public SettingsThemes getSettTheme() {
-		return settTheme;
-	}
-	public SettingsZoom getSettZoom() {
-		return settZoom;
-	}
-	public void setSettZoom(SettingsZoom settZoom) {
-		list.remove(this.settZoom);
-		this.settZoom = settZoom;
-		list.add(settZoom);
-	}
-	public void setSettTheme(SettingsThemes settTheme) {
-		list.remove(this.settTheme);
-		this.settTheme = settTheme;
-		list.add(settTheme);
-	}
-	
 	
 	public String getTitle() {
 		return title;

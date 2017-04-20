@@ -11,6 +11,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageGroup;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
@@ -40,9 +42,6 @@ public class ImageGroupMD  implements Serializable {
 		settings = new SettingsImageGroup();
 		images = new Vector<Collectable2D>();
 		add(img);
-		// set background iamge
-		img.getSettTheme().setBGImagePath(getBGImagePath());
-		img.getSettTheme().setUseBGImage(getBGImagePath()!=null);
 	}
 	public ImageGroupMD(Collectable2D[] img) {
 		settings = new SettingsImageGroup();
@@ -50,9 +49,6 @@ public class ImageGroupMD  implements Serializable {
 			images = new Vector<Collectable2D>();
 			for(Collectable2D i : img)
 				add(i);
-			// set background iamge
-			img[0].getSettTheme().setBGImagePath(getBGImagePath());
-			img[0].getSettTheme().setUseBGImage(getBGImagePath()!=null);
 		}
 		else images = new Vector<Collectable2D>();
 	}
@@ -119,10 +115,6 @@ public class ImageGroupMD  implements Serializable {
 	public void setBackgroundImage(Image image, File pathBGImage) {
 		this.bgImage = image;
 		settings.getSettBGImg().setPathBGImage(pathBGImage);
-		for(Collectable2D img : images) {
-			img.getSettTheme().setBGImagePath(pathBGImage);
-			img.getSettTheme().setUseBGImage(pathBGImage!=null);
-		}
 	}
 	/**
 	 * 
@@ -144,10 +136,6 @@ public class ImageGroupMD  implements Serializable {
 	 * @return path or null
 	 */
 	public File getBGImagePath() {
-		if(settings.getSettBGImg().getPathBGImage()==null) {
-			if(images!=null && images.size()>0)
-				settings.getSettBGImg().setPathBGImage(images.get(0).getSettTheme().getBGImagePath());
-		}
 		return settings.getSettBGImg().getPathBGImage();
 	}
 
@@ -289,12 +277,24 @@ public class ImageGroupMD  implements Serializable {
 	public void setSettings(SettingsImageGroup settings) {
 		this.settings = settings;
 	}
+	/**
+	 * get settings by class
+	 * @param classsettings
+	 * @return
+	 */
+	public Settings getSettingsByClass(Class classsettings) {
+		if(classsettings.isInstance(this.settings))
+			return this.settings;
+		else {
+			return ((SettingsContainerSettings)this.settings).getSettingsByClass(classsettings);
+		}
+	}
 
 	public SettingsAlphaMap getSettAlphaMap() {
 		return settings.getSettAlphaMap();
 	}
 	public void setSettAlphaMap(SettingsAlphaMap settAlphaMap) {
-		settings.setSettAlphaMap(settAlphaMap);
+		settings.replaceSettings(settAlphaMap);
 	}
 	/**
 	 * a vector of all iamges

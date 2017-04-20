@@ -28,7 +28,7 @@ public class QuantifierTableRow {
 	}
 	
 	public Object[] getArray() {
-		Object[] array = {quanti.getConcentration(), quanti.getImg().getTitle(), quanti.getImg().getSettImage().getRAWFilepath(), quanti.getImg().getParent()==null? "-" : quanti.getImg().getParent().getTitle(), mode, "Select"};
+		Object[] array = {quanti.getConcentration(), quanti.getImg().getTitle(), quanti.getImg().getSettings().getSettImage().getRAWFilepath(), quanti.getImg().getParent()==null? "-" : quanti.getImg().getParent().getTitle(), mode, "Select"};
 		return array;
 	}
 

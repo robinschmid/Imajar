@@ -389,6 +389,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			public void actionPerformed(ActionEvent e) {
 				// Open Dialog
 				logicRunner.importMicroscopicImageBG();
+				
 			}
 		});
 		mnAction.add(btnImportMicroscopic2);

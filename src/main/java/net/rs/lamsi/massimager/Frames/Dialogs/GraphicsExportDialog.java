@@ -201,7 +201,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 							// set the name and path 
 							String sub = img.getTitle();
 							if(Image2D.class.isInstance(img)) {
-								FileAndPathUtil.eraseFormat(((Image2D)img).getSettImage().getRAWFileName());
+								FileAndPathUtil.eraseFormat(((Image2D)img).getSettings().getSettImage().getRAWFileName());
 							}
 							sett.setPath(new File(path,sub));
 							// title as filename

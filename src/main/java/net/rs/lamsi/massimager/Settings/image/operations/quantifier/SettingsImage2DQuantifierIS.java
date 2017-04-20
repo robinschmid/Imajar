@@ -62,7 +62,7 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
 	public double calcIntensity(Image2D img,  int line, int dp, double intensity, boolean blank) {
 		if(isApplicable() && line<imgIS.getLineCount(dp)  && dp<imgIS.getLineLength(line)) {
 			if(blank) {
-				SettingsImage2DBlankSubtraction b = imgIS.getOperations().getBlankQuantifier();
+				SettingsImage2DBlankSubtraction b = imgIS.getSettings().getOperations().getBlankQuantifier();
 				boolean tmp = b.isActive();
 				b.setActive(blank);
 				double is = imgIS.getI(false, line, dp);

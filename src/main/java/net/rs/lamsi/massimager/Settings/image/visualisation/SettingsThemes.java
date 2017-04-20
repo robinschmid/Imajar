@@ -73,11 +73,6 @@ public class SettingsThemes extends Settings {
 	// Outline stroke?
 	 
 
-	// background iamges
-	protected File bgImagePath = null;
-	protected boolean usesBGImage = false;
-	
-	
 	public SettingsThemes() {
 		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
 		theme = ChartThemeFactory.getStandardTheme();
@@ -178,9 +173,6 @@ public class SettingsThemes extends Settings {
 		listFontColor.add(cAxes);
 		listFontColor.add(cTitle);
 
-		//new
-		bgImagePath = null;
-		usesBGImage = false;
 	}
 	
 	//##########################################################
@@ -191,10 +183,6 @@ public class SettingsThemes extends Settings {
 		toXML(elParent, doc, "showTitle", showTitle); 
 		toXML(elParent, doc, "noBackground", isNoBackground()); 
 
-		if(bgImagePath!=null)
-			toXML(elParent, doc, "bgImagePath", bgImagePath.getAbsolutePath()); 
-		toXML(elParent, doc, "usesBGImage", usesBGImage); 
-		
 		theme.appendThemeSettingsToXML(elParent, doc);
 	}
 
@@ -210,8 +198,6 @@ public class SettingsThemes extends Settings {
 				else if(paramName.equals("noBackground"))setNoBackground(booleanFromXML(nextElement));  
 				else if(paramName.equals(MyStandardChartTheme.XML_DESC))
 					theme.loadValuesFromXML(nextElement, doc);
-				else if(paramName.equals("bgImagePath"))bgImagePath = new File(nextElement.getTextContent()); 
-				else if(paramName.equals("usesBGImage"))usesBGImage = booleanFromXML(nextElement);  
 			}
 		}
 	}
@@ -527,19 +513,6 @@ public class SettingsThemes extends Settings {
 	public void setTheme(MyStandardChartTheme theme) {
 		this.theme = theme;
 	}
-	public void setBGImagePath(File pathBGImage) {
-		this.bgImagePath = pathBGImage;
-	}
-	public File getBGImagePath() {
-		return bgImagePath;
-	}
-	public void setUseBGImage(boolean b) {
-		usesBGImage = b;
-	}
-	public boolean usesBGImage() {
-		return usesBGImage;
-	}
-	
 	public boolean isNoBackground() { 
 		return ((Color)theme.getPlotBackgroundPaint()).getAlpha() == 0;
 	}

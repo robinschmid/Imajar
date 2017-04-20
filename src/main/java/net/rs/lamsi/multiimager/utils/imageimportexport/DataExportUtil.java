@@ -228,7 +228,7 @@ public class DataExportUtil {
 			File path = null;
 			if(inFolder) {
 				// create folder like filename
-				path = new File(sett.getPath(), img.getSettImage().getRAWFileName());
+				path = new File(sett.getPath(), img.getSettings().getSettImage().getRAWFileName());
 			}
 			else {
 				path = sett.getPath();

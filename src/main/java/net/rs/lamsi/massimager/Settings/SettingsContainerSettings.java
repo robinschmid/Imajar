@@ -1,5 +1,6 @@
 package net.rs.lamsi.massimager.Settings;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -22,7 +23,7 @@ public abstract class SettingsContainerSettings extends Settings {
 	/**
 	 * 
 	 */
-	protected Vector<Settings> list = new Vector<Settings>();
+	protected HashMap<Class, Settings> list = new HashMap<Class, Settings>();
 	
 	public SettingsContainerSettings(String description, String path, String fileEnding) {
 		super(description, path, fileEnding);
@@ -31,21 +32,21 @@ public abstract class SettingsContainerSettings extends Settings {
 	
 	@Override
 	public void applyToHeatMap(Heatmap heat) {
-		for(Settings s:list)
+		for(Settings s:list.values())
 			if(s!=null)
 				s.applyToHeatMap(heat);
 	}
 
 	@Override
 	public void resetAll() { 
-		for(Settings s:list)
+		for(Settings s:list.values())
 			if(s!=null)
 				s.resetAll();
 	}
 
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
-		for(Settings s:list)
+		for(Settings s:list.values())
 			if(s!=null)
 				s.appendSettingsToXML(elParent, doc);
 	}
@@ -58,7 +59,7 @@ public abstract class SettingsContainerSettings extends Settings {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 
-				for(Settings s:this.list)
+				for(Settings s:this.list.values())
 					if(s!=null)
 						if(paramName.equals(s.getDescription())) 
 							getSettingsByClass(s.getClass()).loadValuesFromXML(nextElement, doc);
@@ -69,20 +70,23 @@ public abstract class SettingsContainerSettings extends Settings {
 	/**
 	 * replaces the current sub settings
 	 * @param sett
-	 * @return
+	 * @return true if replaced false if only added
 	 */
 	public boolean replaceSettings(Settings sett) {
-		for(int i=0; i<list.size(); i++) {
-			Settings s = list.get(i);
-			if(s.getClass().isInstance(sett)) {
-				list.remove(i);
-				list.add(sett);
-				return true;
-			}
+		if(list.replace(sett.getClass(), sett)!=null) {
+			return true;
 		}
-		// add without replacing
-		list.add(sett);
-		return false;
+		else {
+			list.put(sett.getClass(), sett);
+			return false;
+		}
+	}
+	/**
+	 * replaces the Settings in the list of settings
+	 * @param s
+	 */
+	public void addSettings(Settings s) {
+		replaceSettings(s);
 	}
 	
 	/**
@@ -95,22 +99,7 @@ public abstract class SettingsContainerSettings extends Settings {
 		if(this.getClass().isAssignableFrom(classsettings))
 			return this;
 		else {
-			for(Settings s:this.list)
-				if(s!=null)
-					if(classsettings.isInstance(s))
-						return s;
+			return list.get(classsettings);
 		}
-		return null;
-	}
-
-	/**
-	 * replaces the Settings in the list of settings
-	 * @param s
-	 */
-	public void addSettings(Settings s) {
-		Settings old = getSettingsByClass(s.getClass());
-		if(old!=null)
-			list.remove(old);
-		list.add(s);
 	}
 }

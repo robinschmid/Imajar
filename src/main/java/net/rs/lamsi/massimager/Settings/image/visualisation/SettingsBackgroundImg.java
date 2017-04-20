@@ -57,7 +57,8 @@ public class SettingsBackgroundImg extends Settings {
 			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
-				if(paramName.equals("isVisible")) isVisible = booleanFromXML(nextElement); 
+				if(paramName.equals("isVisible")) 
+					isVisible = booleanFromXML(nextElement); 
 				else if(paramName.equals("pathBGImage")) pathBGImage = new File(nextElement.getTextContent()); 
 				else if(paramName.equals("bgWidth")) bgWidth = doubleFromXML(nextElement); 
 				else if(paramName.equals("angle")) angle = doubleFromXML(nextElement); 
@@ -199,6 +200,10 @@ public class SettingsBackgroundImg extends Settings {
 		if(this.angle!=angle)
 			at = null;
 		this.angle = angle;
+	}
+
+	public void setOffset(double x, double y) {
+		setOffset(new Point2D.Double(x,y));
 	}
 
 }

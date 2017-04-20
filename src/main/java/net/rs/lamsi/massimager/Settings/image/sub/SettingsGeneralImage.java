@@ -90,10 +90,10 @@ public class SettingsGeneralImage extends Settings {
 	public void applyToImage(Image2D img) throws Exception {
 		// dont copy name
 		String name = img.getTitle();
-		String path = img.getSettImage().getRAWFilepath();
+		String path = img.getSettings().getSettImage().getRAWFilepath();
 		super.applyToImage(img);
-		img.getSettImage().setTitle(name);
-		img.getSettImage().setRAWFilepath(path);
+		img.getSettings().getSettImage().setTitle(name);
+		img.getSettings().getSettImage().setRAWFilepath(path);
 	}
 	//##########################################################
 	// xml input/output

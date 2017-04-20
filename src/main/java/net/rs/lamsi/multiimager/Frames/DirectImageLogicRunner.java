@@ -536,17 +536,17 @@ public class DirectImageLogicRunner implements Runnable {
 			// reset to img max (reverse effect of autoscale)
 			for(DIATask task : tasks) {
 				for(Image2D img : task.getImg().getImagesOnly()) { 
-					img.getSettPaintScale().setUsesMinMax(true);
-					img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
-					img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
-					img.getSettPaintScale().setMax(img.getMaxIntensity(false));
+					img.getSettings().getSettPaintScale().setUsesMinMax(true);
+					img.getSettings().getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
+					img.getSettings().getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
+					img.getSettings().getSettPaintScale().setMax(img.getMaxIntensity(false));
 				}
 			}
 			for(Image2D img : sumimages) {
-				img.getSettPaintScale().setUsesMinMax(true);
-				img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
-				img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
-				img.getSettPaintScale().setMax(img.getMaxIntensity(false));
+				img.getSettings().getSettPaintScale().setUsesMinMax(true);
+				img.getSettings().getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
+				img.getSettings().getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
+				img.getSettings().getSettPaintScale().setMax(img.getMaxIntensity(false));
 			}
 		}
 	}

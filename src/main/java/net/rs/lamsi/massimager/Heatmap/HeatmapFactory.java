@@ -58,15 +58,15 @@ public class HeatmapFactory {
 	}
 	
 	private static Heatmap generateHeatmapFromImage2D(Image2D image)  throws Exception { 
-		SettingsPaintScale setPaint = image.getSettPaintScale();
-		SettingsGeneralImage setImg = image.getSettImage();
+		SettingsPaintScale setPaint = image.getSettings().getSettPaintScale();
+		SettingsGeneralImage setImg = image.getSettings().getSettImage();
 		// get rotated and reflected dataset
 		XYIData2D dat = image.toXYIArray(false, true); 
 		// Heatmap erzeugen
-		Heatmap h = createChart(image, setPaint, setImg, createDataset(image.getSettImage().getTitle(), dat.getX(), dat.getY(), dat.getI()));
+		Heatmap h = createChart(image, setPaint, setImg, createDataset(image.getSettings().getSettImage().getTitle(), dat.getX(), dat.getY(), dat.getI()));
 		// TODO WHY?
 		
-		image.getSettingsImage2D().applyToHeatMap(h);
+		image.getSettings().applyToHeatMap(h);
 		return h;
 	}
 	
@@ -218,8 +218,8 @@ public class HeatmapFactory {
 
 			        // TODO nicht feste Blockwidth!
 			        // erstmal feste BlockWidth 
-			        renderer.setBlockWidth(counter, cimg.getMaxBlockWidth(cimg.getSettImage().getRotationOfData())); 
-			        renderer.setBlockHeight(counter, cimg.getMaxBlockHeight(cimg.getSettImage().getRotationOfData())); 
+			        renderer.setBlockWidth(counter, cimg.getMaxBlockWidth(cimg.getSettings().getSettImage().getRotationOfData())); 
+			        renderer.setBlockHeight(counter, cimg.getMaxBlockHeight(cimg.getSettings().getSettImage().getRotationOfData())); 
 			        
 
 			        renderer.setSeriesPaint(counter, ps.getMinColor());
@@ -243,7 +243,7 @@ public class HeatmapFactory {
 	        plot.setRangeGridlinePaint(Color.white);
 	        
 	        // set background image
-	        if(img.getSettTheme().usesBGImage() && img.getImageGroup()!=null) {
+	        if(img.getImageGroup()!=null) {
 	        	Image bg = img.getImageGroup().getBGImage();
 	        	SettingsBackgroundImg settBG = img.getImageGroup().getSettings().getSettBGImg();
 	        	if(bg!=null) {
@@ -356,75 +356,11 @@ public class HeatmapFactory {
 	        plot.setRangeGridlinePaint(Color.white);
 	        
 	        // set background image
-	        if(img.getSettTheme().usesBGImage() && img.getImageGroup()!=null) {
+	        if(img.getImageGroup()!=null) {
 	        	Image bg = img.getImageGroup().getBGImage();
 	        	if(bg!=null) {
 	        		//plot.setBackgroundImage(bg);
-	        		XYImageAnnotation ann = new XYImageAnnotation(0, 0, bg, RectangleAnchor.BOTTOM_LEFT){
-	        			@Override
-	        			public void draw(Graphics2D g2, XYPlot plot,
-	        					Rectangle2D dataArea, ValueAxis domainAxis,
-	        					ValueAxis rangeAxis, int rendererIndex,
-	        					PlotRenderingInfo info) {
-
-
-	        		        PlotOrientation orientation = plot.getOrientation();
-	        		        AxisLocation domainAxisLocation = plot.getDomainAxisLocation();
-	        		        AxisLocation rangeAxisLocation = plot.getRangeAxisLocation();
-	        		        RectangleEdge domainEdge
-	        		            = Plot.resolveDomainAxisLocation(domainAxisLocation, orientation);
-	        		        RectangleEdge rangeEdge
-	        		            = Plot.resolveRangeAxisLocation(rangeAxisLocation, orientation);
-	        		        float j2DX
-	        		            = (float) domainAxis.valueToJava2D(this.getX(), dataArea, domainEdge);
-	        		        float j2DY
-	        		            = (float) rangeAxis.valueToJava2D(this.getY(), dataArea, rangeEdge);
-	        		        float xx = 0.0f;
-	        		        float yy = 0.0f;
-	        		        if (orientation == PlotOrientation.HORIZONTAL) {
-	        		            xx = j2DY;
-	        		            yy = j2DX;
-	        		        }
-	        		        else if (orientation == PlotOrientation.VERTICAL) {
-	        		            xx = j2DX;
-	        		            yy = j2DY;
-	        		        }
-	        		        // real image width and height
-	        		        double w = this.getImage().getWidth(null);
-	        		        double h = this.getImage().getHeight(null);
-	        		        
-	        		        // resized by width statement in imagegroup
-	        		        double realw = img.getImageGroup().getSettings().getBgWidth();
-	        		        if(realw==0) {
-	        		        	w = dataArea.getWidth();
-	        		        	h = dataArea.getHeight();
-	        		        }
-	        		        else {
-	        		        	double f = realw/img.getWidth(false);
-	        		        	w = dataArea.getWidth()*f;
-	        		        	h = dataArea.getHeight()*f;
-	        		        }
-
-	        		        double fw = domainAxis.getRange().getLength()/img.getWidth(false);
-	        		        double fh = rangeAxis.getRange().getLength()/img.getHeight(false);
-	        		        
-	        		        w = (int) (w/fw);
-	        		        h = (int) (h/fh);
-	        		        
-	        		        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, w, h);
-	        		        Point2D anchorPoint = RectangleAnchor.coordinates(imageRect, getImageAnchor());
-	        		        xx = xx - (float) anchorPoint.getX();
-	        		        yy = yy - (float) anchorPoint.getY();
-	        		        g2.drawImage(this.getImage().getScaledInstance((int)w, (int)h, Image.SCALE_SMOOTH), (int) xx, (int) yy, null);
-
-	        		        String toolTip = getToolTipText();
-	        		        String url = getURL();
-	        		        if (toolTip != null || url != null) {
-	        		            addEntity(info, new Rectangle2D.Float(xx, yy, (float)w, (float)h), rendererIndex,
-	        		                    toolTip, url);
-	        		        }
-	        			}
-	        		};
+	        		XYImageAnnotation ann = new BGImageAnnotation(bg, img.getImageGroup().getSettings().getSettBGImg(), img.getWidth(false), img.getHeight(false));
 	        		
 	        		renderer.addAnnotation(ann, Layer.BACKGROUND);
 	        	}

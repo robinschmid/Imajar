@@ -41,7 +41,7 @@ public class DIATask {
 	 */
 	public String getIdentifier() { 
 		if(img!=null && img.size()>0)
-			return ((Image2D)img.getImages().get(0)).getSettImage().getRAWFilepath();
+			return ((Image2D)img.getImages().get(0)).getSettings().getSettImage().getRAWFilepath();
 		else return "";
 	}
 

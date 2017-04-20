@@ -62,7 +62,7 @@ public class Heatmap {
 		this.renderer = renderer;
 		this.scaleInPlot = scaleInPlot;
 		// 
-		showBlankMinMax(image.getOperations().getBlankQuantifier().isShowInChart());
+		showBlankMinMax(image.getSettings().getOperations().getBlankQuantifier().isShowInChart());
 	}
 	
 	public Heatmap(IXYZDataset dataset, PlotChartPanel chartPanel,
@@ -217,11 +217,11 @@ public class Heatmap {
 			
 			if(isShowingBlankMinMax) {
 				// add
-				double lower = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getLowerBound());
+				double lower = image.getX(false, 0, image.getSettings().getOperations().getBlankQuantifier().getQSameImage().getLowerBound());
 				plot.addDomainMarker(lowerMarker = new ValueMarker(lower,Color.BLUE,new BasicStroke(1.5f)));
 				
-				if(image.getOperations().getBlankQuantifier().getQSameImage().isUseEnd()) {
-					double upper = image.getX(false, 0, image.getOperations().getBlankQuantifier().getQSameImage().getUpperBound());
+				if(image.getSettings().getOperations().getBlankQuantifier().getQSameImage().isUseEnd()) {
+					double upper = image.getX(false, 0, image.getSettings().getOperations().getBlankQuantifier().getQSameImage().getUpperBound());
 					plot.addDomainMarker(upperMarker = new ValueMarker(upper,Color.BLUE,new BasicStroke(1.5f)));
 				}
 			}

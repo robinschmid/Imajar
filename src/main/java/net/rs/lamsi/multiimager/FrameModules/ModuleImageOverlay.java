@@ -5,6 +5,7 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscaleOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
@@ -15,6 +16,7 @@ public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOve
 
 	private ModuleZoom moduleZoom;
 	private ModuleThemes moduleThemes;
+	private ModuleBackgroundImg moduleBG;
 	// 
 	private ModulePaintscaleOverlay modulePaintscale;
 	//
@@ -32,9 +34,12 @@ public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOve
 		modulePaintscale = new ModulePaintscaleOverlay();
 		addModule(modulePaintscale);
 
+		moduleBG = new ModuleBackgroundImg();
+		addModule(moduleBG);
+		
 		moduleThemes = new ModuleThemes();
 		addModule(moduleThemes);
-		
+
 
 		// add all sub modules for settings TODO add all mods
 //		listSettingsModules.addElement(moduleGeneral.getModSplitConImg());
@@ -51,5 +56,8 @@ public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOve
 	}
 	public ModuleThemes getModuleThemes() {
 		return moduleThemes;
+	}
+	public ModuleBackgroundImg getModuleBackground() {
+		return moduleBG;
 	}
 }

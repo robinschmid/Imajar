@@ -211,11 +211,11 @@ public class ImageLogicRunner {
 			for(Collectable2D c2d : img.getImages()) {
 				if(Image2D.class.isInstance(c2d)) {
 					Image2D i = (Image2D) c2d;
-					if(sub==null || (last==null && !lastI.hasSameData(i)) || (last!=null && !last.equals(i.getSettImage().getRAWFolder()))) { 
-						String name = i.getSettImage().getRAWFolder()==null? "NODEF" : i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder(); 
+					if(sub==null || (last==null && !lastI.hasSameData(i)) || (last!=null && !last.equals(i.getSettings().getSettImage().getRAWFolder()))) { 
+						String name = i.getSettings().getSettImage().getRAWFolder()==null? "NODEF" : i.getSettings().getSettImage().getRAWFolderName()+"; "+i.getSettings().getSettImage().getRAWFolder(); 
 						sub = new IconNode(name);
 						parent.add(sub);
-						last = i.getSettImage().getRAWFolder(); 
+						last = i.getSettings().getSettImage().getRAWFolder(); 
 					}
 					IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
 					nodes[c] = inode;
@@ -586,7 +586,7 @@ public class ImageLogicRunner {
 					Graphics2D graphics = scaled.createGraphics();
 					graphics.drawImage(ti, 0, 0, null);
 					
-					int rot = selectedImage.getImageGroup().getFirstImage2D().getSettImage().getRotationOfData();
+					int rot = selectedImage.getImageGroup().getFirstImage2D().getSettings().getSettImage().getRotationOfData();
 					
 					// generate dataset
 					Vector<Double[]> data = new Vector<Double[]>();
@@ -625,8 +625,8 @@ public class ImageLogicRunner {
 					int index = ((MDDataset)selectedImage.getImageGroup().getData()).addDimension(data);
 					Image2D result = new Image2D((ImageDataset)selectedImage.getImageGroup().getData(), index);
 					
-					result.getSettImage().setTitle(file.getName());
-					result.getSettImage().setRAWFilepath(file.getAbsolutePath());
+					result.getSettings().getSettImage().setTitle(file.getName());
+					result.getSettings().getSettImage().setRAWFilepath(file.getAbsolutePath());
 					// add to image group
 					selectedImage.getImageGroup().add(result);
 					addImage(result, selectedImage.getImageGroup().getNode());
@@ -644,7 +644,7 @@ public class ImageLogicRunner {
 	/**
 	 * imports a microscopic image to the selected image group background
 	 */
-	public void importMicroscopicImageBG() {
+	public File importMicroscopicImageBG() {
 		if(selectedImage!=null) {
 			try {
 				// choose files
@@ -655,11 +655,15 @@ public class ImageLogicRunner {
 					BufferedImage image = ImageIO.read(file);
 
 					selectedImage.getImageGroup().setBackgroundImage(image, file);
+					return file;
 				}
+				else return null;
 			} catch (IOException e) {
 				e.printStackTrace();
+				return null;
 			}
 		}
+		else return null;
 	}
 	
 	//#####################################################################################
