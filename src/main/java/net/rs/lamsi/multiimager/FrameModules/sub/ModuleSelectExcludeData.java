@@ -19,13 +19,17 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DModule;
+import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 
-public class ModuleSelectExcludeData extends Collectable2DModule { 
+public class ModuleSelectExcludeData extends Collectable2DSettingsModule<SettingsSelections, Image2D> { 
 	//
 	private ImageEditorWindow window;
 	private JLabel lbExcludedRects;
@@ -37,7 +41,7 @@ public class ModuleSelectExcludeData extends Collectable2DModule {
 	 * Create the panel.
 	 */
 	public ModuleSelectExcludeData(ImageEditorWindow wnd) {
-		super("Data selection", false);  
+		super("Data selection", false, SettingsSelections.class, Image2D.class);  
 		setShowTitleAlways(true);
 		
 		JPanel panel = new JPanel();
@@ -95,8 +99,10 @@ public class ModuleSelectExcludeData extends Collectable2DModule {
 								currentHeat.updateSelectedExcludedRects();
 								// show stats
 								Image2D img = ((Image2D)currentHeat.getImage());
-								getLbSelectedRects().setText(String.valueOf(img.getSelectedData().size()));
-								getLbExcludedRects().setText(String.valueOf(img.getExcludedData().size()));
+								SettingsSelections sel = img.getSettings().getSettSelections();
+								
+								getLbSelectedRects().setText(String.valueOf(sel.count(SelectionMode.SELECT)));
+								getLbExcludedRects().setText(String.valueOf(sel.count(SelectionMode.EXCLUDE)));
 								double used = Math.round(img.getSelectedDPCount(true)*1000.0/img.getTotalDPCount())/10.0;
 								getLbUsedDataPerc().setText(String.valueOf(used));
 							}
@@ -110,6 +116,13 @@ public class ModuleSelectExcludeData extends Collectable2DModule {
 		window = wnd;
 	}
 	
+	@Override
+	public void setCurrentImage(Image2D img) {
+		// TODO Auto-generated method stub
+		System.out.println("IMAGE WAS SET TO SELECT MODULE");
+		super.setCurrentImage(img);
+	}
+	
 	/**
 	 * show data selection
 	 */
@@ -121,6 +134,20 @@ public class ModuleSelectExcludeData extends Collectable2DModule {
 			currentHeat.showSelectedExcludedRects(cbShowSelExcl.isSelected());
 	}
 
+	@Override
+	public void setAllViaExistingSettings(SettingsSelections sel) throws Exception {
+		getLbSelectedRects().setText(String.valueOf(sel.count(SelectionMode.SELECT)));
+		getLbExcludedRects().setText(String.valueOf(sel.count(SelectionMode.EXCLUDE)));
+		double used = Math.round(currentImage.getSelectedDPCount(true)*1000.0/currentImage.getTotalDPCount())/10.0;
+		getLbUsedDataPerc().setText(String.valueOf(used));
+	}
+
+	@Override
+	public SettingsSelections writeAllToSettings(SettingsSelections si) {
+		
+		return si;
+	}
+	
 	
 	public JLabel getLbExcludedRects() {
 		return lbExcludedRects;

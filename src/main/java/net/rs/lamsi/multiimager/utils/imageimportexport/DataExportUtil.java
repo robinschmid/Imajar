@@ -3,6 +3,7 @@ package net.rs.lamsi.multiimager.utils.imageimportexport;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
@@ -14,6 +15,8 @@ import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImag
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierMultiPoints;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport.FileType;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -320,9 +323,9 @@ LOOKUP_TABLE default
 	 * @param rectsInfo 
 	 * @param setImage2DDataExport
 	 */
-	public static void exportDataImage2DInRects(Image2D img, Vector<RectSelection> rects, Vector<RectSelection> rectsExcluded, Vector<RectSelection> rectsInfo, Vector<SelectionTableRow> tableRows, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException  { 
-		img.setSelectedData(rects);
-		img.setExcludedData(rectsExcluded);
+	public static void exportDataImage2DInRects(Image2D img, SettingsSelections selections, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException  { 
+		selections.setCurrentImage(img);
+		
 		double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
 		// export the data
 		//writer it to txt or xlsx	

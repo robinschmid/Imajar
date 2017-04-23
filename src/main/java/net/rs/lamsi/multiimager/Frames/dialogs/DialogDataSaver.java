@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -27,12 +28,12 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
 import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport.FileType;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -58,8 +59,7 @@ public class DialogDataSaver extends JFrame {
 	// 
 	private Image2D img;
 	private Vector<Image2D> imgList;
-	protected Vector<RectSelection> rects, rectsExcluded, rectsInfo; 
-	protected Vector<SelectionTableRow> tableRows;
+	private SettingsSelections selections;
 	// 
 	private JPanel contentPane;
 	private JTextField txtPath;
@@ -208,7 +208,7 @@ public class DialogDataSaver extends JFrame {
 							DataExportUtil.exportDataImage2D(thisFrame, imgList, settings.getSetImage2DDataExport());
 					}
 					else if(currentMode == MODE.SELECTED_RECTS){
-						DataExportUtil.exportDataImage2DInRects(img, rects, rectsExcluded, rectsInfo, tableRows, settings.getSetImage2DDataExport());
+						DataExportUtil.exportDataImage2DInRects(img, selections, settings.getSetImage2DDataExport());
 					}
 				} catch(Exception ex) { 
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Not saved", ex);
@@ -317,21 +317,15 @@ public class DialogDataSaver extends JFrame {
 		inst.setCurrentMode(MODE.ALL);
 		inst.img=img;
 		inst.imgList = null;
-		inst.rects = null;
-		inst.rectsExcluded = null; 
-		inst.rectsInfo =null;
-		inst.tableRows = null;
+		inst.selections = null;
 		inst.setVisible(true);
 	}
 	
 	//##########################################################################################
 	// exporting only selection rects data
-	public static void startDialogWith(Image2D img, Vector<RectSelection> rects, Vector<RectSelection> rectsExcluded, Vector<RectSelection> rectsInfo, Vector<SelectionTableRow> tableRows) {
+	public static void startDialogWith(Image2D img, SettingsSelections selections) {
 		startDialogWith(img);
-		inst.rects = rects;
-		inst.rectsExcluded = rectsExcluded;
-		inst.rectsInfo = rectsInfo;
-		inst.tableRows = tableRows;
+		inst.selections = selections;
 		inst.setCurrentMode(MODE.SELECTED_RECTS);
 	}
 	

@@ -41,7 +41,6 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 	//
 	private ImageEditorWindow window; 
 	private ModuleQuantifyStrategy modQuantifier;
-	private ModuleSelectExcludeData modSelectExcludeData;
 	private JTextField txtBlankTitle, txtISTitle;
 	private JTextField txtBlankPath, txtISPath;
 	private JCheckBox cbUseBlank, cbUseIS;
@@ -264,9 +263,6 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 		txtBlankUpperB = new JTextField("0");
 		txtBlankUpperB.setColumns(10);
 		tabBlankBothSides.add(txtBlankUpperB, "cell 2 4,growx");
-		
-		modSelectExcludeData = new ModuleSelectExcludeData(wnd);
-		north.add(modSelectExcludeData, BorderLayout.NORTH);
 		
 	}
 	
@@ -539,9 +535,5 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 	}
 	public JTextField getTxtBlankLowerB() {
 		return txtBlankStart;
-	}
-
-	public ModuleSelectExcludeData getModSelectExcludeData() {
-		return modSelectExcludeData;
 	}
 }

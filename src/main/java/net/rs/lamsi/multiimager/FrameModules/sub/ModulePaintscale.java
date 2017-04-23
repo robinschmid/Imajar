@@ -126,7 +126,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	 */
 	public ModulePaintscale() { 
 		super("Paintscale", false, SettingsPaintScale.class, Image2D.class); 
-		getPnContent().setLayout(new MigLayout("", "[188px,grow]", "[176px][][294.00px][][55.00][]"));
+		getPnContent().setLayout(new MigLayout("", "[188px,grow]", "[176px][][30.00px]"));
 
 		formatAbs.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		formatAbsSmall.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));

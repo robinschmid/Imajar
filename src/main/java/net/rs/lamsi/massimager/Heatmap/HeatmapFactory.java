@@ -182,7 +182,7 @@ public class HeatmapFactory {
 	        yAxis.setLowerMargin(0.0);
 	        yAxis.setUpperMargin(0.0);
 	        // XYBlockRenderer
-	        ImageOverlayRenderer renderer = new ImageOverlayRenderer(seriesCount);
+	        ImageOverlayRenderer renderer = new ImageOverlayRenderer(seriesCount, settings.getBlend());
 	        
 	        Vector<PaintScale> psList = new Vector<PaintScale>();
 	        // create one paintscale for each active image

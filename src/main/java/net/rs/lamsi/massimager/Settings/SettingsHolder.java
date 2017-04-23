@@ -14,6 +14,7 @@ import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
@@ -85,6 +86,7 @@ public class SettingsHolder extends Settings {
 	private SettingsImageOverlay settImgOver;
 	
 	private SettingsBackgroundImg settBGImg;
+	private SettingsSelections settSelections;
 	
 
 
@@ -146,11 +148,16 @@ public class SettingsHolder extends Settings {
 		settBGImg = new SettingsBackgroundImg();
 		settList.add(settBGImg);
 
+		settSelections = new SettingsSelections();
+		settList.add(settSelections);
+		
+
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
 				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
 				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
-				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class, SettingsBackgroundImg.class};
+				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class, SettingsBackgroundImg.class,
+				SettingsSelections.class};
 		classList = cl;
 	}
 

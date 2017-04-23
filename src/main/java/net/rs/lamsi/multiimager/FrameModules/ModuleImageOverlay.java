@@ -1,6 +1,15 @@
 package net.rs.lamsi.multiimager.FrameModules;
 
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
 import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
@@ -19,15 +28,30 @@ public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOve
 	private ModuleBackgroundImg moduleBG;
 	// 
 	private ModulePaintscaleOverlay modulePaintscale;
-	//
-
+	
 	/**
 	 * Create the panel.
 	 */
 	public ModuleImageOverlay(ImageEditorWindow wnd) {
-		super("", false, SettingsImageOverlay.class, ImageOverlay.class);    
+		super("", false, SettingsImageOverlay.class, ImageOverlay.class, true);    
 		window = wnd;
-		
+
+		JButton btnApplySettingsToAll = new JButton("apply to all");
+		btnApplySettingsToAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				window.getLogicRunner().applySettingsToAllImagesInList();
+			}
+		});
+		getPnTitleCenter().add(btnApplySettingsToAll);
+
+		JButton btnUpdate = new JButton("update");
+		btnUpdate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				window.writeAllSettingsFromModules(false);
+			}
+		});
+		getPnTitleCenter().add(btnUpdate);
+
 		moduleZoom = new ModuleZoom();
 		addModule(moduleZoom);
 		
@@ -60,4 +84,5 @@ public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOve
 	public ModuleBackgroundImg getModuleBackground() {
 		return moduleBG;
 	}
+
 }

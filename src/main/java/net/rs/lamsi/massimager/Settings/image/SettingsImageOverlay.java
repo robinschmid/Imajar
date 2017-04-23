@@ -5,20 +5,18 @@ import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.sparshui.server.Group;
 
 public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	// do not change the version!
@@ -39,7 +37,10 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	protected Vector<SettingsPaintScale> psSettings = new Vector<SettingsPaintScale>();
 	// holds which image2d / paintscale is active
 	protected Vector<Boolean> active;
-	
+
+	// blending mode with alpha
+	protected BlendComposite blend = BlendComposite.Add; 
+
 
 	public SettingsImageOverlay() {
 		super("SettingsImageOverlay", "/Settings/ImageOv/", "setImgOv"); 
@@ -123,6 +124,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		toXML(elParent, doc, "title", title); 
+		toXML(elParent, doc, "blend", blend.getMode().toString(), new String[]{"alpha"}, new Object[]{blend.getAlpha()}); 
 		// colors
 		for(int i=0; i<colors.size(); i++)
 			toXML(elParent, doc, "colorXX"+i, colors.get(i)); 
@@ -153,6 +155,9 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 				if(paramName.equals("title")) title = nextElement.getTextContent();
 				else if(paramName.startsWith("colorXX")) colors.add(colorFromXML(nextElement));
 				else if(paramName.startsWith("activeXX")) active.add(booleanFromXML(nextElement));
+				else if(paramName.startsWith("blend")) {
+					blend = BlendComposite.getInstance(BlendingMode.valueOf(nextElement.getTextContent()), Float.valueOf(nextElement.getAttribute("alpha")));
+				}
 				else if(paramName.equals(ps.getDescription())) {
 					SettingsPaintScale ps2 = new SettingsPaintScale();
 					ps2.loadValuesFromXML(nextElement, doc);
@@ -262,5 +267,12 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 
 	public void setCurrentPaintScale(int currentPaintScale) {
 		this.currentPaintScale = currentPaintScale;
+	}
+	public BlendComposite getBlend() {
+		return blend;
+	}
+
+	public void setBlend(BlendComposite blend) {
+		this.blend = blend;
 	}
 }

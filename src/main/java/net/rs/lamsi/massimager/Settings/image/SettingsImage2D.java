@@ -12,6 +12,7 @@ import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperatio
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
@@ -38,6 +39,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 		addSettings(new SettingsImage2DQuantifierLinear());
 		addSettings(new SettingsImage2DOperations());
 		addSettings(new SettingsZoom());
+		addSettings(new SettingsSelections());
 	} 
 
 
@@ -51,6 +53,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
+			addSettings(new SettingsSelections());
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -64,6 +67,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
+			addSettings(new SettingsSelections());
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -71,10 +75,14 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 	
 
 	public void setCurrentImage(Image2D img) {
-		if(getOperations()!=null)
-			getOperations().setCurrentImage(img);
+		SettingsImage2DOperations op = getOperations();
+		if(op!=null)
+			op.setCurrentImage(img);
+		getSettSelections().setCurrentImage(img);
 	}
 	
+	
+	// get settings directly
 	public SettingsPaintScale getSettPaintScale() {
 		return (SettingsPaintScale) list.get(SettingsPaintScale.class);
 	} 
@@ -101,5 +109,8 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 
 	public SettingsZoom getSettZoom() {
 		return (SettingsZoom) getSettingsByClass(SettingsZoom.class);
+	}
+	public SettingsSelections getSettSelections() {
+		return (SettingsSelections) getSettingsByClass(SettingsSelections.class);
 	}
 }

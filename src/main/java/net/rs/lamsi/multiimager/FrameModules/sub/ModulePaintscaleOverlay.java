@@ -8,35 +8,35 @@ import java.awt.event.ItemListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorPicker2;
 import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
-import net.rs.lamsi.massimager.Frames.FrameWork.listener.DelayedDocumentListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
-import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
 
 public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<SettingsImageOverlay, ImageOverlay> {
 	//################################################################################################
@@ -71,21 +71,24 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	private DocumentListener dl; 
 	private ColorChangedListener ccl; 
 	private ItemListener il;
+	private JComboBox comboBox;
+	private JTextField txtAlphaBlending;
+	private JLabel lblAlpha;
 	
 	/**
 	 * Create the panel.
 	 */
 	public ModulePaintscaleOverlay() { 
 		super("Paintscale", false, SettingsImageOverlay.class, ImageOverlay.class); 
-		getPnContent().setLayout(new MigLayout("", "[188px,grow]", "[176px][]"));
+		getPnContent().setLayout(new MigLayout("", "[grow][188px,grow][grow]", "[176px][]"));
 		
 		formatAbs.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		formatAbsSmall.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		formatPerc.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		
 		JPanel panel = new JPanel();
-		getPnContent().add(panel, "cell 0 0,grow");
-		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][][]"));
+		getPnContent().add(panel, "cell 1 0,grow");
+		panel.setLayout(new MigLayout("", "[][]", "[][][][][]"));
 		
 		JLabel lblLevels = new JLabel("levels");
 		panel.add(lblLevels, "cell 0 0,alignx trailing");
@@ -110,8 +113,23 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		btnMinColor.setToolTipText("Minimum color");
 		panel.add(btnMinColor, "cell 1 3,growy");
 		
+		comboBox = new JComboBox();
+		comboBox.setModel(new DefaultComboBoxModel(new BlendingMode[] {BlendingMode.ADD, BlendingMode.NORMAL}));
+		comboBox.setToolTipText("Blending mode");
+		panel.add(comboBox, "cell 0 4,growx");
+		
+		txtAlphaBlending = new JTextField();
+		txtAlphaBlending.setToolTipText("Alpha (transparency) for the chosen blending mode.");
+		txtAlphaBlending.setHorizontalAlignment(SwingConstants.RIGHT);
+		txtAlphaBlending.setText("1");
+		panel.add(txtAlphaBlending, "flowx,cell 1 4,alignx left");
+		txtAlphaBlending.setColumns(5);
+		
+		lblAlpha = new JLabel("alpha (0-1)");
+		panel.add(lblAlpha, "cell 1 4");
+		
 		panel_1 = new JPanel();
-		getPnContent().add(panel_1, "cell 0 1,grow");
+		getPnContent().add(panel_1, "cell 1 1,grow");
 		panel_1.setLayout(new BorderLayout(0, 0));
 		
 		tabbedPaintScales = new JTabbedPane(JTabbedPane.TOP);
@@ -198,6 +216,9 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 
 		getBtnMinColor().addColorChangedListener(ccl);
 		
+		getComboBlend().addItemListener(il);
+		getTxtAlphaBlending().getDocument().addDocumentListener(dl);
+		
 		this.al = al;
 		this.cl = cl; 
 		this.dl = dl;
@@ -216,7 +237,12 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	@Override
 	public void setAllViaExistingSettings(SettingsImageOverlay sett) { 
 		ImageLogicRunner.setIS_UPDATING(false);
-
+		
+		// blend
+		BlendComposite blend = sett.getBlend();
+		getComboBlend().setSelectedItem(blend.getMode());
+		getTxtAlphaBlending().setText(formatPercentNumber(blend.getAlpha()));
+		
 		//rb
 		SettingsPaintScale ps = sett.getSettPaintScale(0);
 		if(ps!=null) {
@@ -246,11 +272,16 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	public SettingsImageOverlay writeAllToSettings(SettingsImageOverlay sett) {
 		if(sett!=null) {
 			try {
+				// blend
+				BlendComposite blend = BlendComposite.getInstance((BlendingMode) getComboBlend().getSelectedItem(), floatFromTxt(getTxtAlphaBlending())) ;
+				sett.setBlend(blend);
+				
 				boolean inverted = getCbInvert().isSelected();
 				boolean black = getCbBlackAsMax().isSelected();
 				boolean white = getCbWhiteAsMin().isSelected();
 				int levels = intFromTxt(getTxtLevels());
 				
+				// paint scales
 				for(int i=0; i<modPSList.length; i++) {
 					SettingsPaintScale ps = sett.getSettPaintScale(i);
 					modPSList[i].writeAllToSettings(ps);
@@ -275,6 +306,9 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	private String formatPercentNumber(double in) {
 		return formatPerc.format(in);
 	}
+	private String formatPercentNumber(float in) {
+		return formatPerc.format(in);
+	}
 	//################################################################################################
 	// GETTERS AND SETTERS 
 	public JTextField getTxtLevels() {
@@ -291,5 +325,11 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	}
 	public JCheckBox getCbBlackAsMax() {
 		return cbBlackAsMax;
+	}
+	public JTextField getTxtAlphaBlending() {
+		return txtAlphaBlending;
+	}
+	public JComboBox getComboBlend() {
+		return comboBox;
 	}
 }

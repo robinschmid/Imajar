@@ -307,7 +307,7 @@ public class ImageLogicRunner {
 	 * opens a dialog. if ok -> change all settings of all images to current settings
 	 * Copy settings!
 	 */
-	protected void applySettingsToAllImagesInList() {
+	public void applySettingsToAllImagesInList() {
 		boolean state = DialogLoggerUtil.showDialogYesNo(window, "Change settings of all images in list?", "Attention: You are about to replace all settings of all images! Ok?");
 		if(state && getSelectedImage()!=null) {
 			// current settings as image 

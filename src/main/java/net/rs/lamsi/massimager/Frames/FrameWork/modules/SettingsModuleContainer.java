@@ -1,11 +1,13 @@
 package net.rs.lamsi.massimager.Frames.FrameWork.modules;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -33,13 +35,22 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 
 	// panel for settings
 	protected JPanel gridsettings;
+
+	private JPanel pnTitleSettings;
+	private JCheckBox cbAuto;
 	
 	// list of all Modules
 	protected Vector<Module> listSettingsModules = new Vector<Module>();
 
 	public SettingsModuleContainer(String title, boolean westside, Class settc, Class objclass) { 
 		super(title, westside, settc, objclass);
-		
+
+		// add buttons to this module
+		pnTitleSettings = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
+		flowLayout.setHgap(4);
+		flowLayout.setVgap(0);
+		this.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -50,9 +61,15 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 		gridsettings.setAlignmentY(0.0f);
 		gridsettings.setAlignmentX(0.0f);
 		scrollPane.setViewportView(gridsettings);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(25);
 		gridsettings.setLayout(new BoxLayout(gridsettings, BoxLayout.Y_AXIS));
 	}
-	
+	public SettingsModuleContainer(String title, boolean westside, Class settc, Class objclass, boolean addAutoUpdate) { 
+		this(title, westside, settc, objclass);
+		cbAuto = new JCheckBox("auto");
+		cbAuto.setSelected(true);
+		pnTitleSettings.add(cbAuto);
+	}	
 	/**
 	 * add the module to the current layout of the panel and to the list of modules
 	 * @param mod
@@ -175,5 +192,21 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 				}
 			}
 			super.setCurrentImage(img);
+		}
+		
+		
+
+		public JCheckBox getcbAutoUpdating() {
+			return cbAuto;
+		}
+		public boolean isAutoUpdating() {
+			return cbAuto.isSelected();
+		}
+		public void setAutoUpdating(boolean state) {
+			cbAuto.setSelected(false);
+		}
+
+		public JPanel getPnTitleCenter() {
+			return pnTitleSettings;
 		}
 }

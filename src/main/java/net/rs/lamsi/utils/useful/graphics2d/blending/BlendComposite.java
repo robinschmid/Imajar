@@ -773,4 +773,8 @@ public final class BlendComposite implements Composite {
                                                composite.getMode().name());
         }
     }
+
+    public static BlendComposite valueOf(String str) {
+    	return new BlendComposite(BlendingMode.valueOf(str));
+    }
 }

@@ -2,22 +2,20 @@ package net.rs.lamsi.massimager.Heatmap;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
-import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYBoxAnnotation;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
@@ -42,7 +40,7 @@ public class Heatmap {
 	// stats
 	private boolean isShowingSelectedExcludedRects = false, isShowingBlankMinMax = false;
 	// list of annotations for later removing 
-	private Vector<XYBoxAnnotation> selected, excluded;
+	private ArrayList<XYShapeAnnotation> annSelections;
 	
 	// blank domain marker for lower and upper bound
 	private ValueMarker lowerMarker, upperMarker;
@@ -158,26 +156,24 @@ public class Heatmap {
 		if(isImage2D()) { // TODO
 			Image2D image = (Image2D) this.image;
 			// remove all annotations
-			for(XYBoxAnnotation a : selected)
+			for(XYShapeAnnotation a : annSelections)
 				plot.removeAnnotation(a, false);
-			for(XYBoxAnnotation a : excluded)
-				plot.removeAnnotation(a, false);
-			selected.removeAllElements();
-			excluded.removeAllElements();
 			// add them
 			if(isShowingSelectedExcludedRects) {
-				for(RectSelection r : image.getSelectedData()) {  
-					XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
-															image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1,r.getMaxX()+1),  new BasicStroke(1.5f), Color.BLACK);
-					selected.add(box);
-					plot.addAnnotation(box, false);
+				annSelections.clear();
+				
+				ArrayList<SettingsShapeSelection> selections = image.getSettings().getSettSelections().getSelections();
+				if(selections!=null) {
+					for (Iterator iterator = selections.iterator(); iterator.hasNext();) {
+						SettingsShapeSelection sel = (SettingsShapeSelection) iterator.next();
+						XYShapeAnnotation ann = sel.createXYShapeAnnotation();
+						annSelections.add(ann);
+						plot.addAnnotation(ann, false);
+					}
 				}
-				for(RectSelection r : image.getExcludedData()) {
-					XYBoxAnnotation box = new XYBoxAnnotation(image.getX(false, r.getMinY(), r.getMinX()), image.getY(false, r.getMinY(), r.getMinX()), 
-							image.getX(false, r.getMaxY()+1, r.getMaxX()+1), image.getY(false, r.getMaxY()+1, r.getMaxX()+1),  new BasicStroke(1.5f), Color.RED);
-					excluded.add(box);
-					plot.addAnnotation(box, false);
-				}
+			}
+			else {
+				annSelections = null;
 			}
 			// fire change event
 			chart.fireChartChanged();
@@ -191,9 +187,8 @@ public class Heatmap {
 	public void showSelectedExcludedRects(boolean show) {
 		isShowingSelectedExcludedRects = show;
 		// init
-		if(selected == null) {
-			selected = new Vector<XYBoxAnnotation>();
-			excluded = new Vector<XYBoxAnnotation>();
+		if(annSelections == null) {
+			annSelections = new ArrayList<XYShapeAnnotation>();
 		}
 		// update
 		updateSelectedExcludedRects();

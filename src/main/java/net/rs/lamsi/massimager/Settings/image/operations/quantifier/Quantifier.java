@@ -6,7 +6,6 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 
 public class Quantifier implements Serializable, IntensityProcessingChangedListener { 
 	private static final long serialVersionUID = 1L;
@@ -97,48 +96,48 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 	private void calcAverageIRects() {
 		//
 		averageI = 0;
-		int counter = 0;
-		 
-		if(mode==MODE_AVERAGE_BOXES && img.getSelectedData().size()>0) {
-			// loop through all rects
-			for(int r=0; r<img.getSelectedData().size(); r++) {
-				RectSelection rect = img.getSelectedData().get(r); 
-				// loop through all dp in rect
-				for(int l=rect.getMinY(); l<=rect.getMaxY(); l++) {
-					for(int i=rect.getMinX(); i<=rect.getMaxX(); i++) {
-						boolean isDouble = false;
-						// check if DP is in other rect
-						for(int old=0; old<r; old++) {
-							// do not double
-							if(img.getSelectedData().get(old).contains(i, l)) {
-								isDouble = true;
-								break;
-							}
-						}
-						// add
-						if(!isDouble && !img.isExcludedDP(l, i)) {
-							averageI += img.getI(useRawData,i, i);
-							counter ++;
-						}
-					} 
-				} 
-			}
-		}
-		else if(mode==MODE_AVERAGE_BOXES && img.getSelectedData().size()==0) {
-			// all dp except from excluded
-			// TODO this is wron... Lower Bound! is wrong
-			for(int l=0; l<img.getLineCount(lowerBound); l++) {
-				for (int i = 0; i < img.getLineLength(l); i++) { 
-					// add?
-					if(!img.isExcludedDP(l,i)) {
-						averageI += img.getI(useRawData,l, i);
-						counter ++;
-					}
-				}
-			}
-		}
-		if(counter>0)
-			averageI = averageI / counter;
+//		int counter = 0;
+//		 
+//		if(mode==MODE_AVERAGE_BOXES && img.getSelectedData().size()>0) {
+//			// loop through all rects
+//			for(int r=0; r<img.getSelectedData().size(); r++) {
+//				RectSelection rect = img.getSelectedData().get(r); 
+//				// loop through all dp in rect
+//				for(int l=rect.getMinY(); l<=rect.getMaxY(); l++) {
+//					for(int i=rect.getMinX(); i<=rect.getMaxX(); i++) {
+//						boolean isDouble = false;
+//						// check if DP is in other rect
+//						for(int old=0; old<r; old++) {
+//							// do not double
+//							if(img.getSelectedData().get(old).contains(i, l)) {
+//								isDouble = true;
+//								break;
+//							}
+//						}
+//						// add
+//						if(!isDouble && !img.isExcludedDP(l, i)) {
+//							averageI += img.getI(useRawData,i, i);
+//							counter ++;
+//						}
+//					} 
+//				} 
+//			}
+//		}
+//		else if(mode==MODE_AVERAGE_BOXES && img.getSelectedData().size()==0) {
+//			// all dp except from excluded
+//			// TODO this is wron... Lower Bound! is wrong
+//			for(int l=0; l<img.getLineCount(lowerBound); l++) {
+//				for (int i = 0; i < img.getLineLength(l); i++) { 
+//					// add?
+//					if(!img.isExcludedDP(l,i)) {
+//						averageI += img.getI(useRawData,l, i);
+//						counter ++;
+//					}
+//				}
+//			}
+//		}
+//		if(counter>0)
+//			averageI = averageI / counter;
 		 
 	}
 	/**

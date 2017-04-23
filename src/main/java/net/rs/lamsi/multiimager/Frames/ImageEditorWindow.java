@@ -15,6 +15,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.Serializable;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -151,7 +152,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	
 	
 	private JPanel pnCenterImageView;	
-	private JCheckBox cbAuto;
 	private JPanel east;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JRadioButtonMenuItem menuRbImagingAnalysis;
@@ -535,35 +535,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		modImageOverlay = new ModuleImageOverlay(this);
 		modImageOverlay.setVisible(false);
 		
-
-		// add buttons to this module
-		JPanel pnTitleSettings = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
-		flowLayout.setHgap(4);
-		flowLayout.setVgap(0);
-		modImage2D.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
-		modImageOverlay.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
-
-		JButton btnApplySettingsToAll = new JButton("apply to all");
-		btnApplySettingsToAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				logicRunner.applySettingsToAllImagesInList();
-			}
-		});
-		pnTitleSettings.add(btnApplySettingsToAll);
-
-		JButton btnUpdate = new JButton("update");
-		btnUpdate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				writeAllSettingsFromModules(false);
-			}
-		});
-		pnTitleSettings.add(btnUpdate);
-
-		cbAuto = new JCheckBox("auto");
-		cbAuto.setSelected(true);
-		pnTitleSettings.add(cbAuto);
-		
 		// split pane
 		splitPane = new JSplitPane(); 
 		pnNorthContent.add(splitPane, BorderLayout.CENTER);
@@ -790,39 +761,39 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		autoActionL = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(false);
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(false);
 			}
 		};
 		autoColorChangedL = new ColorChangedListener() { 
 			@Override
 			public void colorChanged(Color color) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(false); 
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(false); 
 			}
 		};
 		autoItemL = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(false);
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(false);
 			}
 		};
 		autoChangeL = new ChangeListener() { 
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(false); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
 			}
 		};
 		autoDocumentL = new DocumentListener() { 
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {  
-				if(getCbAuto().isSelected()) startAutoUpdater(false); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
 			} 
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(false); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
 			} 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(false); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
 			}
 		};
 		
@@ -832,39 +803,39 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		autoRepActionL = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(true);
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(true);
 			}
 		};
 		autoRepColorChangedL = new ColorChangedListener() { 
 			@Override
 			public void colorChanged(Color color) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(true); 
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(true); 
 			}
 		};
 		autoRepItemL = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(true);
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(true);
 			}
 		};
 		autoRepChangeL = new ChangeListener() { 
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(true); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
 			}
 		};
 		autoRepDocumentL = new DocumentListener() { 
 			@Override
 			public void removeUpdate(DocumentEvent arg0) {  
-				if(getCbAuto().isSelected()) startAutoUpdater(true); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
 			} 
 			@Override
 			public void insertUpdate(DocumentEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(true); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
 			} 
 			@Override
 			public void changedUpdate(DocumentEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(true); 
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
 			}
 		};
 		// add to MODULES TODO 
@@ -930,7 +901,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * @param checks whether to check for autoupdate or just do it (when false) 
 	 */ 
 	public void fireUpdateEvent(boolean checks) {
-		if(!checks || getCbAuto().isSelected()) {
+		if(!checks || isCbAutoUpdatingSelected()) {
 			writeAllSettingsFromModules(false);
 		}
 	}
@@ -938,7 +909,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * reads all settings from all modules
 	 * renews the heatmap that is shown --> update in modules
 	 */ 
-	private void writeAllSettingsFromModules(boolean repaintOnly) {
+	public void writeAllSettingsFromModules(boolean repaintOnly) {
 		// 
 		if(activeModuleContainer!=null) {
 			ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
@@ -973,8 +944,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * @param img
 	 */
 	public void setImage2D(Image2D img) { 
-		boolean isauto = cbAuto.isSelected();
-		cbAuto.setSelected(false); 
+		boolean isauto = modImageOverlay.isAutoUpdating();
+		modImageOverlay.setAutoUpdating(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
 		// show all modules for images
@@ -990,7 +961,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
-		cbAuto.setSelected(isauto);
+		modImageOverlay.setAutoUpdating(isauto);
 		
 		this.revalidate();
 	} 
@@ -999,8 +970,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * @param img
 	 */
 	public void setImageOverlay(ImageOverlay img) { 
-		boolean isauto = cbAuto.isSelected();
-		cbAuto.setSelected(false); 
+		boolean isauto = modImageOverlay.isAutoUpdating();
+		modImageOverlay.setAutoUpdating(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
 		// show all modules for ImageOverlays
@@ -1016,7 +987,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
-		cbAuto.setSelected(isauto);
+		modImageOverlay.setAutoUpdating(isauto);
 		
 		this.revalidate();
 	} 
@@ -1191,8 +1162,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 	//##########################################################################################
 	// GETTERS AND SETTERS
-	public JCheckBox getCbAuto() {
-		return cbAuto;
+	public boolean isCbAutoUpdatingSelected() {
+		return activeModuleContainer.isAutoUpdating();
 	}
 	public ImageLogicRunner getLogicRunner() {
 		return logicRunner;

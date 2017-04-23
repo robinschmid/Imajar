@@ -44,6 +44,17 @@ public class ChartLogics {
 		return new Point2D.Double(chartX, chartY);
 	}
     
+    /**
+	 * Translates screen values to plot values
+	 * @param myChart
+	 * @return width in data space for x and y
+	 */
+    public static Point2D screenValueToPlotValue(ChartPanel myChart, int val) {  
+    	Point2D p = mouseXYToPlotXY(myChart, 0, 0);
+    	Point2D p2 = mouseXYToPlotXY(myChart, val, val);
+		return new Point2D.Double(p2.getX()-p.getX(), p2.getY()-p.getY());
+	}
+    
     
     /**
      * 

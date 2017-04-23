@@ -26,6 +26,8 @@ import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
 import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
@@ -38,7 +40,6 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.DataMinMaxAvg;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 import org.jfree.chart.ChartFactory;
@@ -86,12 +87,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	protected double maxZFiltered = -1;
 	// store total dp count 
 	protected int totalDPCount = -1;
-
-	// Selected data stored in rectangles:
-	// for use as external standard
-	protected Vector<RectSelection> selectedData = null;
-	protected Vector<RectSelection> excludedData = null;
-	protected Vector<RectSelection> infoData = null;
 
 	public Image2D() { 
 		super((new SettingsImage2D()));
@@ -201,12 +196,52 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public double getI(boolean raw, int l, int dp) { 
+		return getI(raw, true, l,dp);
+	}
+	/**
+	 * intensity values in respect to rotation reflection imaging mode
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getI(boolean raw, boolean useSettings, int l, int dp) { 
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
 
 		// get raw i
-		double i = getI(l, dp, settings.getSettImage().getImagingMode(), 
+		double i = !useSettings? getIRaw(l, dp) : getI(l, dp, settings.getSettImage().getImagingMode(), 
 				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
+
+		// TODO process intensity
+		if(raw || Double.isNaN(i)) return i;
+		else {
+			// TODO dead end / replace!
+			// subtract blank and apply IS
+			if(settings.getOperations()!=null) {
+				i = settings.getOperations().calcIntensity(this, l, dp, i);
+			}
+			// quantify
+			if(settings.getQuantifier()!=null && settings.getQuantifier().isActive())  {
+				i = settings.getQuantifier().calcIntensity(this, l, dp, i); 
+			}
+			return i;
+		}
+	}
+	
+	/**
+	 * intensity values in respect to rotation reflection imaging mode
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getIRaw(boolean raw, int l, int dp) { 
+		// check for update in parent i processing
+		checkForUpdateInParentIProcessing();
+
+		// get raw i
+		double i = getIRaw(l, dp);
 
 		// TODO process intensity
 		if(raw || Double.isNaN(i)) return i;
@@ -262,9 +297,11 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * blank reduced, internal standard normalization and quantification
 	 * @param l
 	 * @param dp
-	 * @return
+	 * @return the intensity or Double.NaN if out of data space
 	 */
 	public double getIRaw(int l, int dp) {  
+		if(l<0 || dp<0 || l>=data.getLinesCount() || dp>=data.getLineLength(l))
+			return Double.NaN;
 		return data.getI(index, l, dp); 
 	}
 
@@ -514,9 +551,11 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public XYIData2D toXYIArray(boolean raw, boolean useSettings) {
-		if(useSettings)
-			return toXYIArray(raw, settings.getSettImage().getImagingMode(), settings.getSettImage().getRotationOfData(), 
-					settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical() );
+		if(useSettings) {
+			SettingsGeneralImage s = settings.getSettImage();
+			return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), 
+					s.isReflectHorizontal(), s.isReflectVertical() );
+		}
 		else return toXYIArrayNoRot();
 	}
 
@@ -557,16 +596,25 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		int lines = getMaxLineCount();
 		int maxdp = getMaxDP();
 		int currentdp = 0;
+		
+		// uses rotation
+		boolean usesRot = !(imgMode==IMAGING_MODE.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false);
 
 		for(int iy=0; iy<lines; iy++) {
 			for(int ix=0; ix<maxdp; ix++) {
 				// x = time; NOT distance;  
 				// iy,ix are out of range? --> x is -1
-				double tmp = getI(raw, iy, ix);
+				double tmp = getI(raw, usesRot, iy, ix);
 				if(!Double.isNaN(tmp)) {
 					z[currentdp] = tmp;
-					y[currentdp] = Double.valueOf(String.valueOf((getY(raw, iy, ix))));
-					x[currentdp] = Double.valueOf(String.valueOf(getX(raw, iy, ix)));
+					if(usesRot) {
+						y[currentdp] = Double.valueOf(String.valueOf((getY(raw, iy, ix))));
+						x[currentdp] = Double.valueOf(String.valueOf(getX(raw, iy, ix)));
+					}
+					else {
+						y[currentdp] = Double.valueOf(String.valueOf((getYRaw(raw, iy))));
+						x[currentdp] = Double.valueOf(String.valueOf(getXRaw(raw, iy, ix)));
+					}
 					currentdp++;
 				}
 			} 
@@ -1707,16 +1755,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			internalQ.getImgIS().getSettings().getOperations().setBlankQuantifier(settings.getOperations().getBlankQuantifier());
 			internalQ.getImgIS().fireIntensityProcessingChanged();
 		}
-	}
-	public Vector<RectSelection> getSelectedData() {
-		if(selectedData==null)
-			selectedData = new Vector<RectSelection>();
-		return selectedData;
-	}
-	public void setSelectedData(Vector<RectSelection> selectedData) {
-		this.selectedData = selectedData;
-		fireIntensityProcessingChanged();
-	}
+	} 
 	public Image2D getParent() {
 		return parent;
 	}
@@ -1740,16 +1779,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		}
 		// set parent 
 		this.parent = parent;
-	}
-	public Vector<RectSelection> getExcludedData() {
-		if(excludedData==null)
-			excludedData = new Vector<RectSelection>();
-		return excludedData;
-	}
-	public void setExcludedData(Vector<RectSelection> excludedData) {
-		this.excludedData = excludedData;
-		fireIntensityProcessingChanged();
-	}
+	} 
 	/**
 	 * Sums up the total dp count
 	 * @return
@@ -1764,11 +1794,15 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 */
 	public int getSelectedDPCount(boolean excluded) {
 		int counter = 0;
-		for(int l=0; l<data.getLinesCount(); l++) { 
-			for(int dp = 0; dp<data.getLineLength(l); dp++) {
-				if((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) 
+		//
+		int lines = getMaxLineCount();
+		int maxdp = getMaxDP();
+
+		for(int y=0; y<lines; y++) {
+			for(int x=0; x<maxdp; x++) {
+				if((!excluded || !isExcludedDP(y,x)) && isSelectedDP(y,x))
 					counter++;
-			}
+			} 
 		}
 		return counter;
 	}
@@ -1847,7 +1881,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public boolean isInBounds(int l, int dp) {
-		return l<0 || l>=getLineCount(dp) || dp<0 || dp>=getLineLength(l);
+		return !(l<0 || l>=getLineCount(dp) || dp<0 || dp>=getLineLength(l));
 	}
 
 	/**
@@ -1858,19 +1892,20 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 */
 	public boolean isExcludedDP(int l, int dp) { 
 		// out of bounds
-		if(isInBounds(l,dp))
+		if(!isInBounds(l,dp))
 			return true;
-		//
-		if(getExcludedData()==null || getExcludedData().size()==0)
+		
+		// no exculsion rects?
+		SettingsSelections sel = settings.getSettSelections();
+		if(!sel.hasExclusions())
 			return false;
-		// check if its in a exclude rect
-		for(RectSelection e : this.getExcludedData()) {
-			// set to isDouble to prevent adding
-			if(e.contains(dp, l)) {
-				return true; 
-			}
-		}
-		return false;
+		
+		// coordinates
+		float x = getX(false, l, dp);
+		float y = getY(false, l, dp);
+		
+		// check if dp coordinates are in an exclude rect
+		return sel.isExcluded(x,y);
 	}
 
 	/**
@@ -1880,16 +1915,21 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public boolean isSelectedDP(int l, int dp) {
-		if(selectedData==null || selectedData.size()==0)
+		// out of bounds
+		if(!isInBounds(l,dp))
+			return false;
+		// no selection rects?
+		SettingsSelections sel = settings.getSettSelections();
+		if(!sel.hasSelections())
 			return true;
-		// check if its in a selected rect
-		for(RectSelection e : this.getSelectedData()) {
-			// set to isDouble to prevent adding
-			if(e.contains(dp, l)) {
-				return true; 
-			}
+		else {
+			// coordinates
+			float x = getX(false, l, dp);
+			float y = getY(false, l, dp);
+			
+			// check if dp coordinates are in an sel rect
+			return sel.isSelected(x, y, false);
 		}
-		return false; 
 	}
 
 	/**
@@ -1900,108 +1940,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 */
 	public boolean isDP(int l, int dp) {
 		return !Double.isNaN(getI(true,l,dp));
-	}
-
-
-	// #############################################################################
-	// rectangle selections
-
-
-	public int countSelectedNonExcludedDPInRect(RectSelection rect) {
-		int size = 0; 
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) { 
-				if(!isExcludedDP(y, x))
-					size++;
-			}
-		}
-		return size;
-	}
-	/**
-	 * returns the intensity array for this rect
-	 * @param rect 
-	 * @return
-	 */
-	public double[] getIRect(RectSelection rect, boolean raw) {
-		int size = rect.getWidth()*rect.getHeight();
-
-		if(rect.getMode()==SelectionMode.SELECT)
-			size = countSelectedNonExcludedDPInRect(rect);
-
-		double[] i = new double[size];
-		//TODO sort in ar right way
-		int counter = 0;
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=SelectionMode.SELECT || !isExcludedDP(y, x)) {
-					i[counter] = getI(raw, y, x);
-					counter++;
-				}
-			}
-		}
-		return i;
-	}
-
-	/**
-	 * returns the 2d intensity array for this rect
-	 * @param rect 
-	 * @return data[row][column] (missing values as null)
-	 */
-	public Double[][] getIRect2D(RectSelection rect, boolean raw) {
-		Double[][] i = new Double[rect.getHeight()][rect.getWidth()];
-		//TODO sort in ar right way        
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=SelectionMode.SELECT || !isExcludedDP(y, x))
-					i[y-rect.getMinY()][x-rect.getMinX()] = getI(raw, y, x);
-			}
-		}
-		return i;
-	}
-
-	/**
-	 * min max avg in this rect
-	 * @param rect
-	 * @return
-	 */
-	public DataMinMaxAvg analyzeDataInRect(RectSelection rect, boolean raw) {
-		// get data
-		double[] dat = getIRect(rect, raw);
-		// calc min max avg
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
-		double avg = 0;
-		for(double d : dat) {
-			if(d<min) min = d;
-			if(d>max) max = d;
-			avg += d;
-		}
-		avg = avg/(dat.length);
-		// stdev 
-		double stdev = 0;
-
-		for(double d : dat) {
-			stdev += Math.pow(d-avg, 2);
-		}
-		// calc stdev
-		stdev = Math.sqrt(stdev/(dat.length-1));
-		// return 
-		return new DataMinMaxAvg(min, max, avg, stdev);
-	}
-
-	/**
-	 * returns the intensity of the perc data point
-	 * @param rect
-	 * @param perc between 0 and 1.0
-	 * @return
-	 */
-	public double analyzePercentile(RectSelection rect, boolean raw, double perc) { 
-		double[] i = getIRect(rect, raw);
-		if(i!=null && i.length>0) {
-			Arrays.sort(i);
-			return i[(int)((i.length-1)*perc)];
-		}
-		else return -1;
 	}
 
 	//
@@ -2033,14 +1971,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 				return false;
 
 		return true;
-	}
-	public Vector<RectSelection> getInfoData() {
-		if(infoData==null)
-			infoData = new Vector<RectSelection>();
-		return infoData;
-	}
-	public void setInfoData(Vector<RectSelection> infoData) {
-		this.infoData = infoData;
 	}
 
 
