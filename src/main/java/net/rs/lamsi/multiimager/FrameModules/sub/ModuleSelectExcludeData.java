@@ -117,7 +117,6 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 	@Override
 	public void setCurrentImage(Image2D img) {
 		// TODO Auto-generated method stub
-		System.out.println("IMAGE WAS SET TO SELECT MODULE");
 		super.setCurrentImage(img);
 	}
 	

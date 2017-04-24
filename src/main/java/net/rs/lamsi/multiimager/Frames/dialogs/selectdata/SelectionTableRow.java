@@ -15,7 +15,7 @@ public class SelectionTableRow implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	private SelectionMode mode;
-	private ChartPanel histo;
+	private transient ChartPanel histo;
 
 	// only used for stats calculation 
 	// use finalise to free this list

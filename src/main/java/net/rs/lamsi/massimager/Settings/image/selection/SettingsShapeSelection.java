@@ -2,6 +2,7 @@ package net.rs.lamsi.massimager.Settings.image.selection;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -9,8 +10,12 @@ import java.awt.geom.Rectangle2D;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 import org.jfree.chart.annotations.XYShapeAnnotation;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.plot.XYPlot;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -38,7 +43,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	protected SelectionTableRow stats;
 	protected SelectionTableRow statsRegardingExclusion;
 
-	protected Image2D currentImg;
+	protected transient Image2D currentImg;
 
 	// the Shape
 	protected T shape;
@@ -282,13 +287,24 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 			c = Color.RED;
 			break;
 		case SELECT:
-			c = Color.BLACK;
+			c = Color.GREEN;
 			break;
 		case INFO:
 			c = Color.gray;
 			break;
 		} 
-		return new XYShapeAnnotation(this.getShape(), stroke, c);
+		return new XYShapeAnnotation(this.getShape(), stroke, c) {
+			@Override
+			public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea,
+					ValueAxis domainAxis, ValueAxis rangeAxis,
+					int rendererIndex, PlotRenderingInfo info) {
+				// set blendComposite
+				g2.setComposite(BlendComposite.Difference);
+				super.draw(g2, plot, dataArea, domainAxis, rangeAxis, rendererIndex, info);
+				g2.setComposite(BlendComposite.Normal);
+				// 
+			}
+		};
 	}
 
 	/**

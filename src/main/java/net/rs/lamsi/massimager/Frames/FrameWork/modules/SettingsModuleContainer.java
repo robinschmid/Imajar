@@ -23,6 +23,7 @@ import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 /**
  * holds multiple Collectable2DSettingsModules or HeatmapSettingsModules or basic Modules
@@ -184,11 +185,13 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 		
 		@Override 
 		public void setCurrentImage(S img) {
+			DebugStopWatch debug = new DebugStopWatch();
 			for(Module m : listSettingsModules) {
 				if(Collectable2DSettingsModule.class.isInstance(m)) {
 					Collectable2DSettingsModule sm = ((Collectable2DSettingsModule)m);
-					
+					debug.setNewStartTime();
 					sm.setCurrentImage(img);
+					ImageEditorWindow.log("TIME: "+debug.stop()+"   FOR setCurrentImage in "+sm.getClass(), LOG.DEBUG);
 				}
 			}
 			super.setCurrentImage(img);
@@ -203,7 +206,7 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 			return cbAuto.isSelected();
 		}
 		public void setAutoUpdating(boolean state) {
-			cbAuto.setSelected(false);
+			cbAuto.setSelected(state);
 		}
 
 		public JPanel getPnTitleCenter() {

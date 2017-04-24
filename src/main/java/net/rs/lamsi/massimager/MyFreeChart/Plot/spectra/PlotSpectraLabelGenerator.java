@@ -107,7 +107,6 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 			int charge = calcChargeByIsotopePattern(dataset, series, item);
 			if(charge!=0) {
 				label = "z="+charge + "\n" + label;
-				System.out.println(label);
 			}
 		}
 		//

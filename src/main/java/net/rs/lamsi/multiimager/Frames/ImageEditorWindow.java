@@ -15,7 +15,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.Serializable;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -43,6 +42,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -57,7 +57,6 @@ import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
@@ -73,9 +72,6 @@ import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
@@ -85,6 +81,7 @@ import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.WindowStyleUtil;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.data.Range;
@@ -633,6 +630,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 		txtLog = new JTextPane();
 		scrollPane_1.setViewportView(txtLog);
+		DefaultCaret caret = (DefaultCaret) txtLog.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 		JLabel lblLog = new JLabel("Log");
 		pnLog.add(lblLog, BorderLayout.NORTH);
@@ -944,8 +943,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * @param img
 	 */
 	public void setImage2D(Image2D img) { 
-		boolean isauto = modImageOverlay.isAutoUpdating();
-		modImageOverlay.setAutoUpdating(false); 
+		boolean isauto = modImage2D.isAutoUpdating();
+		modImage2D.setAutoUpdating(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
 		// show all modules for images
@@ -957,11 +956,13 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		east.add(activeModuleContainer, BorderLayout.CENTER);
 		
 		// set
+		DebugStopWatch debug = new DebugStopWatch();
 		modImage2D.setCurrentImage(img); 
+		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all modules ", LOG.DEBUG);
 		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
-		modImageOverlay.setAutoUpdating(isauto);
+		modImage2D.setAutoUpdating(isauto);
 		
 		this.revalidate();
 	} 
@@ -983,7 +984,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		east.add(activeModuleContainer, BorderLayout.CENTER);
 		
 		// set
+		DebugStopWatch debug = new DebugStopWatch();
 		modImageOverlay.setCurrentImage(img); 
+		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all OVERLAY modules "+debug.stop(), LOG.DEBUG);
 		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
@@ -1095,13 +1098,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	
 	//##########################################################################################
 	// LOGGER
+/**
+ * if debugging is activated
+ * @return
+ */
+	public static boolean isDebugging() { 
+		return getEditor().getCbDebug().isSelected();
+	}
 	/**
 	 * prints a message to the log 
 	 * @param s
 	 * @param mode LOG is in this class
 	 */
 	public static void log(String s, LOG mode) {
-		if(txtLog!=null && isLogging() && getEditor()!=null && !(mode==LOG.DEBUG && !getEditor().getCbDebug().isSelected())) {
+		if(txtLog!=null && isLogging() && getEditor()!=null && !(mode==LOG.DEBUG && !isDebugging())) {
 			try {
 				StyledDocument doc = txtLog.getStyledDocument();
 				if(styleWarning==null) {
@@ -1260,4 +1270,5 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public AspectRatioListener getAspectRatioListener() {
 		return aspectRatioListener;
 	}
+
 }

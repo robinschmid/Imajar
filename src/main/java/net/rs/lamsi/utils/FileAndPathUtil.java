@@ -172,9 +172,6 @@ public class FileAndPathUtil {
     	     } catch(SecurityException se){
     	        //handle it
     	     }        
-    	     if(result) {    
-    	       System.out.println("DIR created");  
-    	     } 
     	     return result;
     	  }
     	  else return true;
@@ -196,7 +193,6 @@ public class FileAndPathUtil {
 	                int n2 = extractNumber(o2.getName());
 	                return n1 - n2;
 				} catch (Exception e) {
-					System.err.println("NO NORMAL NUMBER FILE FORMAT - SORT LEXICO");
 					return o1.compareTo(o2);
 				}
             }

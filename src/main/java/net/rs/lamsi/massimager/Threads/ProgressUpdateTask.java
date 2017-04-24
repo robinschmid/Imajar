@@ -21,7 +21,6 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 				if ("progress".equalsIgnoreCase(evt.getPropertyName())) {
 					int progress = (Integer) (evt.getNewValue())*10;
 					progressDialog.getProgressBar().setValue(progress);
-					System.out.println(String.format("Completed %d%% of task.\n", progress));
 				}
 			} 
 		});

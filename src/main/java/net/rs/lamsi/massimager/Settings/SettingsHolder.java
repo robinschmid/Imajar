@@ -333,7 +333,7 @@ public class SettingsHolder extends Settings {
 		for(Settings s : settList)
 			if(c.isAssignableFrom(s.getClass()))
 				return s;
-		System.err.println("FAILED TO get settings from SettingsHolder "+c.getName());
+		ImageEditorWindow.log("FAILED TO get settings from SettingsHolder "+c.getName(), LOG.DEBUG);
 		return null;
 	}
 
@@ -342,11 +342,11 @@ public class SettingsHolder extends Settings {
 			Class c = classList[i];
 			if(c.isAssignableFrom(newOne.getClass())) {
 				settList.set(i, newOne);
-				System.out.println("Set newOne settings: "+newOne.getClass().getName()+"   to: "+c.getName());
+				ImageEditorWindow.log("Set newOne settings: "+newOne.getClass().getName()+"   to: "+c.getName(), LOG.DEBUG);
 				return;
 			}
 		}
-		System.err.println("FAILED TO SET newOne in SettingsHolder "+newOne.getClass().getName());
+		ImageEditorWindow.log("FAILED TO SET newOne in SettingsHolder "+newOne.getClass().getName(), LOG.DEBUG);
 	}
 
 

@@ -1,5 +1,6 @@
 package net.rs.lamsi.massimager.Settings.image.selection;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -13,7 +14,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsSelections extends Settings {
+public class SettingsSelections extends Settings implements Serializable {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
@@ -23,7 +24,7 @@ public class SettingsSelections extends Settings {
 	// 
 	private boolean hasExclusions = false, hasSelections = false;
 
-	protected Image2D currentImg;
+	protected transient Image2D currentImg;
 
 	public SettingsSelections() {
 		super("SettingsSelection", "/Settings/Selections/", "setSelList"); 
@@ -261,6 +262,8 @@ public class SettingsSelections extends Settings {
 			}
 		}
 	}
+	
+	
 
 	/**
 	 * are exclusions present

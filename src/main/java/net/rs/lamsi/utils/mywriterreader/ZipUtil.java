@@ -38,7 +38,6 @@ public class ZipUtil {
                 byte[] uncompressedBytes = ((ByteArrayOutputStream) os).toByteArray();
                 inMemoryFiles.put(fileHeader.getFileName(), new ByteArrayInputStream(uncompressedBytes));
                 is.close();
-                System.out.println("DONE "+i);
             }
         } catch (ZipException | IOException ex) {
             ex.printStackTrace(System.err);

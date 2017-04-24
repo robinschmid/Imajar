@@ -86,7 +86,6 @@ public class FileTypeFilter extends FileFilter {
     		String tmp = getFileNameWithoutExtension(file)+"."+extension;
     		// EXT von File löschen und neu anfügen
     		File endfile = new File(file.getParent(), tmp);
-    		System.out.println("Save File as: "+endfile.getName()+" under "+endfile.getAbsolutePath());
     		return endfile; 
     	} 
     	// ansonsten das file zurückgeben 

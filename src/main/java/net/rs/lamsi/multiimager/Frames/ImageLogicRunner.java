@@ -41,6 +41,7 @@ import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 import org.jfree.chart.ChartPanel;
 
@@ -262,12 +263,20 @@ public class ImageLogicRunner {
 			//
 			selectedImage= c2d;
 			// Renew all Modules
-			if(Image2D.class.isInstance(c2d))
-				window.setImage2D((Image2D)c2d); 
-			else if(ImageOverlay.class.isInstance(c2d))
-				window.setImageOverlay((ImageOverlay)c2d); 
+			DebugStopWatch debug = new DebugStopWatch();
+			if(Image2D.class.isInstance(c2d)) {
+				window.setImage2D((Image2D)c2d);
+				ImageEditorWindow.log("setImage2D took "+debug.stop(), LOG.DEBUG);
+			}
+			else if(ImageOverlay.class.isInstance(c2d)) {
+				window.setImageOverlay((ImageOverlay)c2d);
+				ImageEditorWindow.log("setImageOverlay took "+debug.stop(), LOG.DEBUG);
+			}
+			
 			// create new heatmap
+			debug.setNewStartTime();
 			renewImage2DView();
+			ImageEditorWindow.log("renewImage2DView took "+debug.stop(), LOG.DEBUG);
 		}
 	}
 	/**
@@ -282,7 +291,10 @@ public class ImageLogicRunner {
 			try{  
 				ImageEditorWindow.log("Create Heatmap", LOG.DEBUG); 
 				// show heatmap in Center
+
+				DebugStopWatch debug = new DebugStopWatch();
 				currentHeat = heatFactory.generateHeatmap(selectedImage);
+				ImageEditorWindow.log("creating the heatmap took "+debug.stop(), LOG.DEBUG);
 				
 				ChartPanel myChart = currentHeat.getChartPanel(); 
 				myChart.setMouseWheelEnabled(true);  

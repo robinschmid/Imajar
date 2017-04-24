@@ -558,8 +558,6 @@ public class Image2DImportExportUtil {
 								case X_MATRIX_STANDARD:
 								case ONLY_Y:
 									if((sett.getStartLine()==0 || i+1>=sett.getStartLine())) {
-										if(line==187)
-											System.out.println("");
 										y[line].addElement(Double.valueOf(sep[i]));
 										line++;
 									}

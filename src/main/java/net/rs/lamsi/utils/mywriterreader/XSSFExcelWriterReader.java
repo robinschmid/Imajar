@@ -177,7 +177,6 @@ public class XSSFExcelWriterReader {
 		    FileOutputStream out = new FileOutputStream(file);
 		    wb.write(out); 
 		    out.close();
-		    System.out.println("Excel written successfully..");   
 		    return true;
 		} catch (FileNotFoundException e) {
 		    e.printStackTrace();

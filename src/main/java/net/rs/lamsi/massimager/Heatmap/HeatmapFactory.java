@@ -130,7 +130,6 @@ public class HeatmapFactory {
 		double deltaTime = overallTime/mzchrom.getItemCount();
 		// ist nur abgeschätzt
 		// Breite und Höhe fest definieren rundet bisher ab 
-		System.out.println("OverallTime = "+overallTime+ "   dT = "+deltaTime);
 		// XYZ anzahl ist definiert durch messwerte im MZChrom 
 		int scanpoints = mzchrom.getItemCount();
 		double[] x = new double[scanpoints];

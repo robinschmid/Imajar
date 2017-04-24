@@ -23,7 +23,6 @@ public abstract class ProgressUpdateTaskMonitor extends SwingWorker<Boolean, Voi
 				if ("progress".equalsIgnoreCase(evt.getPropertyName())) {
 					int progress = (int) (evt.getNewValue());
 					progressDialog.setProgress(progress);
-					System.out.println(String.format("Completed %d%% of task.\n", progress));
 				}
 			} 
 		});

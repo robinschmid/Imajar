@@ -47,6 +47,7 @@ import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.V
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
@@ -547,7 +548,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	private JCheckBox CbMaximumTransparent;
 	protected void setMinimumValuePercentage(double f, boolean force) {
 		if(((!(lastMinPercentage+0.001>f && lastMinPercentage-0.001<f)) || force)  && currentImage!=null) {
-			System.out.println("Setting Min % "+f);
+			ImageEditorWindow.log("Setting Min % "+f, LOG.DEBUG);
 			lastMinPercentage = f;
 			// apply to all perc. components 
 			getSliderMinimum().setValue((int)(f*1000));
@@ -568,7 +569,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	}
 	protected void setMaximumValuePercentage(double f, boolean force) {
 		if((force || ((!(lastMaxPercentage+0.001>f && lastMaxPercentage-0.001<f) || getTxtMaxPerc().getText().length()==0)))  && currentImage!=null) {
-			System.out.println("Setting max % "+f);
+			ImageEditorWindow.log("Setting max % "+f, LOG.DEBUG);
 			lastMaxPercentage = f;
 			// apply to all perc. components
 			getSliderMaximum().setValue((int)(f*1000));
@@ -580,7 +581,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	}
 	protected void setMaximumValue(double abs, boolean force) {
 		if((force || lastMax!=abs) && currentImage!=null) {
-			System.out.println("Setting max abs "+abs);
+			ImageEditorWindow.log("Setting max abs "+abs, LOG.DEBUG);
 			lastMax = abs;
 			// apply to all abs components
 			getTxtMaximum().setText(formatAbsNumber(abs));
@@ -796,7 +797,6 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		// new reseted ps
 		if(ps == null) {
-			System.out.println("NULL PAINTSCALE");
 			ps = new SettingsPaintScale();
 			ps.resetAll();
 		}
@@ -841,9 +841,9 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		this.getTxtMaxFilter().setText(formatPercentNumber(maxFilter));
 
 		// apply if min/max is not set
-		if(ps.getMaxIAbs(currentImage)==0 && ps.getMinIAbs(currentImage)==0 && ps.getModeMax().equals(ValueMode.PERCENTILE))
+		if(ps.getMaxIAbs(currentImage)==0 && ps.getModeMax().equals(ValueMode.PERCENTILE))
 			applyMaxFilter();
-		if(ps.getMaxIAbs(currentImage)==0 && ps.getMinIAbs(currentImage)==0 && ps.getModeMin().equals(ValueMode.PERCENTILE))
+		if(ps.getMinIAbs(currentImage)==0 && ps.getModeMin().equals(ValueMode.PERCENTILE))
 			applyMinFilter();
 
 		// set values and force!
