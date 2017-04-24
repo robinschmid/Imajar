@@ -1,11 +1,10 @@
 package net.rs.lamsi.massimager.Settings.image.selection;
 
-import java.awt.Polygon;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SHAPE;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 import org.apache.batik.ext.awt.geom.Polygon2D;
 import org.w3c.dom.Document;
@@ -21,6 +20,9 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 	public SettingsPolygonSelection(Image2D currentImage, SelectionMode mode, float x, float y) {
 		super(currentImage, mode, new Polygon2D());
 		shape.addPoint(x, y);
+	} 
+	public SettingsPolygonSelection(SelectionMode mode) {
+		super(mode, new Polygon2D());
 	} 
 
 	@Override
@@ -57,12 +59,14 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 	 */
 	@Override
 	protected void saveShapeToXML(Element elParent, Document doc, Polygon2D shape) {
+		elParent.setNodeValue(SHAPE.POLYGON.toString());
+		
 		String[] att = new String[shape.npoints*2];
 		Object[] val = new Object[shape.npoints*2];
 		
-		for(int i=0; i<shape.npoints; i+=2) {
-			att[i] = "x"+i;
-			att[i+1] = "y"+i;
+		for(int i=0; i<shape.npoints*2; i+=2) {
+			att[i] = "x"+i/2;
+			att[i+1] = "y"+i/2;
 
 			val[i] = shape.xpoints[i/2];
 			val[i+1] = shape.ypoints[i/2];

@@ -2,12 +2,11 @@ package net.rs.lamsi.massimager.Settings.image.selection;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -255,8 +254,8 @@ public class SettingsSelections extends Settings {
 				if(paramName.equals("SettingsShapeSelection")) {
 					if(selections==null)
 						selections = new ArrayList<SettingsShapeSelection>();
-					// TODO how to load from xml????
-					// set has exclude and hasSelections! TODO
+					// how to load from xml????
+					selections.add(SettingsShapeSelection.loadSettingsFromXML(nextElement, doc));
 				}
 				//				else if(paramName.equals("xrange.upper"))xu = doubleFromXML(nextElement);
 			}

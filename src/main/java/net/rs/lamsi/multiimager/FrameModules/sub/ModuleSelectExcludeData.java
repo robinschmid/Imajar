@@ -19,15 +19,13 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 
 public class ModuleSelectExcludeData extends Collectable2DSettingsModule<SettingsSelections, Image2D> { 
 	//
@@ -88,7 +86,7 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 			public void actionPerformed(ActionEvent e) {
 				// open dialog with image ex
 				if(currentImage!=null && currentImage.isImage2D()) {
-					Image2DSelectDataAreaDialog dialog = new Image2DSelectDataAreaDialog();
+					final Image2DSelectDataAreaDialog dialog = new Image2DSelectDataAreaDialog();
 					dialog.startDialog((Image2D) currentImage);
 					WindowAdapter wl = new WindowAdapter() {
 						@Override

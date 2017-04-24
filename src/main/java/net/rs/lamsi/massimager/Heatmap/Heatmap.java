@@ -156,8 +156,9 @@ public class Heatmap {
 		if(isImage2D()) { // TODO
 			Image2D image = (Image2D) this.image;
 			// remove all annotations
-			for(XYShapeAnnotation a : annSelections)
-				plot.removeAnnotation(a, false);
+			if(annSelections!=null)
+				for(XYShapeAnnotation a : annSelections)
+					plot.removeAnnotation(a, false);
 			// add them
 			if(isShowingSelectedExcludedRects) {
 				annSelections.clear();
@@ -236,5 +237,5 @@ public class Heatmap {
 
 	public void setScaleInPlot(ScaleInPlot scaleInPlot) {
 		setScaleInPlot(scaleInPlot);
-	} 
+	}
 }

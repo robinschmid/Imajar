@@ -1,5 +1,7 @@
 package net.rs.lamsi.general.datamodel.image.interf;
 
+import java.io.Serializable;
+
 import javax.swing.Icon;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -17,7 +19,9 @@ import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 
-public abstract class Collectable2D <T extends SettingsContainerSettings> {
+public abstract class Collectable2D <T extends SettingsContainerSettings>  implements Serializable {	 
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
 	
 
 	// image group: Multi dimensional data sets create an ImageGroupMD
@@ -27,7 +31,10 @@ public abstract class Collectable2D <T extends SettingsContainerSettings> {
 	// collectable2d settings
 	protected T settings;
 	
-	
+
+	public Collectable2D() {
+		
+	}
 	
 	public Collectable2D(T settings) {
 		super();

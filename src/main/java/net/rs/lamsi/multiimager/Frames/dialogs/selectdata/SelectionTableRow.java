@@ -1,20 +1,21 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 import org.jfree.chart.ChartPanel;
 
-public class SelectionTableRow {
+public class SelectionTableRow implements Serializable{
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
 
 	private SelectionMode mode;
 	private ChartPanel histo;
-	private Image2D img;
 
 	// only used for stats calculation 
 	// use finalise to free this list
@@ -26,9 +27,8 @@ public class SelectionTableRow {
 
 
 
-	public SelectionTableRow(Image2D img, SelectionMode mode, Shape shape) {
+	public SelectionTableRow(SelectionMode mode, Shape shape) {
 		super();
-		this.img = img;
 		this.mode = mode; 
 		this.shape = shape;
 	}
@@ -52,8 +52,8 @@ public class SelectionTableRow {
 	/**
 	 * final stats calculation after all data points were added via check
 	 */
-	public void calculateStatistics() {
-		if(data==null || data.size()==0)
+	public void calculateStatistics(Image2D img) {
+		if(img==null || data==null || data.size()==0)
 			return;
 		// create histo
 		// copy to double array
@@ -118,13 +118,6 @@ public class SelectionTableRow {
 	 */
 	public static Object[] getTitleArrayExport() {
 		return new Object[]{"Mode", "x0", "y0", "x1", "y1", "I min", "I max", "I avg", "I median", "I 99%","Stdev"};
-	}
-
-	public Image2D getImg() {
-		return img;
-	}
-	public void setImg(Image2D img) {
-		this.img = img;
 	}
 
 	public ChartPanel getHisto() {

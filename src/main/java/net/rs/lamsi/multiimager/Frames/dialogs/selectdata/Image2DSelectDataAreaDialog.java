@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -46,6 +45,8 @@ import net.rs.lamsi.massimager.Settings.image.selection.SettingsPolygonSelection
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsRectSelection;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SHAPE;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
@@ -59,18 +60,11 @@ import org.jfree.data.Range;
  
 
 public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener, MouseMotionListener {
-	// current shape is given by combobox TODO
-	private enum SHAPE {
-		RECT, ELIPSE, POLYGON, FREEHAND
-	}
 	
 	private enum KEY {
 		SHRINK, SHIFT, ENLARGE
 	}
-	// what to draw or do
-	public enum SelectionMode {
-		SELECT, EXCLUDE, INFO;
-	}
+	
 	private SelectionMode mode = SelectionMode.SELECT;
 	
 	// mystuff
@@ -115,6 +109,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		});
 	}
 
+	
 	/**
 	 * Create the frame.
 	 */

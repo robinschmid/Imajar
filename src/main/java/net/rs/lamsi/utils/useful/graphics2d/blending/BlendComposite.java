@@ -33,8 +33,12 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.io.Serializable;
 
-public final class BlendComposite implements Composite {
+public final class BlendComposite implements Composite, Serializable {	 
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
+	
     public enum BlendingMode {
         NORMAL,
         AVERAGE,

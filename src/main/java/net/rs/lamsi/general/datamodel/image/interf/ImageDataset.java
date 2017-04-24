@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.datamodel.image.interf;
 
+import java.io.Serializable;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
@@ -9,7 +10,9 @@ import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
  * @author Robin Schmid
  *
  */
-public abstract class ImageDataset {
+public abstract class ImageDataset  implements Serializable {	 
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
 	//############################################################
 	// listener
 	protected Vector<RawDataChangedListener> rawDataChangedListener;

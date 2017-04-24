@@ -27,19 +27,14 @@ import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperatio
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.DataMinMaxAvg;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 import org.jfree.chart.ChartFactory;

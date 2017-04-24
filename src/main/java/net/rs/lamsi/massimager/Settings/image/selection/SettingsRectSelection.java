@@ -3,7 +3,6 @@ package net.rs.lamsi.massimager.Settings.image.selection;
 import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,6 +13,9 @@ public class SettingsRectSelection extends SettingsShapeSelection<Rectangle2D.Fl
 	
 	public SettingsRectSelection(Image2D currentImage, SelectionMode mode, float x, float y, float w, float h) {
 		super(currentImage, mode, new Rectangle2D.Float(x, y, w, h));
+	} 
+	public SettingsRectSelection(SelectionMode mode) {
+		super(mode, new Rectangle2D.Float(0, 0, 0, 0));
 	} 
 
 	@Override
@@ -41,6 +43,7 @@ public class SettingsRectSelection extends SettingsShapeSelection<Rectangle2D.Fl
 	 */
 	@Override
 	protected void saveShapeToXML(Element elParent, Document doc, Rectangle2D.Float shape) {
+		elParent.setNodeValue(SHAPE.RECT.toString());
 		toXML(elParent, doc, "shape", "", new String[]{"x","y","w","h"}, 
 				new Object[]{shape.getX(), shape.getY(), shape.getWidth(), shape.getHeight()});
 	}

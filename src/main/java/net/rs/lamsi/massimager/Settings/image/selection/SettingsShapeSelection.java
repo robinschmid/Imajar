@@ -7,9 +7,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 
 import org.jfree.chart.annotations.XYShapeAnnotation;
@@ -18,11 +16,18 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.mysql.jdbc.interceptors.ServerStatusDiffInterceptor;
-
 public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
+	
+	// current shape is given by combobox TODO
+	public enum SHAPE {
+		RECT, ELIPSE, POLYGON, FREEHAND
+	}
+	// what to draw or do
+	public enum SelectionMode {
+		SELECT, EXCLUDE, INFO;
+	}
 
 	public static final BasicStroke stroke = new BasicStroke(1.5f);
 
@@ -43,9 +48,17 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 		this.shape = shape;
 		this.mode = mode;
 		this.currentImg = currentImage;
-		stats = new SelectionTableRow(currentImage, mode, shape);
-		statsRegardingExclusion = new SelectionTableRow(currentImage, mode, shape);
+		stats = new SelectionTableRow(mode, shape);
+		statsRegardingExclusion = new SelectionTableRow(mode, shape);
 	} 
+	
+	public SettingsShapeSelection(SelectionMode mode, T shape) {
+		super("SettingsShapeSelection", "/Settings/Selections/Shapes/", "setSelShape"); 
+		this.shape = shape;
+		this.mode = mode;
+		stats = new SelectionTableRow(mode, shape);
+		statsRegardingExclusion = new SelectionTableRow(mode, shape);
+	}
 
 	@Override
 	public void resetAll() {  
@@ -54,10 +67,36 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	public void setCurrentImage(Image2D img) {
 		if(img!=null && !img.equals(currentImg)) {
 			currentImg = img;
-			stats.setImg(currentImg);
-			statsRegardingExclusion.setImg(currentImg);
 		}
 	}
+	
+
+	/**
+	 * load settings instance from xml
+	 * @param parent element has information about the shape
+	 * @return
+	 */
+	public static SettingsShapeSelection loadSettingsFromXML(Element elParent, Document doc) {
+		SHAPE shape = SHAPE.valueOf(elParent.getTextContent());
+		SettingsShapeSelection s = null;
+		switch(shape) {
+		case RECT:
+			s = new SettingsRectSelection(SelectionMode.SELECT);
+			break;
+		case ELIPSE:
+			s = new SettingsElipseSelection(SelectionMode.SELECT);
+			break;
+		case POLYGON:
+			s = new SettingsPolygonSelection(SelectionMode.SELECT);
+			break;
+		}
+		if(s!=null) {
+			// load shape and mode
+			s.loadValuesFromXML(elParent, doc);
+		}
+		return s;
+	}
+	
 
 	/**
 	 * save shape to xml
@@ -71,9 +110,22 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 */
 	protected abstract T loadShapeFromXML(Element nextElement);
 
-
 	//##########################################################
 	// xml input/output
+
+	/**
+	 * saves settings and calls abstract appendSettingsValuesToXML
+	 * creates a new parent element for this settings class
+	 * @param elParent
+	 * @param doc
+	 */
+	@Override
+	public void appendSettingsToXML(Element elParent, Document doc) { 
+		Element elSett = doc.createElement(description);
+		elParent.appendChild(elSett);
+		appendSettingsValuesToXML(elSett, doc);
+	}
+	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		saveShapeToXML(elParent, doc, shape);
@@ -88,6 +140,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("shape")) setShape(loadShapeFromXML(nextElement));
+				else if(paramName.equals("selectionMode")) setMode(SelectionMode.valueOf(nextElement.getTextContent()));
 			}
 		}
 	}
@@ -173,8 +226,8 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 * final stats calculation after all data points were added via check
 	 */
 	public void calculateStatistics() {
-		stats.calculateStatistics();
-		statsRegardingExclusion.calculateStatistics();
+		stats.calculateStatistics(currentImg);
+		statsRegardingExclusion.calculateStatistics(currentImg);
 	}
 
 	/**

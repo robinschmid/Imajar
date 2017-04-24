@@ -4,7 +4,8 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SHAPE;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -15,6 +16,9 @@ public class SettingsElipseSelection extends SettingsShapeSelection<Ellipse2D.Fl
 	
 	public SettingsElipseSelection(Image2D currentImage, SelectionMode mode, float x, float y, float w, float h) {
 		super(currentImage, mode, new Ellipse2D.Float(x, y, w, h));
+	} 
+	public SettingsElipseSelection(SelectionMode mode) {
+		super(mode, new Ellipse2D.Float(0, 0, 0, 0));
 	} 
 
 	@Override
@@ -42,6 +46,7 @@ public class SettingsElipseSelection extends SettingsShapeSelection<Ellipse2D.Fl
 	 */
 	@Override
 	protected void saveShapeToXML(Element elParent, Document doc, Ellipse2D.Float shape) {
+		elParent.setNodeValue(SHAPE.ELIPSE.toString());
 		toXML(elParent, doc, "shape", "", new String[]{"x","y","w","h"}, 
 				new Object[]{shape.getX(), shape.getY(), shape.getWidth(), shape.getHeight()});
 	}

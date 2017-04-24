@@ -38,7 +38,6 @@ import net.rs.lamsi.multiimager.FrameModules.sub.quantifiertable.PnTableQuantifi
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.SelectionMode;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
 public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<SettingsImage2DQuantifier, Image2D> { 
