@@ -35,7 +35,6 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 			fireTableDataChanged();
 	}
 	public void removeRow(SettingsShapeSelection r, boolean update) { 
-		if(update)
 		removeRow(selections.getSelections().indexOf(r), update);
 	}
 	public void removeRow(int i, boolean update) {
@@ -43,7 +42,7 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 			selections.removeSelection(i, update);
 		// fire update
 		if(update)
-		fireTableRowsDeleted(i, i);
+			fireTableRowsDeleted(i, i);
 	} 
 	public void removeRows(int[] selectedRows) { 
 		for(int i=selectedRows.length-1; i>=0; i--) { 

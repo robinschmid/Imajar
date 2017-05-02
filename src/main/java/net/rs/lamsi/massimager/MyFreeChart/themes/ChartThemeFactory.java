@@ -6,25 +6,46 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 
-import org.jfree.chart.ChartTheme;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.ui.RectangleInsets;
 
 public class ChartThemeFactory { 
-	public static final int THEME_BNW_PRINT = 0, THEME_KARST = 1, THEME_DARKNESS = 2;
-	public static final int THEME_FOR_PRINT = 50, THEME_FOR_PRESENTATION = 51;
 	
-	protected static int standardTheme = THEME_BNW_PRINT;
+	public enum THEME {
+		// main themes
+		BNW_PRINT, KARST, DARKNESS, 
+		// separate options
+		FOR_PRINT, FOR_PRESENTATION;
+		
+		public static THEME getTheme(String ident) {
+			// integer?
+			try {
+				int i = Integer.parseInt(ident);
+				switch(i) {
+				case 0: return BNW_PRINT;
+				case 1: return KARST;
+				case 2: return DARKNESS;
+				case 50: return FOR_PRINT;
+				case 51: return FOR_PRESENTATION;
+				}
+			} catch(Exception ex) {
+			}
+			// else value of
+			return valueOf(ident);
+		}
+		
+	}
 
-	public static MyStandardChartTheme createChartTheme(int theme) {
+	// the standard to be applied to all new charts
+	protected static THEME standardTheme = THEME.BNW_PRINT;
+
+	public static MyStandardChartTheme createChartTheme(THEME theme) {
 		switch(theme) {
-		case THEME_BNW_PRINT:
+		case BNW_PRINT:
 			return createBlackNWhiteTheme(); 
-		case THEME_DARKNESS:
+		case DARKNESS:
 			return createDarknessTheme();  
-		case THEME_KARST:
+		case KARST:
 			return createKarstTheme(); 
 		}
 		return createBlackNWhiteTheme();
@@ -49,7 +70,7 @@ public class ChartThemeFactory {
 	}
 	
     public static MyStandardChartTheme createBlackNWhiteTheme() {
-    	MyStandardChartTheme theme = new MyStandardChartTheme(THEME_BNW_PRINT, "BnW");
+    	MyStandardChartTheme theme = new MyStandardChartTheme(THEME.BNW_PRINT, "BnW");
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 16));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
@@ -110,7 +131,7 @@ public class ChartThemeFactory {
      * @return The "Darkness" theme.
      */
     public static MyStandardChartTheme createDarknessTheme() {
-        MyStandardChartTheme theme = new MyStandardChartTheme(THEME_DARKNESS, "Darkness");
+        MyStandardChartTheme theme = new MyStandardChartTheme(THEME.DARKNESS, "Darkness");
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 20));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
@@ -167,7 +188,7 @@ public class ChartThemeFactory {
      * @return The "Darkness" theme.
      */
     public static MyStandardChartTheme createKarstTheme() {
-        MyStandardChartTheme theme = new MyStandardChartTheme(THEME_KARST, "Karst");
+        MyStandardChartTheme theme = new MyStandardChartTheme(THEME.KARST, "Karst");
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 20));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
@@ -223,7 +244,7 @@ public class ChartThemeFactory {
 	public static MyStandardChartTheme getStandardTheme() {
 		return createChartTheme(standardTheme);
 	}
-	public static void setStandardTheme(int theme) {
+	public static void setStandardTheme(THEME theme) {
 		standardTheme = theme;
 	}
 }

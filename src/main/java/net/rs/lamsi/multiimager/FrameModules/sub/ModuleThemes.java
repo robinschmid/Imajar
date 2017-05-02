@@ -4,61 +4,40 @@ package net.rs.lamsi.multiimager.FrameModules.sub;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Insets;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.awt.geom.Rectangle2D;
+import java.util.ResourceBundle;
 
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
+import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner.DefaultEditor;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
-import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
-import org.apache.batik.css.engine.value.FloatValue;
-import org.jfree.chart.ChartTheme;
 import org.jfree.chart.editor.ChartEditor;
 import org.jfree.chart.editor.ChartEditorManager;
-import org.jfree.chart.editor.DefaultChartEditorFactory;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.util.ResourceBundleWrapper;
-
-import javax.swing.SwingConstants;
-import javax.swing.JCheckBox;
-
-import java.awt.event.ItemEvent;
-import java.util.ResourceBundle;
-import java.awt.Font;
-
-import javax.swing.Box;
-import javax.swing.JSlider;
 
 public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Collectable2D> {
 	// mystuff
@@ -276,14 +255,14 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	private void addStandardThemesToMenu() { 
 		ModuleMenu menu = getPopupMenu();
 		menu.addSeparator();
-		addThemeToMenu(menu, (ChartThemeFactory.THEME_FOR_PRINT), "Print");
-		addThemeToMenu(menu, (ChartThemeFactory.THEME_FOR_PRESENTATION), "Presentation");
+		addThemeToMenu(menu, (THEME.FOR_PRINT), "Print");
+		addThemeToMenu(menu, (THEME.FOR_PRESENTATION), "Presentation");
 		menu.addSeparator();
-		addThemeToMenu(menu, (ChartThemeFactory.THEME_BNW_PRINT), "Black n White");
-		addThemeToMenu(menu, (ChartThemeFactory.THEME_DARKNESS), "Darkness");
-		addThemeToMenu(menu, (ChartThemeFactory.THEME_KARST), "Karst");
+		addThemeToMenu(menu, (THEME.BNW_PRINT), "Black n White");
+		addThemeToMenu(menu, (THEME.DARKNESS), "Darkness");
+		addThemeToMenu(menu, (THEME.KARST), "Karst");
 	}
-	private void addThemeToMenu(ModuleMenu menu, final int themeid, String title) { 
+	private void addThemeToMenu(ModuleMenu menu, final THEME themeid, String title) { 
 		JMenuItem item = new JMenuItem(title);
 		menu.addMenuItem(item);
 		item.addActionListener(new ActionListener() {  
@@ -291,8 +270,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 			public void actionPerformed(ActionEvent e) {
 				try {
 					SettingsThemes theme = null;
-					if(themeid==ChartThemeFactory.THEME_FOR_PRINT || themeid==ChartThemeFactory.THEME_FOR_PRESENTATION) {
-						applyChangeThemeForPrint(themeid==ChartThemeFactory.THEME_FOR_PRINT); 
+					if(themeid==THEME.FOR_PRINT || themeid==THEME.FOR_PRESENTATION) {
+						applyChangeThemeForPrint(themeid==THEME.FOR_PRINT); 
 					}
 					else {
 						theme = new SettingsThemes(themeid);

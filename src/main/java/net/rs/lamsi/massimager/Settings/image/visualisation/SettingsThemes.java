@@ -2,22 +2,21 @@ package net.rs.lamsi.massimager.Settings.image.visualisation;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.File;
 import java.text.NumberFormat;
 import java.util.Vector;
+
+import net.rs.lamsi.massimager.Heatmap.Heatmap;
+import net.rs.lamsi.massimager.Heatmap.ScaleInPlot;
+import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
+import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory.THEME;
+import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
+import net.rs.lamsi.massimager.Settings.Settings;
 
 import org.jfree.chart.JFreeChart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Heatmap.ScaleInPlot;
-import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
-import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
 
 public class SettingsThemes extends Settings {
 	// do not change the version!
@@ -82,7 +81,7 @@ public class SettingsThemes extends Settings {
 	 * example
 	 * @param theme example: ChartThemeFactory.THEME_KARST
 	 */
-	public SettingsThemes(int themeid) {
+	public SettingsThemes(THEME themeid) {
 		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
 		resetAll();
 		this.theme = ChartThemeFactory.createChartTheme(themeid);
@@ -522,10 +521,10 @@ public class SettingsThemes extends Settings {
 		theme.setPlotBackgroundPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), state? 0 : 255));
 		theme.setChartBackgroundPaint(new Color(cchart.getRed(), cchart.getGreen(), cchart.getBlue(), state? 0 : 255));
 	}
-	public int getID() { 
+	public THEME getID() { 
 		return theme.getID();
 	}
-	public void setID(int themeID) {
+	public void setID(THEME themeID) {
 		theme.setID(themeID);
 	}
 	

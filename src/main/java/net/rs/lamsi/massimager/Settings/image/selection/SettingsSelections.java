@@ -8,7 +8,11 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
+import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,7 +46,7 @@ public class SettingsSelections extends Settings implements Serializable {
 		selections.add(sel); 
 
 		hasSelections = hasSelections || sel.getMode().equals(SelectionMode.SELECT);
-		
+
 		if(sel.getMode().equals(SelectionMode.EXCLUDE)) {
 			hasExclusions = true;
 			// update all stats
@@ -78,7 +82,7 @@ public class SettingsSelections extends Settings implements Serializable {
 			}
 		}
 	}
-	
+
 	public void removeSelection(SettingsShapeSelection sel, boolean updateStats) {
 		if(selections!=null) {
 			removeSelection(selections.indexOf(sel), updateStats);
@@ -96,6 +100,9 @@ public class SettingsSelections extends Settings implements Serializable {
 	//##########################################################
 	// logic
 	public void setCurrentImage(Image2D img) {
+		setCurrentImage(img, true);
+	}
+	public void setCurrentImage(Image2D img, boolean checkUpdate) {
 		// update stats
 		boolean update = false;
 		if(img!=null && !img.equals(currentImg)) {
@@ -110,8 +117,11 @@ public class SettingsSelections extends Settings implements Serializable {
 				s.setCurrentImage(currentImg);
 			}
 		}
-		if(update)
+		if(update && checkUpdate)
 			updateStatistics();
+	}
+	public Image2D getCurrentImage() {
+		return currentImg;
 	}
 
 	/**
@@ -147,7 +157,7 @@ public class SettingsSelections extends Settings implements Serializable {
 			}
 		}
 	}
-	
+
 
 	/**
 	 * updates the statistics for one selection (use general update method if you want to update all)
@@ -170,6 +180,42 @@ public class SettingsSelections extends Settings implements Serializable {
 
 			// finalise the process?
 			s.calculateStatistics();
+		}
+	}
+
+
+	/**
+	 * updates the statistics for all selections
+	 * for export (keeps the data)
+	 */
+	public void updateStatistics() {
+		if(currentImg!=null && selections!=null && selections.size()>0) {
+			// TODO do statistics for all shape selections
+			XYIData2D data = currentImg.toXYIArray(false, true);
+			double[] x = data.getX();
+			double[] y = data.getY();
+			double[] z = data.getI();
+
+			// for each data point
+			for(int d=0; d<x.length; d++) {
+				boolean isExcluded = isExcluded((float)x[d], (float)y[d]); 
+
+				// check dp for all selected rects with exclude information
+				// and add to containing shapes
+				for(int i=0; i<selections.size(); i++) {
+					SettingsShapeSelection s = selections.get(i);
+
+					// check with the information that it is excluded
+					s.check(x[d],y[d],z[d], isExcluded);
+				}
+			}
+
+			// finalise the process?
+			for(int i=0; i<selections.size(); i++) {
+				SettingsShapeSelection s = selections.get(i);
+				// calculates statistics and frees memory
+				s.calculateStatistics();
+			}
 		}
 	}
 
@@ -262,8 +308,8 @@ public class SettingsSelections extends Settings implements Serializable {
 			}
 		}
 	}
-	
-	
+
+
 
 	/**
 	 * are exclusions present
@@ -292,7 +338,7 @@ public class SettingsSelections extends Settings implements Serializable {
 	public int count(SelectionMode select) {
 		if(selections==null)
 			return 0;
-		
+
 		int c = 0;
 		for (Iterator iterator = selections.iterator(); iterator.hasNext();) {
 			SettingsShapeSelection s = (SettingsShapeSelection) iterator.next();
@@ -300,5 +346,80 @@ public class SettingsSelections extends Settings implements Serializable {
 				c++;
 		}
 		return c;
+	}
+
+	/**
+	 * update on the run
+	 * save all to excel
+	 * 1 table
+	 * 2 selected, excluded data as array
+	 * 3 selected, excluded data as matrix
+	 * 4 each selection as matrix
+	 * @param xwriter
+	 * @param wb
+	 */
+	public void saveToExcel(XSSFExcelWriterReader xwriter, XSSFWorkbook wb) {
+		// write tableRows sheet
+		XSSFSheet shSummary = xwriter.getSheet(wb, "table"); 
+		XSSFSheet shArray= xwriter.getSheet(wb, "SelectExcl"); 
+		XSSFSheet shSelMat = xwriter.getSheet(wb, "Selected"); 
+		XSSFSheet shExMat = xwriter.getSheet(wb, "Excluded"); 
+		
+		xwriter.writeToCell(shSummary, 0, 0, "Summary of all rects.");
+		
+		// write title line
+		xwriter.writeDataArrayToSheet(shSummary, SelectionTableRow.getTitleArrayExport(), 0, 1, false);
+
+		ArrayList<SettingsShapeSelection> tableRows = getSelections();
+		for(int r=0; r<tableRows.size(); r++) {
+			// write all tablerows
+			xwriter.writeDataArrayToSheet(shSummary, tableRows.get(r).getDefaultTableRow().getRowDataExport(), 0, 2+r, false);
+		}
+
+		// write rects as columns sheet
+		XSSFSheet sheet = xwriter.getSheet(wb, "ALLinONE"); 
+		xwriter.writeToCell(sheet, 0, 0, "All intensity data of all rects on one sheet.");
+		for(int r=0; r<tableRows.size(); r++) {
+			SelectionTableRow row = tableRows.get(r);
+			double[] data = row.getImg().getIRect(row.getRect(), sett.isExportRaw());
+			xwriter.writeToCell(sheet, r, 1, "Mode="+row.getRect().getMode().toString());
+			xwriter.writeToCell(sheet, r, 2, "I");
+			xwriter.writeDataArrayToSheet(sheet, data, r, 3, true);
+		}
+		// write selected data only 
+		// create sheet
+		sheet = xwriter.getSheet(wb, "Selected"); 
+		//write data
+		xwriter.writeToCell(sheet, 0, 0, "This sheet contains the selected data only defined by all selected rects minus excluded rects. Overlapping selections do not lead to double value export.");
+		xwriter.writeDataArrayToSheet(sheet, dataSelected,0,1,true);
+
+		// Box with average
+
+		// write all rects in sheets 
+		int info =0, select = 0, exclude = 0;
+		for(int r=0; r<tableRows.size(); r++) {
+			String title = "";
+			SelectionTableRow row = tableRows.get(r);
+			switch(row.getRect().getMode()) {
+			case SELECT: 
+				select++; 
+				title = "Sel"+select;
+				break;
+			case EXCLUDE: 
+				exclude++; 
+				title = "Excl"+exclude;
+				break;
+			case INFO: 
+				info++; 
+				title = "Info"+info;
+				break;
+			}
+			sheet = xwriter.getSheet(wb, title); 
+			xwriter.writeDataArrayToSheet(sheet, SelectionTableRow.getTitleArrayExport(), 0, 1, false);
+			xwriter.writeDataArrayToSheet(sheet, tableRows.get(r).getRowDataExport(), 0, 2, false);
+			// get data as 2d array
+			Double[][] data = row.getImg().getIRect2D(row.getRect(), sett.isExportRaw()); 
+			xwriter.writeDataArrayToSheet(sheet, data, 0, 4);
+		}
 	}
 }

@@ -3,6 +3,7 @@ package net.rs.lamsi.massimager.MyFreeChart.themes;
 import java.awt.Color;
 import java.awt.Paint;
 
+import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.massimager.Settings.Settings;
 
 import org.jfree.chart.JFreeChart;
@@ -19,7 +20,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	
 	public static final String XML_DESC = "ChartTheme";
 	protected Paint axisLinePaint = Color.black;
-	protected int themeID;
+	protected THEME themeID;
 
 	protected boolean showXGrid = false, showYGrid = false;
 	protected boolean showXAxis= true, showYAxis = true;
@@ -33,7 +34,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	protected boolean isPaintScaleInPlot= false;
 	
 
-	public MyStandardChartTheme(int themeID, String name) {
+	public MyStandardChartTheme(THEME themeID, String name) {
 		super(name);
 		this.themeID = themeID;
 	}
@@ -100,7 +101,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("axisLinePaint")) axisLinePaint = Settings.colorFromXML(nextElement); 
-				else if(paramName.equals("themeID"))themeID = Settings.intFromXML(nextElement);  
+				else if(paramName.equals("themeID"))themeID = THEME.valueOf(nextElement.getTextContent());  
 				else if(paramName.equals("showXGrid"))showXGrid = Settings.booleanFromXML(nextElement);  
 				else if(paramName.equals("showYGrid"))showYGrid = Settings.booleanFromXML(nextElement);  
 				else if(paramName.equals("showXAxis"))showXAxis = Settings.booleanFromXML(nextElement);  
@@ -125,10 +126,10 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	public void setAxisLinePaint(Paint axisLinePaint) {
 		this.axisLinePaint = axisLinePaint;
 	}
-	public int getID() { 
+	public THEME getID() { 
 		return themeID;
 	}
-	public void setID(int themeID) {
+	public void setID(THEME themeID) {
 		this.themeID = themeID;
 	} 
 	public void setShowXGrid(boolean showXGrid) {

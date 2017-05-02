@@ -271,9 +271,6 @@ public class HeatmapFactory {
 			
 			// theme
 			img.getSettTheme().applyToChart(chart);
-			
-	 		//ChartUtilities.applyCurrentTheme(chart);
-			//defaultChartTheme.apply(chart);
 			chart.fireChartChanged();
 			 
 			// Heatmap

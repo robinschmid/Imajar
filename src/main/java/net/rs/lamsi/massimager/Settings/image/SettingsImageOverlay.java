@@ -6,6 +6,7 @@ import java.util.Vector;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
+import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.massimager.Settings.Settings;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
@@ -45,7 +46,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	public SettingsImageOverlay() {
 		super("SettingsImageOverlay", "/Settings/ImageOv/", "setImgOv"); 
 		// standard theme
-		this.settTheme = new SettingsThemes(ChartThemeFactory.THEME_DARKNESS);
+		this.settTheme = new SettingsThemes(THEME.DARKNESS);
 		//
 		this.settZoom = new SettingsZoom();
 
@@ -118,7 +119,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		psSettings.clear();
 		active = null;
 		// other
-		settTheme = new SettingsThemes(ChartThemeFactory.THEME_DARKNESS);
+		settTheme = new SettingsThemes(THEME.DARKNESS);
 	}
 
 	@Override

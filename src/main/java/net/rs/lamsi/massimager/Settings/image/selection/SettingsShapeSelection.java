@@ -299,9 +299,9 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 					ValueAxis domainAxis, ValueAxis rangeAxis,
 					int rendererIndex, PlotRenderingInfo info) {
 				// set blendComposite
-				g2.setComposite(BlendComposite.Difference);
+//				g2.setComposite(BlendComposite.Difference);
 				super.draw(g2, plot, dataArea, domainAxis, rangeAxis, rendererIndex, info);
-				g2.setComposite(BlendComposite.Normal);
+//				g2.setComposite(BlendComposite.Normal);
 				// 
 			}
 		};

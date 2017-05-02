@@ -78,6 +78,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	// last click or anything that was registered!
 	private MouseEvent lastMouseEvent;
 	
+	// active selection (can be deleted, shifted etc)
 	private SettingsShapeSelection currentSelect;
 	private boolean isPressed = false;
 	// coordinates of first and second mouse event (data space)
@@ -178,6 +179,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				currentSelect = null;
 				settSel.removeAllSelections();
 				heat.getPlot().clearAnnotations();
+				getPnChartView().repaint();
 			}
 		}); 
 		pnNorthMenu.add(btnDeleteAll);
@@ -264,8 +266,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		if(!((key.equals(KEY.ENLARGE) && i>0)||(key.equals(KEY.SHRINK) && i<0)))
 			currentSelect.translate(val, 0);
 		// enlarge?
-		if(key.equals(KEY.ENLARGE)) currentSelect.grow(val, 0);
-		if(key.equals(KEY.SHRINK)) currentSelect.grow(-val, 0);
+		if(key.equals(KEY.ENLARGE)) currentSelect.grow(Math.abs(val), 0);
+		if(key.equals(KEY.SHRINK)) currentSelect.grow(-Math.abs(val), 0);
 		
 		updateSelection();
 	}
@@ -279,8 +281,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		if(!((key.equals(KEY.ENLARGE) && i>0)||(key.equals(KEY.SHRINK) && i<0)))
 			currentSelect.translate(0 , val);
 		// enlarge?
-		if(key.equals(KEY.ENLARGE)) currentSelect.grow(0,val);
-		if(key.equals(KEY.SHRINK)) currentSelect.grow(0,-val);
+		if(key.equals(KEY.ENLARGE)) currentSelect.grow(0,Math.abs(val));
+		if(key.equals(KEY.SHRINK)) currentSelect.grow(0,-Math.abs(val));
 
 		updateSelection();
 	}
@@ -296,6 +298,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			// remove from tableModel (and ArrayList)
 			// and automatically update statistics if it was an exclusion
 			tableModel.removeRow(r, true);
+			// repaint
+			JFreeChart chart = heat.getChart();
+			chart.fireChartChanged();
 		}
 	}
 

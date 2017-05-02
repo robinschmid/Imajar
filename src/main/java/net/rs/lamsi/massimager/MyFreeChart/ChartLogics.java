@@ -52,7 +52,8 @@ public class ChartLogics {
     public static Point2D screenValueToPlotValue(ChartPanel myChart, int val) {  
     	Point2D p = mouseXYToPlotXY(myChart, 0, 0);
     	Point2D p2 = mouseXYToPlotXY(myChart, val, val);
-		return new Point2D.Double(p2.getX()-p.getX(), p2.getY()-p.getY());
+    	// inverted y
+		return new Point2D.Double(p2.getX()-p.getX(), p.getY()-p2.getY());
 	}
     
     

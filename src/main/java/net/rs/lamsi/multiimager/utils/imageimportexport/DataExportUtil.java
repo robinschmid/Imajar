@@ -10,11 +10,6 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.ProgressMonitor;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierMultiPoints;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
@@ -23,7 +18,6 @@ import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTaskMonitor;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -31,7 +25,6 @@ import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
-import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -61,7 +54,6 @@ public class DataExportUtil {
 			@Override
 			protected Boolean doInBackground() throws Exception { 
 				//
-
 				// all titles are the same?
 				try{
 					boolean titlesAreTheSame = false; 
@@ -324,19 +316,32 @@ LOOKUP_TABLE default
 	 * @param setImage2DDataExport
 	 */
 	public static void exportDataImage2DInRects(Image2D img, SettingsSelections selections, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException  { 
-		selections.setCurrentImage(img);
+		// copy selections
+		boolean update = false;
+		if(!img.equals(selections.getCurrentImage())) {
+			selections = (SettingsSelections)selections.copy();
+			selections.setCurrentImage(img, false);
+			// update later
+			update = true;
+		}
 		
 		double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
 		// export the data
 		//writer it to txt or xlsx	
-		if(sett.isWritingToClipboard()) {  
+		if(sett.isWritingToClipboard()) { 
+			// update?
+			if(update)
+				selections.updateStatistics();
+			
+			// save
+			ArrayList<SettingsShapeSelection> tableRows = selections.getSelections();
 			// write table rows
 			Object[][] erows = new Object[tableRows.size()+1][];
 			// write title line
 			erows[0] =  SelectionTableRow.getTitleArrayExport();
 			for(int r=0; r<tableRows.size(); r++) {
 				// write all tablerows
-				erows[r+1] = tableRows.get(r).getRowDataExport();
+				erows[r+1] = tableRows.get(r).getDefaultTableRow().getRowDataExport();
 			}
 			
 			String s = ClipboardWriter.dataToTabSepString(erows);
@@ -346,64 +351,12 @@ LOOKUP_TABLE default
 			DialogLoggerUtil.showMessageDialogForTime(null, "Succeed", "Data copied to clipboard use paste function to retrieve data", 2000);
 		}
 		else if(sett.getFileFormat()==FileType.XLSX){
+			// export to excel
 			File file = new File(sett.getPath(), FileAndPathUtil.eraseFormat((sett.getFilename()))+".xlsx");
 			XSSFWorkbook wb = new XSSFWorkbook();
 
-			// write tableRows sheet
-			XSSFSheet sheet = xwriter.getSheet(wb, "table"); 
-			xwriter.writeToCell(sheet, 0, 0, "Summary of all rects.");
-			// write title line
-			xwriter.writeDataArrayToSheet(sheet, SelectionTableRow.getTitleArrayExport(), 0, 1, false);
-			for(int r=0; r<tableRows.size(); r++) {
-				// write all tablerows
-				xwriter.writeDataArrayToSheet(sheet, tableRows.get(r).getRowDataExport(), 0, 2+r, false);
-			}
-
-			// write rects as columns sheet
-			sheet = xwriter.getSheet(wb, "ALLinONE"); 
-			xwriter.writeToCell(sheet, 0, 0, "All intensity data of all rects on one sheet.");
-			for(int r=0; r<tableRows.size(); r++) {
-				SelectionTableRow row = tableRows.get(r);
-				double[] data = row.getImg().getIRect(row.getRect(), sett.isExportRaw());
-				xwriter.writeToCell(sheet, r, 1, "Mode="+row.getRect().getMode().toString());
-				xwriter.writeToCell(sheet, r, 2, "I");
-				xwriter.writeDataArrayToSheet(sheet, data, r, 3, true);
-			}
-			// write selected data only 
-			// create sheet
-			sheet = xwriter.getSheet(wb, "Selected"); 
-			//write data
-			xwriter.writeToCell(sheet, 0, 0, "This sheet contains the selected data only defined by all selected rects minus excluded rects. Overlapping selections do not lead to double value export.");
-			xwriter.writeDataArrayToSheet(sheet, dataSelected,0,1,true);
-
-			// Box with average
-
-			// write all rects in sheets 
-			int info =0, select = 0, exclude = 0;
-			for(int r=0; r<tableRows.size(); r++) {
-				String title = "";
-				SelectionTableRow row = tableRows.get(r);
-				switch(row.getRect().getMode()) {
-				case SELECT: 
-					select++; 
-					title = "Sel"+select;
-					break;
-				case EXCLUDE: 
-					exclude++; 
-					title = "Excl"+exclude;
-					break;
-				case INFO: 
-					info++; 
-					title = "Info"+info;
-					break;
-				}
-				sheet = xwriter.getSheet(wb, title); 
-				xwriter.writeDataArrayToSheet(sheet, SelectionTableRow.getTitleArrayExport(), 0, 1, false);
-				xwriter.writeDataArrayToSheet(sheet, tableRows.get(r).getRowDataExport(), 0, 2, false);
-				// get data as 2d array
-				Double[][] data = row.getImg().getIRect2D(row.getRect(), sett.isExportRaw()); 
-				xwriter.writeDataArrayToSheet(sheet, data, 0, 4);
-			}
+			// save data and selections to excel
+			selections.saveToExcel(xwriter, wb);
 
 			// final
 			xwriter.saveWbToFile(file, wb);
@@ -412,6 +365,7 @@ LOOKUP_TABLE default
 			DialogLoggerUtil.showMessageDialog(null, "Succeed", "File(s) saved successfully");
 		} 
 		else {
+			// only write selected data to txt
 			String filename = (FileAndPathUtil.getFormat(sett.getFilename()).length()>0 && sett.getFilename().length()>3)? 
 					sett.getFilename() : FileAndPathUtil.eraseFormat((sett.getFilename()))+"."+sett.getFileFormat().toString();
 					String file = new File(sett.getPath(), filename).getAbsolutePath();
@@ -421,6 +375,7 @@ LOOKUP_TABLE default
 					// end file
 					writer.closeDatOutput(); 
 		}
+		
 	}
 
 	/**
