@@ -21,7 +21,7 @@ public abstract class SettingsContainerSettings extends Settings {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 
+	 * identifier by String is the super class
 	 */
 	protected HashMap<Class, Settings> list = new HashMap<Class, Settings>();
 	
@@ -57,12 +57,31 @@ public abstract class SettingsContainerSettings extends Settings {
 		for (int i = 0; i < list.getLength(); i++) {
 			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element nextElement = (Element) list.item(i);
-				String paramName = nextElement.getNodeName();
-
-				for(Settings s:this.list.values())
-					if(s!=null)
-						if(paramName.equals(s.getDescription())) 
-							getSettingsByClass(s.getClass()).loadValuesFromXML(nextElement, doc);
+				try {
+					Class settingsClass = getRealClassFromXML(nextElement);
+					if(settingsClass!=null) {
+						// get super class name (hashed class name which was inserted to list) 
+						Class hashedClass = getHashedClassFromXML(nextElement);
+						
+						Settings s = getSettingsByClass(hashedClass);
+						
+						// same class?
+						boolean replace = false;
+						if(s==null || !s.getClass().equals(settingsClass)) {
+							replace = true;
+							// create new settings object of different class
+							s = Settings.createSettings(settingsClass);
+						}
+						// load settings from xml
+						s.loadValuesFromXML(nextElement, doc);
+						
+						// replace?
+						if(replace)
+							replaceSettings(s);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}	
@@ -73,11 +92,11 @@ public abstract class SettingsContainerSettings extends Settings {
 	 * @return true if replaced false if only added
 	 */
 	public boolean replaceSettings(Settings sett) {
-		if(list.replace(sett.getClass(), sett)!=null) {
+		if(list.replace(sett.getSuperClass(), sett)!=null) {
 			return true;
 		}
 		else {
-			list.put(sett.getClass(), sett);
+			list.put(sett.getSuperClass(), sett);
 			return false;
 		}
 	}

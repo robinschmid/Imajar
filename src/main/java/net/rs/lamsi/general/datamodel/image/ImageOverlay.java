@@ -249,6 +249,10 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 	public String getTitle() { 
 		return settings.getTitle();
 	}
+
+	public String getShortTitle() { 
+		return getTitle();
+	} 
 	/**
 	 * titles of all images
 	 * (unique)

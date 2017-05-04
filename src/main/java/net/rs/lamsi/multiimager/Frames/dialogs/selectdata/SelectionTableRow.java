@@ -95,7 +95,7 @@ public class SelectionTableRow implements Serializable{
 		float y1 =getY1();
 		float x1 = getX1();
 
-		return new Object[]{mode.toString(), x0,y0,x1,y1,min, max, avg, median, p99, histo};
+		return new Object[]{mode.toString(), x0,y0,x1,y1,min, max, avg, median, p99, sdev, histo};
 	}
 
 	/**
@@ -108,7 +108,7 @@ public class SelectionTableRow implements Serializable{
 		float y1 =getY1();
 		float x1 = getX1();
 		
-		return new Object[]{mode.toString(), x0,y0,x1,y1,min, max, avg, median, p99};	
+		return new Object[]{mode.toString(), x0,y0,x1,y1,min, max, avg, median, p99, sdev};	
 	}
 
 
@@ -180,5 +180,15 @@ public class SelectionTableRow implements Serializable{
 	} 
 	public float getY1() {
 		return (float)shape.getBounds2D().getMaxY();
+	}
+
+
+	public void setMode(SelectionMode mode) {
+		this.mode = mode;
+	}
+
+
+	public void setShape(Shape shape) {
+		this.shape = shape;
 	} 
 }

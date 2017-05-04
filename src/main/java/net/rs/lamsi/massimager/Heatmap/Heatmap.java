@@ -11,6 +11,7 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.PlotChartPanel;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
 
@@ -42,13 +43,15 @@ public class Heatmap {
 	// list of annotations for later removing 
 	private ArrayList<XYShapeAnnotation> annSelections;
 	
+	private ImageTitle shortTitle;
+	
 	// blank domain marker for lower and upper bound
 	private ValueMarker lowerMarker, upperMarker;
 	
 	// Construct
 	public Heatmap(IXYZDataset dataset, int colorSteps, PlotImage2DChartPanel chartPanel,
 			PaintScale paintScale, JFreeChart chart, XYPlot plot,
-			PaintScaleLegend legend, Image2D image, ImageRenderer renderer, ScaleInPlot scaleInPlot) {
+			PaintScaleLegend legend, Image2D image, ImageRenderer renderer, ScaleInPlot scaleInPlot, ImageTitle shortTitle) {
 		super();
 		this.dataset = dataset; 
 		this.chartPanel = chartPanel;
@@ -59,6 +62,7 @@ public class Heatmap {
 		this.setImage(image);
 		this.renderer = renderer;
 		this.scaleInPlot = scaleInPlot;
+		this.shortTitle = shortTitle;
 		// 
 		showBlankMinMax(image.getSettings().getOperations().getBlankQuantifier().isShowInChart());
 	}
@@ -226,6 +230,19 @@ public class Heatmap {
 			chart.fireChartChanged();
 		}
 	}
+	
+	/**
+	 * renews the short title
+	 * @param x
+	 * @param y
+	 * @param visible
+	 */
+	public void setShortTitle(float x, float y, boolean visible) {
+		plot.removeAnnotation(shortTitle.getAnnotation());
+		shortTitle.setPosition(x, y);
+		shortTitle.setVisible(visible);
+		plot.addAnnotation(shortTitle.getAnnotation());
+	}
 
 
 
@@ -237,5 +254,13 @@ public class Heatmap {
 
 	public void setScaleInPlot(ScaleInPlot scaleInPlot) {
 		setScaleInPlot(scaleInPlot);
+	}
+
+	public ImageTitle getShortTitle() {
+		return shortTitle;
+	}
+
+	public void setShortTitle(ImageTitle shortTitle) {
+		this.shortTitle = shortTitle;
 	}
 }

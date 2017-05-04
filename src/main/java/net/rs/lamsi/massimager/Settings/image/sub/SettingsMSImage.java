@@ -1,6 +1,7 @@
 package net.rs.lamsi.massimager.Settings.image.sub;
 
 import net.rs.lamsi.massimager.MyMZ.MZIon;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 
 public class SettingsMSImage extends SettingsGeneralImage {
 	// do not change the version!
@@ -20,6 +21,10 @@ public class SettingsMSImage extends SettingsGeneralImage {
 		this.allFiles = allFiles;
 	}
 
+	@Override
+	public Class getSuperClass() {
+		return SettingsGeneralImage.class; 
+	}
 
 	public MZIon getMZIon() {
 		return mzIon;

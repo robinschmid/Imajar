@@ -1,6 +1,7 @@
 package net.rs.lamsi.massimager.Settings.image.selection;
 
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SHAPE;
@@ -24,9 +25,16 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 	public SettingsPolygonSelection(SelectionMode mode) {
 		super(mode, new Polygon2D());
 	} 
+	public SettingsPolygonSelection() {
+		this(SelectionMode.SELECT);
+	} 
 
 	@Override
 	public void resetAll() {  
+	}
+	@Override
+	public Class getSuperClass() {
+		return SettingsShapeSelection.class; 
 	}
 
 	//##########################################################
@@ -37,7 +45,7 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 	 * @return
 	 */
 	protected Polygon2D loadShapeFromXML(Element nextElement) {
-		shape.reset();
+		shape = new Polygon2D();
 		int i=0;
 		while(true) {
 			String sx = nextElement.getAttribute("x"+i);

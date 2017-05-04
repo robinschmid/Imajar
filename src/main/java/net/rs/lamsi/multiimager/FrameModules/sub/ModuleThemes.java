@@ -49,8 +49,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	private JCheckBox cbNoBackground;
 	private JCheckBox cbShowTitle;
 	protected static ResourceBundle localizationResources = ResourceBundleWrapper.getBundle("org.jfree.chart.LocalizationBundle");
-	private JCheckBox cbShowXGrid;
-	private JCheckBox cbShowYGrid;
 	private JCheckBox cbShowXAxis;
 	private JCheckBox cbShowYAxis;
 	private JCheckBox cbShowScale;
@@ -60,6 +58,10 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	private JCheckBox cbPaintscaleInPlot;
 	private JSlider sliderScaleXPos;
 	private JSlider sliderScaleYPos;
+	private JTextField txtCSignificantDigits;
+	private JCheckBox cbScientificIntensities;
+	private JTextField txtPaintScaleTitle;
+	private JCheckBox cbUsePaintscaleTitle;
 	//
 
 	/**
@@ -107,12 +109,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		cbShowTitle = new JCheckBox("show title");
 		panel_1.add(cbShowTitle, "cell 1 2");
 		
-		cbShowXGrid = new JCheckBox("show x grid");
-		panel_1.add(cbShowXGrid, "cell 1 3");
-		
-		cbShowYGrid = new JCheckBox("show y grid");
-		panel_1.add(cbShowYGrid, "cell 2 3");
-		
 		Module pnFonts = new Module("Fonts and text");
 		panel.add(pnFonts, BorderLayout.SOUTH); 
 		
@@ -141,7 +137,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		JPanel panel_3 = new JPanel();
 		modAxes.getPnContent().add(panel_3, BorderLayout.CENTER);
-		panel_3.setLayout(new MigLayout("", "[][][][grow]", "[][][][][][][][]"));
+		panel_3.setLayout(new MigLayout("", "[][][grow]", "[][][][][][][][]"));
 		
 		JLabel lblXAxis = new JLabel("x axis");
 		lblXAxis.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -149,25 +145,52 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		cbShowXAxis = new JCheckBox("show x axis");
 		cbShowXAxis.setSelected(true);
-		panel_3.add(cbShowXAxis, "cell 2 0");
+		panel_3.add(cbShowXAxis, "cell 1 0");
 		
 		JLabel lblYAxis = new JLabel("y axis");
 		lblYAxis.setFont(new Font("Tahoma", Font.BOLD, 11));
-		panel_3.add(lblYAxis, "cell 0 2,alignx trailing");
+		panel_3.add(lblYAxis, "cell 0 1,alignx trailing");
 		
 		cbShowYAxis = new JCheckBox("show y axis");
 		cbShowYAxis.setSelected(true);
-		panel_3.add(cbShowYAxis, "cell 2 2");
+		panel_3.add(cbShowYAxis, "cell 1 1");
+		
+		JLabel lblPaintScale = new JLabel("paintscale");
+		lblPaintScale.setFont(new Font("Tahoma", Font.BOLD, 11));
+		panel_3.add(lblPaintScale, "cell 0 2,alignx right");
+		
+		cbPaintscaleInPlot = new JCheckBox("in plot");
+		panel_3.add(cbPaintscaleInPlot, "cell 1 2");
+		
+		cbScientificIntensities = new JCheckBox("scientific intensities");
+		cbScientificIntensities.setSelected(true);
+		panel_3.add(cbScientificIntensities, "cell 1 3");
+		
+		txtCSignificantDigits = new JTextField();
+		txtCSignificantDigits.setText("2");
+		txtCSignificantDigits.setToolTipText("Number of significant digits (1.0E >> 2 significant)");
+		txtCSignificantDigits.setHorizontalAlignment(SwingConstants.RIGHT);
+		panel_3.add(txtCSignificantDigits, "flowx,cell 2 3,alignx left");
+		txtCSignificantDigits.setColumns(4);
+		
+		cbUsePaintscaleTitle = new JCheckBox("use paintscale title");
+		cbUsePaintscaleTitle.setSelected(true);
+		panel_3.add(cbUsePaintscaleTitle, "cell 1 4");
+		
+		txtPaintScaleTitle = new JTextField();
+		txtPaintScaleTitle.setText("I");
+		panel_3.add(txtPaintScaleTitle, "cell 2 4,alignx left");
+		txtPaintScaleTitle.setColumns(10);
 		
 		JLabel lblScale = new JLabel("scale");
 		lblScale.setFont(new Font("Tahoma", Font.BOLD, 11));
-		panel_3.add(lblScale, "cell 0 4,alignx trailing");
+		panel_3.add(lblScale, "cell 0 6,alignx trailing");
 		
 		cbShowScale = new JCheckBox("show scale");
-		panel_3.add(cbShowScale, "cell 2 4");
+		panel_3.add(cbShowScale, "cell 1 6");
 		
 		JPanel panel_4 = new JPanel();
-		panel_3.add(panel_4, "cell 2 5");
+		panel_3.add(panel_4, "cell 1 7 2 1");
 		panel_4.setLayout(new MigLayout("", "[][85.00][][grow]", "[][][][][]"));
 		
 		JLabel lblUnit = new JLabel("value");
@@ -220,12 +243,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		sliderScaleYPos.setMinimumSize(new Dimension(100, 23));
 		panel_4.add(sliderScaleYPos, "cell 1 4");
 		
-		JLabel lblPaintScale = new JLabel("paintscale");
-		lblPaintScale.setFont(new Font("Tahoma", Font.BOLD, 11));
-		panel_3.add(lblPaintScale, "cell 0 7");
-		
-		cbPaintscaleInPlot = new JCheckBox("in plot");
-		panel_3.add(cbPaintscaleInPlot, "cell 2 7");
+		JLabel lblSignificantDifits = new JLabel("significant difits");
+		panel_3.add(lblSignificantDifits, "cell 2 3");
 		// add standard themes to menu
 		addStandardThemesToMenu();
 	}
@@ -311,15 +330,17 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getCbShowTitle().addItemListener(il);
 		getCbNoBackground().addItemListener(il); 
 
-		getCbShowXGrid().addItemListener(il); 
-		getCbShowYGrid().addItemListener(il); 
-
 		getTxtScaleFactor().getDocument().addDocumentListener(dl);
 		getTxtScaleValue().getDocument().addDocumentListener(dl);
 		getTxtScaleUnit().getDocument().addDocumentListener(dl);
 
 		getSliderScaleXPos().addChangeListener(cl);
 		getSliderScaleYPos().addChangeListener(cl);
+		
+		getCbScientificIntensities().addItemListener(il);
+		getTxtCSignificantDigits().getDocument().addDocumentListener(dl);
+		getCbUsePaintscaleTitle().addItemListener(il);
+		getTxtPaintScaleTitle().getDocument().addDocumentListener(dl);
 	}
 	
 	//################################################################################################
@@ -337,9 +358,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getCbShowTitle().setSelected(st.isShowTitle());
 		getCbNoBackground().setSelected(st.isNoBackground()); 
 		 
-		getCbShowXGrid().setSelected(st.getTheme().isShowXGrid()); 
-		getCbShowYGrid().setSelected(st.getTheme().isShowYGrid()); 
-
 		getCbShowScale().setSelected(st.getTheme().isShowScale());
 		getCbShowXAxis().setSelected(st.getTheme().isShowXAxis());
 		getCbShowYAxis().setSelected(st.getTheme().isShowYAxis());
@@ -354,6 +372,14 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getSliderScaleXPos().setValue((int)(st.getTheme().getScaleXPos()*100));
 		getSliderScaleYPos().setValue((int)(st.getTheme().getScaleYPos()*100)); 
 		
+		// significant scientific notion
+		getCbScientificIntensities().setSelected(st.isUseScientificIntensities());
+		getTxtCSignificantDigits().setText(String.valueOf(st.getSignificantDigits()));
+		
+		// paintscale title
+		getCbUsePaintscaleTitle().setSelected(st.isUsePaintScaleTitle());
+		getTxtPaintScaleTitle().setText(st.getPaintScaleTitle());
+		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		ImageEditorWindow.getEditor().fireUpdateEvent(true);
@@ -365,10 +391,11 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 			try {
 				// setall
 				st.setAll(getCbAntiAlias().isSelected(), getCbShowTitle().isSelected(), getCbNoBackground().isSelected(),
-						getCbShowXGrid().isSelected(), getCbShowYGrid().isSelected(),
+						false,false,
 						getCbShowXAxis().isSelected(), getCbShowYAxis().isSelected(), 
 						getCbShowScale().isSelected(), getTxtScaleUnit().getText(), floatFromTxt(getTxtScaleFactor()), floatFromTxt(getTxtScaleValue()),
-						getCbPaintscaleInPlot().isSelected(), getSliderScaleXPos().getValue()/100.f, getSliderScaleYPos().getValue()/100.f);
+						getCbPaintscaleInPlot().isSelected(), getSliderScaleXPos().getValue()/100.f, getSliderScaleYPos().getValue()/100.f,
+						cbScientificIntensities.isSelected(), intFromTxt(txtCSignificantDigits), txtPaintScaleTitle.getText(), cbUsePaintscaleTitle.isSelected());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -388,12 +415,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	public JCheckBox getCbShowTitle() {
 		return cbShowTitle;
 	} 
-	public JCheckBox getCbShowXGrid() {
-		return cbShowXGrid;
-	}
-	public JCheckBox getCbShowYGrid() {
-		return cbShowYGrid;
-	}
 	public JCheckBox getCbShowXAxis() {
 		return cbShowXAxis;
 	}
@@ -420,5 +441,17 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	}
 	public JSlider getSliderScaleYPos() {
 		return sliderScaleYPos;
+	}
+	public JCheckBox getCbScientificIntensities() {
+		return cbScientificIntensities;
+	}
+	public JTextField getTxtCSignificantDigits() {
+		return txtCSignificantDigits;
+	}
+	public JCheckBox getCbUsePaintscaleTitle() {
+		return cbUsePaintscaleTitle;
+	}
+	public JTextField getTxtPaintScaleTitle() {
+		return txtPaintScaleTitle;
 	}
 }

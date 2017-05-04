@@ -70,7 +70,7 @@ public class SettingsExportGraphics extends Settings {
 				else if(paramName.equals("format"))format = intFromXML(nextElement);  
 				else if(paramName.equals("useOnlyWidth"))useOnlyWidth = booleanFromXML(nextElement);  
 				else if(paramName.equals("colorBackground"))colorBackground = colorFromXML(nextElement);  
-				else if(paramName.equals(resolution.getDescription()))
+				else if(isSettingsNode(nextElement, resolution.getSuperClass()))
 					resolution.loadValuesFromXML(nextElement, doc);
 			}
 		}

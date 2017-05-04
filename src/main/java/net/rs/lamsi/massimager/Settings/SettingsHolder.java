@@ -24,6 +24,7 @@ import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsExportGraphics;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
 import net.rs.lamsi.massimager.Settings.visualization.SettingsPlotSpectraLabelGenerator;
@@ -71,6 +72,7 @@ public class SettingsHolder extends Settings {
 
 	// 
 	private SettingsImage2DDataExport setImage2DDataExport;
+	private SettingsImage2DDataSelectionsExport setImage2DDataSelectionsExport;
 
 	// settings for operations on images
 	private SettingsImage2DQuantifier setQuantifier;
@@ -121,6 +123,9 @@ public class SettingsHolder extends Settings {
 		setImage2DDataExport = new SettingsImage2DDataExport();
 		settList.add(setImage2DDataExport); 
 
+		setImage2DDataSelectionsExport = new SettingsImage2DDataSelectionsExport();
+		settList.add(setImage2DDataExport); 
+		
 		// operations
 		setQuantifier = new SettingsImage2DQuantifierLinear();
 		settList.add(setQuantifier); 
@@ -155,7 +160,7 @@ public class SettingsHolder extends Settings {
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
 				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
-				SettingsImage2DDataExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
+				SettingsImage2DDataExport.class, SettingsImage2DDataSelectionsExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
 				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class, SettingsBackgroundImg.class,
 				SettingsSelections.class};
 		classList = cl;
@@ -181,7 +186,7 @@ public class SettingsHolder extends Settings {
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
 		for(Settings s : settList) {
-			NodeList list = doc.getElementsByTagName(s.getDescription());
+			NodeList list = doc.getElementsByTagName(s.getSuperClass().getName());
 			if(list.getLength()==1 && list.item(0).getNodeType() == Node.ELEMENT_NODE) {
 				s.loadValuesFromXML((Element)list.item(0), doc);
 			}
@@ -436,6 +441,9 @@ public class SettingsHolder extends Settings {
 		return setImage2DDataExport;
 	}
 
+	public SettingsImage2DDataSelectionsExport getSetImage2DDataSelectionsExport() {
+		return setImage2DDataSelectionsExport;
+	}
 	public SettingsGeneralPreferences getSetGeneralPreferences() {
 		return setGeneralPreferences;
 	}

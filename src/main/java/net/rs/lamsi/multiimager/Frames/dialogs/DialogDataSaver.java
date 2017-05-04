@@ -32,12 +32,19 @@ import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport.FileType;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+
+import java.awt.GridLayout;
+
+import javax.swing.BoxLayout;
+
+import com.itextpdf.text.pdf.qrcode.Mode;
 
 /**
  * is only for exporting data of image2d
@@ -83,6 +90,16 @@ public class DialogDataSaver extends JFrame {
 	private JPanel panel_1;
 	private JComboBox comboBox;
 	private JComboBox comboDataFormat;
+	private JPanel pnExportSelections;
+	private JCheckBox cbSummary;
+	private JCheckBox cbDef;
+	private JCheckBox cbArray;
+	private JCheckBox cbImgSelNEx;
+	private JCheckBox cbImgSel;
+	private JCheckBox cbImgEx;
+	private JCheckBox cbShapesSelNEx;
+	private JCheckBox cbShapes, cbShapesData, cbX, cbY, cbZ;
+	private JPanel pnCenter;
 	
 	// TODO
 	// Irgendwann das aufrufen: 
@@ -104,11 +121,11 @@ public class DialogDataSaver extends JFrame {
 		// Settings
 		this.settings = sett; 
 		// 
-		setBounds(100, 100, 422, 463);
+		setBounds(100, 100, 437, 499);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(new MigLayout("", "[56px][6px][100px][6px][109px,grow][9px]", "[14px][23px][23px][23px][243px,center][33px]"));
+		contentPane.setLayout(new MigLayout("", "[56px,grow][6px][100px][6px][109px,grow][9px]", "[14px][23px][23px][23px][243px,center][33px]"));
 		
 		txtPath = new JTextField();
 		contentPane.add(txtPath, "cell 0 1 5 1,growx,aligny center");
@@ -208,7 +225,7 @@ public class DialogDataSaver extends JFrame {
 							DataExportUtil.exportDataImage2D(thisFrame, imgList, settings.getSetImage2DDataExport());
 					}
 					else if(currentMode == MODE.SELECTED_RECTS){
-						DataExportUtil.exportDataImage2DInRects(img, selections, settings.getSetImage2DDataExport());
+						DataExportUtil.exportDataImage2DInRects(img, selections, settings.getSetImage2DDataSelectionsExport());
 					}
 				} catch(Exception ex) { 
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Not saved", ex);
@@ -220,10 +237,14 @@ public class DialogDataSaver extends JFrame {
 		JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		contentPane.add(panel, "cell 0 4 6 1,growy");
-		panel.setLayout(new MigLayout("", "[365px]", "[242px]"));
+		panel.setLayout(new MigLayout("", "[365px,grow]", "[grow]"));
+		
+		pnCenter = new JPanel();
+		panel.add(pnCenter, "cell 0 0,grow");
+		pnCenter.setLayout(new BorderLayout(0, 0));
 		
 		pnMS = new JPanel();
-		panel.add(pnMS, "cell 0 0,grow");
+		pnCenter.add(pnMS, BorderLayout.CENTER);
 		pnMS.setLayout(new BorderLayout(0, 0));
 		
 		pnXlsOptions = new JPanel();
@@ -289,6 +310,68 @@ public class DialogDataSaver extends JFrame {
 		txtSep.setHorizontalAlignment(SwingConstants.CENTER);
 		txtSep.setText(",");
 		txtSep.setColumns(3);
+
+		// export selections panel
+		pnExportSelections = new JPanel();
+		pnExportSelections.setLayout(new MigLayout("", "[]", "[][][][][][][][][][][][]"));
+		
+		cbSummary = new JCheckBox("Summary table");
+		pnExportSelections.add(cbSummary, "cell 0 0");
+		cbSummary.setSelected(true);
+		
+		cbDef = new JCheckBox("Definitions");
+		pnExportSelections.add(cbDef, "cell 0 1");
+		cbDef.setSelected(true);
+		
+		cbArray = new JCheckBox("Select. Excl. as data column");
+		cbArray.setToolTipText("Save all data points that are excluded, selected or selected and not excluded to data columns.");
+		pnExportSelections.add(cbArray, "cell 0 2");
+		cbArray.setSelected(true);
+		
+		cbImgSelNEx = new JCheckBox("Img select. non excl.");
+		cbImgSelNEx.setToolTipText("Data matrix of all selected non excluded data points");
+		pnExportSelections.add(cbImgSelNEx, "cell 0 3");
+		cbImgSelNEx.setSelected(true);
+		
+		cbImgSel = new JCheckBox("Img select.");
+		cbImgSel.setToolTipText("Data matrix of all selected data points");
+		pnExportSelections.add(cbImgSel, "cell 0 4");
+		cbImgSel.setSelected(true);
+		
+		cbImgEx = new JCheckBox("Img excl.");
+		cbImgEx.setToolTipText("Data matrix of all excluded data points");
+		pnExportSelections.add(cbImgEx, "cell 0 5");
+		cbImgEx.setSelected(true);
+		
+		cbShapesSelNEx = new JCheckBox("Shapes: Select. non Excl.");
+		cbShapesSelNEx.setToolTipText("Export all selection shapes in regards to exclusions (cut out data matrix)");
+		pnExportSelections.add(cbShapesSelNEx, "cell 0 6");
+		cbShapesSelNEx.setSelected(true);
+		
+		cbShapes = new JCheckBox("Shapes: No regards to exclusions");
+		cbShapes.setToolTipText("Export all shapes with no regards to exclusions. All data points inside the shape are exported.");
+		pnExportSelections.add(cbShapes, "cell 0 7");
+		cbShapes.setSelected(true);
+
+		cbShapesData = new JCheckBox("Shape data summary");
+		cbShapesData.setToolTipText("Writes all data points that were used for statistics for each shape");
+		cbShapesData.setSelected(true);
+		pnExportSelections.add(cbShapesData, "cell 0 8");
+
+		cbX = new JCheckBox("Image (x matrix)");
+		cbX.setToolTipText("X coordinates");
+		cbX.setSelected(true);
+		pnExportSelections.add(cbX, "cell 0 9");
+
+		cbY= new JCheckBox("Image (y matrix)");
+		cbY.setToolTipText("y coordinates");
+		cbY.setSelected(true);
+		pnExportSelections.add(cbY, "cell 0 10");
+
+		cbZ = new JCheckBox("Image (intensity matrix)");
+		cbZ.setToolTipText("");
+		cbZ.setSelected(true);
+		pnExportSelections.add(cbZ, "cell 0 11");
 	}
 	
 	
@@ -297,10 +380,14 @@ public class DialogDataSaver extends JFrame {
 	 * @param currentMode
 	 */
 	public void setCurrentMode(MODE m) {
-		// show right panels:
-		getPnMS().setVisible(true);
-		getPnXlsOptions().setVisible(m == MODE.ALL);
 		currentMode = m;
+		// show right panels:
+		getPnCenter().removeAll();
+		getPnCenter().add(m.equals(MODE.SELECTED_RECTS)? getPnExportSelections() : getPnMS());
+		
+		getPnXlsOptions().setVisible(m.equals(MODE.ALL));
+
+		getPnCenter().revalidate();
 	}
 	
 	/**
@@ -311,6 +398,8 @@ public class DialogDataSaver extends JFrame {
 		inst.setCurrentMode(MODE.ALL);
 		inst.img=img;
 		inst.imgList = imgList;
+		inst.selections = null;
+		inst.renewAllSettings();
 		inst.setVisible(true); 
 	}
 	public static void startDialogWith(Image2D img) {
@@ -318,32 +407,36 @@ public class DialogDataSaver extends JFrame {
 		inst.img=img;
 		inst.imgList = null;
 		inst.selections = null;
+		inst.renewAllSettings();
 		inst.setVisible(true);
 	}
 	
 	//##########################################################################################
 	// exporting only selection rects data
 	public static void startDialogWith(Image2D img, SettingsSelections selections) {
-		startDialogWith(img);
+		inst.img=img;
+		inst.imgList = null;
 		inst.selections = selections;
 		inst.setCurrentMode(MODE.SELECTED_RECTS);
+		inst.renewAllSettings();
+		inst.setVisible(true);
 	}
-	
 	
 	//##########################################################################################
 	// 
 	private void renewAllSettings() {
-		SettingsImage2DDataExport settingsData = this.settings.getSetImage2DDataExport();
+		if(currentMode.equals(MODE.ALL)) {
+			SettingsImage2DDataExport settingsData = this.settings.getSetImage2DDataExport(); 
 		// Set mode 
 		settingsData.setPath(getTxtPath().getText());
 		
 		FileType type = (FileType)comboBox.getSelectedItem();
 		settingsData.setFileFormat(type);
 		settingsData.setWritingToClipboard(getCbToClipboard().isSelected());
+		settingsData.setFilename(getTxtFileName().getText());
 		
 		// always one file if to clipboard
 		settingsData.setExportsAllFiles(getRbAllFiles().isSelected() && !getCbToClipboard().isSelected());
-		settingsData.setFilename(getTxtFileName().getText());
 		settingsData.setSavesAllFilesToOneXLS(getCbSaveAllFilesInOne().isSelected());
 		 
 		settingsData.setIsExportRaw(getCbRawData().isSelected());
@@ -352,27 +445,71 @@ public class DialogDataSaver extends JFrame {
 		settingsData.setMode((ModeData) getComboDataFormat().getSelectedItem());
 		
 		settingsData.setSeparation(txtSep.getText());
+		}
+		else {
+			SettingsImage2DDataSelectionsExport s = this.settings.getSetImage2DDataSelectionsExport();
+			s.setPath(getTxtPath().getText());
+			
+			FileType type = (FileType)comboBox.getSelectedItem();
+			s.setFileFormat(type);
+			s.setWritingToClipboard(getCbToClipboard().isSelected());
+			s.setFilename(getTxtFileName().getText());
+			s.setSeparation(txtSep.getText());
+			
+			s.setAll(cbSummary.isSelected(), cbDef.isSelected(), cbArray.isSelected(), cbImgEx.isSelected(), cbImgSel.isSelected(), 
+					cbImgSelNEx.isSelected(), cbShapes.isSelected(), cbShapesSelNEx.isSelected(), cbShapesData.isSelected(), 
+					cbX.isSelected(), cbY.isSelected(), cbZ.isSelected());
+		}
 	}
 	// all cb set
 	public void setAllSettingsCb() {
-		SettingsImage2DDataExport settingsData = this.settings.getSetImage2DDataExport(); 
-
-		getRbAllFiles().setSelected(settingsData.isExportsAllFiles());
-		// TODO select combo
-		comboBox.setSelectedItem(settingsData.getFileFormat());
-		//
-		getCbToClipboard().setSelected(settingsData.isWritingToClipboard());
-		
-		getTxtFileName().setText(settingsData.getFilename());
-		getCbSaveAllFilesInOne().setSelected(settingsData.isSavesAllFilesToOneXLS());
-		
-		getTxtPath().setText(settingsData.getPath().getPath());
-
-		getComboDataFormat().setSelectedItem(settingsData.getMode());
-
-		getCbWriteTitleRow().setSelected(settingsData.isWriteTitleRow());
-		getCbRawData().setSelected(settingsData.isExportRaw());
-		getTxtSep().setText(settingsData.getSeparation());
+		if(selections==null) {
+			SettingsImage2DDataExport settingsData = this.settings.getSetImage2DDataExport(); 
+	
+			getRbAllFiles().setSelected(settingsData.isExportsAllFiles());
+			// TODO select combo
+			comboBox.setSelectedItem(settingsData.getFileFormat());
+			//
+			getCbToClipboard().setSelected(settingsData.isWritingToClipboard());
+			
+			getTxtFileName().setText(settingsData.getFilename());
+			getCbSaveAllFilesInOne().setSelected(settingsData.isSavesAllFilesToOneXLS());
+			
+			getTxtPath().setText(settingsData.getPath().getPath());
+	
+			getComboDataFormat().setSelectedItem(settingsData.getMode());
+	
+			getCbWriteTitleRow().setSelected(settingsData.isWriteTitleRow());
+			getCbRawData().setSelected(settingsData.isExportRaw());
+			getTxtSep().setText(settingsData.getSeparation());
+		}
+		else {
+			SettingsImage2DDataSelectionsExport s = this.settings.getSetImage2DDataSelectionsExport();
+	
+			getRbAllFiles().setSelected(s.isExportsAllFiles());
+			// TODO select combo
+			comboBox.setSelectedItem(s.getFileFormat());
+			//
+			getCbToClipboard().setSelected(s.isWritingToClipboard());
+			getTxtFileName().setText(s.getFilename());
+			getTxtPath().setText(s.getPath().getPath());
+	
+			getTxtSep().setText(s.getSeparation());
+			
+			// 
+			getCbArray().setSelected(s.isArrays());
+			getCbSummary().setSelected(s.isSummary());
+			getCbDef().setSelected(s.isDefinitions());
+			getCbImgEx().setSelected(s.isImgEx());
+			getCbImgSel().setSelected(s.isImgSel());
+			getCbImgSelNEx().setSelected(s.isImgSelNEx());
+			getCbShapes().setSelected(s.isShapes());
+			getCbShapesSelNEx().setSelected(s.isShapesSelNEx());
+			cbShapesData.setSelected(s.isShapeData());
+			cbX.setSelected(s.isX());
+			cbY.setSelected(s.isY());
+			cbZ.setSelected(s.isZ());
+		}
 	}
 	
 	
@@ -418,5 +555,35 @@ public class DialogDataSaver extends JFrame {
 	}
 	public JComboBox getComboDataFormat() {
 		return comboDataFormat;
+	}
+	public JPanel getPnExportSelections() {
+		return pnExportSelections;
+	}
+	public JCheckBox getCbSummary() {
+		return cbSummary;
+	}
+	public JCheckBox getCbDef() {
+		return cbDef;
+	}
+	public JCheckBox getCbArray() {
+		return cbArray;
+	}
+	public JCheckBox getCbImgSelNEx() {
+		return cbImgSelNEx;
+	}
+	public JCheckBox getCbImgSel() {
+		return cbImgSel;
+	}
+	public JCheckBox getCbImgEx() {
+		return cbImgEx;
+	}
+	public JCheckBox getCbShapesSelNEx() {
+		return cbShapesSelNEx;
+	}
+	public JCheckBox getCbShapes() {
+		return cbShapes;
+	}
+	public JPanel getPnCenter() {
+		return pnCenter;
 	}
 }

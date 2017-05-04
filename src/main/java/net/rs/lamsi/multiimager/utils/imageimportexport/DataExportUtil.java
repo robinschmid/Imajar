@@ -14,6 +14,7 @@ import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
 import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.massimager.Threads.ProgressUpdateTaskMonitor;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -314,8 +315,9 @@ LOOKUP_TABLE default
 	 * @param tableRows 
 	 * @param rectsInfo 
 	 * @param setImage2DDataExport
+	 * @throws Exception 
 	 */
-	public static void exportDataImage2DInRects(Image2D img, SettingsSelections selections, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException  { 
+	public static void exportDataImage2DInRects(Image2D img, SettingsSelections selections, SettingsImage2DDataSelectionsExport sett) throws Exception  { 
 		// copy selections
 		boolean update = false;
 		if(!img.equals(selections.getCurrentImage())) {
@@ -356,7 +358,7 @@ LOOKUP_TABLE default
 			XSSFWorkbook wb = new XSSFWorkbook();
 
 			// save data and selections to excel
-			selections.saveToExcel(xwriter, wb);
+			selections.saveToExcel(sett, xwriter, wb);
 
 			// final
 			xwriter.saveWbToFile(file, wb);

@@ -6,6 +6,8 @@ import java.io.File;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
@@ -28,7 +30,11 @@ public class SettingsImage2DQuantifierLinear extends SettingsImage2DQuantifier {
 		a=0;
 		b=1;
 	}
-	
+
+	@Override
+	public Class getSuperClass() {
+		return SettingsImage2DQuantifier.class; 
+	}
 	/**
 	 * the magic is done here
 	 */
@@ -69,9 +75,22 @@ public class SettingsImage2DQuantifierLinear extends SettingsImage2DQuantifier {
 	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		super.appendSettingsValuesToXML(elParent, doc);
+		toXML(elParent, doc, "a", a);
+		toXML(elParent, doc, "b", b);
 	}
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
+		super.loadValuesFromXML(el, doc);
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("a"))a = doubleFromXML(nextElement);  
+				else if(paramName.equals("b"))b = doubleFromXML(nextElement);  
+			}
+		}
 	} 
 	
 }

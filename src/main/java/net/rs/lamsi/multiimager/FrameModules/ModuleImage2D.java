@@ -18,6 +18,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleQuantifyStrategy;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
@@ -33,6 +34,7 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 	private ModuleBackgroundImg moduleBG;
 	private ModuleOperations moduleOperations;
 	private ModuleSelectExcludeData moduleSelect;
+	private ModuleQuantifyStrategy modQuantifier;
 	//
 
 	/**
@@ -78,12 +80,14 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 		moduleSelect = new ModuleSelectExcludeData(window);
 		addModule(moduleSelect);
 
+		modQuantifier = new ModuleQuantifyStrategy(window);
+		addModule(modQuantifier);
+		
 		moduleOperations = new ModuleOperations(window);
 		addModule(moduleOperations);
 
 		// add all modules for Image settings TODO add all mods
 		listSettingsModules.addElement(moduleGeneral.getModSplitConImg());
-		listSettingsModules.addElement(moduleOperations.getModQuantifier());
 	}
 	
 
@@ -110,5 +114,8 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 	}
 	public ModuleSelectExcludeData getModuleSelect() {
 		return moduleSelect;
+	}
+	public ModuleQuantifyStrategy getModuleQuantify() {
+		return modQuantifier;
 	}
 }

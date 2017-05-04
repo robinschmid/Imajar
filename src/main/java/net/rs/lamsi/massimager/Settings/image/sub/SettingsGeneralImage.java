@@ -36,7 +36,10 @@ public class SettingsGeneralImage extends Settings {
 	}
 	public static int MODE_SCANS_PER_LINE = 0, MODE_TIME_PER_LINE = 1;
 
-	protected String title = "NODEF", filepath = "";
+	protected String title = "NODEF", shortTitle = "", filepath = "";
+	protected boolean showShortTitle = true;
+	protected float xPosTitle = 0.9f, yPosTitle = 0.9f;
+	
 	protected float velocity, spotsize;
 	// crop marks
 	protected double x0=0,x1=0,y0=0,y1=0;
@@ -68,19 +71,28 @@ public class SettingsGeneralImage extends Settings {
 		spotsize = 50;
 		allFiles = true;
 		title = "";
+		shortTitle = "";
+		showShortTitle = true;
 		isTriggered = false;
 		timePerLine = 60;
 		deleteCropMarks();
 		
 		rotation.resetAll();
 		isBinaryData = false;
+		xPosTitle = 0.9f; 
+		yPosTitle = 0.9f;
 	}
 
 
-	public void setAll(String title, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
+	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
 		this.isBinaryData = isBinaryData; 
+		this.shortTitle = shortTitle;
+		this.title = title;
+		this.showShortTitle = useShortTitle;
+		this.xPosTitle = xPos;
+		this.yPosTitle = yPos;
 		rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
 		// imaging path? TODO
 	}
@@ -95,6 +107,14 @@ public class SettingsGeneralImage extends Settings {
 		img.getSettings().getSettImage().setTitle(name);
 		img.getSettings().getSettImage().setRAWFilepath(path);
 	}
+	
+	@Override
+	public void applyToHeatMap(Heatmap heat) {
+		super.applyToHeatMap(heat);
+		// TODO apply to title in heat
+		heat.setShortTitle(xPosTitle, yPosTitle, showShortTitle);
+	}
+	
 	//##########################################################
 	// xml input/output
 	@Override
@@ -107,6 +127,10 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "timePerLine", timePerLine); 
 		toXML(elParent, doc, "isBinaryData", isBinaryData); 
 		toXML(elParent, doc, "filepath", filepath); 
+		toXML(elParent, doc, "shortTitle", shortTitle); 
+		toXML(elParent, doc, "showShortTitle", showShortTitle); 
+		toXML(elParent, doc, "xPosTitle", xPosTitle); 
+		toXML(elParent, doc, "yPosTitle", yPosTitle); 
 		
 		rotation.appendSettingsToXML(elParent, doc);
 	}
@@ -120,13 +144,17 @@ public class SettingsGeneralImage extends Settings {
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("allFiles")) allFiles = booleanFromXML(nextElement); 
 				else if(paramName.equals("velocity"))velocity = floatFromXML(nextElement);  
-				else if(paramName.equals("spotsize"))spotsize = floatFromXML(nextElement);  
-				else if(paramName.equals("title"))title = nextElement.getTextContent();   
+				else if(paramName.equals("spotsize"))spotsize = floatFromXML(nextElement); 
+				else if(paramName.equals("xPosTitle"))xPosTitle = floatFromXML(nextElement); 
+				else if(paramName.equals("yPosTitle"))yPosTitle = floatFromXML(nextElement);  
+				else if(paramName.equals("title"))title = nextElement.getTextContent();  
+				else if(paramName.equals("shortTitle"))shortTitle = nextElement.getTextContent();   
 				else if(paramName.equals("isTriggered"))isTriggered = booleanFromXML(nextElement);  
 				else if(paramName.equals("timePerLine"))timePerLine = doubleFromXML(nextElement);  
 				else if(paramName.equals("isBinaryData"))isBinaryData = booleanFromXML(nextElement);  
+				else if(paramName.equals("showShortTitle"))showShortTitle = booleanFromXML(nextElement);  
 				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
-				else if(paramName.equals(rotation.getDescription())) 
+				else if(isSettingsNode(nextElement, rotation.getSuperClass()))
 					rotation.loadValuesFromXML(nextElement, doc);
 			}
 		}
@@ -278,6 +306,23 @@ public class SettingsGeneralImage extends Settings {
 		plot.getRangeAxis().setUpperBound(y1); 
 	}
 
+	
+	
+	public String getShortTitle() {
+		return shortTitle;
+	}
+
+	public boolean isShowShortTitle() {
+		return showShortTitle;
+	}
+
+	public void setShortTitle(String shortTitle) {
+		this.shortTitle = shortTitle;
+	}
+
+	public void setShowShortTitle(boolean showShortTitle) {
+		this.showShortTitle = showShortTitle;
+	}
 
 	/**
 	 * the raw file name of the raw path 
@@ -296,6 +341,22 @@ public class SettingsGeneralImage extends Settings {
 
 	public void setBinaryData(boolean isBinaryData) {
 		this.isBinaryData = isBinaryData;
+	}
+
+	public float getXPosTitle() {
+		return xPosTitle;
+	}
+
+	public float getYPosTitle() {
+		return yPosTitle;
+	}
+
+	public void setXPosTitle(float xPosTitle) {
+		this.xPosTitle = xPosTitle;
+	}
+
+	public void setYPosTitle(float yPosTitle) {
+		this.yPosTitle = yPosTitle;
 	}
 	
 }

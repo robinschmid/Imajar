@@ -29,7 +29,11 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
 		super.resetAll(); 
 		imgEx = null;
 	}
-	
+
+	@Override
+	public Class getSuperClass() {
+		return SettingsImage2DQuantifier.class; 
+	}
 	
 	@Override
 	public double calcIntensity(Image2D img, int line, int dp, double intensity) {

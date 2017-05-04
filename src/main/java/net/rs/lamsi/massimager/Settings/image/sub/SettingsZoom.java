@@ -52,10 +52,14 @@ public class SettingsZoom extends Settings {
 	// xml input/output
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		if(xrange!=null) {
 		toXML(elParent, doc, "xrange.lower", xrange.getLowerBound()); 
 		toXML(elParent, doc, "xrange.upper", xrange.getUpperBound()); 
+		}
+		if(yrange!=null) {
 		toXML(elParent, doc, "yrange.lower", yrange.getLowerBound()); 
-		toXML(elParent, doc, "yrange.upper", yrange.getUpperBound()); 
+		toXML(elParent, doc, "yrange.upper", yrange.getUpperBound());
+		}
 	}
 
 	@Override

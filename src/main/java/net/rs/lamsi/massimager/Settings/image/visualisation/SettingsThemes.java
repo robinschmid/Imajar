@@ -2,6 +2,7 @@ package net.rs.lamsi.massimager.Settings.image.visualisation;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Vector;
 
@@ -13,6 +14,8 @@ import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
 import net.rs.lamsi.massimager.Settings.Settings;
 
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLabelLocation;
+import org.jfree.chart.axis.NumberAxis;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -40,6 +43,19 @@ public class SettingsThemes extends Settings {
 	protected Color cTitle;
 	protected Font fontTitle;
 	protected boolean showTitle = false;
+	
+	// ShortTitle
+	protected Font fontShortTitle;
+	protected Color cShortTitle, cBGShortTitle;
+	
+	// scientific intensities
+	protected boolean useScientificIntensities = true;
+	protected int significantDigits = 2;
+	protected NumberFormat intensitiesNumberFormat;
+	
+	// paintscale title
+	protected String paintScaleTitle = "I";
+	protected boolean usePaintScaleTitle = true;
 	
 	// Axes styling
 	protected Font fontAxesTitle, fontAxesLabels;
@@ -89,7 +105,8 @@ public class SettingsThemes extends Settings {
 	
 
 	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
-			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos) {
+			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
+			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle) {
 		this.setAntiAliased(antiAlias);
 		this.setShowTitle(showTitle);
 		this.setNoBackground(noBG);
@@ -106,6 +123,19 @@ public class SettingsThemes extends Settings {
 		//
 		theme.setScaleXPos(scaleXPos);
 		theme.setScaleYPos(scaleYPos);
+
+		
+		// significant intensities
+		this.useScientificIntensities = useScientificIntensities;
+		this.significantDigits = significantDigits;
+		intensitiesNumberFormat = new DecimalFormat(useScientificIntensities? "0.0E0" : "#.0");
+		int digits = useScientificIntensities? significantDigits-1 : significantDigits;
+		intensitiesNumberFormat.setMaximumFractionDigits(digits);
+		intensitiesNumberFormat.setMinimumFractionDigits(digits);
+		
+		// paintscale title
+		this.paintScaleTitle = paintScaleTitle;
+		this.usePaintScaleTitle = usePaintScaleTitle;
 	}
 
 	@Override
@@ -130,9 +160,14 @@ public class SettingsThemes extends Settings {
 		cTitle = Color.BLACK; 
 		fontTitle = new Font("Arial", Font.PLAIN, 11);
 		
+		// Short title in plot
+		fontShortTitle = new Font("Arial", Font.BOLD, 14);
+		cShortTitle = Color.WHITE;
+		cBGShortTitle = new Color(60,120,155, 120);
+		
 		// axes
 		fontAxesTitle = new Font("Arial", Font.PLAIN, 11); 
-		fontAxesLabels = new Font("Arial", Font.PLAIN, 11);
+		fontAxesLabels = new Font("Arial", Font.PLAIN, 9);
 		cAxes = Color.BLACK;
 		cAxesFont = Color.BLACK;
 		// Domain Axis - x
@@ -154,11 +189,22 @@ public class SettingsThemes extends Settings {
 		// Labelgenerator (Labels inside plotdata) 
 		showLabelGens = true;
 		isAntiAliased = true;
-		fontLabelGen = new Font("Arial", Font.PLAIN, 11);
+		fontLabelGen = new Font("Arial", Font.PLAIN, 9);
 		chartOrientation = 0;
 		cChartBG = Color.BLACK; 
 		cPlotBG = Color.BLACK;
 		cPlotOutline = Color.BLACK;
+		
+		// significant intensities
+		useScientificIntensities = true;
+		significantDigits = 2;
+		intensitiesNumberFormat = new DecimalFormat("0.0E0");
+		intensitiesNumberFormat.setMaximumFractionDigits(significantDigits);
+		intensitiesNumberFormat.setMinimumFractionDigits(significantDigits);
+		
+		// paintscale title
+		paintScaleTitle = "I";
+		usePaintScaleTitle = true;
 		
 		// List of all FOnts
 		listFont.add(fontGeneral);
@@ -181,6 +227,16 @@ public class SettingsThemes extends Settings {
 		toXML(elParent, doc, "isAntiAliased", isAntiAliased); 
 		toXML(elParent, doc, "showTitle", showTitle); 
 		toXML(elParent, doc, "noBackground", isNoBackground()); 
+		
+		toXML(elParent, doc, "fontShortTitle", fontShortTitle); 
+		toXML(elParent, doc, "cShortTitle", cShortTitle); 
+		toXML(elParent, doc, "cBGShortTitle", cBGShortTitle); 
+		
+		toXML(elParent, doc, "significantDigits", significantDigits); 
+		toXML(elParent, doc, "useScientificIntensities", useScientificIntensities); 
+		
+		toXML(elParent, doc, "paintScaleTitle", paintScaleTitle); 
+		toXML(elParent, doc, "usePaintScaleTitle", usePaintScaleTitle); 
 
 		theme.appendThemeSettingsToXML(elParent, doc);
 	}
@@ -195,10 +251,25 @@ public class SettingsThemes extends Settings {
 				if(paramName.equals("isAntiAliased")) isAntiAliased = booleanFromXML(nextElement); 
 				else if(paramName.equals("showTitle"))showTitle = booleanFromXML(nextElement);  
 				else if(paramName.equals("noBackground"))setNoBackground(booleanFromXML(nextElement));  
+				else if(paramName.equals("fontShortTitle"))fontShortTitle = fontFromXML(nextElement);  
+				else if(paramName.equals("cShortTitle")) cShortTitle = colorFromXML(nextElement);  
+				else if(paramName.equals("cBGShortTitle")) cBGShortTitle = colorFromXML(nextElement);  
+				else if(paramName.equals("significantDigits")) significantDigits = intFromXML(nextElement);  
+				else if(paramName.equals("useScientificIntensities")) useScientificIntensities = booleanFromXML(nextElement);
+				else if(paramName.equals("paintScaleTitle")) paintScaleTitle = (nextElement.getTextContent());  
+				else if(paramName.equals("usePaintScaleTitle")) usePaintScaleTitle = booleanFromXML(nextElement);  
 				else if(paramName.equals(MyStandardChartTheme.XML_DESC))
 					theme.loadValuesFromXML(nextElement, doc);
 			}
 		}
+		// 
+		if(paintScaleTitle.equals("null"))
+			paintScaleTitle = null;
+		// create numberformats
+		intensitiesNumberFormat = new DecimalFormat(useScientificIntensities? "0.0E0" : "#.0");
+		int digits = significantDigits - (useScientificIntensities? 1 : 0);
+		intensitiesNumberFormat.setMaximumFractionDigits(digits);
+		intensitiesNumberFormat.setMinimumFractionDigits(digits);
 	}
 	
 	@Override
@@ -207,11 +278,23 @@ public class SettingsThemes extends Settings {
 		applyToChart(heat.getChart());
 		// 
 		ScaleInPlot s = heat.getScaleInPlot();
+		
 		s.setFactor(theme.getScaleFactor());
 		s.setUnit(theme.getScaleUnit());
 		s.setValue(theme.getScaleValue());
 		s.setVisible(theme.isShowScale());
 		s.setPosition(theme.getScaleXPos(),theme.getScaleYPos());
+		
+		heat.getShortTitle().setFont(fontShortTitle);
+		heat.getShortTitle().setPaint(cShortTitle);
+		heat.getShortTitle().setBackgroundPaint(cBGShortTitle);
+		
+		// set numberformat
+		if(heat.getLegend()!=null) {
+			((NumberAxis)heat.getLegend().getAxis()).setNumberFormatOverride(intensitiesNumberFormat);
+			((NumberAxis)heat.getLegend().getAxis()).setLabelLocation(AxisLabelLocation.HIGH_END);
+			((NumberAxis)heat.getLegend().getAxis()).setLabel(usePaintScaleTitle? paintScaleTitle : null);
+		}
 	}
 	
 	/**
@@ -526,6 +609,51 @@ public class SettingsThemes extends Settings {
 	}
 	public void setID(THEME themeID) {
 		theme.setID(themeID);
+	}
+	public Font getFontShortTitle() {
+		return fontShortTitle;
+	}
+	public Color getcShortTitle() {
+		return cShortTitle;
+	}
+	public void setFontShortTitle(Font fontShortTitle) {
+		this.fontShortTitle = fontShortTitle;
+	}
+	public void setcShortTitle(Color cShortTitle) {
+		this.cShortTitle = cShortTitle;
+	}
+	public Color getcBGShortTitle() {
+		return cBGShortTitle;
+	}
+	public void setcBGShortTitle(Color cBGShortTitle) {
+		this.cBGShortTitle = cBGShortTitle;
+	}
+	public boolean isUseScientificIntensities() {
+		return useScientificIntensities;
+	}
+	public int getSignificantDigits() {
+		return significantDigits;
+	}
+	public void setUseScientificIntensities(boolean useScientificIntensities) {
+		this.useScientificIntensities = useScientificIntensities;
+	}
+	public void setSignificantDigits(int significantDigits) {
+		this.significantDigits = significantDigits;
+	}
+	public NumberFormat getIntensitiesNumberFormat() {
+		return intensitiesNumberFormat;
+	}
+	public String getPaintScaleTitle() {
+		return paintScaleTitle;
+	}
+	public boolean isUsePaintScaleTitle() {
+		return usePaintScaleTitle;
+	}
+	public void setPaintScaleTitle(String paintScaleTitle) {
+		this.paintScaleTitle = paintScaleTitle;
+	}
+	public void setUsePaintScaleTitle(boolean usePaintScaleTitle) {
+		this.usePaintScaleTitle = usePaintScaleTitle;
 	}
 	
 }

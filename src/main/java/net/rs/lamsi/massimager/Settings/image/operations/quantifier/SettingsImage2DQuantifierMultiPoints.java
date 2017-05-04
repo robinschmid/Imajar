@@ -9,6 +9,7 @@ import java.util.Vector;
 
 
 
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,6 +38,10 @@ public class SettingsImage2DQuantifierMultiPoints extends SettingsImage2DQuantif
 		super.resetAll(); 
 	}
 
+	@Override
+	public Class getSuperClass() {
+		return SettingsImage2DQuantifier.class; 
+	}
 
 	@Override
 	public double calcIntensity(Image2D img,  int line, int dp, double intensity) {

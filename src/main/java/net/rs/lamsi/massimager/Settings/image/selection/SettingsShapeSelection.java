@@ -9,6 +9,7 @@ import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
@@ -31,7 +32,15 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	}
 	// what to draw or do
 	public enum SelectionMode {
-		SELECT, EXCLUDE, INFO;
+		SELECT("Sel"), EXCLUDE("Excl"), INFO("Info");
+		
+		private final String shortTitle;
+		public String getShortTitle() {
+			return shortTitle;
+		}
+		private SelectionMode(String shortTitle) {
+			this.shortTitle = shortTitle;
+		}
 	}
 
 	public static final BasicStroke stroke = new BasicStroke(1.5f);
@@ -69,6 +78,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	public void resetAll() {  
 	}
 
+	@Override
+	public Class getSuperClass() {
+		return SettingsShapeSelection.class; 
+	}
+	
 	public void setCurrentImage(Image2D img) {
 		if(img!=null && !img.equals(currentImg)) {
 			currentImg = img;
@@ -82,19 +96,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 * @return
 	 */
 	public static SettingsShapeSelection loadSettingsFromXML(Element elParent, Document doc) {
-		SHAPE shape = SHAPE.valueOf(elParent.getTextContent());
-		SettingsShapeSelection s = null;
-		switch(shape) {
-		case RECT:
-			s = new SettingsRectSelection(SelectionMode.SELECT);
-			break;
-		case ELIPSE:
-			s = new SettingsElipseSelection(SelectionMode.SELECT);
-			break;
-		case POLYGON:
-			s = new SettingsPolygonSelection(SelectionMode.SELECT);
-			break;
-		}
+		SettingsShapeSelection s = (SettingsShapeSelection) Settings.createSettings(Settings.getRealClassFromXML(elParent));
 		if(s!=null) {
 			// load shape and mode
 			s.loadValuesFromXML(elParent, doc);
@@ -118,23 +120,10 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	//##########################################################
 	// xml input/output
 
-	/**
-	 * saves settings and calls abstract appendSettingsValuesToXML
-	 * creates a new parent element for this settings class
-	 * @param elParent
-	 * @param doc
-	 */
-	@Override
-	public void appendSettingsToXML(Element elParent, Document doc) { 
-		Element elSett = doc.createElement(description);
-		elParent.appendChild(elSett);
-		appendSettingsValuesToXML(elSett, doc);
-	}
-	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		saveShapeToXML(elParent, doc, shape);
-		// toXML(elParent, doc, "shape", xrange.getLowerBound()); 
+		toXML(elParent, doc, "selectionMode", mode);
 	}
 
 	@Override
@@ -222,6 +211,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 			stats.addValue(i);
 			if(!isExcluded)
 				statsRegardingExclusion.addValue(i);
+			
 			return true;
 		}
 		else return false;
@@ -265,12 +255,16 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
 	public void setShape(T shape) {
 		this.shape = shape;
+		stats.setShape(shape);
+		statsRegardingExclusion.setShape(shape);
 	}
 	public SelectionMode getMode() {
 		return mode;
 	}
 	public void setMode(SelectionMode mode) {
 		this.mode = mode;
+		stats.setMode(mode);
+		statsRegardingExclusion.setMode(mode);
 	}
 	public T getShape() {
 		return shape;

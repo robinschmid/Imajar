@@ -1,6 +1,7 @@
 package net.rs.lamsi.massimager.Settings;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -26,6 +27,7 @@ import javax.xml.xpath.XPathFactory;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Heatmap.Heatmap;
+import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.massimager.Settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -37,6 +39,9 @@ import org.w3c.dom.NodeList;
 public abstract class Settings implements Serializable {  
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
+	
+	// the super class
+	protected static final String XMLATT_CLASS = "realClass";
 	//
 	//protected final String parameterElement = "parameter";
 	//protected final String nameAttribute = "name";
@@ -48,14 +53,24 @@ public abstract class Settings implements Serializable {
 	// change listener
 	protected Vector<SettingsChangedListener> changeListener;
 
-
 	public Settings(String description, String path, String fileEnding) {
 		super();
 		this.path = path;
 		this.fileEnding = fileEnding; 
 		this.description = description;
 	}
+	
+	/**
+	 * the super class to find settings in hashmaps
+	 * @return
+	 */
+	public Class getSuperClass() {
+		return this.getClass();
+	}
 
+	/**
+	 * reset all parameters
+	 */
 	public abstract void resetAll();
 
 	/**
@@ -135,7 +150,10 @@ public abstract class Settings implements Serializable {
 	 * @param doc
 	 */
 	public void appendSettingsToXML(Element elParent, Document doc) { 
-		Element elSett = doc.createElement(description);
+		Element elSett = doc.createElement(this.getSuperClass().getName());
+		// save real class as attribute
+		if(!this.getClass().equals(this.getSuperClass()))
+			elSett.setAttribute(XMLATT_CLASS, this.getClass().getName());
 		elParent.appendChild(elSett);
 		appendSettingsValuesToXML(elSett, doc);
 	}
@@ -169,6 +187,12 @@ public abstract class Settings implements Serializable {
 		    	Point2D p = (Point2D)o;
 		    	String s = String.valueOf(p.getX())+";"+String.valueOf(p.getY());
 		    	paramElement.setTextContent(s);
+		    }
+		    else if(Font.class.isInstance(o)) {
+		    	Font f = (Font)o;
+		    	paramElement.setTextContent(f.getName());
+		    	paramElement.setAttribute("style", ""+f.getStyle());
+		    	paramElement.setAttribute("size", ""+f.getSize());
 		    }
 		    else paramElement.setTextContent(String.valueOf(o));
 		}
@@ -206,7 +230,7 @@ public abstract class Settings implements Serializable {
 		    paramElement.setTextContent(res.toString());
 		}
 	}
-	
+
 	
 	//'''''''''''''''''''''''''''''''''
 	// load
@@ -265,9 +289,8 @@ public abstract class Settings implements Serializable {
 	 */
 	public void loadSettingsFromXML(Document doc, XPath xpath, String parentpath) throws XPathExpressionException {
 		// root= settings 
-		XPathExpression expr = xpath.compile(parentpath+"/"+description);
-		NodeList nodes = (NodeList) expr.evaluate(doc,
-				XPathConstants.NODESET);
+		XPathExpression expr = xpath.compile(parentpath+"/"+this.getSuperClass().getName());
+		NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
 		if (nodes.getLength() == 1) {
 			Element el = (Element) nodes.item(0);
 			loadValuesFromXML(el, doc);
@@ -346,7 +369,20 @@ public abstract class Settings implements Serializable {
         }
         return null;
     }
-
+    /**
+     * 
+     * @param el
+     * @return null if no value was found
+     */
+    public static Font fontFromXML(final Element el) {
+        final String family = el.getTextContent();
+        if (family.length() > 0) {
+        	int style = Integer.valueOf(el.getAttribute("style"));
+        	int size = Integer.valueOf(el.getAttribute("size"));
+            return new Font(family, style, size);
+        }
+        return null;
+    }
     /**
      * 
      * @param el
@@ -398,9 +434,89 @@ public abstract class Settings implements Serializable {
         }
         return null;
     }
+    
+
+	/**
+	 * hashed map is the super class of the class in the xml node
+	 * node name
+	 * @param nextElement
+	 * @return
+	 */
+	public static Class getHashedClassFromXML(Element nextElement) {
+		try {
+			// get super class name (hashed class name which was inserted to list) 
+			Class hashedClass = Class.forName(nextElement.getNodeName());
+			return hashedClass;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	/**
+	 * real name of this class which was set as an attribute
+	 * @return
+	 */
+	public static Class getRealClassFromXML(Element nextElement) {
+		try {
+			// get super class name (hashed class name which was inserted to list) 
+			String hashedClassName = nextElement.getAttribute(XMLATT_CLASS);
+			if(hashedClassName.length()==0)
+				return getHashedClassFromXML(nextElement);
+			else {
+				Class hashedClass = Class.forName(hashedClassName);
+				return hashedClass;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * checks if the node is a settingsnode of this class
+	 * @param nextElement
+	 * @param c
+	 * @return
+	 */
+	public boolean isSettingsNode(Element nextElement, Class c) {
+		Class hashedClass = getHashedClassFromXML(nextElement);
+		return (hashedClass!=null && hashedClass.equals(c));
+	}
 	//'''''''''''''''''''''''''''''
 	// load specific values
 
+	//'''''''''''''''''''''''''''''''''
+	// create 
+	/**
+	 * creates a new instance of a settings class
+	 * @param className
+	 * @return
+	 */
+	public static Settings createSettings(String className) {
+		try {
+			Class<?> clazz = Class.forName(className);
+			return createSettings(clazz);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	/**
+	 * creates a new instance of a settings class
+	 * @param className
+	 * @return
+	 */
+	public static Settings createSettings(Class clazz) {
+		try {
+			Constructor<?> ctor = clazz.getConstructor();
+			Object object = ctor.newInstance();
+			return (Settings) object;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	//##################################################################
 	// binary write and read
 	/**

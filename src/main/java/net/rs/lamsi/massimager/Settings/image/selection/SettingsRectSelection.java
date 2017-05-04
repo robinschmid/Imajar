@@ -17,9 +17,16 @@ public class SettingsRectSelection extends SettingsShapeSelection<Rectangle2D.Fl
 	public SettingsRectSelection(SelectionMode mode) {
 		super(mode, new Rectangle2D.Float(0, 0, 0, 0));
 	} 
+	public SettingsRectSelection() {
+		super(SelectionMode.SELECT, new Rectangle2D.Float(0, 0, 0, 0));
+	} 
 
 	@Override
 	public void resetAll() {  
+	}
+	@Override
+	public Class getSuperClass() {
+		return SettingsShapeSelection.class; 
 	}
 
 	//##########################################################

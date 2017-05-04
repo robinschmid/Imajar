@@ -20,9 +20,16 @@ public class SettingsElipseSelection extends SettingsShapeSelection<Ellipse2D.Fl
 	public SettingsElipseSelection(SelectionMode mode) {
 		super(mode, new Ellipse2D.Float(0, 0, 0, 0));
 	} 
+	public SettingsElipseSelection() {
+		this(SelectionMode.SELECT);
+	} 
 
 	@Override
 	public void resetAll() {  
+	}
+	@Override
+	public Class getSuperClass() {
+		return SettingsShapeSelection.class; 
 	}
 
 	//##########################################################

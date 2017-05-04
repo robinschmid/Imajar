@@ -24,10 +24,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
     private static final long serialVersionUID = 1L;
     private static Vector<Color> STANDARD_COLORS;
     //
-	// theme settings
-	protected SettingsThemes settTheme; 
-	
-	protected SettingsZoom settZoom;
 	
 	// the currently edited paintscale
 	protected int currentPaintScale = 0;
@@ -46,14 +42,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	public SettingsImageOverlay() {
 		super("SettingsImageOverlay", "/Settings/ImageOv/", "setImgOv"); 
 		// standard theme
-		this.settTheme = new SettingsThemes(THEME.DARKNESS);
-		//
-		this.settZoom = new SettingsZoom();
-
-		// TODO add sub settings
-		addSettings(settTheme);
-		addSettings(settZoom);
-		
 		resetAll();
 	} 
 
@@ -119,7 +107,8 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		psSettings.clear();
 		active = null;
 		// other
-		settTheme = new SettingsThemes(THEME.DARKNESS);
+		addSettings(new SettingsThemes(THEME.DARKNESS));
+		addSettings(new SettingsZoom());
 	}
 
 	@Override
@@ -159,7 +148,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 				else if(paramName.startsWith("blend")) {
 					blend = BlendComposite.getInstance(BlendingMode.valueOf(nextElement.getTextContent()), Float.valueOf(nextElement.getAttribute("alpha")));
 				}
-				else if(paramName.equals(ps.getDescription())) {
+				else if(isSettingsNode(nextElement, ps.getSuperClass())) {
 					SettingsPaintScale ps2 = new SettingsPaintScale();
 					ps2.loadValuesFromXML(nextElement, doc);
 					psSettings.addElement(ps2);

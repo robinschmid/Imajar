@@ -64,7 +64,6 @@ import org.jfree.data.Range;
 public class MultiImageFrame extends JFrame implements AxesRangeChangedListener {
 
 	private JFrame thisframe;
-	private Font font = new Font("Arial", Font.BOLD, 14);
 	private JPanel contentPane;
 	private JSplitPane split;
 	private JPanel pnGridImg;
@@ -79,8 +78,6 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 	private boolean[] uptodate;
 	// insert heatmaps in this array
 	private Heatmap[] heat;
-	// title
-	private ImageTitle[] titles;
 	// panels in each grid
 	private JPanel pn[];
 
@@ -388,13 +385,9 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 	 * @param selected
 	 */
 	protected void showTitles(boolean show) { 
-		if(titles!=null) {
-			for(int i=0; i<titles.length; i++) {
-				ImageTitle h = titles[i];
-				if(h!=null) {
-					if(show) heat[i].getPlot().addAnnotation(h.getAnnotation());
-					else heat[i].getPlot().removeAnnotation(h.getAnnotation());
-				}
+		if(heat!=null) {
+			for(int i=0; i<heat.length; i++) {
+				heat[i].getShortTitle().setVisible(show);
 			}
 		}
 	}
@@ -449,7 +442,6 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		
 		heat = new Heatmap[group.size()];
 		uptodate = new boolean[group.size()];
-		titles = new ImageTitle[group.size()];
 		pn = new JPanel[group.size()];
 		// for all images
 		for(int k =0; k<group.size(); k++) {
@@ -617,11 +609,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 					
 					// title?
 					XYPlot plot = heat[i].getPlot();
-					ImageTitle lt = new ImageTitle(group.get(i), font); 
-					lt.setVisible(getCbShowTitles().isSelected());
-					plot.addAnnotation(lt.getAnnotation()); 
-					// 
-					titles[i] = lt;
+					plot.addAnnotation(heat[i].getShortTitle().getAnnotation()); 
 				} 
 
 				// set new map

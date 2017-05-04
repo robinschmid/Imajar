@@ -15,6 +15,7 @@ import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinu
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
@@ -223,7 +224,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			return i;
 		}
 	}
-	
+
 	/**
 	 * intensity values in respect to rotation reflection imaging mode
 	 * @param raw
@@ -591,7 +592,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		int lines = getMaxLineCount();
 		int maxdp = getMaxDP();
 		int currentdp = 0;
-		
+
 		// uses rotation
 		boolean usesRot = !(imgMode==IMAGING_MODE.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false);
 
@@ -822,6 +823,57 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	}
 
 
+
+	/**
+	 * generate XYI matrices [line][dp]
+	 * @param raw 
+	 * @param useSettings rotation and imaging mode
+	 * @return
+	 */
+	public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
+		if(useSettings) {
+			int cols = getMaxLineCount();
+			int rows = getMaxDP();
+			
+			Double[][] z = new Double[cols][rows];
+			Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+
+			// c for lines
+			for(int c=0; c<cols; c++) {
+				// increment l
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					double tmp = getI(raw,c,r);
+					z[c][r] = tmp;
+					// NaN?
+					x[c][r] = !Double.isNaN(tmp)? getX(raw,c,r) : Float.NaN;
+					y[c][r] = !Double.isNaN(tmp)? getY(raw,c,r) : Float.NaN;
+				} 
+			}
+			return new XYIDataMatrix(x,y,z);
+		}
+		else {
+			int cols = data.getLinesCount();
+			int rows = data.getMaxDP();
+			
+			Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+			Double[][] z = new Double[cols][rows];
+			
+			for(int c=0; c<cols; c++) {
+				int length = data.getLineLength(c);
+				// increment l
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					z[c][r] = r<length? getIRaw(c,r) : Double.NaN;
+					// NaN?
+					x[c][r] = r<length? getXRaw(raw,c,r) : Float.NaN;
+					y[c][r] = r<length? getYRaw(raw,c) : Float.NaN;
+				} 
+			}
+			return new XYIDataMatrix(x,y,z);
+		}
+	}
+
 	/**
 	 * 
 	 * @param scale
@@ -1001,7 +1053,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	/**
 	 * Returns the intensity matrix
 	 * @param raw
-	 * @return
+	 * @return [line][dp]
 	 */
 	public Object[][] toIMatrix(boolean raw, boolean useSettings) {
 		// time only once?
@@ -1040,7 +1092,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * Returns the intensity only.
 	 * with boolean map as alpha map
 	 * @param sett
-	 * @return
+	 * @return [line][dp]
 	 */
 	public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
 		// time only once?
@@ -1192,6 +1244,10 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		return settings.getSettImage().getTitle();
 	} 
 
+	public String getShortTitle() { 
+		String s = settings.getSettImage().getShortTitle();
+		return s.length()>0? s : getTitle();
+	} 
 	//#########################################################################################################
 	// GETTER AND SETTER
 	/**
@@ -1231,6 +1287,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			try {
 				// save name and path
 				String name = img.getTitle();
+				String shortName = img.getShortTitle();
+				
 				String path = img.getSettings().getSettImage().getRAWFilepath();
 				// copy all TODO
 				img.setSettings(BinaryWriterReader.deepCopy(this.settings.getSettImage()));
@@ -1239,8 +1297,12 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 				//			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
 				//			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
 				//			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
-				//			img.setSettZoom(BinaryWriterReader.deepCopy(this.getSettZoom()));
+				//			img.setSettZoom(BinaryWriterReader.deepCopy(this.getdSettZoom()));
 				// set name and path
+				// only reset to old short title if the titles were not the same
+				if(!name.equals(img.getTitle()))
+					img.getSettings().getSettImage().setShortTitle(shortName);
+				// reset to old title
 				img.getSettings().getSettImage().setTitle(name);
 				img.getSettings().getSettImage().setRAWFilepath(path);
 			} catch (Exception e) { 
@@ -1889,16 +1951,16 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		// out of bounds
 		if(!isInBounds(l,dp))
 			return true;
-		
+
 		// no exculsion rects?
 		SettingsSelections sel = settings.getSettSelections();
 		if(!sel.hasExclusions())
 			return false;
-		
+
 		// coordinates
 		float x = getX(false, l, dp);
 		float y = getY(false, l, dp);
-		
+
 		// check if dp coordinates are in an exclude rect
 		return sel.isExcluded(x,y);
 	}
@@ -1921,7 +1983,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			// coordinates
 			float x = getX(false, l, dp);
 			float y = getY(false, l, dp);
-			
+
 			// check if dp coordinates are in an sel rect
 			return sel.isSelected(x, y, false);
 		}

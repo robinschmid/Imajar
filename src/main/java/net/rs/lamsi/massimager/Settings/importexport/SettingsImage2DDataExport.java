@@ -14,9 +14,12 @@ public class SettingsImage2DDataExport extends Settings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
-	public SettingsImage2DDataExport() {
-		super("ImageDataExport","/Settings/Export/Image2D", "settExImg2DData"); 
+	public SettingsImage2DDataExport(String description, String path, String fileEnding) {
+		super(description, path, fileEnding);
 		resetAll();
+	}
+	public SettingsImage2DDataExport() {
+		this("ImageDataExport","/Settings/Export/Image2D", "settExImg2DData"); 
 	} 
 	/**
 	 * export type for combobox

@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Vector;
@@ -109,11 +111,15 @@ public class Image2DImportExportUtil {
 	        	}
 	        }
 	        // for all images:
+	        NumberFormat format = new DecimalFormat("0000");
+	        int c = 0;
 	        for(Image2D img : images) {	
+	        	c++;
+	        	String num = format.format(c)+"_";
 	        	try {
 		        	// export ymatrix
 					String matrix = img.toICSV(true, SEPARATION, false);
-					parameters.setFileNameInZip(img.getTitle()+".csv");
+					parameters.setFileNameInZip(num+img.getTitle()+".csv");
 					out.putNextEntry(null, parameters);
 					byte[] data = matrix.getBytes();
 					out.write(data, 0, data.length);
@@ -121,7 +127,7 @@ public class Image2DImportExportUtil {
 					
 		        	// export settings
 					Settings sett = img.getSettings();
-					parameters.setFileNameInZip(FileAndPathUtil.addFormat(img.getTitle(), sett.getFileEnding()));
+					parameters.setFileNameInZip(FileAndPathUtil.addFormat(num+img.getTitle(), sett.getFileEnding()));
 					out.putNextEntry(null, parameters);
 					sett.saveToXML(out);
 					out.closeEntry();

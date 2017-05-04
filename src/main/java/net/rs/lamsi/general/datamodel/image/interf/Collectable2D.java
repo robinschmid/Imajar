@@ -69,6 +69,8 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 	public abstract Icon getIcon(int maxw, int maxh);
 	
 	public abstract String getTitle();
+
+	public abstract String getShortTitle();
 	
 	public SettingsThemes getSettTheme() {
 		return (SettingsThemes) getSettingsByClass(SettingsThemes.class);

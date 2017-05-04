@@ -22,21 +22,27 @@ public class ImageTitle extends TextTitle {
 	private XYTitleAnnotation ta;
 
 	
-	public ImageTitle(Collectable2D img, Font font) {
+	public ImageTitle(Collectable2D img, Font font, Color color, Color bg, boolean visible, float x, float y) {
 		super(img.getTitle(), font);
+		setPaint(color);
+		setBackgroundPaint(bg);
+
 		this.img = img;
 		 
-		this.setBackgroundPaint(new Color(200, 200, 255, 100));
 		this.setFrame(new BlockBorder(Color.white));
 		this.setPosition(RectangleEdge.BOTTOM);
-		ta = new XYTitleAnnotation(0.98, 0.02, this,RectangleAnchor.BOTTOM_RIGHT); 
+		ta = new XYTitleAnnotation(x, y, this,RectangleAnchor.BOTTOM_RIGHT); 
 		ta.setMaxWidth(0.48);
+		setVisible(visible);
 	} 
 	
 	@Override
 	public Object draw(Graphics2D g2, Rectangle2D area, Object params) {
-		setText(img.getTitle());
-		return super.draw(g2, area, params);
+		if(isVisible()) {
+			setText(img.getShortTitle());
+			return super.draw(g2, area, params);
+		}
+		else return null;
 	} 
 	
 	
@@ -44,4 +50,9 @@ public class ImageTitle extends TextTitle {
 		return ta;
 	}
 	
+	public XYTitleAnnotation setPosition(float x, float y) {
+		ta = new XYTitleAnnotation(x, y, this,RectangleAnchor.BOTTOM_RIGHT); 
+		ta.setMaxWidth(0.48);
+		return ta;
+	}
 }

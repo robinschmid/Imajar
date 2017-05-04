@@ -2,8 +2,11 @@ package net.rs.lamsi.massimager.Settings.image.operations.quantifier;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.massimager.Settings.Settings;
+import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 
 public abstract class SettingsImage2DQuantifier extends Settings implements Image2DQuantifyStrategyImpl {
 	// do not change the version!
@@ -55,9 +58,18 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		toXML(elParent, doc, "isActive", isActive);
 	}
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
+		NodeList list = el.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element nextElement = (Element) list.item(i);
+				String paramName = nextElement.getNodeName();
+				if(paramName.equals("isActive"))isActive = booleanFromXML(nextElement);  
+			}
+		}
 	} 
 	
 }

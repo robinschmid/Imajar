@@ -40,7 +40,6 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 	protected Image2D imgBlank, imgIS;
 	//
 	private ImageEditorWindow window; 
-	private ModuleQuantifyStrategy modQuantifier;
 	private JTextField txtBlankTitle, txtISTitle;
 	private JTextField txtBlankPath, txtISPath;
 	private JCheckBox cbUseBlank, cbUseIS;
@@ -71,9 +70,6 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 		super("Operations", false, SettingsImage2DOperations.class, Image2D.class);
 
 		window = wnd;
-		modQuantifier = new ModuleQuantifyStrategy(wnd);
-		modQuantifier.setShowTitleAlways(true);
-		getPnContent().add(modQuantifier, BorderLayout.SOUTH);
 		
 		// same with IS
 		Module modIS = new Module();
@@ -131,7 +127,7 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 		pnISContent.add(btnChooseFromImaged, "cell 1 6,growx");
 		
 		north = new JPanel();
-		getPnContent().add(north, BorderLayout.NORTH);
+		getPnContent().add(north, BorderLayout.SOUTH);
 		north.setLayout(new BorderLayout(0, 0));
 		
 		Module modBlank = new Module("Blank");
@@ -479,9 +475,6 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 	
 	//################################################################################################
 	// GETTERS AND SETTERS  
-	public ModuleQuantifyStrategy getModQuantifier() {
-		return modQuantifier;
-	}
 	public JTextField getTxtBlankPath() {
 		return txtBlankPath;
 	}

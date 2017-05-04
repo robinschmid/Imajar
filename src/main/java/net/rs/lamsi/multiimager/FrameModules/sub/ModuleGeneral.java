@@ -2,8 +2,10 @@ package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -14,21 +16,26 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
+import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
+import net.rs.lamsi.massimager.Frames.FrameWork.JFontSpecs;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
+import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
@@ -54,6 +61,12 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	private JToggleButton btnReflectVertical;
 	private ModuleSplitContinousImage modSplitConImg;
 	private JCheckBox cbBiaryData;
+	private JTextField txtShortTitle;
+	private JCheckBox cbShortTitle;
+	private JTextField txtXPosTitle;
+	private JTextField txtYPosTitle;
+	private JFontSpecs fontShortTitle;
+	private JColorPickerButton colorBGShortTitle;
 
 	/**
 	 * Create the panel.
@@ -68,7 +81,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		
 		JPanel pnTitleANdLaser = new JPanel();
 		pnNorth.add(pnTitleANdLaser, BorderLayout.NORTH);
-		pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][]"));
+		pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][]"));
 		
 		JLabel lblTitle = new JLabel("title");
 		pnTitleANdLaser.add(lblTitle, "cell 0 0,alignx trailing");
@@ -80,37 +93,68 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		txtTitle.setAlignmentY(Component.TOP_ALIGNMENT);
 		txtTitle.setColumns(10);
 		
+		cbShortTitle = new JCheckBox("short title");
+		cbShortTitle.setSelected(true);
+		cbShortTitle.setHorizontalAlignment(SwingConstants.TRAILING);
+		pnTitleANdLaser.add(cbShortTitle, "cell 0 1,alignx right");
+		
+		txtShortTitle = new JTextField();
+		txtShortTitle.setHorizontalAlignment(SwingConstants.LEFT);
+		pnTitleANdLaser.add(txtShortTitle, "flowx,cell 1 1,alignx left");
+		txtShortTitle.setColumns(10);
+		
 		JLabel lblVelocityx = new JLabel("velocity (x | \u00B5m/s)");
-		pnTitleANdLaser.add(lblVelocityx, "cell 0 1,alignx trailing");
+		pnTitleANdLaser.add(lblVelocityx, "cell 0 3,alignx trailing");
 		lblVelocityx.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		
 		txtVelocity = new JTextField();
-		pnTitleANdLaser.add(txtVelocity, "cell 1 1");
+		pnTitleANdLaser.add(txtVelocity, "cell 1 3");
 		txtVelocity.setAlignmentY(Component.TOP_ALIGNMENT);
 		txtVelocity.setColumns(10);
 		
 		JLabel lblSpotSize = new JLabel("spot size (y | \u00B5m)");
-		pnTitleANdLaser.add(lblSpotSize, "cell 0 2,alignx trailing");
+		pnTitleANdLaser.add(lblSpotSize, "cell 0 4,alignx trailing");
 		lblSpotSize.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		
 		txtSpotsize = new JTextField();
-		pnTitleANdLaser.add(txtSpotsize, "cell 1 2");
+		pnTitleANdLaser.add(txtSpotsize, "cell 1 4");
 		txtSpotsize.setAlignmentY(Component.TOP_ALIGNMENT);
 		txtSpotsize.setColumns(10);
 		
 		JButton btnCommentary = new JButton("Commentary");
-		pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 3");
+		pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 5");
 		btnCommentary.setToolTipText("Commentary with dates");
 		
 		JButton btnMetadata = new JButton("Metadata");
-		pnTitleANdLaser.add(btnMetadata, "cell 1 3");
+		pnTitleANdLaser.add(btnMetadata, "cell 1 5");
 		btnMetadata.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		btnMetadata.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		btnMetadata.setToolTipText("Metadata such as used instruments and methods");
 		
 		cbBiaryData = new JCheckBox("Binary data");
 		cbBiaryData.setToolTipText("Is data binary? Like binary map export from multi view window.");
-		pnTitleANdLaser.add(cbBiaryData, "cell 0 4 2 1");
+		pnTitleANdLaser.add(cbBiaryData, "cell 0 6 2 1");
+		
+		txtXPosTitle = new JTextField();
+		txtXPosTitle.setToolTipText("X position in percent");
+		txtXPosTitle.setText("0.9");
+		pnTitleANdLaser.add(txtXPosTitle, "cell 1 1");
+		txtXPosTitle.setColumns(5);
+		
+		txtYPosTitle = new JTextField();
+		txtYPosTitle.setToolTipText("Y position in percent");
+		txtYPosTitle.setText("0.9");
+		txtYPosTitle.setColumns(5);
+		pnTitleANdLaser.add(txtYPosTitle, "cell 1 1");
+		
+		
+		// all family names of fonts
+		fontShortTitle = new JFontSpecs();
+		pnTitleANdLaser.add(fontShortTitle, "flowx,cell 0 2 2 1,alignx left");
+
+		colorBGShortTitle = new JColorPickerButton(this);
+		pnTitleANdLaser.add(colorBGShortTitle, "cell 0 2");
+		colorBGShortTitle.setColor(Color.BLACK);
 		
 		//########################################################
 		// add MODULESplitContinous Image TODO
@@ -274,6 +318,14 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	@Override
 	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 		modSplitConImg.addAutoRepainter(al, cl, dl, ccl, il);
+		
+		cbShortTitle.addItemListener(il);
+		txtShortTitle.getDocument().addDocumentListener(dl);
+		txtXPosTitle.getDocument().addDocumentListener(dl);
+		txtYPosTitle.getDocument().addDocumentListener(dl);
+		
+		colorBGShortTitle.addColorChangedListener(ccl);
+		fontShortTitle.addListener(ccl, il, dl);
 	}
 	//################################################################################################
 	// LOGIC
@@ -290,6 +342,18 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		this.getTxtTitle().setText(si.getTitle());
 		this.getTxtSpotsize().setText(String.valueOf(si.getSpotsize()));
 		this.getTxtVelocity().setText(String.valueOf(si.getVelocity())); 
+		
+		this.getTxtShortTitle().setText(si.getShortTitle());
+		getCbShortTitle().setSelected(si.isShowShortTitle());
+		getTxtXPosTitle().setText(String.valueOf(si.getXPosTitle()));
+		getTxtYPosTitle().setText(String.valueOf(si.getYPosTitle()));
+
+		SettingsThemes s = currentImage.getSettTheme();
+		// font 
+		fontShortTitle.setSelectedFont(s.getFontShortTitle());
+		// bg color
+		fontShortTitle.setColor(s.getcShortTitle());
+		colorBGShortTitle.setColor(s.getcBGShortTitle());
 		
 		this.getCbBiaryData().setSelected(si.isBinaryData());
 		// 
@@ -320,8 +384,15 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 				if(getRbRotation90().isSelected()) rotation = 90;
 				if(getRbRotation180().isSelected()) rotation = 180;
 				
-				settings.setAll(getTxtTitle().getText(), floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), 
+				settings.setAll(getTxtTitle().getText(), getTxtShortTitle().getText(), cbShortTitle.isSelected(),
+						floatFromTxt(txtXPosTitle), floatFromTxt(txtYPosTitle), floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), 
 						imagingMode, getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation, getCbBiaryData().isSelected());
+			
+				SettingsThemes s = currentImage.getSettTheme();
+				s.setcShortTitle(fontShortTitle.getColor());
+				s.setcBGShortTitle(colorBGShortTitle.getColor());
+				s.setFontShortTitle(fontShortTitle.getSelectedFont());
+				
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -370,5 +441,26 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	}
 	public JCheckBox getCbBiaryData() {
 		return cbBiaryData;
+	}
+	public JTextField getTxtShortTitle() {
+		return txtShortTitle;
+	}
+	public JCheckBox getCbShortTitle() {
+		return cbShortTitle;
+	}
+	public JTextField getTxtXPosTitle() {
+		return txtXPosTitle;
+	}
+	public JTextField getTxtYPosTitle() {
+		return txtYPosTitle;
+	}
+
+	public JColorPickerButton getColorBGShortTitle() {
+		return colorBGShortTitle;
+	}
+
+
+	public void setColorBGShortTitle(JColorPickerButton colorBGShortTitle) {
+		this.colorBGShortTitle = colorBGShortTitle;
 	}
 }

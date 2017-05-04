@@ -59,7 +59,6 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 		showInChart = false;
 	}
 	
-	
 
 	/**
 	 * the magic is done here

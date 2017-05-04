@@ -1,9 +1,6 @@
 package net.rs.lamsi.massimager.Heatmap;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -15,6 +12,7 @@ import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.annot.BGImageAnnotation;
+import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
 import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsBackgroundImg;
@@ -26,12 +24,9 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYImageAnnotation;
 import org.jfree.chart.annotations.XYTitleAnnotation;
+import org.jfree.chart.axis.AxisLabelLocation;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.Plot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.title.PaintScaleLegend;
@@ -80,88 +75,6 @@ public class HeatmapFactory {
 		image.getSettings().applyToHeatMap(h);
 		return h;
 	}
-	/*
-	// For Triggered Scan Data
-	// A File = A Line
-	private Heatmap generateHeatmapDiscontinous(SettingsPaintScale settings, String title, MZChromatogram[] mzchrom, SettingsImage setDisconImage) {
-		// TODO mehrere MZ machen
-		// daten
-		double spotsize = setDisconImage.getSpotsize();
-		double xvelocity = setDisconImage.getVelocity();
-		// Alle Spec
-		// Erst Messpunkteanzahl ausrechnen 
-		int scanpoints = 0;
-		for(int i=0; i<mzchrom.length; i++) {
-			scanpoints += mzchrom[i].getItemCount();
-		}
-		// Datenerstellen
-		double[] x = new double[scanpoints];
-		double[] y = new double[scanpoints];
-		double[] z = new double[scanpoints];
-		
-		// jede linie für sich durchgehen und abarbeiten
-		MZChromatogram chrom;
-		int overallindex = 0;
-		for(int c=0; c<mzchrom.length; c++) { 
-			chrom = mzchrom[c];
-			// Alle Messpunkte vom chrom durchgehen
-			for(int i=0; i<chrom.getItemCount(); i++) { 
-				// Daten eintragen
-				x[i+overallindex] = chrom.getX(i).doubleValue()*xvelocity;
-				y[i+overallindex] = c*spotsize;
-				z[i+overallindex] = chrom.getY(i).doubleValue();
-			}
-			overallindex += chrom.getItemCount();
-		} 
-		// Heatmap erzeugen
-		return createChart(settings, setDisconImage, createDataset(title, x, y, z));
-	}
-	
-	
-	// Generate Heatmap with Continous Data WIDHTOUT Triggerin every Line
-	private Heatmap generateHeatmapContinous(SettingsPaintScale settings, MZChromatogram mzchrom, SettingsMSImage setMSICon) {  
-		//
-		double timePerLine = setMSICon.getTimePerLine(); 
-		double spotsize = setMSICon.getSpotsize();
-		double xvelocity = setMSICon.getVelocity();
-		// Größe des Images aus Zeiten ableiten
-		// deltaTime aus Daten lesen = Zeit zwischen Messungen 
-		double overallTime = (mzchrom.getMaxX()-mzchrom.getMinX());
-		double deltaTime = overallTime/mzchrom.getItemCount();
-		// ist nur abgeschätzt
-		// Breite und Höhe fest definieren rundet bisher ab 
-		// XYZ anzahl ist definiert durch messwerte im MZChrom 
-		int scanpoints = mzchrom.getItemCount();
-		double[] x = new double[scanpoints];
-		double[] y = new double[scanpoints];
-		double[] z = new double[scanpoints];
-		// zeigt an wo man sich in der listData befindet
-		int currenty = 0; 
-		double lastTime = mzchrom.getMinX(); 
-		double deltatime;
-		// Alle MZChrom punkte durchgehen und in xyz eintragen
-		// wenn Zeit größer als timePerLine dann y um eins vergrößern
-		for(int i=0; i<mzchrom.getItemCount(); i++) {
-			deltatime = mzchrom.getX(i).doubleValue()-lastTime;
-			// nächste Zeile?
-			if(deltatime>=timePerLine) {
-				currenty++;
-				// lastTime = mzchrom.getX(i).doubleValue(); 
-				lastTime += timePerLine;
-			}
-			// Daten eintragen
-			x[i] = mzchrom.getX(i).doubleValue()*xvelocity -lastTime*xvelocity;
-			y[i] = currenty*spotsize;
-			z[i] = mzchrom.getY(i).doubleValue();
-		}
-		
-		// Vielleicht muss x und y umgedreht werden also dass erst jede Collumn durchgegangen wird
-		// bisher wird jede Row durchgegangen
-
-		return createChart(settings, setMSICon, createDataset("MSI", x, y, z));
-	}
-	*/
-
 	
 	// erstellt ein JFreeChart Plot der heatmap
 	// bwidth und bheight (BlockWidth) sind die Maximalwerte
@@ -261,7 +174,6 @@ public class HeatmapFactory {
 	        
 			//
 			chart.setBorderVisible(true); 
-	
 			
 			// ChartPanel
 			PlotChartPanel chartPanel = new PlotChartPanel(chart); 
@@ -370,7 +282,7 @@ public class HeatmapFactory {
 	        
 	        // Legend Generieren
 	        PaintScale scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings); 
-			PaintScaleLegend legend = createScaleLegend(img, scaleBar, createScaleAxis(settings, dataset), settings.getLevels());   
+			PaintScaleLegend legend = createScaleLegend(img, scaleBar, createScaleAxis(settings, setTheme, dataset), settings.getLevels());   
 			// adding legend in plot or outside
 			if(setTheme.getTheme().isPaintScaleInPlot()) { // inplot
 				XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
@@ -388,6 +300,10 @@ public class HeatmapFactory {
 			// add scale legend
 			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
 			
+			// add short title
+			ImageTitle shortTitle = new ImageTitle(img, setTheme.getFontShortTitle(), setTheme.getcShortTitle(), setTheme.getcBGShortTitle(), settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
+			plot.addAnnotation(shortTitle.getAnnotation());
+			
 			// theme
 			img.getSettTheme().applyToChart(chart);
 			
@@ -396,7 +312,7 @@ public class HeatmapFactory {
 			chart.fireChartChanged();
 			 
 			// Heatmap
-			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer, scaleInPlot);
+			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer, scaleInPlot, shortTitle);
 			
 			// return Heatmap
 	        return heat;
@@ -457,7 +373,7 @@ public class HeatmapFactory {
 		legend.setBackgroundPaint(new Color(0,0,0,0));
 		legend.setSubdivisionCount(stepCount);
 		legend.setStripOutlineVisible(false);
-		legend.setAxisLocation(AxisLocation.TOP_OR_RIGHT);
+		legend.setAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);
 		legend.setAxisOffset(0);
 		RectangleInsets rec = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(5, 0, 10, 5);
 		legend.setMargin(rec);
@@ -469,9 +385,11 @@ public class HeatmapFactory {
 	}	
 	
 	// ScaleAxis
-	private static NumberAxis createScaleAxis(SettingsPaintScale settings, IXYZDataset dataset) {
-		NumberAxis scaleAxis = new NumberAxis(null); 
-//		scaleAxis.setLabel(null);
+	private static NumberAxis createScaleAxis(SettingsPaintScale settings, SettingsThemes theme, IXYZDataset dataset) {
+		NumberAxis scaleAxis = new NumberAxis(theme.isUsePaintScaleTitle()? theme.getPaintScaleTitle() : null);
+		scaleAxis.setNumberFormatOverride(theme.getIntensitiesNumberFormat());
+		scaleAxis.setLabelLocation(AxisLabelLocation.HIGH_END);
+		scaleAxis.setLabelAngle(Math.toRadians(-180));
 		return scaleAxis;
 	}
 	
