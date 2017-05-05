@@ -73,6 +73,24 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 		}
 	} 
 	
+	@Override
+	public void applyToImage(Image2D img) throws Exception {
+		SettingsGeneralImage sg = img.getSettings().getSettImage();
+		// dont copy name
+		String name = img.getTitle();
+		String shortTitle = sg.getShortTitle();
+		String path = img.getSettings().getSettImage().getRAWFilepath();
+		super.applyToImage(img);
+		
+		// reset to old short title only if not the same title
+		if(!name.equals(img.getTitle()))
+			img.getSettings().getSettImage().setShortTitle(shortTitle);
+
+		// reset to old title
+		img.getSettings().getSettImage().setTitle(name);
+		
+		img.getSettings().getSettImage().setRAWFilepath(path);
+	}
 
 	public void setCurrentImage(Image2D img) {
 		SettingsImage2DOperations op = getOperations();

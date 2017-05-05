@@ -33,6 +33,8 @@ import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.basics.JFontSpecs;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.Module;
+import net.rs.lamsi.general.framework.modules.menu.ModuleMenuApplyToImage;
+import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
@@ -288,7 +290,14 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		});
 		panel_2.add(btnDeleteCropMarks, "cell 2 1");
 		 
-
+		// apply to Listener
+		getPopupMenu().addApplyToImageListener(new ModuleMenuApplyToImage() {
+			@Override
+			public void applyToImage(Settings sett, Image2D img) {
+				// also set short title to theme
+				img.getSettTheme().setShortTitle(fontShortTitle.getColor(), getColorBGShortTitle().getColor(), fontShortTitle.getSelectedFont());
+			}
+		});
 	}
 	
 	//################################################################################################

@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.settings.image.visualisation;
 
+import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageTableModel;
 
@@ -14,8 +15,10 @@ public class SettingsAlphaMap extends Settings {
 	// 
 
 	private boolean isActive = false;
+	// true: visible, false: invisible, null: no data point
 	private Boolean[][] map = null;
 	private int realsize = 0;
+	protected float alpha = 0;
 	// settings
 	private MultiImageTableModel tableModel;
 
@@ -33,13 +36,22 @@ public class SettingsAlphaMap extends Settings {
 	@Override
 	public void resetAll() { 
 		isActive=false;
+		alpha = 0;
 	}
+	
+	@Override
+	public void applyToHeatMap(Heatmap heat) {
+		super.applyToHeatMap(heat);
+		heat.applyAlphaMapSettings(this);
+	}
+	
 	//##########################################################
 	// xml input/output
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		toXML(elParent, doc, "isActive", isActive); 
 		toXMLArray(elParent, doc, "map", map); 
+		toXML(elParent, doc, "alpha", alpha); 
 	}
 
 	@Override
@@ -50,6 +62,7 @@ public class SettingsAlphaMap extends Settings {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("isActive")) isActive = booleanFromXML(nextElement); 
+				if(paramName.equals("alpha")) alpha = floatFromXML(nextElement); 
 				else if(paramName.equals("map")) setMap(mapFromXML(nextElement));
 			}
 		}
@@ -84,6 +97,9 @@ public class SettingsAlphaMap extends Settings {
 	 * converts the map to one dimension as line, line,line,line
 	 */
 	public boolean[] convertToLinearMap() {
+		if(map==null)
+			return null;
+			
 		boolean[] maplinear = new boolean[realsize];
 		int c = 0; 
 		for(Boolean[] m : map) {
@@ -103,5 +119,12 @@ public class SettingsAlphaMap extends Settings {
 
 	public void setTableModel(MultiImageTableModel tableModel) {
 		this.tableModel = tableModel;
+	}
+
+	public float getAlpha() {
+		return alpha;
+	}
+	public void setAlpha(float a) {
+		alpha = a;
 	}
 }

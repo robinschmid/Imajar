@@ -23,7 +23,7 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 
-public abstract class SettingsModule<T> extends Module implements SettingsChangedListener {
+public abstract class SettingsModule<T extends Settings> extends Module implements SettingsChangedListener {
  
 	protected final Class classsettings;
 
@@ -69,6 +69,38 @@ public abstract class SettingsModule<T> extends Module implements SettingsChange
 		
 		this.addPopupMenu(menu);
 	} 
+	
+	public void addMenu(ModuleMenu menu) {
+			// sep
+			menu.addSeparator();
+			// load files from directory as presets
+			Settings sett = SettingsHolder.getSettings().getSetByClass(classsettings);
+			
+			if(sett!=null) {
+				File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
+				String type = sett.getFileEnding();
+				try {
+					if(path.exists()) {
+						Vector<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
+						// load each file as settings and add to menu as preset
+						for(File f : files.get(0)) {
+							// load
+							try {
+								Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
+								if(load !=null)
+									addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
+							} catch(Exception ex) {
+								ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath(), LOG.WARNING);
+							}
+						}
+					}
+				} catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			
+			this.addPopupMenu(menu);
+		} 
 
 	//################################################################################################
 	// Autoupdate

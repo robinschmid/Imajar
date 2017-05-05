@@ -13,6 +13,7 @@ import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
 
 import org.jfree.chart.JFreeChart;
@@ -229,6 +230,10 @@ public class Heatmap {
 			// fire change event
 			chart.fireChartChanged();
 		}
+	}
+	
+	public void applyAlphaMapSettings(SettingsAlphaMap map) {
+		renderer.setMap(map);
 	}
 	
 	/**

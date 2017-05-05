@@ -9,6 +9,7 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
@@ -136,10 +137,13 @@ public class SettingsSelections extends Settings implements Serializable {
 			double[] x = data.getX();
 			double[] y = data.getY();
 			double[] z = data.getI();
+			
+			float w = (float)currentImg.getMaxBlockWidth();
+			float h = (float)currentImg.getMaxBlockHeight();
 
 			// for each data point
 			for(int d=0; d<x.length; d++) {
-				boolean isExcluded = isExcluded((float)x[d], (float)y[d]); 
+				boolean isExcluded = isExcluded((float)x[d], (float)y[d], w, h); 
 
 				// check dp for all selected rects with exclude information
 				// and add to containing shapes
@@ -147,7 +151,7 @@ public class SettingsSelections extends Settings implements Serializable {
 					SettingsShapeSelection s = selections.get(i);
 
 					// check with the information that it is excluded
-					s.check(x[d],y[d],z[d], isExcluded);
+					s.check(x[d]+w,y[d]+h,z[d], w, h, isExcluded);
 				}
 			}
 
@@ -171,13 +175,16 @@ public class SettingsSelections extends Settings implements Serializable {
 			double[] x = data.getX();
 			double[] y = data.getY();
 			double[] z = data.getI();
+			
+			float w = (float)currentImg.getMaxBlockWidth();
+			float h = (float)currentImg.getMaxBlockHeight();
 
 			// for each data point
 			for(int d=0; d<x.length; d++) {
-				boolean isExcluded = isExcluded((float)x[d], (float)y[d]); 
+				boolean isExcluded = isExcluded((float)x[d], (float)y[d], w, h); 
 				// check for s
 				// and add to containing shapes 
-				s.check(x[d],y[d],z[d], isExcluded);
+				s.check(x[d],y[d],z[d], w, h, isExcluded);
 			}
 
 			// finalise the process?
@@ -191,14 +198,30 @@ public class SettingsSelections extends Settings implements Serializable {
 	 * @param y coordinate in the given processed data space (e.g. micro meters)
 	 * @return
 	 */
-	public boolean isExcluded(float x, float y) {
+	public boolean isExcluded(float x, float y, float w, float h) {
 		if(hasExclusions) {
 			for(SettingsShapeSelection s : selections) {
 				// only exclusions
 				if(s.getMode().equals(SelectionMode.EXCLUDE)) {
-					if(s.contains(x, y)) {
+					if(s.contains(x+w/2.f, y+h/2.f)) {
 						return true; 
 					}
+				}
+			}
+		}
+		return false;
+	}
+	/**
+	 * checks if the point is inside any shape
+	 * @param x coordinate in the given processed data space (e.g. micro meters)
+	 * @param y coordinate in the given processed data space (e.g. micro meters)
+	 * @return
+	 */
+	public boolean isInsideShape(float x, float y, float w, float h) {
+		if(selections!=null && selections.size()>0) {
+			for(SettingsShapeSelection s : selections) {
+				if(s.contains(x+w/2.f, y+h/2.f)) {
+					return true; 
 				}
 			}
 		}
@@ -210,7 +233,7 @@ public class SettingsSelections extends Settings implements Serializable {
 	 * @param y coordinate in the given processed data space (e.g. micro meters)
 	 * @return
 	 */
-	public boolean isSelected(float x, float y, boolean checkForExclusion) {
+	public boolean isSelected(float x, float y, float w, float h, boolean checkForExclusion) {
 		boolean state = false;
 		// is selected?
 		if(hasSelections) {
@@ -218,7 +241,7 @@ public class SettingsSelections extends Settings implements Serializable {
 				SettingsShapeSelection s = selections.get(i);
 				// only exclusions
 				if(s.getMode().equals(SelectionMode.SELECT))
-					if(s.contains(x, y))
+					if(s.contains(x+w/2.f, y+h/2.f))
 						state = true; 
 			}
 		}
@@ -230,7 +253,7 @@ public class SettingsSelections extends Settings implements Serializable {
 					SettingsShapeSelection s = selections.get(i);
 					// only exclusions
 					if(s.getMode().equals(SelectionMode.EXCLUDE))
-						if(s.contains(x, y))
+						if(s.contains(x+w/2.f, y+h/2.f))
 							return false; 
 				}
 			}
@@ -372,13 +395,13 @@ public class SettingsSelections extends Settings implements Serializable {
 							// only for selected
 							if(m==0 && sett.isShapesSelNEx())
 								shapeSelNonEx[i] = xwriter.getSheet(wb, title+"NExcl"+c);
-							
+
 							if(sett.isShapeData()) {
 								// header for shapes summary
 								xwriter.writeToCell(shShapesData, i, 1, ""+i);
 								xwriter.writeToCell(shShapesData, i, 2, s.getMode().getShortTitle()+c);
 							}
-							
+
 							// increment
 							c++;
 						}
@@ -400,14 +423,14 @@ public class SettingsSelections extends Settings implements Serializable {
 			Float[][] x = data.getX();
 			Float[][] y = data.getY();
 			Double[][] z = data.getI();
-			
+
 			// write xyz matrix
 			if(sett.isX())
 				xwriter.writeDataArrayToSheet(shX, x, 0, 0);
 			if(sett.isY())
-				xwriter.writeDataArrayToSheet(shX, y, 0, 0);
+				xwriter.writeDataArrayToSheet(shY, y, 0, 0);
 			if(sett.isZ())
-				xwriter.writeDataArrayToSheet(shX, z, 0, 0);
+				xwriter.writeDataArrayToSheet(shZ, z, 0, 0);
 			//
 			boolean usey = y[0]==y[1];
 			// count excluded and selected
@@ -415,89 +438,93 @@ public class SettingsSelections extends Settings implements Serializable {
 			int cex = 0;
 			int cselnonex = 0;
 
+			// width height of data points
+			float w = (float)currentImg.getMaxBlockWidth();
+			float h = (float)currentImg.getMaxBlockHeight();
+
 			//for each line
 			for(int l=0; l<x.length; l++) {
-			// for each data point
-			for(int d=0; d<x[l].length; d++) {
-				if(!Double.isNaN(z[l][d])) {
-					// is excluded?
-					boolean isExcluded = isExcluded((float)x[l][d], (float)y[l][d]); 
-					// write to excluded
-					if(isExcluded) {
-						cex++;
-						// write as matrix
-						if(sett.isImgEx())
-							xwriter.writeToCell(shExMat, l, d, z[l][d]);
-						// write as array
-						if(sett.isArrays())
-							xwriter.writeToCell(shArray, 0, cex, z[l][d]);
-					}
-	
-	
-					// check dp for all selected rects with exclude information
-					// and add to containing shapes
-					boolean isSelected = false;
-					for(int i=0; i<selections.size(); i++) {
-						SettingsShapeSelection s = selections.get(i);
-						// check with the information that it is excluded
-						boolean inside = s.check(x[l][d],y[l][d],z[l][d], isExcluded);
-	
-						isSelected = (inside && s.getMode().equals(SelectionMode.SELECT)) || isSelected;
-						// write to 
-						if(inside) {
-							// write to shape without ex
+				// for each data point
+				for(int d=0; d<x[l].length; d++) {
+					if(!Double.isNaN(z[l][d])) {
+						// is excluded?
+						boolean isExcluded = isExcluded((float)x[l][d], (float)y[l][d], w, h); 
+						// write to excluded
+						if(isExcluded) {
+							cex++;
 							// write as matrix
-							if(sett.isShapes()) {
-								xwriter.writeToCell(shapeSel[i], l, d+headerrows, z[l][d]);
-								// write in row
-								xwriter.writeToCell(shapeSel[i], cdpShape[i], 5, z[l][d]);
-							}
-							// write to shape data summary
-							if(sett.isShapeData() && !s.getMode().equals(SelectionMode.SELECT)) {
-								xwriter.writeToCell(shShapesData, i, cdpShape[i]+4, z[l][d]);
-							}
-							cdpShape[i]++;
-	
-							// only for selected
-							if(!isExcluded && s.getMode().equals(SelectionMode.SELECT)) {
-								if(sett.isShapesSelNEx()) {
-									// write to shape with regards to exclusion
-									// write as matrix
-									xwriter.writeToCell(shapeSelNonEx[i], l, d+headerrows, z[l][d]);
-									
-									// write in row
-									xwriter.writeToCell(shapeSelNonEx[i], cdpShapeSelNonEx[i], 5, z[l][d]);
-								}
-								// write to shape data summary
-								if(sett.isShapeData()) {
-									xwriter.writeToCell(shShapesData, i, cdpShapeSelNonEx[i]+4, z[l][d]);
-								}
-								cdpShapeSelNonEx[i]++;
-							}
-						}
-					}
-					// selected write to array and matrix
-					if(isSelected) {
-						csel++;
-						// array
-						// write as matrix
-						if(sett.isImgSel())
-							xwriter.writeToCell(shSelMat, l, d, z[l][d]);
-						// write as array
-						if(sett.isArrays())
-							xwriter.writeToCell(shArray, 1, csel, z[l][d]);
-	
-						if(!isExcluded) {
-							cselnonex++;
-							// write as matrix
-							if(sett.isImgSelNEx())
-								xwriter.writeToCell(shSelNonExMat, l, d, z[l][d]);
+							if(sett.isImgEx())
+								xwriter.writeToCell(shExMat, l, d, z[l][d]);
 							// write as array
 							if(sett.isArrays())
-								xwriter.writeToCell(shArray, 2, cselnonex, z[l][d]);
+								xwriter.writeToCell(shArray, 0, cex, z[l][d]);
+						}
+
+
+						// check dp for all selected rects with exclude information
+						// and add to containing shapes
+						boolean isSelected = false;
+						for(int i=0; i<selections.size(); i++) {
+							SettingsShapeSelection s = selections.get(i);
+							// check with the information that it is excluded
+							boolean inside = s.check(x[l][d],y[l][d],z[l][d], w, h, isExcluded);
+
+							isSelected = (inside && s.getMode().equals(SelectionMode.SELECT)) || isSelected;
+							// write to 
+							if(inside) {
+								// write to shape without ex
+								// write as matrix
+								if(sett.isShapes()) {
+									xwriter.writeToCell(shapeSel[i], l, d+headerrows, z[l][d]);
+									// write in row
+									xwriter.writeToCell(shapeSel[i], cdpShape[i], 5, z[l][d]);
+								}
+								// write to shape data summary
+								if(sett.isShapeData() && !s.getMode().equals(SelectionMode.SELECT)) {
+									xwriter.writeToCell(shShapesData, i, cdpShape[i]+4, z[l][d]);
+								}
+								cdpShape[i]++;
+
+								// only for selected
+								if(!isExcluded && s.getMode().equals(SelectionMode.SELECT)) {
+									if(sett.isShapesSelNEx()) {
+										// write to shape with regards to exclusion
+										// write as matrix
+										xwriter.writeToCell(shapeSelNonEx[i], l, d+headerrows, z[l][d]);
+
+										// write in row
+										xwriter.writeToCell(shapeSelNonEx[i], cdpShapeSelNonEx[i], 5, z[l][d]);
+									}
+									// write to shape data summary
+									if(sett.isShapeData()) {
+										xwriter.writeToCell(shShapesData, i, cdpShapeSelNonEx[i]+4, z[l][d]);
+									}
+									cdpShapeSelNonEx[i]++;
+								}
+							}
+						}
+						// selected write to array and matrix
+						if(isSelected) {
+							csel++;
+							// array
+							// write as matrix
+							if(sett.isImgSel())
+								xwriter.writeToCell(shSelMat, l, d, z[l][d]);
+							// write as array
+							if(sett.isArrays())
+								xwriter.writeToCell(shArray, 1, csel, z[l][d]);
+
+							if(!isExcluded) {
+								cselnonex++;
+								// write as matrix
+								if(sett.isImgSelNEx())
+									xwriter.writeToCell(shSelNonExMat, l, d, z[l][d]);
+								// write as array
+								if(sett.isArrays())
+									xwriter.writeToCell(shArray, 2, cselnonex, z[l][d]);
+							}
 						}
 					}
-				}
 				}
 			}
 
@@ -561,6 +588,41 @@ public class SettingsSelections extends Settings implements Serializable {
 				xwriter.writeToCell(shDEF, 0, 0+i, "SelNExcl#");
 				xwriter.writeToCell(shDEF, 1, 0+i++, "Data matrix cut out of this selection shape in regards to exclusions (excluded data points are left out)");
 			}
+		}
+	}
+
+
+	/**
+	 * create alpha map
+	 */
+	public void createAlphaMap(SettingsAlphaMap sett) {
+		if(currentImg!=null && selections!=null && selections.size()>0) {
+			// do statistics for all shape selections
+			XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
+			Float[][] x = data.getX();
+			Float[][] y = data.getY();
+			Double[][] z = data.getI();
+
+			Boolean[][] map = new Boolean[z.length][];
+
+			float w = (float)currentImg.getMaxBlockWidth();
+			float h = (float)currentImg.getMaxBlockHeight();
+			
+			//for each line
+			for(int l=0; l<x.length; l++) {
+				map[l] = new Boolean[z[l].length];
+				// for each data point
+				for(int d=0; d<x[l].length; d++) {
+					if(!Double.isNaN(z[l][d])) {
+						// is excluded?
+						boolean inside = isInsideShape((float)x[l][d], (float)y[l][d], w, h);  
+						map[l][d] = !inside;
+					}
+					else map[l][d] = null;
+				}
+			}
+			sett.setMap(map);
+			sett.setActive(true);
 		}
 	}
 }

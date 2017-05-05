@@ -184,6 +184,8 @@ public class HeatmapFactory {
 			// theme
 			img.getSettTheme().applyToChart(chart);
 			chart.fireChartChanged();
+			
+			chart.setBorderVisible(false);
 			 
 			// Heatmap
 			Heatmap heat = new Heatmap(dataset, chartPanel, scales, chart, plot, img, renderer, scaleInPlot);
@@ -310,6 +312,8 @@ public class HeatmapFactory {
 	 		//ChartUtilities.applyCurrentTheme(chart);
 			//defaultChartTheme.apply(chart);
 			chart.fireChartChanged();
+			
+			chart.setBorderVisible(false);
 			 
 			// Heatmap
 			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, img, renderer, scaleInPlot, shortTitle);

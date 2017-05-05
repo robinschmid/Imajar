@@ -1,28 +1,24 @@
 package net.rs.lamsi.general.myfreechart.Plot.image2d;
 
-import java.awt.BasicStroke;
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.CrosshairState;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYZDataset;
-
-import com.Ostermiller.util.BadLineEndingException;
 
 public class ImageRenderer extends XYBlockRenderer {
 
 	// 
+	protected SettingsAlphaMap sett;
 	protected boolean[] map = null;
 	
 	
@@ -51,6 +47,11 @@ public class ImageRenderer extends XYBlockRenderer {
     	if(isMapTrue(item)) {
 	        super.drawItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item, crosshairState, pass);
 	    } 
+    	else if(sett!=null && sett.getAlpha()>0) {
+    		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+	        super.drawItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item, crosshairState, pass);
+    		g2.setComposite(BlendComposite.Normal);
+    	}
     }
 
     
@@ -66,9 +67,16 @@ public class ImageRenderer extends XYBlockRenderer {
 	public boolean[] getMap() {
 		return map;
 	} 
-	public void setMap(boolean[] map) {
-		this.map = map;
-		this.fireChangeEvent();
+	public void setMap(SettingsAlphaMap sett) {
+		this.sett = sett;
+		this.map = sett.convertToLinearMap();
+		if(map!=null)
+			this.fireChangeEvent();
+	}
+
+
+	public void setMapLinear(boolean[] maplinear) {
+		map = maplinear;
 	} 
     
 }

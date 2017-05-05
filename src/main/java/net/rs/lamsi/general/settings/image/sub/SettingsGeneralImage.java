@@ -6,6 +6,8 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.SettingsImageGroup;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 
 import org.jfree.chart.plot.XYPlot;
 import org.w3c.dom.Document;
@@ -102,9 +104,16 @@ public class SettingsGeneralImage extends Settings {
 	public void applyToImage(Image2D img) throws Exception {
 		// dont copy name
 		String name = img.getTitle();
+		String shortTitle = img.getSettings().getSettImage().getShortTitle();
 		String path = img.getSettings().getSettImage().getRAWFilepath();
 		super.applyToImage(img);
+		
+		// reset to old short title only if not the same title
+		if(!name.equals(img.getTitle()))
+			img.getSettings().getSettImage().setShortTitle(shortTitle);
+		// reset to old title
 		img.getSettings().getSettImage().setTitle(name);
+		
 		img.getSettings().getSettImage().setRAWFilepath(path);
 	}
 	

@@ -202,11 +202,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 * @param isExcluded
 	 * @return
 	 */
-	public boolean check(double x, double y, double i, boolean isExcluded) {
-		return check((float)x, (float)y, i, isExcluded);
+	public boolean check(double x, double y, double i, float w, float h, boolean isExcluded) {
+		return check((float)x, (float)y, i, w, h, isExcluded);
 	}
-	public boolean check(float x, float y, double i, boolean isExcluded) {
-		if(contains(x, y)) {
+	public boolean check(float x, float y, double i, float w, float h, boolean isExcluded) {
+		if(contains(x+w/2.f, y+h/2.f)) {
 			// add data point
 			stats.addValue(i);
 			if(!isExcluded)

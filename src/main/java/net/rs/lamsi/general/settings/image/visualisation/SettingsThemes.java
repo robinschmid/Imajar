@@ -43,7 +43,7 @@ public class SettingsThemes extends Settings {
 	protected Color cTitle;
 	protected Font fontTitle;
 	protected boolean showTitle = false;
-	
+
 	// ShortTitle
 	protected Font fontShortTitle;
 	protected Color cShortTitle, cBGShortTitle;
@@ -218,6 +218,12 @@ public class SettingsThemes extends Settings {
 		listFontColor.add(cAxes);
 		listFontColor.add(cTitle);
 
+	}
+	
+	public void setShortTitle(Color c, Color bg, Font font) {
+		cShortTitle = c;
+		cBGShortTitle = bg;
+		fontShortTitle = font;
 	}
 	
 	//##########################################################

@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
@@ -14,7 +15,6 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -27,6 +27,9 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
 public class ModuleMenu extends JButton {
+	
+	private ArrayList<ModuleMenuApplyToImage> applyToListener;
+	
 	private JPopupMenu popupMenu;
 	public ModuleMenu() {
 		setBounds(new Rectangle(0, 0, 20, 20));
@@ -73,13 +76,11 @@ public class ModuleMenu extends JButton {
 		popupMenu.addSeparator();
 	}
 
-
-
 	/*
 	 * creation of specific menus
 	 */
 	public static ModuleMenu createLoadSaveOptionsMenu(final SettingsModule mod, final Class settingsClass, final SettingsChangedListener settingsChangedListener) {
-		ModuleMenu menu = new ModuleMenu();
+		final ModuleMenu menu = new ModuleMenu();
 
 		JMenuItem load = new JMenuItem("Load options");
 		load.addActionListener(new ActionListener() {
@@ -134,7 +135,7 @@ public class ModuleMenu extends JButton {
 						// otherwise 
 						if(added == false) {
 							if(Image2D.class.isInstance(node.getUserObject())) {
-								((Settings)mod.getSettings()).applyToImage((Image2D)node.getUserObject());
+								menu.applyToImage(mod.getSettings(), (Image2D)node.getUserObject());
 							}
 							else {
 								// is a parent
@@ -143,7 +144,7 @@ public class ModuleMenu extends JButton {
 								for(int i=0; i<node.getChildCount(); i++) {
 									Object obj = ((DefaultMutableTreeNode)node.getChildAt(i)).getUserObject();
 									if(Image2D.class.isInstance(obj)) {
-										((Settings)mod.getSettings()).applyToImage((Image2D)obj);
+										menu.applyToImage(mod.getSettings(), (Image2D)obj);
 									}
 								}
 							}
@@ -160,7 +161,23 @@ public class ModuleMenu extends JButton {
 		// 
 		return menu;
 	}
+	
+	public void applyToImage(Settings sett, Image2D img) throws Exception {
+		sett.applyToImage(img);
+		if(applyToListener!=null)
+			for(ModuleMenuApplyToImage l : applyToListener)
+				l.applyToImage(sett, img);
+	}
 
+	/**
+	 * gets called on apply to image events
+	 * @param listener
+	 */
+	public void addApplyToImageListener(ModuleMenuApplyToImage listener) {
+		if(applyToListener==null)
+			applyToListener = new ArrayList<ModuleMenuApplyToImage>();
+		applyToListener.add(listener);
+	}
 
 
 

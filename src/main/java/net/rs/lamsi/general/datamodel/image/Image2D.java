@@ -1602,6 +1602,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * = distance between one and next block
 	 * @return
 	 */
+	public double getMaxBlockWidth() {
+		return getMaxBlockWidth(getSettings().getSettImage().getRotationOfData());
+	}
 	public double getMaxBlockWidth(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockHeight(0);
 		else {
@@ -1613,6 +1616,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * = distance between one and next block in lines
 	 * @return
 	 */
+	public double getMaxBlockHeight() {
+		return getMaxBlockHeight(getSettings().getSettImage().getRotationOfData());
+	}
 	public double getMaxBlockHeight(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockWidth(0);
 		else { 
@@ -1962,7 +1968,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		float y = getY(false, l, dp);
 
 		// check if dp coordinates are in an exclude rect
-		return sel.isExcluded(x,y);
+		return sel.isExcluded(x,y, (float)getMaxBlockWidth(), (float)getMaxBlockHeight());
 	}
 
 	/**
@@ -1985,7 +1991,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			float y = getY(false, l, dp);
 
 			// check if dp coordinates are in an sel rect
-			return sel.isSelected(x, y, false);
+			return sel.isSelected(x, y, (float)getMaxBlockWidth(), (float)getMaxBlockHeight(), false);
 		}
 	}
 

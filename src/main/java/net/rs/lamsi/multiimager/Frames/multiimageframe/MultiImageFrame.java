@@ -613,7 +613,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 				} 
 
 				// set new map
-				heat[i].getRenderer().setMap(maplinear);
+				heat[i].getRenderer().setMapLinear(maplinear);
 				heat[i].getChart().fireChartChanged();
 				// set uptodate
 				uptodate[i] = true;

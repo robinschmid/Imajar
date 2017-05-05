@@ -47,6 +47,7 @@ import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SHAPE;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
@@ -57,6 +58,8 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.data.Range;
+
+import javax.swing.JCheckBox;
  
 
 public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener, MouseMotionListener {
@@ -91,6 +94,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private ShapeSelectionsTableModel tableModel;
 	private JComboBox comboShape;
 	private JComboBox comboSelectionMode;
+	private JCheckBox cbPerformance;
+	private JCheckBox cbMarkDp;
 
 	/**
 	 * Launch the application.
@@ -117,7 +122,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	public Image2DSelectDataAreaDialog() {
 		final JFrame thisframe = this;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 669, 465);
+		setBounds(100, 100, 778, 767);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -142,6 +147,19 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				contentPane.requestFocusInWindow();
 			}
 		});
+		
+		cbPerformance = new JCheckBox("Performance");
+		cbPerformance.setToolTipText("Calculates statistics at the end of the creation of a shape. (Saves performance)");
+		pnNorthMenu.add(cbPerformance);
+		
+		cbMarkDp = new JCheckBox("Mark dp");
+		cbMarkDp.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				showMarkingMap(cbMarkDp.isSelected());
+			}
+		});
+		pnNorthMenu.add(cbMarkDp);
 		pnNorthMenu.add(comboShape);
 		
 		comboSelectionMode = new JComboBox();
@@ -250,7 +268,27 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		contentPane.requestFocusInWindow();
 	}
 
-	
+	/**
+	 * shows all selected data points marked with a map
+	 * @param selected
+	 */
+	protected void showMarkingMap(boolean selected) {
+		if(img!=null) {
+			SettingsAlphaMap sett = (SettingsAlphaMap)img.getSettingsByClass(SettingsAlphaMap.class);
+
+			sett.setActive(selected);
+			
+			if(selected) {
+				// create map 
+				settSel.createAlphaMap(sett);
+				img.setSettings(sett);
+				sett.setAlpha(0.25f);
+				sett.applyToHeatMap(heat);
+			}
+		}
+	}
+
+
 	/**
 	 * shift x by i screen pixel
 	 * @param i
@@ -421,6 +459,11 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 
 		// update table
 		tableModel.fireTableDataChanged();
+		
+		// update map
+		if(getCbMarkDp().isSelected())
+			showMarkingMap(true);
+		
 		// update chart
 		JFreeChart chart = heat.getChart();
 		chart.fireChartChanged();
@@ -705,5 +748,11 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	}
 	public JComboBox getComboSelectionMode() {
 		return comboSelectionMode;
+	}
+	public JCheckBox getCbPerformance() {
+		return cbPerformance;
+	}
+	public JCheckBox getCbMarkDp() {
+		return cbMarkDp;
 	}
 }
