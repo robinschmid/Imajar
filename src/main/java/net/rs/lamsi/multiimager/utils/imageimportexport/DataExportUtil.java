@@ -10,13 +10,12 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.ProgressMonitor;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport.FileType;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataSelectionsExport;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.massimager.Threads.ProgressUpdateTaskMonitor;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
+import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
@@ -25,6 +24,7 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.threads.ProgressUpdateTaskMonitor;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xssf.usermodel.XSSFSheet;

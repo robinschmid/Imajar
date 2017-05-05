@@ -24,7 +24,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
+import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.mylists.ListAction;

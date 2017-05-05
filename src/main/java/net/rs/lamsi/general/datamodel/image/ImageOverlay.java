@@ -6,11 +6,11 @@ import javax.swing.Icon;
 
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 
 public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implements Serializable {	 
 	// do not change the version!

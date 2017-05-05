@@ -26,13 +26,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsConverterRAW;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.panels.PnGeneralValueFormatting;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.panels.PnVisualSpectraLabelGeneratorSettings;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsConverterRAW;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
 import java.awt.Dimension;

@@ -6,7 +6,7 @@ import java.awt.Color;
 import javax.swing.JPanel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 

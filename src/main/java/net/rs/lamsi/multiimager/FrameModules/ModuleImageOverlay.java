@@ -11,9 +11,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.SettingsModuleContainer;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.framework.modules.SettingsModuleContainer;
+import net.rs.lamsi.general.settings.image.SettingsImage2D;
+import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscaleOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;

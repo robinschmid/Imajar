@@ -16,10 +16,10 @@ import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 import org.jfree.data.Range;

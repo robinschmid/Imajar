@@ -19,11 +19,11 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
 

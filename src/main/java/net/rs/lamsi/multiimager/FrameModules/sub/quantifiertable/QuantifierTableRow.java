@@ -1,8 +1,8 @@
 package net.rs.lamsi.multiimager.FrameModules.sub.quantifiertable;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.Quantifier;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
+import net.rs.lamsi.general.settings.image.operations.quantifier.Quantifier;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 
 public class QuantifierTableRow {
 	public static final String MODE_AVERAGE = "Average", MODE_SELECTION = "Selection";

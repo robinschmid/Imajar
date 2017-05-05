@@ -11,12 +11,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageGroup;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsAlphaMap;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsContainerSettings;
+import net.rs.lamsi.general.settings.image.SettingsImageGroup;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImgTableRow;
 
 public class ImageGroupMD  implements Serializable {  

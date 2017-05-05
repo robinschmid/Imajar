@@ -5,9 +5,9 @@ import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.framework.modules.tree.IconNode;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.directimaging.DIATask;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;

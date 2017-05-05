@@ -9,8 +9,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.settings.SettingsChargeCalculator;
 import net.rs.lamsi.massimager.Frames.Window;
-import net.rs.lamsi.massimager.Settings.SettingsChargeCalculator;
 import net.sf.mzmine.parameters.parametertypes.MZTolerance;
 import net.sf.mzmine.parameters.parametertypes.RTTolerance;
 

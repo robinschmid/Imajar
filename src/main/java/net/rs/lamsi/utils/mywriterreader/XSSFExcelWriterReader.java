@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.Quantifier;
+import net.rs.lamsi.general.settings.image.operations.quantifier.Quantifier;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;

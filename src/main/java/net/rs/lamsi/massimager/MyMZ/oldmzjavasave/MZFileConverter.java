@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
+import net.rs.lamsi.general.settings.SettingsConverterRAW;
 import net.rs.lamsi.massimager.Frames.LogicRunner;
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
-import net.rs.lamsi.massimager.Settings.SettingsConverterRAW;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 public class MZFileConverter {  
 	private static final File PATH_RAW_MSCONVERT = new File("msconvert/");

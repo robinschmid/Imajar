@@ -14,10 +14,10 @@ import javax.swing.border.EmptyBorder;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.heatmap.HeatmapFactory;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 

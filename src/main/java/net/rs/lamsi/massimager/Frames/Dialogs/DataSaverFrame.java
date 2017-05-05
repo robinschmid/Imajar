@@ -18,11 +18,12 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.rs.lamsi.general.settings.SettingsDataSaver;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Window;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 
 public class DataSaverFrame extends JFrame {

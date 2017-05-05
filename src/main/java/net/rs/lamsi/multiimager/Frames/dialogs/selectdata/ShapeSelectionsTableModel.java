@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 import javax.swing.table.AbstractTableModel;
 
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsSelections;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 
 import org.jfree.chart.ChartPanel;
 
@@ -14,9 +14,9 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 	/**
 	 * 
 	 */
-	private final String[] title = new String[] {"Type", "x0", "y0", "x1", "y1", "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"}; 
+	private final String[] title = new String[] {"Type", "x0", "y0", "x1", "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"}; 
 	private final Class[] type = new Class[] {
-			String.class, Float.class, Float.class, Float.class, Float.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, ChartPanel.class
+			String.class, Float.class, Float.class, Float.class, Float.class, Integer.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, ChartPanel.class
 	};
 	private static final long serialVersionUID = 1L;
 	
@@ -83,8 +83,8 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int col) {
 			SettingsShapeSelection sel = selections.getSelections().get(row);  
 			SelectionTableRow r = sel.getDefaultTableRow();
-			//   0      1     2     3     4       5        6        7        8         9           10      11
-			// "Type", "x0", "y0", "x1", "y1", "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"
+			//   0      1     2     3     4       5    6      7        8         9           10      11        9
+			// "Type", "x0", "y0", "x1", "y1",    n   sum   "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"
 			switch(col) {
 			case 0:
 				return r.getMode().toString();
@@ -97,18 +97,22 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 			case 4:
 				return r.getY1();
 			case 5:
-				return r.getMin();
-			case 6:
-				return r.getMax();	
+				return r.getN();
+			case 6: 
+				return r.getSum();
 			case 7:
-				return r.getAvg();	
+				return r.getMin();
 			case 8:
-				return r.getMedian();			
+				return r.getMax();	
 			case 9:
-				return r.getP99();			
+				return r.getAvg();	
 			case 10:
-				return r.getSdev();			
+				return r.getMedian();			
 			case 11:
+				return r.getP99();			
+			case 12:
+				return r.getSdev();			
+			case 13:
 				return r.getHisto();			
 			}
 			return null;

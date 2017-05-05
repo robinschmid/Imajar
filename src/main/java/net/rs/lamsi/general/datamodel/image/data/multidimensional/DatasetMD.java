@@ -7,7 +7,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralRotation;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralRotation;
 
 /**
  * basic dataset of multiple scan lines

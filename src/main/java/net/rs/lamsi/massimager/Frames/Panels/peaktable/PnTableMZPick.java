@@ -10,8 +10,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
+import net.rs.lamsi.general.settings.preferences.SettingsGeneralValueFormatting;
 import net.rs.lamsi.massimager.Frames.Window;
-import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
 

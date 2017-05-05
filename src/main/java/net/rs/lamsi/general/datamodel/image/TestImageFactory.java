@@ -4,7 +4,7 @@ import java.util.Random;
 
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 
 public class TestImageFactory {
 

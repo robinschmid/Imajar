@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Settings.image.selection.SettingsShapeSelection.SelectionMode;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 import org.jfree.chart.ChartPanel;
 
@@ -23,7 +23,8 @@ public class SelectionTableRow implements Serializable{
 	private Shape shape;
 
 	// statistics
-	private double max, min, median, p99, avg, sdev;
+	private double max, min, median, p99, avg, sdev, sum;
+	private int n;
 
 
 
@@ -41,13 +42,13 @@ public class SelectionTableRow implements Serializable{
 			data = new ArrayList<Double>();
 			max = Double.NEGATIVE_INFINITY;
 			min = Double.POSITIVE_INFINITY;
-			avg = 0;
+			sum = 0;
 		}
 		data.add(i);
 		if(i<min) min = i;
 		if(i>max) max = i;
 		// first sum
-		avg += i;
+		sum += i;
 	}
 	/**
 	 * final stats calculation after all data points were added via check
@@ -69,8 +70,9 @@ public class SelectionTableRow implements Serializable{
 		median = data.get(Math.max(0, data.size()/2-1));
 		p99 = data.get(Math.max(0, (int)Math.round(data.size()*0.99-1)));
 
+		n = data.size();
 		// average and sdev
-		avg = avg / (double)data.size();
+		avg = sum / (double)n;
 		// stdev 
 		sdev = 0;
 
@@ -80,6 +82,7 @@ public class SelectionTableRow implements Serializable{
 		// calc stdev
 		sdev = Math.sqrt(sdev/(double)(data.size()-1));
 
+		
 		// erase data
 		data = null;
 	}
@@ -95,7 +98,7 @@ public class SelectionTableRow implements Serializable{
 		float y1 =getY1();
 		float x1 = getX1();
 
-		return new Object[]{mode.toString(), x0,y0,x1,y1,min, max, avg, median, p99, sdev, histo};
+		return new Object[]{mode.toString(), x0,y0,x1,y1,n,sum,min, max, avg, median, p99, sdev, histo};
 	}
 
 	/**
@@ -108,7 +111,7 @@ public class SelectionTableRow implements Serializable{
 		float y1 =getY1();
 		float x1 = getX1();
 		
-		return new Object[]{mode.toString(), x0,y0,x1,y1,min, max, avg, median, p99, sdev};	
+		return new Object[]{mode.toString(), x0,y0,x1,y1,n,sum,min, max, avg, median, p99, sdev};	
 	}
 
 
@@ -117,7 +120,7 @@ public class SelectionTableRow implements Serializable{
 	 * without histo
 	 */
 	public static Object[] getTitleArrayExport() {
-		return new Object[]{"Mode", "x0", "y0", "x1", "y1", "I min", "I max", "I avg", "I median", "I 99%","Stdev"};
+		return new Object[]{"Mode", "x0", "y0", "x1", "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%","Stdev"};
 	}
 
 	public ChartPanel getHisto() {
@@ -166,6 +169,12 @@ public class SelectionTableRow implements Serializable{
 
 	public double getSdev() {
 		return sdev;
+	}
+	public int getN() {
+		return n;
+	}
+	public double getSum() {
+		return sum;
 	}
 
 

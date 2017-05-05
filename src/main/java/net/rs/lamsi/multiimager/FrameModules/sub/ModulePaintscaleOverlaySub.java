@@ -35,27 +35,23 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorPicker2;
-import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
-import net.rs.lamsi.massimager.Frames.FrameWork.listener.DelayedDocumentListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
-import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.basics.JColorPickerButton;
+import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
+import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
+import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
 	//################################################################################################
 	// MY STUFF
-	protected ColorPicker2 colorPickerDialog; 
 	
 	private static int ICON_WIDTH = 100;
 
@@ -350,9 +346,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		
 		lblAbs_3 = new JLabel("abs");
 		pnMinMax.add(lblAbs_3, "cell 3 10");
-		
-		// init 
-		colorPickerDialog = new ColorPicker2(this); 
 		
 		// add standard paintscales to menu
 		// TODO comment out for window build

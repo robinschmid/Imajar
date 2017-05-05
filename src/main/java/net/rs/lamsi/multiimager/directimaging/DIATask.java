@@ -6,7 +6,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
+import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.FileDim;

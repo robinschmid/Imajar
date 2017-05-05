@@ -24,12 +24,12 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.general.framework.modules.Module;
+import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.DialogLoggerUtil;

@@ -17,8 +17,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
-import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
 import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
 

@@ -6,10 +6,10 @@ import java.util.Vector;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 
 /**
  * basic dataset of multiple scan lines

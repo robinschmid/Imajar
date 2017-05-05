@@ -26,13 +26,12 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorPicker2;
-import net.rs.lamsi.massimager.Frames.FrameWork.JColorPickerButton;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
-import net.rs.lamsi.massimager.Settings.image.SettingsImageOverlay;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.basics.JColorPickerButton;
+import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
+import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
@@ -41,7 +40,6 @@ import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode
 public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<SettingsImageOverlay, ImageOverlay> {
 	//################################################################################################
 	// MY STUFF
-	protected ColorPicker2 colorPickerDialog; 
 	
 	private static int ICON_WIDTH = 100;
 
@@ -135,8 +133,6 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		tabbedPaintScales = new JTabbedPane(JTabbedPane.TOP);
 		panel_1.add(tabbedPaintScales, BorderLayout.CENTER);
 		
-		// init 
-		colorPickerDialog = new ColorPicker2(this); 
 		
 		// add standard paintscales to menu
 		// TODO comment out for window build

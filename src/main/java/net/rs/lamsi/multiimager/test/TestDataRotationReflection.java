@@ -7,9 +7,9 @@ import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
+import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 
 public class TestDataRotationReflection {
 

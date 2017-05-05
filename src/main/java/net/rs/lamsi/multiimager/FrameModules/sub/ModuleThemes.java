@@ -25,13 +25,13 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.menu.ModuleMenu;
-import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
-import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory.THEME;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
+import net.rs.lamsi.general.framework.modules.Module;
+import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 

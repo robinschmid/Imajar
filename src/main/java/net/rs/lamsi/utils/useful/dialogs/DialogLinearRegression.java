@@ -11,8 +11,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
-import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
-import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.jfree.chart.ChartFactory;

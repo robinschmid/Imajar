@@ -43,26 +43,25 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.heatmap.HeatmapFactory;
+import net.rs.lamsi.general.settings.SettingsDataSaver;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Dialogs.ChargeCalculatorSettingsDialog;
-import net.rs.lamsi.massimager.Frames.Dialogs.ColorPickerDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.DataSaverFrame;
-import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.GeneralSettingsFrame;
 import net.rs.lamsi.massimager.Frames.Panels.ImageVsSpecViewPanel;
-import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
-import net.rs.lamsi.massimager.MyException.NoFileSelectedException;
-import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.MyMZ.MZIon;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMineRawDataListsChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
+import net.rs.lamsi.utils.myfilechooser.exceptions.NoFileSelectedException;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.RawDataFile;
 
@@ -81,7 +80,6 @@ public class Window {
 	// other frames
 	private DataSaverFrame frameDataSaver;
 	private GeneralSettingsFrame frameGeneralSettings;
-	private ColorPickerDialog frameColorPicker; 
 	protected ChargeCalculatorSettingsDialog dialogChargeCalculatorSettings; 
 	// settings schreiben mit BinaryWriter 
 	private XSSFExcelWriterReader excelWriter;
@@ -262,8 +260,6 @@ public class Window {
 		frameGeneralSettings = new GeneralSettingsFrame(this);
 		frameGeneralSettings.setVisible(false);
 		
-		frameColorPicker = new ColorPickerDialog(this);
-		frameColorPicker.setVisible(false);
 		// Progress Dialog
 		ProgressDialog.initDialog(getFrame());
 		// charge calc settings dialog 
@@ -584,7 +580,6 @@ public class Window {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO wenn er nicht offen dann den Dialog öffnen.
-				frameColorPicker.setVisible(true);
 			}
 		});
     	menu.add(mntmGraphicsSettings);

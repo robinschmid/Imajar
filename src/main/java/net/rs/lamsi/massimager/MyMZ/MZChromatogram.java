@@ -1,6 +1,6 @@
 package net.rs.lamsi.massimager.MyMZ;
 
-import net.rs.lamsi.massimager.MyFreeChart.Plot.xylinechart.PlotXYLineChartPanel;
+import net.rs.lamsi.general.myfreechart.Plot.xylinechart.PlotXYLineChartPanel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;

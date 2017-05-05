@@ -16,7 +16,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.sf.mzmine.main.WindowMZMine;
 import net.sf.mzmine.modules.MZmineModule;
 import net.sf.mzmine.parameters.ParameterSet;

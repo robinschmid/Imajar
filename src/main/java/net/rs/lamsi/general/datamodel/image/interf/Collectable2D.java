@@ -8,16 +8,16 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsContainerSettings;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
-import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsZoom;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsContainerSettings;
+import net.rs.lamsi.general.settings.image.SettingsImage2D;
+import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 
 public abstract class Collectable2D <T extends SettingsContainerSettings>  implements Serializable {	 
 	// do not change the version!

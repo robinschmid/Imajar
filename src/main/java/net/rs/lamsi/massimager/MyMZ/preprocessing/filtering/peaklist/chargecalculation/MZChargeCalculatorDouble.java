@@ -4,7 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import net.rs.lamsi.massimager.Settings.SettingsChargeCalculator;
+import net.rs.lamsi.general.settings.SettingsChargeCalculator;
 import net.sf.mzmine.parameters.parametertypes.MZTolerance;
 import net.sf.mzmine.parameters.parametertypes.RTTolerance;
 

@@ -2,15 +2,18 @@ package net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.panels;
 
 import javax.swing.JPanel;
 
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.miginfocom.swing.MigLayout;
+
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JSeparator;
+
 import java.awt.Color;
+
 import javax.swing.JTextField;
 
 public class PnPlotStyle extends JPanel implements SettingsPanel {

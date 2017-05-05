@@ -8,10 +8,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.general.framework.modules.tree.IconNode;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 public class TestImagerWithData {
