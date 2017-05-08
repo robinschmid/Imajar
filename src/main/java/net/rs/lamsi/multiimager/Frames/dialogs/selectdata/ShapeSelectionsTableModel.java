@@ -2,21 +2,28 @@ package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
 import java.util.ArrayList;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
 
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 import org.jfree.chart.ChartPanel;
 
 public class ShapeSelectionsTableModel extends AbstractTableModel {
-
+	
+	
 	/**
 	 * 
 	 */
-	private final String[] title = new String[] {"Type", "x0", "y0", "x1", "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"}; 
+	private final String[] title = new String[] {"Order", "Type", "ROI", "conc.", "x0", "y0", "x1", "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"}; 
 	private final Class[] type = new Class[] {
-			String.class, Float.class, Float.class, Float.class, Float.class, Integer.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, ChartPanel.class
+			Integer.class, SelectionMode.class, ROI.class, Double.class, Float.class, Float.class, Float.class, Float.class, Integer.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, ChartPanel.class
 	};
 	private static final long serialVersionUID = 1L;
 	
@@ -27,6 +34,26 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 	 */
 	public ShapeSelectionsTableModel(SettingsSelections selections) {  
 		this.selections = selections;
+	}
+	
+	/**
+	 * call after adding the table model to the table
+	 * @param colModel
+	 * @param listSelectionListener 
+	 */
+	public void init(TableColumnModel colModel) {
+		// set column models
+		// Create the combo box editor
+	    JComboBox<SelectionMode> comboBox = new JComboBox<SelectionMode>(SelectionMode.values());
+	    DefaultCellEditor editor = new DefaultCellEditor(comboBox);
+	    colModel.getColumn(1).setCellEditor(editor);
+	    
+	    JComboBox<ROI> comboBox2 = new JComboBox<ROI>(ROI.values());
+	    DefaultCellEditor editor2 = new DefaultCellEditor(comboBox2);
+	    colModel.getColumn(2).setCellEditor(editor2);
+	    
+	    // histo
+	    colModel.getColumn(getColumnCount()-1).setCellRenderer(new TableHistoColumnRenderer());
 	}
 
 	public void addRow(SettingsShapeSelection row, boolean update) {
@@ -83,51 +110,80 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int col) {
 			SettingsShapeSelection sel = selections.getSelections().get(row);  
 			SelectionTableRow r = sel.getDefaultTableRow();
-			//   0      1     2     3     4       5    6      7        8         9           10      11        9
-			// "Type", "x0", "y0", "x1", "y1",    n   sum   "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"
+			//   0      1     2       3     4       5    6      7        8         9           10      11        9
+			//  orderNumber "Type", ROI, Concent. "x0", "y0", "x1", "y1",    n   sum   "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"
+			// order number for quantifier order
 			switch(col) {
 			case 0:
-				return r.getMode().toString();
+				return sel.getOrderNumber();
 			case 1:
-				return r.getX0();
-			case 2:
-				return r.getY0();
+				return sel.getMode();
+			case 2: 
+				return sel.getRoi();
 			case 3:
-				return r.getX1();
+				return sel.getConcentration();
 			case 4:
-				return r.getY1();
+				return sel.getX0();
 			case 5:
-				return r.getN();
-			case 6: 
-				return r.getSum();
+				return sel.getY0();
+			case 6:
+				return sel.getX1();
 			case 7:
-				return r.getMin();
+				return sel.getY1();
 			case 8:
-				return r.getMax();	
-			case 9:
-				return r.getAvg();	
+				return r.getN();
+			case 9: 
+				return r.getSum();
 			case 10:
-				return r.getMedian();			
+				return r.getMin();
 			case 11:
-				return r.getP99();			
+				return r.getMax();	
 			case 12:
-				return r.getSdev();			
+				return r.getAvg();	
 			case 13:
+				return r.getMedian();			
+			case 14:
+				return r.getP99();			
+			case 15:
+				return r.getSdev();			
+			case 16:
 				return r.getHisto();			
 			}
 			return null;
 	}
 
 	public boolean isCellEditable(int row, int col) { 
-		return false;
+		return (col==0 || col==1 || col==2 || col==3 || col==16);
 	}
 
 
 	public void setValueAt(Object value, int row, int col) {  
-
-		SettingsShapeSelection prow = selections.getSelections().get(row);
+		SettingsShapeSelection sel = selections.getSelections().get(row);
 		// maybe set it here
 		switch (col) {
+		case 0:
+			sel.setOrderNumber((int) value);
+			break;
+		case 1:
+			SelectionMode nm = (SelectionMode) value;
+			if(!sel.getMode().equals(nm)) {
+				// update statistics if exclude was set/unset
+				boolean update = sel.getMode().equals(SelectionMode.EXCLUDE) || nm.equals(SelectionMode.EXCLUDE);
+				// set mode
+				sel.setMode(nm);
+				if(update)
+					selections.updateStatistics();
+			}
+			break;
+		case 2:
+			ROI r = (ROI) value;
+			if(!sel.getRoi().equals(r)) {
+				sel.setRoi((ROI) value);
+			}
+			break;
+		case 3:
+			sel.setConcentration((double) value);
+			break;
 		}
 		fireTableCellUpdated(row, col);
 		// update repaint
@@ -169,7 +225,7 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 				data[0] = title; 
 			// data
 			for(int i=0; i<getRowCount(); i++)
-				data[i+1] = selections.getSelections().get(i).getDefaultTableRow().getRowData();
+				data[i+1] = selections.getSelections().get(i).getRowData();
 
 			return data;
 		}catch(Exception ex) {

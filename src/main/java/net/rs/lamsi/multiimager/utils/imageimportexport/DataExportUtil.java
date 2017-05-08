@@ -340,10 +340,10 @@ LOOKUP_TABLE default
 			// write table rows
 			Object[][] erows = new Object[tableRows.size()+1][];
 			// write title line
-			erows[0] =  SelectionTableRow.getTitleArrayExport();
+			erows[0] =  SettingsShapeSelection.getTitleArrayExport();
 			for(int r=0; r<tableRows.size(); r++) {
 				// write all tablerows
-				erows[r+1] = tableRows.get(r).getDefaultTableRow().getRowDataExport();
+				erows[r+1] = tableRows.get(r).getRowDataExport();
 			}
 			
 			String s = ClipboardWriter.dataToTabSepString(erows);

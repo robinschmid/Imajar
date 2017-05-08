@@ -11,8 +11,8 @@ public class SettingsRectSelection extends SettingsShapeSelection<Rectangle2D.Fl
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	
-	public SettingsRectSelection(Image2D currentImage, SelectionMode mode, float x, float y, float w, float h) {
-		super(currentImage, mode, new Rectangle2D.Float(x, y, w, h));
+	public SettingsRectSelection(Image2D currentImage, ROI roi, SelectionMode mode, float x, float y, float w, float h) {
+		super(currentImage, roi, mode, new Rectangle2D.Float(x, y, w, h));
 	} 
 	public SettingsRectSelection(SelectionMode mode) {
 		super(mode, new Rectangle2D.Float(0, 0, 0, 0));

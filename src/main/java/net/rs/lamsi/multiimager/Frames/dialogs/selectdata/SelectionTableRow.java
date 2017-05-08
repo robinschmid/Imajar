@@ -14,13 +14,11 @@ public class SelectionTableRow implements Serializable{
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
-	private SelectionMode mode;
 	private transient ChartPanel histo;
 
 	// only used for stats calculation 
 	// use finalise to free this list
 	private ArrayList<Double> data = null;
-	private Shape shape;
 
 	// statistics
 	private double max, min, median, p99, avg, sdev, sum;
@@ -28,10 +26,8 @@ public class SelectionTableRow implements Serializable{
 
 
 
-	public SelectionTableRow(SelectionMode mode, Shape shape) {
+	public SelectionTableRow() {
 		super();
-		this.mode = mode; 
-		this.shape = shape;
 	}
 
 
@@ -87,42 +83,6 @@ public class SelectionTableRow implements Serializable{
 		data = null;
 	}
 
-
-	/**
-	 * called for table
-	 * @return
-	 */
-	public Object[] getRowData() {
-		float y0 = getY0();
-		float x0 =getX0();
-		float y1 =getY1();
-		float x1 = getX1();
-
-		return new Object[]{mode.toString(), x0,y0,x1,y1,n,sum,min, max, avg, median, p99, sdev, histo};
-	}
-
-	/**
-	 * called for data export 
-	 * @return without histogram
-	 */
-	public Object[] getRowDataExport() {
-		float y0 = getY0();
-		float x0 =getX0();
-		float y1 =getY1();
-		float x1 = getX1();
-		
-		return new Object[]{mode.toString(), x0,y0,x1,y1,n,sum,min, max, avg, median, p99, sdev};	
-	}
-
-
-	/**
-	 * array for title line export
-	 * without histo
-	 */
-	public static Object[] getTitleArrayExport() {
-		return new Object[]{"Mode", "x0", "y0", "x1", "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%","Stdev"};
-	}
-
 	public ChartPanel getHisto() {
 		return histo;
 	}
@@ -132,41 +92,21 @@ public class SelectionTableRow implements Serializable{
 	}
 
 
-	public SelectionMode getMode() {
-		return mode;
-	}
-
-
-	public Shape getShape() {
-		return shape;
-	}
-
-
 	public double getMax() {
 		return max;
 	}
-
-
 	public double getMin() {
 		return min;
 	}
-
-
 	public double getMedian() {
 		return median;
 	}
-
-
 	public double getP99() {
 		return p99;
 	}
-
-
 	public double getAvg() {
 		return avg;
 	}
-
-
 	public double getSdev() {
 		return sdev;
 	}
@@ -176,28 +116,4 @@ public class SelectionTableRow implements Serializable{
 	public double getSum() {
 		return sum;
 	}
-
-
-	public float getX0() {
-		return (float)shape.getBounds2D().getMinX();
-	} 
-	public float getX1() {
-		return (float)shape.getBounds2D().getMaxX();
-	} 
-	public float getY0() {
-		return (float)shape.getBounds2D().getMinY();
-	} 
-	public float getY1() {
-		return (float)shape.getBounds2D().getMaxY();
-	}
-
-
-	public void setMode(SelectionMode mode) {
-		this.mode = mode;
-	}
-
-
-	public void setShape(Shape shape) {
-		this.shape = shape;
-	} 
 }

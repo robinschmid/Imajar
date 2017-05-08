@@ -192,11 +192,11 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 		if(lastIProcChangeTime!=img.getLastIProcChangeTime()) {
 			ImageEditorWindow.log("I PROCESSING CHANGED IN QUANTIFIER", LOG.DEBUG);
 			lastIProcChangeTime = img.getLastIProcChangeTime();
-			fireIntensityProcessingChanged();
+			fireIntensityProcessingChanged(img);
 		}
 	}
 	@Override
-	public void fireIntensityProcessingChanged() {
+	public void fireIntensityProcessingChanged(Image2D img) {
 		averageILines=null;
 		averageI = -1;
 	}
@@ -206,55 +206,55 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 	}
 	public void setImg(Image2D img) {
 		this.img = img;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public int getLowerBound() {
 		return lowerBound;
 	}
 	public void setLowerBound(int lowerBound) {
 		this.lowerBound = lowerBound;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public int getUpperBound() {
 		return upperBound;
 	}
 	public void setUpperBound(int upperBound) {
 		this.upperBound = upperBound;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public boolean isUseStart() {
 		return useStart;
 	}
 	public void setUseStart(boolean useStart) {
 		this.useStart = useStart;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public boolean isUseMiddle() {
 		return useMiddle;
 	}
 	public void setUseMiddle(boolean useMiddle) {
 		this.useMiddle = useMiddle;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public void setUseAll(boolean state) {
 		this.useMiddle = state;
 		useEnd = state;
 		useStart = state;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public boolean isUseEnd() {
 		return useEnd;
 	}
 	public void setUseEnd(boolean useEnd) {
 		this.useEnd = useEnd;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public int getMode() {
 		return mode;
 	}
 	public void setMode(int mode) {
 		this.mode = mode;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public boolean isActive() {
 		return isActive;
@@ -267,14 +267,14 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
 	}
 	public void setConcentration(double concentration) {
 		this.concentration = concentration;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public boolean isUseSelectedExcluded() {
 		return useSelectedExcluded;
 	}
 	public void setUseSelectedExcluded(boolean useSelectedExcluded) {
 		this.useSelectedExcluded = useSelectedExcluded;
-		fireIntensityProcessingChanged();
+		fireIntensityProcessingChanged(img);
 	}
 	public boolean isUseRawData() {
 		return useRawData;

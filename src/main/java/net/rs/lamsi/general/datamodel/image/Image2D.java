@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -24,12 +25,13 @@ import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
+import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -59,9 +61,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	protected Image2D parent;
 
 	// image has nothing to do with quantifier class! so dont use a listener for data processing changed events TODO
-	//protected Vector<IntensityProcessingChangedListener> listenerProcessingChanged = new Vector<IntensityProcessingChangedListener>();
+	protected ArrayList<IntensityProcessingChangedListener> listenerProcessingChanged = new ArrayList<IntensityProcessingChangedListener>();
 	// intensityProcessingChanged? save lastIProcChangeTime and compare with one from quantifier class
-	protected int lastIProcChangeTime = 0;
+	protected int lastIProcChangeTime = 1;
 
 	//############################################################
 	// Settings
@@ -1791,14 +1793,10 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * update all quantifiers if it has changed
 	 */
 	public void fireIntensityProcessingChanged() { 
-		//		for(IntensityProcessingChangedListener l : listenerProcessingChanged)
-		//			l.fireIntensityProcessingChanged();
-
-
 		// gives a indirect signal to Quantifier and children to change iProc
 		lastIProcChangeTime++;
 		if(lastIProcChangeTime>=Integer.MAX_VALUE-1)
-			lastIProcChangeTime = 0;
+			lastIProcChangeTime = -1;
 
 		averageIProcessed = -1;
 		minZ = -1;
@@ -1818,7 +1816,20 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			internalQ.getImgIS().getSettings().getOperations().setBlankQuantifier(settings.getOperations().getBlankQuantifier());
 			internalQ.getImgIS().fireIntensityProcessingChanged();
 		}
+		
+		// register changes
+		// e.g. for regression SettingsSelection
+		for(IntensityProcessingChangedListener l : listenerProcessingChanged)
+			l.fireIntensityProcessingChanged(this);
 	} 
+	public void addIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
+		listenerProcessingChanged.add(li);
+	}
+	public void removeIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
+		listenerProcessingChanged.remove(li);
+	}
+	
+	
 	public Image2D getParent() {
 		return parent;
 	}

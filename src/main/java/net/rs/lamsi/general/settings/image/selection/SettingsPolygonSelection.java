@@ -4,6 +4,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SHAPE;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 
@@ -15,11 +16,11 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
-	public SettingsPolygonSelection(Image2D currentImage, SelectionMode mode) {
-		super(currentImage, mode, new Polygon2D());
+	public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode) {
+		super(currentImage, roi, mode, new Polygon2D());
 	} 
-	public SettingsPolygonSelection(Image2D currentImage, SelectionMode mode, float x, float y) {
-		super(currentImage, mode, new Polygon2D());
+	public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode, float x, float y) {
+		super(currentImage, roi, mode, new Polygon2D());
 		shape.addPoint(x, y);
 	} 
 	public SettingsPolygonSelection(SelectionMode mode) {

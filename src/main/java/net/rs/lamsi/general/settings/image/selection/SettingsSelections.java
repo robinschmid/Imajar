@@ -8,12 +8,16 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
+import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.w3c.dom.Document;
@@ -21,17 +25,27 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsSelections extends Settings implements Serializable {
+public class SettingsSelections extends Settings implements Serializable, Image2DSett, IntensityProcessingChangedListener {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
 	// list of selections, exclusions and info
 	protected ArrayList<SettingsShapeSelection> selections; 
+	
+	// Regression for quantification
+	protected SimpleRegression regression = null;
+	// mark regression for update
+	protected boolean updateRegression = true;
 
 	// 
 	private boolean hasExclusions = false, hasSelections = false;
 
 	protected transient Image2D currentImg;
+	// last time processing has changed for currentImg
+	protected int lastProcessingChangeTime = -1;
+	// version id for regression to track changes 
+	// for quantified images to register value processing changes
+	protected int regressionVersionID = 1;
 
 	public SettingsSelections() {
 		super("SettingsSelection", "/Settings/Selections/", "setSelList"); 
@@ -39,6 +53,10 @@ public class SettingsSelections extends Settings implements Serializable {
 
 	@Override
 	public void resetAll() {  
+		regression = null;
+		updateRegression = true;
+		lastProcessingChangeTime = -1;
+		regressionVersionID = 1;
 	}
 
 	//##########################################################
@@ -82,10 +100,13 @@ public class SettingsSelections extends Settings implements Serializable {
 							hasSelections = true;
 					}
 				}
+				// quantifier?
+				if(sel.getRoi().equals(ROI.QUANTIFIER))
+					updateRegression = true;
 			}
 		}
 	}
-
+	
 	public void removeSelection(SettingsShapeSelection sel, boolean updateStats) {
 		if(selections!=null) {
 			removeSelection(selections.indexOf(sel), updateStats);
@@ -106,6 +127,13 @@ public class SettingsSelections extends Settings implements Serializable {
 		setCurrentImage(img, true);
 	}
 	public void setCurrentImage(Image2D img, boolean checkUpdate) {
+		// remove listener
+		if(currentImg!=null)
+			currentImg.removeIntensityProcessingChangedListener(this);
+		// add listener
+		if(img!=null)
+			img.addIntensityProcessingChangedListener(this);
+		
 		// update stats
 		boolean update = false;
 		if(img!=null && !img.equals(currentImg)) {
@@ -161,6 +189,8 @@ public class SettingsSelections extends Settings implements Serializable {
 				// calculates statistics and frees memory
 				s.calculateStatistics();
 			}
+			// update quantifier
+			updateRegression = true;
 		}
 	}
 
@@ -189,6 +219,10 @@ public class SettingsSelections extends Settings implements Serializable {
 
 			// finalise the process?
 			s.calculateStatistics();
+
+			// quantifier?
+			if(s.getRoi().equals(ROI.QUANTIFIER))
+				updateRegression = true;
 		}
 	}
 
@@ -338,6 +372,23 @@ public class SettingsSelections extends Settings implements Serializable {
 		return c;
 	}
 
+	/**
+	 * counts the selections of a specific ROI mode
+	 * @param roi
+	 * @return
+	 */
+	public int count(ROI roi) {
+		if(selections==null)
+			return 0;
+
+		int c = 0;
+		for (Iterator iterator = selections.iterator(); iterator.hasNext();) {
+			SettingsShapeSelection s = (SettingsShapeSelection) iterator.next();
+			if(s.getRoi().equals(roi))
+				c++;
+		}
+		return c;
+	}
 	/**
 	 * update on the run
 	 * save all to excel
@@ -540,18 +591,18 @@ public class SettingsSelections extends Settings implements Serializable {
 			// write summary table
 			xwriter.writeToCell(shSummary, 0, 0, "Summary of all rects.");
 			// write title line
-			xwriter.writeDataArrayToSheet(shSummary, SelectionTableRow.getTitleArrayExport(), 0, 1, false);
+			xwriter.writeDataArrayToSheet(shSummary, SettingsShapeSelection.getTitleArrayExport(), 0, 1, false);
 			// write data rows
 			for(int r=0; r<selections.size(); r++) {
 				// write all tablerows
-				Object[] row = selections.get(r).getDefaultTableRow().getRowDataExport();
+				Object[] row = selections.get(r).getRowDataExport();
 				xwriter.writeDataArrayToSheet(shSummary, row, 0, 2+r, false);
 
 				// for all shape sheets:
 				// write title line
 				// write data row to all shape sheets
 				if(sett.isShapes()) {
-					xwriter.writeDataArrayToSheet(shapeSel[r], SelectionTableRow.getTitleArrayExport(), 0, 1, false);
+					xwriter.writeDataArrayToSheet(shapeSel[r], SettingsShapeSelection.getTitleArrayExport(), 0, 1, false);
 					xwriter.writeDataArrayToSheet(shapeSel[r], row, 0, 2, false);
 					// data
 					xwriter.writeToCell(shapeSel[r], 0, 4, "All data points");
@@ -559,7 +610,7 @@ public class SettingsSelections extends Settings implements Serializable {
 
 				// only for selections
 				if(sett.isShapesSelNEx() && selections.get(r).getMode().equals(SelectionMode.SELECT)) {
-					xwriter.writeDataArrayToSheet(shapeSelNonEx[r], SelectionTableRow.getTitleArrayExport(), 0, 1, false);
+					xwriter.writeDataArrayToSheet(shapeSelNonEx[r], SettingsShapeSelection.getTitleArrayExport(), 0, 1, false);
 					xwriter.writeDataArrayToSheet(shapeSelNonEx[r], row, 0, 2, false);
 					// data
 					xwriter.writeToCell(shapeSelNonEx[r], 0, 4, "All data points");
@@ -625,4 +676,103 @@ public class SettingsSelections extends Settings implements Serializable {
 			sett.setActive(true);
 		}
 	}
+
+	
+	//#################################################################
+	// quantifier business
+	/**
+	 * auto order all quantifier 
+	 */
+	public void autoOrderQuantifier() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	/**
+	 * updates and returns the regression for quantification
+	 * @return
+	 */
+	public SimpleRegression getRegression() {
+		// create new regression
+		if(updateRegression || regression == null) {
+			regression = new SimpleRegression(true);
+			regression.addData(getRegressionData());
+			// track version of regression for quantified images to register changes
+			if(regressionVersionID==Integer.MAX_VALUE)
+				regressionVersionID = 1;
+			regressionVersionID++;
+			// 
+			return regression;
+		}
+		else return regression;
+	}
+	
+	/**
+	 * the regression data as [n - data points][2: concentration, avg intensity]
+	 * can be used for the {@link DialogLinearRegression}
+	 * @return
+	 */
+	public double[][] getRegressionData() {
+		int n = countQuantifier();
+		if(n>0) {
+			// n data points
+			double[][] dat = new double[n][2];
+			// concentration and avg
+			int c = 0;
+			for (SettingsShapeSelection s : selections) {
+				if(s.getRoi().equals(ROI.QUANTIFIER)) {
+					dat[c][0] = s.getConcentration();
+					dat[c][1] = s.getDefaultTableRow().getAvg();
+					c++;
+				}
+			}
+			return dat;
+		}
+		else return null;
+	}
+	/**
+	 * number of quantifiers set as ROI in a SettingsShapeSelection
+	 * @return
+	 */
+	public int countQuantifier() {
+		int c=0; 
+		for (SettingsShapeSelection s : selections)
+			if(s.getRoi().equals(ROI.QUANTIFIER))
+				c++;
+		return c;
+	}
+
+	@Override
+	public void fireIntensityProcessingChanged(Image2D img) {
+		// update if processing of current image has changed
+		// e.g. after internal standard was applied or anything else
+		if(lastProcessingChangeTime!=img.getLastIProcChangeTime()) {
+			lastProcessingChangeTime = img.getLastIProcChangeTime();
+			if(img.equals(currentImg))
+				updateStatistics();
+			else img.removeIntensityProcessingChangedListener(this);
+		}
+	}
+
+	public int getRegressionVersionID() {
+		return regressionVersionID;
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

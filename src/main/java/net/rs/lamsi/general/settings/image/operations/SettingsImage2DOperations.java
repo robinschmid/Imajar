@@ -1,16 +1,16 @@
 package net.rs.lamsi.general.settings.image.operations;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.operations.quantifier.Image2DQuantifyStrategyImpl;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
-import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
+import net.rs.lamsi.general.settings.interf.Image2DSett;
 
-public class SettingsImage2DOperations  extends Settings  implements Image2DQuantifyStrategyImpl {
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public class SettingsImage2DOperations  extends Settings  implements Image2DQuantifyStrategyImpl, Image2DSett {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     
@@ -110,6 +110,7 @@ public class SettingsImage2DOperations  extends Settings  implements Image2DQuan
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
 	}
+	@Override
 	public void setCurrentImage(Image2D img) {
 		if(blankQuantifier!=null)
 			blankQuantifier.getQSameImage().setImg(img);

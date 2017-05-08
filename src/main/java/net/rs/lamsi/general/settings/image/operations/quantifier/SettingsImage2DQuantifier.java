@@ -1,22 +1,24 @@
 package net.rs.lamsi.general.settings.image.operations.quantifier;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.interf.Image2DSett;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
-
-public abstract class SettingsImage2DQuantifier extends Settings implements Image2DQuantifyStrategyImpl {
+public abstract class SettingsImage2DQuantifier extends Settings implements Image2DQuantifyStrategyImpl, Image2DSett {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     
     // selected mode
-    public static final int MODE_LINEAR = 0, MODE_ONE_POINT = 1, MODE_MULTIPLE_POINTS = 2, MODE_IS=3, MODE_BLANK = 4;
+    public static final int MODE_LINEAR = 0, MODE_ONE_POINT = 1, MODE_IS=3, MODE_BLANK = 4;
     
     protected final int mode;
     protected boolean isActive = false;
+    protected Image2D currentImg = null;
 	
 	
 	public SettingsImage2DQuantifier(int mode) {
@@ -46,8 +48,6 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 			return "linear";
 		case MODE_ONE_POINT:
 			return "one point calibration";
-		case MODE_MULTIPLE_POINTS:
-			return "regression ("+ ((SettingsImage2DQuantifierMultiPoints)this).getQuantifier().size() +" points)";
 		default: 
 			return "";
 		} 
@@ -55,6 +55,10 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 	
 	public abstract boolean isApplicable();
 
+	@Override
+	public void setCurrentImage(Image2D img) {
+		currentImg = img;
+	}
 	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {

@@ -24,8 +24,10 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -33,6 +35,8 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
@@ -45,6 +49,7 @@ import net.rs.lamsi.general.settings.image.selection.SettingsPolygonSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsRectSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SHAPE;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
@@ -53,13 +58,12 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.test.TestQuantifier;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.data.Range;
-
-import javax.swing.JCheckBox;
  
 
 public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener, MouseMotionListener {
@@ -67,8 +71,6 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private enum KEY {
 		SHRINK, SHIFT, ENLARGE
 	}
-	
-	private SelectionMode mode = SelectionMode.SELECT;
 	
 	// mystuff
 	private Heatmap heat;
@@ -92,10 +94,12 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private JToggleButton btnChoose;
 	private JTable table;
 	private ShapeSelectionsTableModel tableModel;
-	private JComboBox comboShape;
+	private JComboBox<SelectionMode> comboShape;
 	private JComboBox comboSelectionMode;
 	private JCheckBox cbPerformance;
 	private JCheckBox cbMarkDp;
+	private JComboBox<ROI> comboRoi;
+	private JButton btnRegression;
 
 	/**
 	 * Launch the application.
@@ -160,9 +164,13 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			}
 		});
 		pnNorthMenu.add(cbMarkDp);
+		
+		comboRoi = new JComboBox<ROI>();
+		comboRoi.setModel(new DefaultComboBoxModel(ROI.values()));
+		pnNorthMenu.add(comboRoi);
 		pnNorthMenu.add(comboShape);
 		
-		comboSelectionMode = new JComboBox();
+		comboSelectionMode = new JComboBox<SelectionMode>();
 		comboSelectionMode.setModel(new DefaultComboBoxModel(SelectionMode.values()));
 		comboSelectionMode.addItemListener(new ItemListener() {
 			@Override
@@ -176,7 +184,17 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		JButton btnFinish = new JButton("Finish shape");
 		btnFinish.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				currentSelect = null;
+				// concentration insert dialog for QUANTIFIER
+				if(currentSelect!=null && currentSelect.getRoi().equals(ROI.QUANTIFIER) && currentSelect.getConcentration()==0) {
+					// open dialog
+					try {
+						double concentration = Double.valueOf(JOptionPane.showInputDialog("concentration", "0"));
+						currentSelect.setConcentration(concentration);
+					} catch (Exception ex) {
+					}
+				}
+				// desselect
+				setCurrentSelect(null);
 			}
 		});
 		pnNorthMenu.add(btnFinish);
@@ -188,6 +206,21 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			}
 		});
 		pnNorthMenu.add(btnChoose);
+		
+		btnRegression = new JButton("Regression");
+		btnRegression.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// get data for regression
+				double[][] data = settSel.getRegressionData();
+				// create dialog
+				if(data!=null) {
+					DialogLinearRegression d = DialogLinearRegression.createInstance(data, true);
+					DialogLoggerUtil.centerOnScreen(d, true);
+					d.setVisible(true);
+				}				
+			}
+		});
+		pnNorthMenu.add(btnRegression);
 		pnNorthMenu.add(btnDelete);
 		
 		JButton btnDeleteAll = new JButton("Delete All");
@@ -197,7 +230,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				currentSelect = null;
 				settSel.removeAllSelections();
 				heat.getPlot().clearAnnotations();
-				getPnChartView().repaint();
+				heat.getChart().fireChartChanged();
 			}
 		}); 
 		pnNorthMenu.add(btnDeleteAll);
@@ -285,6 +318,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				sett.setAlpha(0.25f);
 				sett.applyToHeatMap(heat);
 			}
+			// 
+			heat.getChart().fireChartChanged();
 		}
 	}
 
@@ -365,7 +400,20 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				// set table model
 				tableModel = new ShapeSelectionsTableModel(settSel);
 				table.setModel(tableModel);
-				table.getColumnModel().getColumn(table.getColumnCount()-1).setCellRenderer(new TableHistoColumnRenderer());
+				tableModel.init(table.getColumnModel());
+				ListSelectionListener sellist = new ListSelectionListener() {
+					@Override
+					public void valueChanged(ListSelectionEvent e) {
+						if(!e.getValueIsAdjusting()) {
+							int i = table.getSelectedRow();
+							if(i!=-1)
+								setCurrentSelect(getSelections().get(i));
+						}
+					}
+				};
+				table.getSelectionModel().addListSelectionListener(sellist);
+				//table.getColumnModel().getSelectionModel().addListSelectionListener(sellist);
+				
 				
 				// add all
 				if(settSel.getSelections()!=null)
@@ -422,6 +470,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	 * @param r
 	 */
 	private void addNewSelection(SettingsShapeSelection r) {
+		setCurrentSelect(r);
 		// put data in table
 		tableModel.addRow(r, false);
 		// update statistics
@@ -461,8 +510,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		tableModel.fireTableDataChanged();
 		
 		// update map
-		if(getCbMarkDp().isSelected())
-			showMarkingMap(true);
+			showMarkingMap(getCbMarkDp().isSelected());
 		
 		// update chart
 		JFreeChart chart = heat.getChart();
@@ -475,6 +523,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		ImageEditorWindow.log("MOVED", LOG.DEBUG);
+		// no selected?
+		if(currentSelect==null)
+			isPressed = false;
 		// UPDATE THE CURRENT RECT
 		if(isPressed) {
 			if(!(getBtnChoose().isSelected())) {
@@ -518,16 +569,14 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			if(getBtnChoose().isSelected()) { 
 				ChartPanel cp = heat.getChartPanel();
 				Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY());
-				
-				currentSelect = null;
+
+				setCurrentSelect(null);
 				// choose current rect
 				for(int i=0; getSelections()!=null && i<getSelections().size(); i++) {
 					SettingsShapeSelection s = getSelections().get(i);
 					if((currentSelect==null || !currentSelect.equals(s)) && s.contains(pos.getX(), pos.getY())) {
 						// found rect
-						currentSelect = s;
-						// TODO WHY? MODE?
-						mode = s.getMode();
+						setCurrentSelect(s);
 						lastMouseEvent = e;
 						return;
 					}
@@ -538,8 +587,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY());
 				if(currentSelect==null || !SettingsPolygonSelection.class.isInstance(currentSelect)) {
 					// create new
-					currentSelect = new SettingsPolygonSelection(img, getCurrentSelectionMode(), x0, y0);
-					addNewSelection(currentSelect);
+					addNewSelection(new SettingsPolygonSelection(img, getCurrentRoiMode(), getCurrentSelectionMode(), x0, y0));
 					lastMouseEvent = e;
 				}
 				else {
@@ -553,6 +601,23 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			}
 		}
 	}
+	
+	
+	private void setCurrentSelect(SettingsShapeSelection s) {
+		if(currentSelect!=null) {
+			currentSelect.setHighlighted(false);
+			updateAnnotation(currentSelect);
+		}
+		currentSelect = s;
+		if(s!=null){
+			currentSelect.setHighlighted(true);
+			updateAnnotation(currentSelect);
+		}
+		JFreeChart chart = heat.getChart();
+		chart.fireChartChanged();
+	}
+
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// creation of new selections
@@ -573,19 +638,18 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				SettingsShapeSelection tmpSelect = null;
 				switch(getCurrentShape()) {
 				case RECT:
-					tmpSelect = new SettingsRectSelection(img, getCurrentSelectionMode(), x0, y0, 1, 1);
+					tmpSelect = new SettingsRectSelection(img, getCurrentRoiMode(), getCurrentSelectionMode(), x0, y0, 1, 1);
 					break;
 				case ELIPSE:
-					tmpSelect = new SettingsElipseSelection(img, getCurrentSelectionMode(), x0, y0, 1, 1);
+					tmpSelect = new SettingsElipseSelection(img, getCurrentRoiMode(), getCurrentSelectionMode(), x0, y0, 1, 1);
 					break;
 				case FREEHAND:
-					tmpSelect = new SettingsPolygonSelection(img, getCurrentSelectionMode(), x0, y0);
+					tmpSelect = new SettingsPolygonSelection(img, getCurrentRoiMode(), getCurrentSelectionMode(), x0, y0);
 					break;
 				}
 				if(tmpSelect!=null) {
 					isPressed = true;
 					addNewSelection(tmpSelect);
-					currentSelect = tmpSelect;
 					lastMouseEvent = e;
 				}
 			}
@@ -608,6 +672,16 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				currentSelect.setFirstAndSecondMouseEvent(x0, y0, x1, y1);
 				// update selection stats and annotation
 				updateSelection();
+				
+				// concentration insert dialog for QUANTIFIER
+				if(currentSelect.getRoi().equals(ROI.QUANTIFIER)) {
+					// open dialog
+					try {
+						double concentration = Double.valueOf(JOptionPane.showInputDialog("concentration", "0"));
+						currentSelect.setConcentration(concentration);
+					} catch (Exception ex) {
+					}
+				}
 			}
 		}
 	}
@@ -743,6 +817,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private SelectionMode getCurrentSelectionMode() {
 		return (SelectionMode) comboSelectionMode.getSelectedItem();
 	}
+	private ROI getCurrentRoiMode() {
+		return (ROI) comboRoi.getSelectedItem();
+	}
 	public JComboBox getComboShape() {
 		return comboShape;
 	}
@@ -754,5 +831,11 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	}
 	public JCheckBox getCbMarkDp() {
 		return cbMarkDp;
+	}
+	public JComboBox getComboRoi() {
+		return comboRoi;
+	}
+	public JButton getBtnRegression() {
+		return btnRegression;
 	}
 }

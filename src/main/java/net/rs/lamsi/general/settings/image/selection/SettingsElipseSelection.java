@@ -4,6 +4,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SHAPE;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 
@@ -14,8 +15,8 @@ public class SettingsElipseSelection extends SettingsShapeSelection<Ellipse2D.Fl
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	
-	public SettingsElipseSelection(Image2D currentImage, SelectionMode mode, float x, float y, float w, float h) {
-		super(currentImage, mode, new Ellipse2D.Float(x, y, w, h));
+	public SettingsElipseSelection(Image2D currentImage, ROI roi, SelectionMode mode, float x, float y, float w, float h) {
+		super(currentImage, roi, mode, new Ellipse2D.Float(x, y, w, h));
 	} 
 	public SettingsElipseSelection(SelectionMode mode) {
 		super(mode, new Ellipse2D.Float(0, 0, 0, 0));

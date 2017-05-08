@@ -61,7 +61,7 @@ public class ImageRenderer extends XYBlockRenderer {
      * @return
      */
     public boolean isMapTrue(int item) {
-    	return map==null || (item<map.length && map[item]==true);
+    	return (sett!=null && !sett.isActive()) || map==null || (item<map.length && map[item]==true);
     }
 
 	public boolean[] getMap() {

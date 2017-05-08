@@ -1,33 +1,24 @@
 package net.rs.lamsi.general.settings.image;
 
-import java.util.HashMap;
-import java.util.Vector;
-
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
-import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-public class SettingsImage2D extends SettingsContainerCollectable2D {
+public class SettingsImage2D extends SettingsContainerCollectable2D implements Image2DSett {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
+    
+    protected Image2D currentImg = null;
     //
 
 	public SettingsImage2D() {
@@ -92,11 +83,22 @@ public class SettingsImage2D extends SettingsContainerCollectable2D {
 		img.getSettings().getSettImage().setRAWFilepath(path);
 	}
 
+	@Override
 	public void setCurrentImage(Image2D img) {
-		SettingsImage2DOperations op = getOperations();
-		if(op!=null)
-			op.setCurrentImage(img);
-		getSettSelections().setCurrentImage(img);
+		this.currentImg = img;
+		for(Settings s:list.values()) {
+			if(Image2DSett.class.isInstance(s)) 
+				((Image2DSett)s).setCurrentImage(img);
+		}
+	}
+	
+	@Override
+	public boolean replaceSettings(Settings sett) {
+		// set currentimg
+		if(Image2DSett.class.isInstance(sett)) 
+			((Image2DSett)sett).setCurrentImage(currentImg);
+		// replace
+		return super.replaceSettings(sett);
 	}
 	
 	

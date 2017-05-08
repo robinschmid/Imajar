@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
 public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier {
@@ -16,18 +18,19 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
     private static final long serialVersionUID = 1L;
     
     // image for one point
-    protected Quantifier imgEx;  
+    protected Image2D imgEx;  
+    // regression version to track changes
+    protected int regressionVersionID = 0;
 	
 	public SettingsImage2DQuantifierOnePoint(Image2D ex) {
 		super(MODE_ONE_POINT); 
-		this.imgEx = new Quantifier();
-		imgEx.setImg(ex);
-		imgEx.setMode(Quantifier.MODE_AVERAGE);
+		this.imgEx = ex;
 	} 
 	@Override
 	public void resetAll() {
 		super.resetAll(); 
 		imgEx = null;
+		regressionVersionID = 0;
 	}
 
 	@Override
@@ -37,24 +40,38 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
 	
 	@Override
 	public double calcIntensity(Image2D img, int line, int dp, double intensity) {
-		return isApplicable()? intensity/imgEx.getAverageIntensity()*imgEx.getConcentration() : intensity;
+		SimpleRegression r = getRegression();
+		if(r==null)
+			return intensity;
+		else {
+			int nid = imgEx.getSettings().getSettSelections().getRegressionVersionID();
+			if(regressionVersionID==nid)
+				return (intensity - r.getIntercept())/r.getSlope();
+			else {
+				// regression has changed
+				img.fireIntensityProcessingChanged();
+				regressionVersionID = nid;
+				return calcIntensity(img, line, dp, intensity);
+			}
+		}
 	}
 	
 	public boolean isApplicable() {
-		return (imgEx!=null);
+		return getRegression() != null;
 	}
 	
-	public Quantifier getImgEx() {
+	private SimpleRegression getRegression() {
+		if(imgEx==null)
+			return null;
+		SettingsSelections s = imgEx.getSettings().getSettSelections();
+		return s.getRegression();
+	}
+	
+	public Image2D getImgEx() {
 		return imgEx;
 	}
 	public void setImgEx(Image2D ex) {
-		this.imgEx.setImg(ex);
-	}
-	public double getConcentrationEx() {
-		return imgEx.getConcentration();
-	}
-	public void setConcentrationEx(double c) {
-		imgEx.setConcentration(c);
+		this.imgEx = ex;
 	}
 	
 	@Override

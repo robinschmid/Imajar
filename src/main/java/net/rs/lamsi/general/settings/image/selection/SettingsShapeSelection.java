@@ -26,11 +26,17 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	
-	// current shape is given by combobox TODO
+	/**
+	 *  current shape is given by combobox
+	 *
+	 */
 	public enum SHAPE {
 		RECT, ELIPSE, POLYGON, FREEHAND
 	}
-	// what to draw or do
+	/**
+	 *  what to draw or do
+	 *
+	 */
 	public enum SelectionMode {
 		SELECT("Sel"), EXCLUDE("Excl"), INFO("Info");
 		
@@ -42,37 +48,109 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 			this.shortTitle = shortTitle;
 		}
 	}
+	/**
+	 * defines the task for this ROI
+	 */
+	public enum ROI {
+		SAMPLE, QUANTIFIER
+	}
 
 	public static final BasicStroke stroke = new BasicStroke(1.5f);
+	public static final BasicStroke strokeHighlight = new BasicStroke(4f);
 
 
 	// selectionmode
-	private SelectionMode mode;
-
+	protected SelectionMode mode;
+	protected ROI roi = ROI.SAMPLE;
 	protected SelectionTableRow stats;
 	protected SelectionTableRow statsRegardingExclusion;
+	// order for quantifiers
+	protected int orderNumber = 0;
+	// concentration for quantifier / qualifier
+	protected double concentration = 0; 
 
 	protected transient Image2D currentImg;
 
+	// highlight selection
+	protected boolean isHighlighted = false;
 	// the Shape
 	protected T shape;
 
-	public SettingsShapeSelection(Image2D currentImage, SelectionMode mode, T shape) {
+	public SettingsShapeSelection(Image2D currentImage, ROI roi, SelectionMode mode, T shape) {
 		super("SettingsShapeSelection", "/Settings/Selections/Shapes/", "setSelShape"); 
 		this.shape = shape;
 		this.mode = mode;
+		this.roi = roi;
 		this.currentImg = currentImage;
-		stats = new SelectionTableRow(mode, shape);
-		statsRegardingExclusion = new SelectionTableRow(mode, shape);
+		stats = new SelectionTableRow();
+		statsRegardingExclusion = new SelectionTableRow();
 	} 
 	
 	public SettingsShapeSelection(SelectionMode mode, T shape) {
 		super("SettingsShapeSelection", "/Settings/Selections/Shapes/", "setSelShape"); 
 		this.shape = shape;
 		this.mode = mode;
-		stats = new SelectionTableRow(mode, shape);
-		statsRegardingExclusion = new SelectionTableRow(mode, shape);
+		stats = new SelectionTableRow();
+		statsRegardingExclusion = new SelectionTableRow();
 	}
+	
+	//#############################################################################
+	// TABLE MODEL 
+	/**
+	 * called for table
+	 * @return
+	 */
+	public Object[] getRowData() {
+		float y0 = getY0();
+		float x0 =getX0();
+		float y1 =getY1();
+		float x1 = getX1();
+		
+		SelectionTableRow r = getDefaultTableRow();
+
+		return new Object[]{orderNumber, mode.toString(), roi.toString(), concentration, x0,y0,x1,y1,r.getN(),r.getSum(),r.getMin(), r.getMax(), 
+				r.getAvg(), r.getMedian(), r.getP99(), r.getSdev(), r.getHisto()};
+	}
+
+	/**
+	 * called for data export 
+	 * @return without histogram
+	 */
+	public Object[] getRowDataExport() {
+		float y0 = getY0();
+		float x0 =getX0();
+		float y1 =getY1();
+		float x1 = getX1();
+
+		SelectionTableRow r = getDefaultTableRow();
+		
+		return new Object[]{orderNumber, mode.toString(),  roi.toString(), concentration, x0,y0,x1,y1,r.getN(),r.getSum(),r.getMin(), r.getMax(), 
+				r.getAvg(), r.getMedian(), r.getP99(), r.getSdev()};
+	}
+
+	/**
+	 * array for title line export
+	 * without histo
+	 */
+	public static Object[] getTitleArrayExport() {
+		return new Object[]{"Order", "Mode", "ROI","conc.", "x0", "y0", "x1", "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%","Stdev"};
+	}
+
+	public float getX0() {
+		return (float)shape.getBounds2D().getMinX();
+	} 
+	public float getX1() {
+		return (float)shape.getBounds2D().getMaxX();
+	} 
+	public float getY0() {
+		return (float)shape.getBounds2D().getMinY();
+	} 
+	public float getY1() {
+		return (float)shape.getBounds2D().getMaxY();
+	}
+	
+	//#############################################################################
+	// 
 
 	@Override
 	public void resetAll() {  
@@ -124,6 +202,9 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		saveShapeToXML(elParent, doc, shape);
 		toXML(elParent, doc, "selectionMode", mode);
+		toXML(elParent, doc, "roi", roi);
+		toXML(elParent, doc, "concentration", concentration);
+		toXML(elParent, doc, "orderNumber", orderNumber);
 	}
 
 	@Override
@@ -135,6 +216,9 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("shape")) setShape(loadShapeFromXML(nextElement));
 				else if(paramName.equals("selectionMode")) setMode(SelectionMode.valueOf(nextElement.getTextContent()));
+				else if(paramName.equals("roi")) setRoi(ROI.valueOf(nextElement.getTextContent()));
+				else if(paramName.equals("concentration")) concentration = doubleFromXML(nextElement);
+				else if(paramName.equals("orderNumber")) orderNumber = intFromXML(nextElement);
 			}
 		}
 	}
@@ -255,16 +339,12 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
 	public void setShape(T shape) {
 		this.shape = shape;
-		stats.setShape(shape);
-		statsRegardingExclusion.setShape(shape);
 	}
 	public SelectionMode getMode() {
 		return mode;
 	}
 	public void setMode(SelectionMode mode) {
 		this.mode = mode;
-		stats.setMode(mode);
-		statsRegardingExclusion.setMode(mode);
 	}
 	public T getShape() {
 		return shape;
@@ -287,7 +367,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 			c = Color.gray;
 			break;
 		} 
-		return new XYShapeAnnotation(this.getShape(), stroke, c) {
+		return new XYShapeAnnotation(this.getShape(), isHighlighted()? strokeHighlight : stroke, c) {
 			@Override
 			public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea,
 					ValueAxis domainAxis, ValueAxis rangeAxis,
@@ -318,5 +398,36 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 */
 	public void setFirstAndSecondMouseEvent(float x0, float y0, float x1, float y1) {
 		setBounds(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1-x0), Math.abs(y0-y1));
+	}
+
+	public ROI getRoi() {
+		return roi;
+	}
+
+	public void setRoi(ROI roi) {
+		this.roi = roi;
+	}
+
+	public int getOrderNumber() {
+		return orderNumber;
+	}
+
+	public double getConcentration() {
+		return concentration;
+	}
+
+	public void setOrderNumber(int orderNumber) {
+		this.orderNumber = orderNumber;
+	}
+
+	public void setConcentration(double concentration) {
+		this.concentration = concentration;
+	}
+
+	public void setHighlighted(boolean b) {
+		isHighlighted = b;
+	}
+	public boolean isHighlighted() {
+		return isHighlighted;
 	}
 }
