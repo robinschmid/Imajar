@@ -34,7 +34,7 @@ public class TestImageWriter {
 					File[] files = {new File(s)};
 					
 					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, ",", true);
-					window.getLogicRunner().importTextDataToImage(settingsDataImport, files);
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, files, null);
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}

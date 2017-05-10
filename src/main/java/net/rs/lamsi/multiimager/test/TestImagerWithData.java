@@ -7,6 +7,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
@@ -37,7 +38,9 @@ public class TestImagerWithData {
 					File[] files = {new File(s)};
 					
 					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, ",", false);
-					window.getLogicRunner().importTextDataToImage(settingsDataImport, files);
+					ImagingProject project = new ImagingProject("Agilent");
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, files, project);
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, files, project);
 					
 					// import non triggered
 					settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, "\t", false);
@@ -47,23 +50,22 @@ public class TestImagerWithData {
 					settingsDataImport.setSplitAfter(150);
 					settingsDataImport.setUseHardSplit(false);
 					settingsDataImport.setNoXData(true);
-					window.getLogicRunner().importTextDataToImage(settingsDataImport, new File[] {new File("C:\\DATA\\TOF-Werk_AKK\\LC_image_3 mm x7.5 mm_07.26-13h52m39s_AS.h5__BufWriteProfiles_Segment_31P,32S,34S,42Ca,44Ca.txt")});
+					
+					project = new ImagingProject("TOF");
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, new File[] {new File("C:\\DATA\\TOF-Werk_AKK\\LC_image_3 mm x7.5 mm_07.26-13h52m39s_AS.h5__BufWriteProfiles_Segment_31P,32S,34S,42Ca,44Ca.txt")}, project);
 					
 					// hard split
 					settingsDataImport.setUseHardSplit(true);
-					window.getLogicRunner().importTextDataToImage(settingsDataImport, new File[] {new File("C:\\DATA\\TOF-Werk_AKK\\LC_image_3 mm x7.5 mm_07.26-13h52m39s_AS.h5__BufWriteProfiles_Segment_31P,32S,34S,42Ca,44Ca.txt")});
+					window.getLogicRunner().importTextDataToImage(settingsDataImport, new File[] {new File("C:\\DATA\\TOF-Werk_AKK\\LC_image_3 mm x7.5 mm_07.26-13h52m39s_AS.h5__BufWriteProfiles_Segment_31P,32S,34S,42Ca,44Ca.txt")}, project);
 
-					IconNode fnode = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
 					
 					ImageGroupMD img = TestImageFactory.createNonNormalImage(4);
 					
-					window.getLogicRunner().addCollection2D(img, fnode);
-					window.getLogicRunner().getTree().addNodeToRoot(fnode);
+					project = null;
+					window.getLogicRunner().addGroup(img, project);
 					
 					img = TestImageFactory.createOverlayTest();
-					
-					window.getLogicRunner().addCollection2D(img, fnode);
-					window.getLogicRunner().getTree().addNodeToRoot(fnode);
+					window.getLogicRunner().addGroup(img, project);
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}

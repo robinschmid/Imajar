@@ -1,6 +1,8 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
+import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -8,6 +10,7 @@ import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralRotation;
+import net.rs.lamsi.utils.FileAndPathUtil;
 
 /**
  * basic dataset of multiple scan lines
@@ -34,7 +37,7 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		settRot = new SettingsGeneralRotation();
 		lines = listLines;
 	}
-	public DatasetMD(Vector<ScanLineMD> scanLines) {
+	public DatasetMD(List<ScanLineMD> scanLines) {
 		settRot = new SettingsGeneralRotation();
 		lines = new ScanLineMD[scanLines.size()];
 		for(int i=0; i<lines.length; i++)
@@ -62,6 +65,23 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 			group.add(img);
 		}
 		return group;
+	}
+	public ImageGroupMD createImageGroup(File dataFile) {
+		ImageGroupMD g = createImageGroup();
+		// set data path and name
+		if(dataFile!=null) {
+			g.getSettings().setName((dataFile.getName()));
+			g.getSettings().setPathData(dataFile.getAbsolutePath());
+		}
+		return g;
+	}
+
+	public ImageGroupMD createImageGroup(String name) {
+		ImageGroupMD g = createImageGroup();
+		// set data path and name
+		if(name!=null)
+			g.getSettings().setName(name);
+		return g;
 	}
 	
 	private int getImageCount() { 

@@ -22,7 +22,7 @@ public class SettingsImage2DQuantifierLinear extends SettingsImage2DQuantifier {
 	
 	
 	public SettingsImage2DQuantifierLinear() {
-		super(MODE_LINEAR); 
+		super(MODE.LINEAR); 
 	} 
 	@Override
 	public void resetAll() {
@@ -63,14 +63,28 @@ public class SettingsImage2DQuantifierLinear extends SettingsImage2DQuantifier {
 	} public double getIntercept() {
 		return a;
 	}
-	public void setIntercept(double a) {
+	/**
+	 * changed?
+	 * @param a
+	 * @return true if the data has changed
+	 */
+	public boolean setIntercept(double a) {
+		boolean state = this.a!=a;
 		this.a = a;
+		return state;
 	}
 	public double getSlope() {
 		return b;
 	}
-	public void setSlope(double b) {
+	/**
+	 * changed?
+	 * @param b slope
+	 * @return true if the data has changed
+	 */
+	public boolean setSlope(double b) {
+		boolean state = this.a!=a;
 		this.b = b;
+		return state;
 	}
 	
 	@Override

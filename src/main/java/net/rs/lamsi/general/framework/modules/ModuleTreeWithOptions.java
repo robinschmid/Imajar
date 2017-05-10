@@ -5,7 +5,7 @@ import java.util.Vector;
 import javax.swing.JPanel;
 
 
-public class ModuleTreeWithOptions <T> extends ModuleTree {
+public class ModuleTreeWithOptions<T>  extends ModuleTree<T> {
 	private JPanel pnOptions;
 
 	/**

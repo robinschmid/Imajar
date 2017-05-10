@@ -259,12 +259,42 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 	 * @return
 	 */
 	public String[] getTitles() {
-
 		String[] dat = new String[countActive()];
 		int c = 0;
 		for(int i=0; i<group.image2dCount(); i++) {
 			if(settings.isActive(i)) {
 				dat[c] = group.get(i).getTitle();
+				String tt = dat[c];
+				int tmp = 2;
+				// check if title exists
+				for(int x=0; x<c; x++) {
+					// exists?
+					if(dat[x].equals(dat[c])) {
+						// add number
+						dat[c] = tt + tmp;
+						// check again
+						x = -1;
+						tmp++;
+					}
+				}
+				// next title
+				c++;
+			}
+		}
+		return dat;
+	}
+
+	/**
+	 * titles of all images
+	 * (unique)
+	 * @return
+	 */
+	public String[] getShortTitles() {
+		String[] dat = new String[countActive()];
+		int c = 0;
+		for(int i=0; i<group.image2dCount(); i++) {
+			if(settings.isActive(i)) {
+				dat[c] = group.get(i).getShortTitle();
 				String tt = dat[c];
 				int tmp = 2;
 				// check if title exists
@@ -293,4 +323,17 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 	public Image2D get(int i) {
 		return i<group.image2dCount()? (Image2D)group.get(i) : null;
 	}
+	
+	// a name for lists
+	public String toListName() { 
+		String s = settings.getTitle();
+		if(s==null || s.length()==0) {
+			s = "";
+			String[] t = getShortTitles();
+			for(String i : t)
+				s += i+" + ";
+			s = s.substring(0, s.length()-3);
+		}			
+		return s;
+	} 
 }

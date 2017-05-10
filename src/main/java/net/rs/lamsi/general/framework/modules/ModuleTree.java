@@ -1,16 +1,15 @@
 package net.rs.lamsi.general.framework.modules;
 import java.awt.BorderLayout;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -64,7 +63,7 @@ public class ModuleTree <T> extends Module {
 				//
 				getTreeModel().removeNodeFromParent(node);  
 				// image? remove data
-				if(isCollectable2D(node)) {
+				if(isCollectable2DNode(node)) {
 					Collectable2D image = (Collectable2D) node.getUserObject();
 					if(image.getImageGroup()!=null) {
 						image.getImageGroup().remove(image);
@@ -82,53 +81,104 @@ public class ModuleTree <T> extends Module {
 	 * @return
 	 */
 	public Collectable2D getImageFromPath(TreePath path) {
+		if(path==null) return null;
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-		if(isCollectable2D(node)) {
+		return getImageFromPath(node);
+	}
+
+	/**
+	 * only if image is selected otherwise returns null
+	 * @param node
+	 * @return
+	 */
+	public Collectable2D getImageFromPath(DefaultMutableTreeNode node) {
+		if(isCollectable2DNode(node)) {
 			return (Collectable2D) node.getUserObject();
 		}
 		else return null;
 	}
-	
+
 	/**
 	 * returns all images from this collection
 	 * path can be one image from a collection or the collection itself
 	 * @param path
 	 * @return
 	 */
-	public ImageGroupMD getImageCollection(TreePath path) {
+	public ImageGroupMD getImageGroup(TreePath path) {
 		if(path==null) return null;
-		
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-		if(isCollectable2D(node)) {
+		return getImageGroup(node);
+	}
+	/**
+	 * returns all images from this collection
+	 * node can be one image from a collection or the collection itself
+	 * @param node
+	 * @return
+	 */
+	public ImageGroupMD getImageGroup(DefaultMutableTreeNode node) {
+		if(isGroupNode(node)) {
+			return ((ImageGroupMD)node.getUserObject());
+		}
+		else if(isCollectable2DNode(node)) {
 			return ((Collectable2D)node.getUserObject()).getImageGroup();
 		}
-		else {
-			// search all first level child paths
-			for(int i=0; i<node.getChildCount(); i++) {
-				DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
-				if(isCollectable2D(child)) 
-					return ((Collectable2D)child.getUserObject()).getImageGroup();
-			}
+		else if(isGroupNode(node)) {
+			return ((ImageGroupMD)node.getUserObject());
 		}
 		return null;
 	}
 
-	public boolean isCollectable2D(DefaultMutableTreeNode node) {
+	/**
+	 * returns an imaging project
+	 * @param path
+	 * @return
+	 */
+	public ImagingProject getProject(TreePath path) {
+		if(path==null) return null;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+		return getProject(node);
+	}
+	/**
+	 * returns an imaging project
+	 * @param node
+	 * @return
+	 */
+	public ImagingProject getProject(DefaultMutableTreeNode node) {
+		if(isProjectNode(node)) {
+			return ((ImagingProject)node.getUserObject()); 
+		}
+		else if(isCollectable2DNode(node)) {
+			ImageGroupMD g = ((Collectable2D)node.getUserObject()).getImageGroup();
+			if(g!=null) return g.getProject();
+			else return null;
+		}
+		else if(isGroupNode(node)) {
+			ImageGroupMD g = ((ImageGroupMD)node.getUserObject());
+			if(g!=null) return g.getProject();
+			else return null;
+		}
+		return null;
+	}
+
+	public boolean isCollectable2DNode(DefaultMutableTreeNode node) {
 		return Collectable2D.class.isInstance(node.getUserObject());
 	}
-	public boolean isCollection(DefaultMutableTreeNode node) {
-		return !isCollectable2D(node);
+	public boolean isGroupNode(DefaultMutableTreeNode node) {
+		return ImageGroupMD.class.isInstance(node.getUserObject());
 	}
-	
-	public Vector<T> toList() {
-		Vector<T> list = new Vector<T>(); 
+	public boolean isProjectNode(DefaultMutableTreeNode node) {
+		return ImagingProject.class.isInstance(node.getUserObject());
+	}
+
+	public ArrayList<T> toList() {
+		ArrayList<T> list = new ArrayList<T>(); 
 		toList(list, root.getFirstLeaf());
 		return list;
 	} 
 
-	private void toList(Vector<T> list, DefaultMutableTreeNode leaf) { 
+	private void toList(ArrayList<T> list, DefaultMutableTreeNode leaf) { 
 		if(leaf!=null) {
-			list.addElement((T)leaf.getUserObject());
+			list.add((T)leaf.getUserObject());
 			toList(list, leaf.getNextLeaf());
 		} 
 	}
@@ -141,9 +191,95 @@ public class ModuleTree <T> extends Module {
 	public DefaultMutableTreeNode getRoot() {
 		return root;
 	}
-	
+
 	public void reload() {
 		getTreeModel().reload();
+	}
+
+	/** 
+	 * the selected object (project, imagegroupmd, collectable2d
+	 * @return
+	 */
+	public Object getSelectedObject() {
+		if(getTree().getSelectionPath()==null) return null;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) getTree().getSelectionPath().getLastPathComponent();
+		return node.getUserObject();
+	}
+	/**
+	 * the selected project of the selected object
+	 * @return
+	 */
+	public ImagingProject getSelectedProject() {
+		if(getTree().getSelectionPath()==null) return null;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) getTree().getSelectionPath().getLastPathComponent();
+		return getProject(node);
+	}
+	/**
+	 * the selected project of the selected object
+	 * @return
+	 */
+	public ImageGroupMD getSelectedGroup() {
+		if(getTree().getSelectionPath()==null) return null;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) getTree().getSelectionPath().getLastPathComponent();
+		return getImageGroup(node);
+	}
+
+	/**
+	 * searches the first level for projects
+	 * @param projectName
+	 * @return
+	 */
+	public ImagingProject getProject(String projectName) {
+		if(projectName==null || projectName.length()==0) return null;
+
+		for(int i=0; i<root.getChildCount(); i++) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) root.getChildAt(i);
+			// in project?
+			if(isProjectNode(node)) {
+				ImagingProject project = getProject(node);
+				if(project.getName().equals(projectName)) {
+					return project;
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * searches the first level for a project (if not null) and then the correct group
+	 * if projectName is null the first level is searched for groups directly
+	 * @param projectName
+	 * @param gid
+	 * @return
+	 */
+	public ImageGroupMD getGroup(String projectName, String gid) {
+			// in project?
+			ImagingProject project = getProject(projectName);
+			if(project!=null) {
+						return getGroup(project, gid);
+			}
+			else {
+				return getGroup(root, gid);
+			}
+	}
+
+	public ImageGroupMD getGroup(ImagingProject project, String gid) {
+		if(project==null) 
+			return getGroup("", gid);
+		return getGroup(project.getNode(), gid);
+	}
+	public ImageGroupMD getGroup(DefaultMutableTreeNode parent, String gid) {
+		for(int i=0; i<parent.getChildCount(); i++) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) parent.getChildAt(i);
+			// in project?
+			if(isGroupNode(node)) {
+				ImageGroupMD group = getImageGroup(node);
+				if(group.getName().equals(gid)) {
+					return group;
+				}
+			}
+		}
+		return null;
 	}
 
 }

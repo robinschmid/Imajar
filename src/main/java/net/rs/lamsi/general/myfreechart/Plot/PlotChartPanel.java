@@ -11,7 +11,6 @@ import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.heatmap.ScaleInPlot;
@@ -196,7 +195,7 @@ public class PlotChartPanel extends ChartPanel {
 		exportGraphics.addActionListener(new ActionListener() { 
 			@Override
 			public void actionPerformed(ActionEvent e) { 
-				Vector<Collectable2D> list = ImageEditorWindow.getImages();
+				List<Collectable2D> list = ImageEditorWindow.getImages();
 				// open export Graphics dialog 
 				GraphicsExportDialog.openDialog(getChart(), list); 
 			}

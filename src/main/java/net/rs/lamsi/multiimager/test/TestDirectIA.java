@@ -36,7 +36,7 @@ public class TestDirectIA {
 					window.getMenuRbDirectImagingAnalysis().setSelected(true); 
 					
 					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, ",", true);
-					window.getLogicRunner().startDirectImagingAnalysis(settingsDataImport, files);
+					window.getLogicRunner().startDirectImagingAnalysis(settingsDataImport, files, null);
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}

@@ -38,7 +38,7 @@ public class TestImagerWithDataImportBenchmark {
 					
 					for(int i=0; i<3; i++) { 
 						long timemilli = System.currentTimeMillis();
-						window.getLogicRunner().importTextDataToImage(settingsDataImport, files2);
+						window.getLogicRunner().importTextDataToImage(settingsDataImport, files2, null);
 	 
 						long timemilli2 = System.currentTimeMillis();
 	 

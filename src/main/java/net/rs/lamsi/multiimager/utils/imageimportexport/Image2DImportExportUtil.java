@@ -9,9 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
@@ -33,8 +34,8 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
@@ -204,11 +205,11 @@ public class Image2DImportExportUtil {
 			// read files from zip
 			Map<String, InputStream> files = ZipUtil.readZip(f);
 			// try to find xmatrix
-			Vector<ScanLineMD> lines = new Vector<ScanLineMD>();
-			Vector<SettingsImage2D> settings = new Vector<SettingsImage2D>();
+			ArrayList<ScanLineMD> lines = new ArrayList<ScanLineMD>();
+			ArrayList<SettingsImage2D> settings = new ArrayList<SettingsImage2D>();
 			
 			// only setting sno data for iamge overlays
-			Vector<SettingsImageOverlay> overlays = new Vector<SettingsImageOverlay>();
+			ArrayList<SettingsImageOverlay> overlays = new ArrayList<SettingsImageOverlay>();
 			
 			// background image
 			Image bgimg = null;
@@ -217,7 +218,7 @@ public class Image2DImportExportUtil {
 			InputStream is = files.get("xmatrix.csv");
 			if(is!=null) {
 	            ImageEditorWindow.log("reading x", LOG.MESSAGE);
-				Vector<Float>[] x = null;
+				ArrayList<Float>[] x = null;
 
 				// line by line add datapoints to current Scanlines
 				BufferedReader br = null;
@@ -232,21 +233,21 @@ public class Image2DImportExportUtil {
 						if(sep.length>0) {
 							if(x==null) {
 								//create new array
-								x = new Vector[sep.length];
+								x = new ArrayList[sep.length];
 								for(int i=0; i<sep.length; i++) {
-									x[i] = new Vector<Float>();
-									x[i].addElement(Float.valueOf(sep[i]));
+									x[i] = new ArrayList<Float>();
+									x[i].add(Float.valueOf(sep[i]));
 								}
 							}
 							else {
 								for(int i=0; i<x.length; i++) {
-									x[i].addElement(Float.valueOf(sep[i]));
+									x[i].add(Float.valueOf(sep[i]));
 								}
 							}
 						}
 					}
 					// create new lines and set x
-					for(Vector<Float> xi : x) {
+					for(ArrayList<Float> xi : x) {
 						lines.add(new ScanLineMD(xi));
 					}
 				} catch (IOException e) {
@@ -270,7 +271,7 @@ public class Image2DImportExportUtil {
 		            ImageEditorWindow.log("reading file: "+fileName, LOG.MESSAGE);
 	        		System.out.println("read file: " + fileName);
 	        		
-					Vector<Double>[] y = null;
+					ArrayList<Double>[] y = null;
 	        		
 	        		BufferedReader br = null;
 					try {
@@ -284,16 +285,16 @@ public class Image2DImportExportUtil {
 							if(sep.length>1) {
 								if(y==null) {
 									//create new array
-									y = new Vector[sep.length];
+									y = new ArrayList[sep.length];
 									for(int i=0; i<sep.length; i++) {
-										y[i] = new Vector<Double>();
-										y[i].addElement(Double.valueOf(sep[i]));
+										y[i] = new ArrayList<Double>();
+										y[i].add(Double.valueOf(sep[i]));
 									}
 								}
 								else {
 									// add data
 									for(int i=0; i<y.length; i++) {
-										y[i].addElement(Double.valueOf(sep[i]));
+										y[i].add(Double.valueOf(sep[i]));
 									}
 								}
 							}
@@ -327,7 +328,7 @@ public class Image2DImportExportUtil {
 		        		System.out.println("read settings file of: " + fileName);
 		        		
 						settings.add(new SettingsImage2D());
-						settings.lastElement().loadFromXML(isSett);
+						settings.get(settings.size()-1).loadFromXML(isSett);
 		        	}
 	        	}
 	        	else if(SettingsHolder.getSettings().getSetGeneralPreferences().getFilePicture().accept(new File(fileName))) {
@@ -423,11 +424,11 @@ public class Image2DImportExportUtil {
 			return new ImageGroupMD[]{importTextFilesToImage(files, sett, separation, sortFiles)};
 		case CONTINOUS_DATA_TXT_CSV:
 			// do the import for one file after each other because one image=one file
-			Vector<ImageGroupMD> list = new Vector<ImageGroupMD>(); 
+			ArrayList<ImageGroupMD> list = new ArrayList<ImageGroupMD>(); 
 			for(File f : files) {
 				ImageGroupMD imgList = importTextFilesToImage(new File[]{f}, sett, separation, sortFiles);
 				// add all 
-				list.addElement(imgList);
+				list.add(imgList);
 			}
 			return list.toArray(new ImageGroupMD[list.size()]);
 		case ONE_FILE_2D_INTENSITY:  
@@ -446,7 +447,7 @@ public class Image2DImportExportUtil {
 	// i5	i6	i7	i8	i9 ...
 	public static ImageGroupMD import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 		
 		// read x only once
-		Vector<Float>[] x = null; 
+		ArrayList<Float>[] x = null; 
 		float[] startXValue = null;
 		int xcol = -1, ycol=-1; 
 
@@ -473,17 +474,17 @@ public class Image2DImportExportUtil {
 							if(x == null) {
 								int minus = sett.getStartLine()==0? 0 : sett.getEndLine()-1;
 								int size = sett.getEndLine()==0? sep.length-minus : Math.min(sep.length, sett.getEndLine()) -minus;
-								x = new Vector[size];
+								x = new ArrayList[size];
 								startXValue = new float[size];
 							}
 							// fill data
 							int c = 0;
 							for(int i=sett.getStartLine()==0? 0 : sett.getEndLine()-1; i<sep.length && (sett.getEndLine()==0 || i<sett.getEndLine()); i++) {
 								if(x[c]==null) {
-									x[c] = new Vector<Float>();
+									x[c] = new ArrayList<Float>();
 									startXValue[c] = Float.valueOf(sep[i]);
 								}
-								x[c].addElement(Float.valueOf(sep[i])-startXValue[c]);
+								x[c].add(Float.valueOf(sep[i])-startXValue[c]);
 								c++;
 							}
 						}
@@ -491,13 +492,13 @@ public class Image2DImportExportUtil {
 				}
 			}
 		}
-		// store data in Vector
+		// store data in ArrayList
 		// x[line].get(dp)
-		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>();
+		ArrayList<ScanLineMD> scanLines = new ArrayList<ScanLineMD>();
 		  
-				Vector<String> meta = new Vector<String>();  
-				Vector<String> titles = new Vector<String>();
-				Vector<File> flist = new Vector<File>();
+				ArrayList<String> meta = new ArrayList<String>();  
+				ArrayList<String> titles = new ArrayList<String>();
+				ArrayList<File> flist = new ArrayList<File>();
 		
 		// one file is one dimension (image) of scanLines
 		for(int f=0; f<files.length; f++) {
@@ -506,7 +507,7 @@ public class Image2DImportExportUtil {
 				continue;
 			else {
 				File file = files[f];
-				Vector<Double>[] y = null;  
+				ArrayList<Double>[] y = null;  
 				// for metadata collection if selected in settings
 				String metadata = "";
 				String title = "";
@@ -547,13 +548,13 @@ public class Image2DImportExportUtil {
 						if(y==null) {
 							if(mode!=ModeData.ONLY_Y && x==null) {
 								startXValue = new float[xcol];
-								x = new Vector[xcol];  
+								x = new ArrayList[xcol];  
 								for(int i=0; i<x.length; i++)
-									x[i] = new Vector<Float>();
+									x[i] = new ArrayList<Float>();
 							}
-							y = new Vector[ycol]; 
+							y = new ArrayList[ycol]; 
 							for(int i=0; i<y.length; i++)
-								y[i] = new Vector<Double>();
+								y[i] = new ArrayList<Double>();
 						}
 						// add data if dp is not excluded
 						if(sett.getStartDP()==0 || dp>=sett.getStartDP()) {
@@ -564,24 +565,24 @@ public class Image2DImportExportUtil {
 								case X_MATRIX_STANDARD:
 								case ONLY_Y:
 									if((sett.getStartLine()==0 || i+1>=sett.getStartLine())) {
-										y[line].addElement(Double.valueOf(sep[i]));
+										y[line].add(Double.valueOf(sep[i]));
 										line++;
 									}
 									break;
 								case XYXY_ALTERN:
 									if(sett.getStartLine()==0 || i/2+1>=sett.getStartLine()) {
 										if(i%2==1) {
-											y[line].addElement(Double.valueOf(sep[i]));
+											y[line].add(Double.valueOf(sep[i]));
 											line++;
 										}
 										else if(f==0) {
 											// first as 0
 											if(x[line].size()==0) {
-												x[line].addElement(0.f);
+												x[line].add(0.f);
 												startXValue[line] = Float.valueOf(sep[i]);
 											}
 											// relative to startX
-											else x[line].addElement(Float.valueOf(sep[i])-startXValue[line]);
+											else x[line].add(Float.valueOf(sep[i])-startXValue[line]);
 										}
 									}
 									break;
@@ -590,16 +591,16 @@ public class Image2DImportExportUtil {
 									if(f==0 && i==0) {
 										// first as 0
 										if(x[0].size()==0) {
-											x[0].addElement(0.f);
+											x[0].add(0.f);
 											startXValue[0] = Float.valueOf(sep[i]);
 										}
 										// relative to startX
-										else x[0].addElement(Float.valueOf(sep[i])-startXValue[0]);
+										else x[0].add(Float.valueOf(sep[i])-startXValue[0]);
 									}
 									// add y
 									if(i!=0){
 										if(sett.getStartLine()==0 || i>=sett.getStartLine()) {
-											y[line].addElement(Double.valueOf(sep[i]));
+											y[line].add(Double.valueOf(sep[i]));
 											line++;
 										}
 									}
@@ -652,7 +653,7 @@ public class Image2DImportExportUtil {
 		}
 
 		DatasetMD data = new DatasetMD(scanLines);
-		ImageGroupMD group = data.createImageGroup();
+		ImageGroupMD group = data.createImageGroup(files[0].getParentFile());
 		for(int i=0;i<group.getImages().size() && i<titles.size(); i++) 
 			setSettingsImage2D(((Image2D)group.getImages().get(i)), flist.get(i), titles.get(i), meta.get(i));
 		//return image 
@@ -668,7 +669,7 @@ public class Image2DImportExportUtil {
 		// reset title line
 		titleLine = null;
 		
-		Vector<ScanLineMD> lines;
+		ArrayList<ScanLineMD> lines;
 		if(sett.getModeImport()==IMPORT.PRESETS_THERMO_NEPTUNE)
 			lines = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles);
 		else lines = importTextFilesToScanLines(files, sett, separation, sortFiles);
@@ -686,9 +687,14 @@ public class Image2DImportExportUtil {
 		boolean hardsplit = continuous && sett.isUseHardSplit() && !(sett.getSplitAfter()==0 || sett.getSplitAfter()==-1);
 		
 		ImageGroupMD group = new ImageGroupMD();
-		Image2D realImages[] = new Image2D[lines.firstElement().getImageCount()];
+		// set data path and name
+		group.getSettings().setName((parent.getName()));
+		group.getSettings().setPathData(parent.getAbsolutePath());
+		
+		// add images
+		Image2D realImages[] = new Image2D[lines.get(0).getImageCount()];
 		ImageDataset data = null;
-		if(continuous && !hardsplit) data = new DatasetContinuousMD(lines.firstElement());
+		if(continuous && !hardsplit) data = new DatasetContinuousMD(lines.get(0));
 		else data = new DatasetMD(lines);
 		for(int i=0; i<realImages.length; i++) {   
 			// has title line? with xyyyy
@@ -709,7 +715,7 @@ public class Image2DImportExportUtil {
 		return group;
 	}
 
-	// needed for image creation from Vector<ScanLine>
+	// needed for image creation from ArrayList<ScanLine>
 	// titleline is always X y1 y2 y3 y4 (titles) and size = dimension+1
 	private static String[] titleLine = null;
 	private static String metadata = "";
@@ -719,19 +725,19 @@ public class Image2DImportExportUtil {
 	 * @param files
 	 * @param sett
 	 * @param separation
-	 * @return an array of vector<ScanLine> that can be converted to images
+	 * @return an array of ArrayList<ScanLine> that can be converted to images
 	 * @throws Exception
 	 */
-	public static Vector<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
+	public static ArrayList<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
 			files = FileAndPathUtil.sortFilesByNumber(files);
 		// images (getting created at first data reading)
-		Vector<ScanLineMD> lines=null; 
+		ArrayList<ScanLineMD> lines=null; 
 		
 		// excluded columns
-		Vector<Integer> excludedCol = sett.getExcludeColumnsArray();
+		List<Integer> excludedCol = sett.getExcludeColumnsArray();
 		// calc fist used column
 		int firstCol = 0;
 		if(excludedCol!=null) {
@@ -753,9 +759,9 @@ public class Image2DImportExportUtil {
 		// start with starting line
 		for(int i=(sett.getStartLine()==0 || continuous? 0 : sett.getStartLine()-1); i<files.length && (sett.getEndLine()==0 || i<=sett.getEndLine()); i++) {
 			// data of one line
-			Vector<Float> x  = null;
+			ArrayList<Float> x  = null;
 			// iList[dimension].get(dp)
-			Vector<Double>[] iList=null;
+			ArrayList<Double>[] iList=null;
 			// more than one intensity column? then extract all cols (if true)
 			boolean dataFound = false; 
 			// for metadata collection if selected in settings
@@ -792,7 +798,7 @@ public class Image2DImportExportUtil {
 								else break;
 						}
 						colCount +=  -(sett.isNoXData()? 0:1);
-						iList = new Vector[colCount]; 
+						iList = new ArrayList[colCount]; 
 						
 						// set titles only once
 						if(titleLine==null && lastLine!=null && lastLine.length==sep.length) {
@@ -822,13 +828,13 @@ public class Image2DImportExportUtil {
 						
 						// has X data?
 						if(!sett.isNoXData()) {
-							x = new Vector<Float>(); 
+							x = new ArrayList<Float>(); 
 							// startX for hardsplit
 							startX = Float.valueOf(sep[firstCol]);
 						}
 						// Image creation 
 						for(int img=0; img<iList.length; img++) {
-							iList[img] = new Vector<Double>(); 
+							iList[img] = new ArrayList<Double>(); 
 						} 
 					}
 					// hardsplit jumps over first datapoints
@@ -895,36 +901,36 @@ public class Image2DImportExportUtil {
 						if(XUNIT.DP.equals(sett.getSplitUnit())) 
 							endOfLine = dp>=sett.getSplitAfterDP();
 						else {
-							float xstart = x.firstElement();
-							float cx = x.lastElement();
+							float xstart = x.get(0);
+							float cx = x.get(lines.size()-1);
 							int currentLine = lines==null? 1 : lines.size()+1;
 							endOfLine = (cx-xstart)>=sett.getSplitAfter()*currentLine;
 						}  
 						// has reached end of line
 						if(endOfLine) {
 							// add line
-							// init lines vector
+							// init lines ArrayList
 							if(lines==null)
-								lines = new Vector<ScanLineMD>(); 
+								lines = new ArrayList<ScanLineMD>(); 
 				
 							// add new line
 							lines.add(new ScanLineMD()); 
 							// add data to line
 							// has X data?
 							if(!sett.isNoXData())
-								lines.lastElement().setX(x);
+								lines.get(lines.size()-1).setX(x);
 							// add all dimensions
 							for(int img=0; img<iList.length; img++) {  
 								// add data
-								lines.lastElement().addDimension(iList[img]);
+								lines.get(lines.size()-1).addDimension(iList[img]);
 								//reset iList
-								iList[img].removeAllElements();
+								iList[img].clear();
 							} 
 							// set dp = 0
 							dp=0;
 							// reset lists
 							if(x!=null)
-								x.removeAllElements();
+								x.clear();
 							
 							// enough lines?
 							if(lines.size()>=sett.getEndLine() && sett.getEndLine()!=0)
@@ -946,20 +952,20 @@ public class Image2DImportExportUtil {
 			} 
 
 			if(!hardsplit) {
-				// init lines vector
+				// init lines ArrayList
 				if(lines==null)
-					lines = new Vector<ScanLineMD>(); 
+					lines = new ArrayList<ScanLineMD>(); 
 	
 				// add new line
 				lines.add(new ScanLineMD()); 
 				// add data to line
 				// has X data?
 				if(!sett.isNoXData())
-					lines.lastElement().setX(x);
+					lines.get(lines.size()-1).setX(x);
 				// add all dimensions
 				for(int img=0; img<iList.length; img++) {  
 					// add data
-					lines.lastElement().addDimension(iList[img]);
+					lines.get(lines.size()-1).addDimension(iList[img]);
 				} 
 			}
 		}
@@ -983,7 +989,7 @@ public class Image2DImportExportUtil {
 	 */
 	public static ImageGroupMD[] importFromThermoMP17FileToImage(File[] file, SettingsImageDataImportTxt sett) throws Exception { 
 		// images
-		Vector<ImageGroupMD> images=new Vector<ImageGroupMD>();
+		ArrayList<ImageGroupMD> images=new ArrayList<ImageGroupMD>();
 		// all files
 		for(File f : file) {
 			ImageGroupMD group = importFromThermoMP17FileToImage(f, sett);
@@ -997,14 +1003,14 @@ public class Image2DImportExportUtil {
 	}
 	private static ImageGroupMD importFromThermoMP17FileToImage(File file, SettingsImageDataImportTxt sett) throws Exception { 
 		// images
-		// store data in Vector
-		Vector<ScanLineMD> scanLines = new Vector<ScanLineMD>(); 
-		Vector<String> titles = new Vector<String>();
-		Vector<Float>[] x = null;
+		// store data in ArrayList
+		ArrayList<ScanLineMD> scanLines = new ArrayList<ScanLineMD>(); 
+		ArrayList<String> titles = new ArrayList<String>();
+		ArrayList<Float>[] x = null;
 		boolean hasTimeAlready = false;
 		// scan line count is known but number data points is unknown
 		// iList[line].get(dp)
-		Vector<Double>[] iList = null;
+		ArrayList<Double>[] iList = null;
 		// for metadata collection if selected in settings
 		String metadata = "";
 		String title = "";  
@@ -1046,8 +1052,8 @@ public class Image2DImportExportUtil {
 					title = sep[2];
 					// generate scan lines
 					if(scanLines.size()==0) 
-						for(Vector<Double> in : iList) 
-							scanLines.addElement(new ScanLineMD());
+						for(ArrayList<Double> in : iList) 
+							scanLines.add(new ScanLineMD());
 					// add i dimension (image)
 					for (int i = 0; i < iList.length; i++) {
 						scanLines.get(i).addDimension(iList[i]);
@@ -1062,9 +1068,9 @@ public class Image2DImportExportUtil {
 					if(sett.getEndLine()!=0 && lineCount>sett.getEndLine()) lineCount = sett.getEndLine();
 					lineCount -= sett.getStartLine();
 					
-					iList = new Vector[lineCount];
+					iList = new ArrayList[lineCount];
 					for(int i=0; i<iList.length; i++) {
-						iList[i] = new Vector<Double>();
+						iList[i] = new ArrayList<Double>();
 					}
 				}
 				// dp increment
@@ -1073,9 +1079,9 @@ public class Image2DImportExportUtil {
 				if((dp>=sett.getStartDP()) && (sett.getEndDP()==0 || dp<=sett.getEndDP())) {
 					for(int i=valueindex+sett.getStartLine(); i<sep.length && (sett.getEndLine()==0 || i-valueindex<sett.getEndLine()); i++) {
 						try {
-							iList[i-valueindex-sett.getStartLine()].addElement(Double.valueOf(sep[i]));
+							iList[i-valueindex-sett.getStartLine()].add(Double.valueOf(sep[i]));
 						}catch(Exception ex) { 
-							iList[i-valueindex-sett.getStartLine()].addElement(-1.0);
+							iList[i-valueindex-sett.getStartLine()].add(-1.0);
 						}
 					}
 				}
@@ -1095,8 +1101,8 @@ public class Image2DImportExportUtil {
 					hasTimeAlready = true;
 					// generate scan lines
 					if(scanLines.size()==0) 
-						for(Vector<Float> in : x) 
-							scanLines.addElement(new ScanLineMD());
+						for(ArrayList<Float> in : x) 
+							scanLines.add(new ScanLineMD());
 					// add x to all scan lines
 					for (int i = 0; i < x.length; i++) {
 						scanLines.get(i).setX(x[i]);
@@ -1106,17 +1112,17 @@ public class Image2DImportExportUtil {
 				}
 				// generate new list
 				if(x==null) {
-					x = new Vector[sep.length-valueindex];
+					x = new ArrayList[sep.length-valueindex];
 					for(int i=0; i<x.length; i++) 
-						x[i] = new Vector<Float>();
+						x[i] = new ArrayList<Float>();
 				}
 				// add all intensities
 				if((dp>=sett.getStartDP()) && (sett.getEndDP()==0 || dp<=sett.getEndDP())) {
 					for(int i=valueindex+sett.getStartLine(); i<sep.length && (sett.getEndLine()==0 || i-valueindex<sett.getEndLine()); i++) {
 						try {
-							x[i-valueindex-sett.getStartLine()].addElement(Float.valueOf(sep[i]));
+							x[i-valueindex-sett.getStartLine()].add(Float.valueOf(sep[i]));
 						}catch(Exception ex) { 
-							x[i-valueindex-sett.getStartLine()].addElement(-1.f);
+							x[i-valueindex-sett.getStartLine()].add(-1.f);
 						}
 					}
 				}
@@ -1128,8 +1134,8 @@ public class Image2DImportExportUtil {
 			titles.add(title);
 			// generate scan lines
 			if(scanLines.size()==0) 
-				for(Vector<Double> in : iList) 
-					scanLines.addElement(new ScanLineMD());
+				for(ArrayList<Double> in : iList) 
+					scanLines.add(new ScanLineMD());
 			// add i dimension (image)
 			for (int i = 0; i < iList.length; i++) {
 				scanLines.get(i).addDimension(iList[i]);
@@ -1137,7 +1143,7 @@ public class Image2DImportExportUtil {
 		}
 		// Generate Image2D from scanLines 
 		DatasetMD data = new DatasetMD(scanLines); 
-		return data.createImageGroup();
+		return data.createImageGroup(file);
 	}
 
 	/**
@@ -1150,13 +1156,13 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Vector<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
+	public static ArrayList<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
 			files = FileAndPathUtil.sortFilesByNumber(files);
 		// images (getting created at first data reading)
-		Vector<ScanLineMD> lines= new Vector<ScanLineMD>(); 
+		ArrayList<ScanLineMD> lines= new ArrayList<ScanLineMD>(); 
 		// more than one intensity column? then extract all colls (if true)
 		boolean dataFound = false; 
 		// for metadata collection if selected in settings
@@ -1164,9 +1170,9 @@ public class Image2DImportExportUtil {
 
 		// file after file open text file
 		for(int i=0; i<files.length; i++) {
-			Vector<Float> xList = null; 
+			ArrayList<Float> xList = null; 
 			// iList[dimension].get(dp)
-			Vector<Double>[] iList = null;
+			ArrayList<Double>[] iList = null;
 			// read file
 			File f = files[i]; 
 			// start time
@@ -1189,11 +1195,11 @@ public class Image2DImportExportUtil {
 						}
 
 						// create all new Images
-						iList = new Vector[sep.length-2];
-						xList = new Vector<Float>();
+						iList = new ArrayList[sep.length-2];
+						xList = new ArrayList<Float>();
 						// Image creation
 						for(int img=0; img<iList.length; img++)
-							iList[img] = new Vector<Double>(); 
+							iList[img] = new ArrayList<Double>(); 
 					}
 
 					// x 
@@ -1221,12 +1227,12 @@ public class Image2DImportExportUtil {
 				k++;
 			} 
 
-			lines.addElement(new ScanLineMD());
-			lines.lastElement().setX(xList);
+			lines.add(new ScanLineMD());
+			lines.get(lines.size()-1).setX(xList);
 			// for all images
 			for(int img=0; img<iList.length; img++) { 
 				// add new lines to each list 
-				lines.lastElement().addDimension(iList[img]);
+				lines.get(lines.size()-1).addDimension(iList[img]);
 			} 
 		}
 		//return image

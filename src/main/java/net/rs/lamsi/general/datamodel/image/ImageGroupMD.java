@@ -4,6 +4,7 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -14,9 +15,7 @@ import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.SettingsImageGroup;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImgTableRow;
 
 public class ImageGroupMD  implements Serializable {  
@@ -25,9 +24,12 @@ public class ImageGroupMD  implements Serializable {
 	// settings
 	protected SettingsImageGroup settings;
 
+	// project
+	protected ImagingProject project = null;
+	
 	// dataset
 	protected MDDataset data = null;
-	protected Vector<Collectable2D> images;
+	protected ArrayList<Collectable2D> images;
 	// treenode in tree view
 	protected DefaultMutableTreeNode node = null;
 	// background microscopic image
@@ -36,21 +38,21 @@ public class ImageGroupMD  implements Serializable {
 
 	public ImageGroupMD() {
 		settings = new SettingsImageGroup();
-		images = new Vector<Collectable2D>();
+		images = new ArrayList<Collectable2D>();
 	}
 	public ImageGroupMD(Collectable2D img) {
 		settings = new SettingsImageGroup();
-		images = new Vector<Collectable2D>();
+		images = new ArrayList<Collectable2D>();
 		add(img);
 	}
 	public ImageGroupMD(Collectable2D[] img) {
 		settings = new SettingsImageGroup();
 		if(img!=null && img.length>0) {
-			images = new Vector<Collectable2D>();
+			images = new ArrayList<Collectable2D>();
 			for(Collectable2D i : img)
 				add(i);
 		}
-		else images = new Vector<Collectable2D>();
+		else images = new ArrayList<Collectable2D>();
 	}
 
 	//################################################
@@ -80,7 +82,7 @@ public class ImageGroupMD  implements Serializable {
 			}
 		}
 		else {
-			images.addElement(c2d);
+			images.add(c2d);
 			c2d.setImageGroup(this); 
 		}
 	}
@@ -253,7 +255,7 @@ public class ImageGroupMD  implements Serializable {
 		return Math.min(getData().size(), images.size());
 	}
 
-	public Vector<Collectable2D> getImages() {
+	public ArrayList<Collectable2D> getImages() {
 		return images;
 	}
 
@@ -317,5 +319,19 @@ public class ImageGroupMD  implements Serializable {
 		for(int i=0; i<size; i++)
 			img[i] = (images.get(i+image2dCount()));
 		return img;
+	}
+	public ImagingProject getProject() {
+		return project;
+	}
+	public void setProject(ImagingProject project) {
+		this.project = project;
+	}
+	public String getName() {
+		return settings.getName();
+	}
+	
+	@Override
+	public String toString() {
+		return getName()+"; "+settings.getPathData();
 	}
 }

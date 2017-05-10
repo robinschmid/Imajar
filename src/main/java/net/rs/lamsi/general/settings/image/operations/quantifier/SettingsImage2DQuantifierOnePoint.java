@@ -23,7 +23,7 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
     protected int regressionVersionID = 0;
 	
 	public SettingsImage2DQuantifierOnePoint(Image2D ex) {
-		super(MODE_ONE_POINT); 
+		super(MODE.ONE_POINT); 
 		this.imgEx = ex;
 	} 
 	@Override
@@ -49,8 +49,8 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
 				return (intensity - r.getIntercept())/r.getSlope();
 			else {
 				// regression has changed
-				img.fireIntensityProcessingChanged();
 				regressionVersionID = nid;
+				img.fireIntensityProcessingChanged();
 				return calcIntensity(img, line, dp, intensity);
 			}
 		}
@@ -70,12 +70,21 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
 	public Image2D getImgEx() {
 		return imgEx;
 	}
-	public void setImgEx(Image2D ex) {
+	/**
+	 * 
+	 * @param ex
+	 * @return true if external img has changed
+	 */
+	public boolean setImgEx(Image2D ex) {
+		boolean state = ex==null || !ex.equals(this.imgEx);
 		this.imgEx = ex;
+		return state;
 	}
 	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+		if(imgEx!=null)
+			toXML(elParent, doc, "externalSTDImage", imgEx);
 	}
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {

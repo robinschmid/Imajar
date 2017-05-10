@@ -1,7 +1,8 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
@@ -20,14 +21,14 @@ public class ScanLineMD  implements Serializable  {
 	// end x as right edge of line
 	protected float endX = -1;
 	
-	protected Vector<Double[]> intensity = null;
+	protected List<Double[]> intensity = null;
 
-	public ScanLineMD(Vector<Float> x, Vector<Double[]> intensity) {
+	public ScanLineMD(List<Float> x, List<Double[]> intensity) {
 		super();
 		setX(x);
 		this.intensity = intensity;
 	}
-	public ScanLineMD(float[] x, Vector<Double[]> intensity) {
+	public ScanLineMD(float[] x, List<Double[]> intensity) {
 		super();
 		this.x = x;
 		this.intensity = intensity;
@@ -35,20 +36,20 @@ public class ScanLineMD  implements Serializable  {
 	public ScanLineMD(float[] x, Double[] i) {
 		super();
 		this.x = x;
-		this.intensity = new Vector<Double[]>();
+		this.intensity = new ArrayList<Double[]>();
 		intensity.add(i);
 	}
 	public ScanLineMD(Double[] i) {
 		super();
-		this.intensity = new Vector<Double[]>();
+		this.intensity = new ArrayList<Double[]>();
 		intensity.add(i);
 	}
 	public ScanLineMD() {
 		super();
-		this.intensity = new Vector<Double[]>();
+		this.intensity = new ArrayList<Double[]>();
 	}
 
-	public ScanLineMD(Vector<Float> x) {
+	public ScanLineMD(List<Float> x) {
 		this();
 		setX(x);
 	}
@@ -97,7 +98,7 @@ public class ScanLineMD  implements Serializable  {
 	 * adds an intensity dimension (image)
 	 * @param i
 	 */
-	public void addDimension(Vector<Double> i) {
+	public void addDimension(List<Double> i) {
 		addDimension(i.toArray(new Double[i.size()]));
 	}
 
@@ -107,7 +108,7 @@ public class ScanLineMD  implements Serializable  {
 	public void setX(float[] x) {
 		this.x = x;
 	}
-	public void setX(Vector<Float> lx) {
+	public void setX(List<Float> lx) {
 		x = new float[lx.size()];
 		for(int i=0; i<x.length; i++)
 			x[i] = lx.get(i);
@@ -138,7 +139,7 @@ public class ScanLineMD  implements Serializable  {
 	 * @return
 	 */
 	public int getDPCount() {
-		return intensity.firstElement().length;
+		return intensity.get(0).length;
 	}
 	/**
 	 * raw width of dp by dividing maxX by elements count

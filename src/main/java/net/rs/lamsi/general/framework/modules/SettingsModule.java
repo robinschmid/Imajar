@@ -42,7 +42,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 		// sep
 		menu.addSeparator();
 		// load files from directory as presets
-		Settings sett = SettingsHolder.getSettings().getSetByClass(csettings);
+		Settings sett = SettingsHolder.getSettings().getSettingsByClass(csettings);
 		
 		if(sett!=null) {
 			File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
@@ -74,7 +74,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 			// sep
 			menu.addSeparator();
 			// load files from directory as presets
-			Settings sett = SettingsHolder.getSettings().getSetByClass(classsettings);
+			Settings sett = SettingsHolder.getSettings().getSettingsByClass(classsettings);
 			
 			if(sett!=null) {
 				File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
@@ -196,7 +196,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 				try {
 					setAllViaExistingSettings(settings);
 					// transfer to Settingsholder
-					SettingsHolder.getSettings().setSetByClass((Settings)settings);
+					SettingsHolder.getSettings().replaceSettings((Settings)settings);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

@@ -4,7 +4,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.ProgressMonitor;
@@ -13,12 +13,11 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
-import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
@@ -44,7 +43,7 @@ public class DataExportUtil {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	public static void exportDataImage2D(final Component parent, final Vector<Image2D> imgList, final SettingsImage2DDataExport setImage2DDataExport) throws InvalidFormatException, IOException, InterruptedException, ExecutionException {
+	public static void exportDataImage2D(final Component parent, final List<Image2D> imgList, final SettingsImage2DDataExport setImage2DDataExport) throws InvalidFormatException, IOException, InterruptedException, ExecutionException {
 		lastwb = null;
 		// progress 
 		//ProgressUpdateTask task = ProgressDialog.getInst().startTask(new ProgressUpdateTask(ProgressDialog.getInst(), imgList.size()) {

@@ -10,7 +10,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -87,7 +88,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	//###################################################################
 	// Vars
 	private ChartPanel chartPanel;
-	private Vector<Collectable2D> list;
+	private List<Collectable2D> list;
 	private boolean canExport;
 	private final JFileChooser chooser = new JFileChooser();
 	private JPanel pnChartPreview;
@@ -118,10 +119,10 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	public static void openDialog2(JFreeChart chart) {
 		inst.openDialogI(chart, null); 
 	}
-	public static void openDialog(JFreeChart chart, Vector<Collectable2D> list) {
+	public static void openDialog(JFreeChart chart, List<Collectable2D> list) {
 		inst.openDialogI(chart, list); 
 	}
-	protected void openDialogI(JFreeChart chart, Vector<Collectable2D> list) {
+	protected void openDialogI(JFreeChart chart, List<Collectable2D> list) {
 		inst.list = list;
 		//
 		try {

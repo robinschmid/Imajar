@@ -8,29 +8,29 @@ import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 
 public class TestImageFactory {
 
-	
+
 	public static ImageGroupMD createNonNormalImage(int c) {
 		Random rand = new Random(System.currentTimeMillis());
 		ScanLineMD[] lines = new ScanLineMD[24];
 		for(int f=0; f<c; f++) {
-		for(int l=0; l<lines.length; l++) { 
-			Double[] i = new Double[240-l*2];
-			for(int d=0; d<i.length; d++) {
-				// middle the highest
-				double in = (int)(l/4)*200.0;
-				in += Math.abs(rand.nextInt(6000)/100.0);
-				// create dp
-				i[d] = in;
+			for(int l=0; l<lines.length; l++) { 
+				Double[] i = new Double[240-l*2];
+				for(int d=0; d<i.length; d++) {
+					// middle the highest
+					double in = (int)(l/4)*200.0;
+					in += Math.abs(rand.nextInt(6000)/100.0);
+					// create dp
+					i[d] = in;
+				}
+				if(lines[l]==null)
+					lines[l] = new ScanLineMD(i);
+				else lines[l].addDimension(i);
 			}
-			if(lines[l]==null)
-				lines[l] = new ScanLineMD(i);
-			else lines[l].addDimension(i);
 		}
-	}
 		DatasetMD data = new DatasetMD(lines);
-		return data.createImageGroup();
+		return data.createImageGroup("Non Normal");
 	}
-	
+
 
 	/**
 	 * test images
@@ -55,9 +55,9 @@ public class TestImageFactory {
 			}
 		}
 		DatasetMD data = new DatasetMD(lines);
-		return data.createImageGroup();
+		return data.createImageGroup("Test Standards");
 	}
-	
+
 
 	/**
 	 * test images
@@ -94,7 +94,7 @@ public class TestImageFactory {
 			}
 		}
 		DatasetMD data = new DatasetMD(lines);
-		ImageGroupMD img = data.createImageGroup();
+		ImageGroupMD img = data.createImageGroup("Overlay Test");
 
 		// add overlay
 		try {
@@ -105,7 +105,7 @@ public class TestImageFactory {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return img;
 	}
 }

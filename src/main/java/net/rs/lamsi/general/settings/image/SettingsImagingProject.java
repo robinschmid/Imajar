@@ -11,18 +11,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsImageGroup extends SettingsContainerSettings {
+public class SettingsImagingProject extends SettingsContainerSettings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
-    protected String name = "", pathData = "";
+    protected String name = "";
 
 	// constructors
-	public SettingsImageGroup() {
-		super("SettingsImageGroup", "/Settings/Image2d/", "setImgGroup"); 
+	public SettingsImagingProject() {
+		super("SettingsImagingProject", "/Settings/Projects/", "setImgProject"); 
 		
-		addSettings(new SettingsAlphaMap());
-		addSettings(new SettingsBackgroundImg());
+		// addSettings(new SettingsBackgroundImg());
 	} 
 
 	@Override
@@ -30,7 +29,6 @@ public class SettingsImageGroup extends SettingsContainerSettings {
 		super.resetAll();
 		// reset 
 		name = "";
-		pathData = "";
 	}
 
 	// xml
@@ -43,26 +41,16 @@ public class SettingsImageGroup extends SettingsContainerSettings {
 				String paramName = nextElement.getNodeName();
 				// import settings
 				if(paramName.equals("name")) name = nextElement.getTextContent();
-				else if(paramName.equals("pathData")) pathData = nextElement.getTextContent();
 			}
 		}
-		// load all sub settings
 	}
 	
 
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		toXML(elParent, doc, "name", name);
-		toXML(elParent, doc, "pathData", pathData);
 	}
-	
-	// getters and setters
-	public SettingsAlphaMap getSettAlphaMap() {
-		return (SettingsAlphaMap) getSettingsByClass(SettingsAlphaMap.class);
-	}
-    public SettingsBackgroundImg getSettBGImg() {
-		return (SettingsBackgroundImg) getSettingsByClass(SettingsBackgroundImg.class);
-	}
+
 
 	public String getName() {
 		return name;
@@ -71,12 +59,4 @@ public class SettingsImageGroup extends SettingsContainerSettings {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public String getPathData() {
-		return pathData;
-	}
-	public void setPathData(String pathData) {
-		this.pathData = pathData;
-	}
-
 }

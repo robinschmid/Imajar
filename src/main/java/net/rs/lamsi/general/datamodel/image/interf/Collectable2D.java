@@ -130,4 +130,14 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 	public boolean isImageOverlay() {
 		return ImageOverlay.class.isInstance(this);
 	}
+	
+
+
+	// a name for lists
+	public abstract String toListName();
+
+	@Override
+	public String toString() {
+		return toListName();
+	}
 }

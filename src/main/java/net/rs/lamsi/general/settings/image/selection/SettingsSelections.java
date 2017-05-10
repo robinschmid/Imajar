@@ -702,6 +702,8 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 			if(regressionVersionID==Integer.MAX_VALUE)
 				regressionVersionID = 1;
 			regressionVersionID++;
+			// unset
+			updateRegression = false;
 			// 
 			return regression;
 		}
@@ -736,6 +738,8 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 	 * @return
 	 */
 	public int countQuantifier() {
+		if(selections==null)
+			return 0;
 		int c=0; 
 		for (SettingsShapeSelection s : selections)
 			if(s.getRoi().equals(ROI.QUANTIFIER))

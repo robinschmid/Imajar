@@ -28,6 +28,7 @@ import net.rs.lamsi.general.framework.basics.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier.MODE;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
@@ -39,7 +40,7 @@ import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
 public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<SettingsImage2DQuantifier, Image2D> { 
 	//
-	private int lastMode = 0;
+	private MODE lastMode = SettingsImage2DQuantifier.MODE.LINEAR;
 	// save img IS 
 	private Image2D imgEx;
 	//
@@ -202,14 +203,21 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 		}
 		// update settings
 		imgEx = img;
+		// create settings
+		writeAllToSettings();
 		// set to settings
-		if(!SettingsImage2DQuantifierOnePoint.class.isInstance(getSettings())) {
-			SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) getSettings();
-			ex.setImgEx(imgEx); 
-		}
-		// changed
-		if(currentImage!=null)
-			currentImage.fireIntensityProcessingChanged();
+//		SettingsImage2DQuantifierOnePoint ex = null;
+//		if(!SettingsImage2DQuantifierOnePoint.class.isInstance(getSettings())) {
+//			// TODO create new settings
+//			SettingsImage2DQuantifierOnePoint ex = new Se
+//		}
+//		else {
+//			ex = (SettingsImage2DQuantifierOnePoint) getSettings();
+//			ex.setImgEx(imgEx); 
+//			// changed
+//			if(currentImage!=null)
+//				currentImage.fireIntensityProcessingChanged();
+//		}
 	}
 
 
@@ -244,14 +252,14 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 		lastMode = sett.getMode();
 		// new reseted 
 		switch(sett.getMode()) {
-		case SettingsImage2DQuantifier.MODE_LINEAR:
+		case LINEAR:
 			getTabbedPane().setSelectedComponent(getTabLinear());
 			SettingsImage2DQuantifierLinear linear = (SettingsImage2DQuantifierLinear) sett;
 			getTabLinear().setVisible(true);
 			getTxtLinearIntercept().setText(String.valueOf(linear.getIntercept()));
 			getTxtLinearSlope().setText(String.valueOf(linear.getSlope()));
 			break;
-		case SettingsImage2DQuantifier.MODE_ONE_POINT:
+		case ONE_POINT:
 			getTabbedPane().setSelectedComponent(getTabOnePoint());
 			SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) sett;
 			imgEx = ex.getImgEx();
@@ -263,7 +271,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 		} 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
-		ImageEditorWindow.getEditor().fireUpdateEvent(true);
+		//ImageEditorWindow.getEditor().fireUpdateEvent(true);
 	} 
 
 	private void resetAll() {
@@ -275,49 +283,50 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 	@Override
 	public SettingsImage2DQuantifier writeAllToSettings(SettingsImage2DQuantifier sett) {
 		if(sett!=null) {
+			boolean update = false;
 			try {
 				// quantify
-				sett.setActive(getCbQuantify().isSelected());
+				update = sett.setActive(getCbQuantify().isSelected());
 				// get mode
-				int mode = SettingsImage2DQuantifier.MODE_LINEAR;
-				if(getTabbedPane().getSelectedComponent().equals(getTabOnePoint())) mode = SettingsImage2DQuantifier.MODE_ONE_POINT;
-
+				MODE mode = SettingsImage2DQuantifier.MODE.LINEAR;
+				if(getTabbedPane().getSelectedComponent().equals(getTabOnePoint())) mode = MODE.ONE_POINT;
+				// update processing
+				
 				// 
 				switch(mode) {
-				case SettingsImage2DQuantifier.MODE_LINEAR:
-					if(lastMode!=mode) {
+				case LINEAR:
+					if(!SettingsImage2DQuantifierLinear.class.isInstance(sett)) {
 						SettingsImage2DQuantifierLinear sett2 = new SettingsImage2DQuantifierLinear();
 						sett2.setActive(sett.isActive());
 						sett = sett2;
+						setSettings(sett);
+						update = sett.isActive();
 					}
 					// set all settings in 
 					SettingsImage2DQuantifierLinear linear = (SettingsImage2DQuantifierLinear) sett;
-					linear.setIntercept(doubleFromTxt(getTxtLinearIntercept()));
-					linear.setSlope(doubleFromTxt(getTxtLinearSlope()));
+					update = (linear.setIntercept(doubleFromTxt(getTxtLinearIntercept())) && sett.isActive()) || update;
+					update = (linear.setSlope(doubleFromTxt(getTxtLinearSlope())) && sett.isActive()) || update;
+					
 					System.out.println("SETTINGS SETTINGS A and B");
 					break;
-				case SettingsImage2DQuantifier.MODE_ONE_POINT:
+				case ONE_POINT:
 					if(!SettingsImage2DQuantifierOnePoint.class.isInstance(sett)) {
 						SettingsImage2DQuantifierOnePoint sett2 = new SettingsImage2DQuantifierOnePoint(imgEx);
 						sett2.setActive(sett.isActive());
 						sett = sett2;
+						setSettings(sett);
+						update = sett.isActive();
 					}
 					SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) sett;
-					ex.setImgEx(imgEx); 
+					update = (ex.setImgEx(imgEx) && sett.isActive()) || update;
 					break;
-				}
-				// set settings for image2d and here
-				// MODE has its own quantifier in image2d class
-				if(lastMode!=mode) { 
-					lastMode = mode;
-					setSettings(sett);
 				}
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
 			finally { 
 				// important
-				if(currentImage!=null)
+				if(currentImage!=null && update)
 					currentImage.fireIntensityProcessingChanged();
 			}
 		}

@@ -74,7 +74,6 @@ public class GeneralSettingsFrame extends JFrame {
 	public GeneralSettingsFrame(Window window) {
 		this.window = window;
 		settings = window.getSettings();
-		currentSettings = settings.getSetConvertRAW();
 		//
 		setTitle("General settings"); 
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);

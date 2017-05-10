@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -14,11 +15,11 @@ import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
@@ -32,6 +33,7 @@ import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -84,11 +86,10 @@ public class ImageLogicRunner {
 			public void valueChanged(TreeSelectionEvent e) { 
 				try {
 					// show first selected item
-					TreePath path = treeImg.getTree().getSelectionPath();
-					if(path!=null) {
-						DefaultMutableTreeNode img = (DefaultMutableTreeNode) path.getLastPathComponent();
-						if(Collectable2D.class.isInstance(img.getUserObject())) { 
-							setSelectedImageAndShow((Collectable2D)img.getUserObject());
+					Object o = treeImg.getSelectedObject();
+					if(o!=null) {
+						if(Collectable2D.class.isInstance(o)) { 
+							setSelectedImageAndShow((Collectable2D)o);
 						}
 					}
 				}catch(Exception ex) { 
@@ -107,138 +108,135 @@ public class ImageLogicRunner {
 	// Add, select, renew, delete images 
 	/**
 	 *  add and remove image from jList gets automatically removed from vector<Image2D>
-	 * @param id parent node id
+	 * @param gid parent node id
 	 */
-	public IconNode addImage(Image2D i, String id) {  
+	public IconNode addImage(Collectable2D i, String projectName, String gid) {  
 		// TODO 
-		// test for existing parent node
-		if(mapNodes.containsKey(id)){
-			boolean added = false;
-			// add to data set - this generates a new image2D
-			IconNode parent = mapNodes.get(id);
-			if(parent.getChildCount()>0) {
-				Image2D friend = ((Image2D)((IconNode)parent.getFirstChild()).getUserObject());
-				if(friend.getImageGroup()!=null) {
-					// add to MD data set and set this data set to image i
-					added = ((MDDataset)friend.getData()).addDimension(i);
-					if(added) {
-						// add to group 
-						friend.getImageGroup().add(i);
-					}
-				}
-			}
-			// add to tree
-			if(added) {
-				IconNode node = addImage(i, parent); 
+			ImageGroupMD group = treeImg.getGroup(projectName, gid);
+			// group exists?
+			if(group!=null) {
+				group.add(i);
+				IconNode node = addImageNode(i, group.getNode()); 
 				treeImg.getTreeModel().reload(); 
 				return node;
 			}
 			else {
-				DialogLoggerUtil.showMessageDialogForTime(window, "Image was not added", "Image was not added due to different data dimensions", 2000);
-				return null;
+				// cerate and add group
+				// create image group 
+				group = new ImageGroupMD(i);
+				addGroup(group, projectName);
+				// add to tree
+				IconNode parent = new IconNode(gid);
+				IconNode node = addImageNode(i, parent);
+				treeImg.addNodeToRoot(parent);
+				return node;
 			}
-		}
-		else {  
-			// create image group 
-			ImageGroupMD group = new ImageGroupMD(i);
-			// add to tree
-			IconNode parent = new IconNode(id);
-			mapNodes.put(id, parent);
-			IconNode node = addImage(i, parent);
-			treeImg.addNodeToRoot(parent);
-			return node;
-		}
 	}
 	/**
 	 * adds an image to a parent node
 	 * @param i
 	 * @param parent
 	 */
-	public IconNode addImage(Collectable2D i, DefaultMutableTreeNode parent) {  
+	public IconNode addImageNode(Collectable2D i, DefaultMutableTreeNode parent) {  
 		//
 		SettingsGeneralPreferences sett = SettingsHolder.getSettings().getSetGeneralPreferences();
 		IconNode node = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(sett.getIconWidth(), sett.getIconHeight()) : null);
 		parent.add(node);
 		return node;
 	}
-	// OLD
-//	public IconNode[] addCollection2D(Image2D[] img, IconNode parent) { 
-//		// only one image? do not create subnodes
-//		if(img==null || img.length==0) {
-//			return null;
-//		}
-//		else if(img.length==1) {
-//			return new IconNode[]{addImage(img[0], parent)};
-//		}
-//		else {
-//			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
-//			// create subnode with image name
-//			DefaultMutableTreeNode sub = null;
-//			String last = null;
-//			IconNode[] nodes = new IconNode[img.length];
-//			int c = 0;
-//			// create img nodes
-//			for(Image2D i : img) {
-//				if(sub==null || (!last.equals(i.getSettImage().getRAWFolder()))) {
-//					sub = new IconNode(i.getSettImage().getRAWFolderName()+"; "+i.getSettImage().getRAWFolder());
-//					parent.add(sub);
-//					last = i.getSettImage().getRAWFolder(); 
-//				}
-//				IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
-//				nodes[c] = inode;
-//				sub.add(inode);
-//				c++;
-//			} 
-//			return nodes;
-//		}
-//	}
 
-
-	public IconNode[] addCollection2D(ImageGroupMD img, DefaultMutableTreeNode parent) {
-		// only one image? do not create subnodes
-		if(img==null || img.getImages().size()==0) {
-			return null;
-		} 
+	/**
+	 * add group to the specified project (project may be null)
+	 * @param group
+	 * @param projectName
+	 */
+	public void addGroup(ImageGroupMD group, String projectName) {
+		ImagingProject project = treeImg.getProject(projectName);
+		if(projectName!=null && project==null) {
+			// create new project 
+			project = new ImagingProject(projectName);
+			project.add(group);
+			addProject(project);
+		}
 		else {
-			SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
-			// create subnode with image name
-			DefaultMutableTreeNode sub = null;
-			String last = null;
-			Image2D lastI = null;
-			IconNode[] nodes = new IconNode[img.getImages().size()];
-			int c = 0;
-
-			// create img nodes
-			for(Collectable2D c2d : img.getImages()) {
-				if(Image2D.class.isInstance(c2d)) {
-					Image2D i = (Image2D) c2d;
-					if(sub==null || (last==null && !lastI.hasSameData(i)) || (last!=null && !last.equals(i.getSettings().getSettImage().getRAWFolder()))) { 
-						String name = i.getSettings().getSettImage().getRAWFolder()==null? "NODEF" : i.getSettings().getSettImage().getRAWFolderName()+"; "+i.getSettings().getSettImage().getRAWFolder(); 
-						sub = new IconNode(name);
-						parent.add(sub);
-						last = i.getSettings().getSettImage().getRAWFolder(); 
-					}
-					IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
-					nodes[c] = inode;
-					sub.add(inode);
-					c++;
-					lastI = i;
-				}
-			} 
-			// add overlays afterwards
-			for(Collectable2D c2d : img.getImages()) {
-				if(ImageOverlay.class.isInstance(c2d)) {
-					ImageOverlay i = (ImageOverlay) c2d;
-					IconNode inode = new IconNode(i, false, window.isCreatingImageIcons()? i.getIcon(pref.getIconWidth(), pref.getIconHeight()) : null);
-					nodes[c] = inode;
-					sub.add(inode);
-					c++;
-				}
-			} 
-			img.setNode(sub);
-			return nodes;
+			// add group
+			addGroup(group, project);
 		}
 	}
+	/**
+	 * add group to the specified project (project may be null)
+	 * @param group
+	 * @param project
+	 */
+	public void addGroup(ImageGroupMD group, ImagingProject project) {
+		addGroup(group, project, 1);
+	}
+	private void addGroup(ImageGroupMD group, ImagingProject project, int duplicate) {
+		// only one image? do not create subnodes
+		if(group==null || group.getImages().size()==0) {
+			return;
+		} 
+		// project was already added?
+		else if(project!=null && project.getNode()==null)
+			addProject(project);
+		else {
+			// is gorup already added?
+			if(treeImg.getGroup(project, group.getName())!=null) {
+				// change name and try again
+				duplicate++;
+				String name = group.getName();
+				// remove number suffix
+				if(duplicate>2)
+					name.substring(0, name.length()-2-String.valueOf(duplicate).length());
+				// add number 
+				group.getSettings().setName(group.getName()+"("+duplicate+")");
+				
+				// try to add
+				addGroup(group, project, duplicate);
+			}
+			else {
+				// add group
+				DefaultMutableTreeNode parentPr = project!=null? project.getNode() : treeImg.getRoot();
+				// add group to parentProject
+				DefaultMutableTreeNode parent = new DefaultMutableTreeNode(group);
+				group.setNode(parent);
+				parentPr.add(parent);
+				
+				// create img nodes
+				for(Collectable2D c2d : group.getImages()) {
+					if(Image2D.class.isInstance(c2d)) {
+						addImageNode(c2d, parent);
+					}
+				} 
+				// add overlays afterwards
+				for(Collectable2D c2d : group.getImages()) {
+					if(ImageOverlay.class.isInstance(c2d)) {
+						addImageNode(c2d, parent);
+					}
+				} 
+				treeImg.reload();
+			}
+		}
+	}
+	
+	/**
+	 * add the project as node to the root 
+	 * @param project
+	 * @return
+	 */
+	public DefaultMutableTreeNode addProject(ImagingProject project) {
+		// create subnode with image name
+		DefaultMutableTreeNode node= new DefaultMutableTreeNode(project);
+		project.setNode(node);
+		treeImg.addNodeToRoot(node);
+		
+		// add all groups
+		for(int i=0; i<project.size(); i++) 
+			addGroup(project.get(i), project);
+
+		return node;
+	}
+	
 
 	public void removeAllImage() {
 		treeImg.removeAllElements();
@@ -381,10 +379,13 @@ public class ImageLogicRunner {
 					//
 					// load file  
 					if(files.length>0) { 
+						// choose project dialog
+						ImagingProject project = DialogChooseProject.choose(treeImg.getSelectedProject(), treeImg); 
+						
 						try {
 							// All files in fileList
 							for(File f : files) {
-								loadImage2DFromFile(f);
+								loadImage2DFromFile(f, project);
 								// Progress:
 								addProgressStep(1); 
 							} 
@@ -406,17 +407,20 @@ public class ImageLogicRunner {
 
 	/**
 	 * loads own format image2D
+	 * set no project
+	 * @param project 
 	 */
-	public void loadImage2DFromFile(File f) { 
+	public void loadImage2DFromFile(File f, ImagingProject project) { 
 		// image
 		if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase(preferences.getFileTFImage2D().getExtension())) {
 			try {
 				// load image group from file 
-				IconNode fnode = new IconNode(f.getName()+"; "+f.getAbsolutePath());
 				ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f);
-				if(img!=null) 
-					addCollection2D(img, fnode);
-				treeImg.addNodeToRoot(fnode);
+				if(img!=null) {
+					if(project!=null)
+						project.add(img);
+					addGroup(img, project);
+				}
 
 				preferences.addImage2DImportExportPath(f, false);
 			}catch(Exception ex) {
@@ -443,6 +447,9 @@ public class ImageLogicRunner {
 				// many folders or files
 				File[] files = preferences.getFcImport().getSelectedFiles(); 
 
+				// choose project dialog
+				ImagingProject project = DialogChooseProject.choose(treeImg.getSelectedProject(), treeImg); 
+
 				if(files.length>0) {
 					// open the files
 					SettingsImageDataImportTxt sett = (SettingsImageDataImportTxt) settingsDataImport;
@@ -450,11 +457,11 @@ public class ImageLogicRunner {
 					// import or start direct image analysis?
 					if(window.getCurrentView()== ImageEditorWindow.VIEW_IMAGING_ANALYSIS) {
 						// import text files
-						importTextDataToImage(sett, files);
+						importTextDataToImage(sett, files, project);
 					}
 					else if(window.getCurrentView()== ImageEditorWindow.VIEW_DIRECT_IMAGING_ANALYSIS) {
 						// set up direct imaging analysis
-						startDirectImagingAnalysis(sett, files);
+						startDirectImagingAnalysis(sett, files, project);
 					}
 				}
 				// save changed path
@@ -468,7 +475,7 @@ public class ImageLogicRunner {
 	} 
 
 	// Import data direct with files 
-	public void importTextDataToImage(SettingsImageDataImportTxt settingsDataImport, File[] files) { 
+	public void importTextDataToImage(SettingsImageDataImportTxt settingsDataImport, File[] files, ImagingProject project) { 
 		// load image
 		try { 
 			if(files.length>0) {
@@ -478,7 +485,6 @@ public class ImageLogicRunner {
 					// load each folder as one set of images
 					for(File f : files) {
 						if(f.isDirectory()) {
-							IconNode fnode = new IconNode(f.getName()+"; "+f.getAbsolutePath());
 							// get all files in this folder TODO change csv to settings
 							// each file[] element is for one image
 							Vector<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
@@ -486,17 +492,20 @@ public class ImageLogicRunner {
 							for(File[] i : sub) {
 								// load them as image set
 								ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true); 
+								
+								// add to project
+								if(project!=null)
+									for(ImageGroupMD g : imgs)
+										project.add(g);
+								
 								ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
 								for(int coll = 0; coll<imgs.length; coll++) {
 									if(imgs[coll].getImages().size()>0) {
 										// add img to list
-										addCollection2D(imgs[coll], fnode);
+										addGroup(imgs[coll], project);
 									}
 								}
 							}
-							// add
-							if(fnode.getChildCount()>0)
-								treeImg.addNodeToRoot(fnode);
 						}
 					}
 				}
@@ -504,18 +513,18 @@ public class ImageLogicRunner {
 					// load all files as one image set
 					ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(files, settingsDataImport, true); 
 					
-					// add img to list
-					IconNode fnode = new IconNode(files[0].getParentFile().getName()+"; "+files[0].getParent());
+					// add to project
+					if(project!=null)
+						for(ImageGroupMD g : imgs)
+							project.add(g);
+					
 					// add all
 					for(int coll = 0; coll<imgs.length; coll++) {
 						if(imgs[coll].getImages().size()>0) {
 							// add img to list
-							addCollection2D(imgs[coll], fnode);
+							addGroup(imgs[coll], project);
 						}
 					} 
-					// add
-					if(fnode.getChildCount()>0)
-						treeImg.addNodeToRoot(fnode);
 				}
 			}
 
@@ -566,7 +575,7 @@ public class ImageLogicRunner {
 						ImageOverlay ov = new ImageOverlay(group, settings);
 						group.add(ov);
 
-						addImage(ov, selectedImage.getImageGroup().getNode());
+						addImageNode(ov, selectedImage.getImageGroup().getNode());
 						// update tree
 						treeImg.reload();
 				}
@@ -641,7 +650,7 @@ public class ImageLogicRunner {
 					result.getSettings().getSettImage().setRAWFilepath(file.getAbsolutePath());
 					// add to image group
 					selectedImage.getImageGroup().add(result);
-					addImage(result, selectedImage.getImageGroup().getNode());
+					addImageNode(result, selectedImage.getImageGroup().getNode());
 					
 					// update tree
 					treeImg.reload();
@@ -685,8 +694,9 @@ public class ImageLogicRunner {
 	 * starting direct imaging analysis with one file selected or one folder
 	 * @param sett
 	 * @param files
+	 * @param project 
 	 */
-	public void startDirectImagingAnalysis(SettingsImageDataImportTxt sett, File[] files) {
+	public void startDirectImagingAnalysis(SettingsImageDataImportTxt sett, File[] files, ImagingProject project) {
 		File dir = files[0].isFile()? files[0].getParentFile() : files[0];
 		//  
 		diaRunner.startDIA(dir, sett);
@@ -695,12 +705,12 @@ public class ImageLogicRunner {
 	//##################################################################################
 	//GETTERS AND SETTERS
 
-	public Vector<Collectable2D> getListImages() {
+	public ArrayList<Collectable2D> getListImages() {
 		return treeImg.toList();
 	}
 
-	public Vector<Image2D> getListImage2DOnly() {
-		Vector<Image2D> list = new Vector<Image2D>();
+	public ArrayList<Image2D> getListImage2DOnly() {
+		ArrayList<Image2D> list = new ArrayList<Image2D>();
 		for(Collectable2D c : getListImages())
 			if(c.isImage2D())
 				list.add((Image2D)c);

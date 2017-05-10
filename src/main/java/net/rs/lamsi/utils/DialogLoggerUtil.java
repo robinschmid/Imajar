@@ -103,7 +103,7 @@ public class DialogLoggerUtil {
 	 * @param selectedi
 	 * @return
 	 */
-	public static TreePath[] showTreeDialogAndChoose(JFrame parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections) {
+	public static TreePath[] showTreeDialogAndChoose(Window parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections) {
 		ChooseFromTreeDialog dialog = new ChooseFromTreeDialog(parent, root, selectionMode, selections);
 		return dialog.getSelected();
 	}
@@ -279,15 +279,15 @@ public class DialogLoggerUtil {
 			this.selected = selected;
 		}
  
-		public ChooseFromTreeDialog(JFrame parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections) {
+		public ChooseFromTreeDialog(Window parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections) {
 			super(parent);
 			// create List
 			final JTree tree = new JTree(root);
 			tree.setCellRenderer(new IconNodeRenderer());
-			init(parent, tree, selectionMode, selections); 
+			init(tree, selectionMode, selections); 
 		}
 		
-		private void init(JFrame parent, final JTree tree, int selectionMode, TreePath[] selections) { 
+		private void init(final JTree tree, int selectionMode, TreePath[] selections) { 
 			getContentPane().setLayout(new BorderLayout());
 			tree.getSelectionModel().setSelectionMode(selectionMode);
 			tree.setSelectionPaths(selections); 

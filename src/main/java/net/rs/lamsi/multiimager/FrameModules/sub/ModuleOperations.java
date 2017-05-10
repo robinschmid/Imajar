@@ -359,9 +359,9 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 		ImageLogicRunner.setIS_UPDATING(false);
 		imgBlank = q.getImgBlank();
 		getCbUseBlank().setSelected(q.isActive());
-		getRbBlankActualDataPoint().setSelected(q.getMode()==SettingsImage2DBlankSubtraction.MODE_ACTUAL_DP);
-		getRbBlankAverage().setSelected(q.getMode()==SettingsImage2DBlankSubtraction.MODE_AVERAGE);
-		getRbBlankAveragePerLine().setSelected(q.getMode()==SettingsImage2DBlankSubtraction.MODE_AVERAGE_PER_LINE);
+		getRbBlankActualDataPoint().setSelected(q.getModeAvg()==SettingsImage2DBlankSubtraction.MODE_ACTUAL_DP);
+		getRbBlankAverage().setSelected(q.getModeAvg()==SettingsImage2DBlankSubtraction.MODE_AVERAGE);
+		getRbBlankAveragePerLine().setSelected(q.getModeAvg()==SettingsImage2DBlankSubtraction.MODE_AVERAGE_PER_LINE);
 		// set tab
 		getTabbedBlank().setSelectedIndex(q.getModeData()==SettingsImage2DBlankSubtraction.MODE_DATA_IMG? 0:1); 
 		// set tab img

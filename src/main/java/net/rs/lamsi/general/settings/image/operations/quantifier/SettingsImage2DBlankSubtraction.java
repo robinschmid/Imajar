@@ -33,7 +33,7 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 	
 	
 	public SettingsImage2DBlankSubtraction() {
-		super(MODE_BLANK); 
+		super(MODE.BLANK); 
 		resetAll();
 	} 
 	public SettingsImage2DBlankSubtraction(Image2D imgBlank) { 
@@ -72,6 +72,10 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 		else return intensity;
 	}
 	
+	public int getModeAvg() {
+		return mode;
+	}
+	
 	/**
 	 * Average intensity of a line or whatever
 	 * @param line
@@ -100,9 +104,6 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 	}
 	public void setImgBlank(Image2D imgBlank) {
 		this.imgBlank = imgBlank;
-	}
-	public int getMode() {
-		return mode;
 	}
 	public void setMode(int mode) {
 		this.mode = mode;

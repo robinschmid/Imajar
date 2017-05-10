@@ -407,18 +407,18 @@ public class DirectImageLogicRunner implements Runnable {
 	 * @throws Exception
 	 */
 	private DIATask createTask(File[] i, IconNode parent, int index) throws Exception {
-		// load them as image set
-		ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
-		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
-		for(ImageGroupMD g : imgs)
-		if(g.getImages().size()>0) {
-			// add img to list
-			IconNode nodes[] = runner.addCollection2D(g, parent); 
-			// get all filedimensions like lines/length... for later comparison 
-			FileDim[] dim = writer.getFileDim(i);
-			// create task 
-			return new DIATask(g, dim, nodes, index); 
-		}
+//		// load them as image set
+//		ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
+//		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
+//		for(ImageGroupMD g : imgs)
+//		if(g.getImages().size()>0) {
+//			// add img to list
+//			IconNode nodes[] = runner.addGroup(g, parent); 
+//			// get all filedimensions like lines/length... for later comparison 
+//			FileDim[] dim = writer.getFileDim(i);
+//			// create task 
+//			return new DIATask(g, dim, nodes, index); 
+//		}
 		return null;
 	}
 

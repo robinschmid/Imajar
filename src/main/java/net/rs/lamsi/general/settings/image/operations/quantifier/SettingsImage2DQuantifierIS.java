@@ -23,10 +23,10 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
 	
 	
 	public SettingsImage2DQuantifierIS() {
-		super(MODE_IS); 
+		super(MODE.IS); 
 	} 
 	public SettingsImage2DQuantifierIS(Image2D imgIS) {
-		super(MODE_IS); 
+		super(MODE.IS); 
 		this.imgIS = imgIS;
 	} 
 	@Override

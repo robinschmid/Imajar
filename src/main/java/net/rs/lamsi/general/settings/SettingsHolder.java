@@ -38,7 +38,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsHolder extends Settings {
+public class SettingsHolder extends SettingsContainerSettings {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	//
@@ -47,115 +47,52 @@ public class SettingsHolder extends Settings {
 	// Settings writer  
 	private BinaryWriterReader settingsWriter = new BinaryWriterReader();
 	//
-	private Vector<Settings> settList;
 	// save of super classes
 	private Class[] classList;
-
-	// general pref
-	private SettingsGeneralPreferences setGeneralPreferences;
-	private SettingsGeneralValueFormatting setGeneralValueFormatting;
-	private SettingsConverterRAW setConvertRAW;
-	private SettingsDataSaver setDataSaver;
-	// Nur die ganzen aktuellen Werte für discon images
-	private SettingsGeneralImage setOESImage;
-
-	private SettingsPaintScale setPaintScale;
-
-	private SettingsChargeCalculator setChargeCalc; 
-
-	// Visualization
-	private SettingsPlotSpectraLabelGenerator setVisPlotSpectraLabelGenerator;
-	private SettingsThemes setPlotStyle;
-
-	// Export Settings
-	private SettingsExportGraphics setGraphicsExport;
-
-	// 
-	private SettingsImage2DDataExport setImage2DDataExport;
-	private SettingsImage2DDataSelectionsExport setImage2DDataSelectionsExport;
-
-	// settings for operations on images
-	private SettingsImage2DQuantifier setQuantifier;
-
-	private SettingsImage2DOperations setOperations;
-
-	// for splitting data in image2dContinous
-	private SettingsImageContinousSplit setSplitImgCon;
-	
-	private SettingsZoom settZoom;
-	
-	private SettingsImage2D settImg;
-	private SettingsImageOverlay settImgOver;
-	
-	private SettingsBackgroundImg settBGImg;
-	private SettingsSelections settSelections;
 	
 
 
 	public SettingsHolder() {
-		// alle settings in einer großen
 		super("SettingsHolder", "/Settings/", "setall");
-		// list
-		settList = new Vector<Settings>();
-		// einzelne settings 
-		setDataSaver = new SettingsDataSaver("/Settings/Export/", "setds");
-		settList.add(setDataSaver);
-		setOESImage = new SettingsGeneralImage();
-		settList.add(setOESImage);
-		setPaintScale = new SettingsPaintScale();
-		settList.add(setPaintScale);
-		setChargeCalc = new SettingsChargeCalculator();
-		settList.add(setChargeCalc);
-		setGeneralValueFormatting = new SettingsGeneralValueFormatting();
-		settList.add(setGeneralValueFormatting);
+		//  settings 
+		addSettings(new SettingsDataSaver("/Settings/Export/", "setds"));
+		addSettings(new SettingsGeneralImage());
+		addSettings(new SettingsPaintScale());
+		addSettings(new SettingsChargeCalculator());
+		addSettings(new SettingsGeneralValueFormatting());
 
 		// visualization only for Toolset
-		setVisPlotSpectraLabelGenerator = new SettingsPlotSpectraLabelGenerator();
-		settList.add(setVisPlotSpectraLabelGenerator);
-		setPlotStyle = new SettingsThemes();
-		settList.add(setPlotStyle);
+		addSettings(new SettingsPlotSpectraLabelGenerator());
+		addSettings(new SettingsThemes());
 
 		// Export settings
-		setGraphicsExport = new SettingsExportGraphics();
-		settList.add(setGraphicsExport);
+		addSettings(new SettingsExportGraphics());
 
 		// export data of image2d
-		setImage2DDataExport = new SettingsImage2DDataExport();
-		settList.add(setImage2DDataExport); 
+		addSettings(new SettingsImage2DDataExport());
 
-		setImage2DDataSelectionsExport = new SettingsImage2DDataSelectionsExport();
-		settList.add(setImage2DDataExport); 
+		addSettings(new SettingsImage2DDataSelectionsExport());
 		
 		// operations
-		setQuantifier = new SettingsImage2DQuantifierLinear();
-		settList.add(setQuantifier); 
+		addSettings(new SettingsImage2DQuantifierLinear());
 
-		setOperations = new SettingsImage2DOperations();
-		settList.add(setOperations); 
+		addSettings(new SettingsImage2DOperations());
 
 		// image2dContinous
-		setSplitImgCon = new SettingsImageContinousSplit();
-		settList.add(setSplitImgCon); 
+		addSettings(new SettingsImageContinousSplit());
 		
 		// general preferences 
-		settZoom = new SettingsZoom();
-		settList.add(settZoom); 
+		addSettings(new SettingsZoom());
 		
-		setGeneralPreferences = new SettingsGeneralPreferences();
-		settList.add(setGeneralPreferences);
+		addSettings(new SettingsGeneralPreferences());
 		
-		settImgOver = new SettingsImageOverlay();
-		settList.add(settImgOver);
+		addSettings(new SettingsImageOverlay());
 		
-		settImg = new SettingsImage2D();
-		settList.add(settImg);
+		addSettings(new SettingsImage2D());
 		
-		settBGImg = new SettingsBackgroundImg();
-		settList.add(settBGImg);
+		addSettings(new SettingsBackgroundImg());
 
-		settSelections = new SettingsSelections();
-		settList.add(settSelections);
-		
+		addSettings(new SettingsSelections());
 
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
@@ -166,36 +103,10 @@ public class SettingsHolder extends Settings {
 		classList = cl;
 	}
 
-	// Alle auf start einstellungen
-	@Override
-	public void resetAll() {
-		// TODO immer neue rein
-		for(Settings s : settList)
-			s.resetAll(); 
-	}  
-	
-
-	//##################################################################################
-	// xml
-	@Override
-	public void appendSettingsValuesToXML(Element elParent, Document doc) {
-		for(Settings s : settList) {
-			s.appendSettingsToXML(elParent, doc);
-		}
-	}
-	@Override
-	public void loadValuesFromXML(Element el, Document doc) {
-		for(Settings s : settList) {
-			NodeList list = doc.getElementsByTagName(s.getSuperClass().getName());
-			if(list.getLength()==1 && list.item(0).getNodeType() == Node.ELEMENT_NODE) {
-				s.loadValuesFromXML((Element)list.item(0), doc);
-			}
-		}
-	}
 
 
 	public File saveSettingsToFile(Component parentFrame, Class settingsClass)  throws Exception { 
-		return saveSettingsToFile(parentFrame, getSetByClass(settingsClass));
+		return saveSettingsToFile(parentFrame, getSettingsByClass(settingsClass));
 	}
 	public File saveSettingsToFile(Component parentFrame, Settings cs)  throws Exception { 
 		// Open new FC
@@ -221,7 +132,7 @@ public class SettingsHolder extends Settings {
 	}
 	
 	public Settings loadSettingsFromFile(Component parentFrame, Class settingsClass) throws Exception {
-		return loadSettingsFromFile(parentFrame, getSetByClass(settingsClass));
+		return loadSettingsFromFile(parentFrame, getSettingsByClass(settingsClass));
 	}
 	public Settings loadSettingsFromFile(Component parentFrame, Settings cs)  throws Exception {
 		// TODO Auto-generated method stub 
@@ -246,7 +157,6 @@ public class SettingsHolder extends Settings {
 			// alle laden und setzen
 			SettingsHolder sett = (SettingsHolder)(cs.loadFromFile(settingsWriter, file));
 			// Alle settings aus geladenen holder kopieren
-			settList = sett.getSettList();
 			classList = sett.getClassList();
 			// 
 			return this;
@@ -265,7 +175,7 @@ public class SettingsHolder extends Settings {
 	//##################################################################################
 	// binary
 	public File saveSettingsToFileBinary(Component parentFrame, Class settingsClass)  throws Exception { 
-		return saveSettingsToFileBinary(parentFrame, getSetByClass(settingsClass));
+		return saveSettingsToFileBinary(parentFrame, getSettingsByClass(settingsClass));
 	}
 	public File saveSettingsToFileBinary(Component parentFrame, Settings cs)  throws Exception { 
 		// Open new FC
@@ -291,7 +201,7 @@ public class SettingsHolder extends Settings {
 	} 
 
 	public Settings loadSettingsFromFileBinary(Component parentFrame, Class settingsClass) throws Exception {
-		return loadSettingsFromFileBinary(parentFrame, getSetByClass(settingsClass));
+		return loadSettingsFromFileBinary(parentFrame, getSettingsByClass(settingsClass));
 	}
 	public Settings loadSettingsFromFileBinary(Component parentFrame, Settings cs)  throws Exception {
 		// TODO Auto-generated method stub 
@@ -316,116 +226,75 @@ public class SettingsHolder extends Settings {
 			// alle laden und setzen
 			SettingsHolder sett = (SettingsHolder)(cs.loadFromFile(settingsWriter, file));
 			// Alle settings aus geladenen holder kopieren
-			settList = sett.getSettList();
 			classList = sett.getClassList();
 			// 
 			return this;
 		} 
 		else { 
 			Settings loaded = (cs.loadFromFile(settingsWriter, file));
-			setSetByClass(loaded);
+			replaceSettings(loaded);
 			return loaded;
 		}
 	}
 
-	// more advanced getters
-	/**
-	 * 
-	 * @param c super class of settings-class
-	 * @return
-	 */
-	public Settings getSetByClass(Class c) { 
-		for(Settings s : settList)
-			if(c.isAssignableFrom(s.getClass()))
-				return s;
-		ImageEditorWindow.log("FAILED TO get settings from SettingsHolder "+c.getName(), LOG.DEBUG);
-		return null;
-	}
-
-	public void setSetByClass(Settings newOne) { 
-		for(int i=0; i<classList.length; i++){
-			Class c = classList[i];
-			if(c.isAssignableFrom(newOne.getClass())) {
-				settList.set(i, newOne);
-				ImageEditorWindow.log("Set newOne settings: "+newOne.getClass().getName()+"   to: "+c.getName(), LOG.DEBUG);
-				return;
-			}
-		}
-		ImageEditorWindow.log("FAILED TO SET newOne in SettingsHolder "+newOne.getClass().getName(), LOG.DEBUG);
-	}
-
-
-
-	public Vector<Settings> getSettList() {
-		return settList;
-	}
 	public Class[] getClassList() {
 		return classList;
 	}
 	// GETTERS
-	public SettingsConverterRAW getSetConvertRAW() { 
-		// old
-		return setConvertRAW;
-	}  
-	public void setSetConvertRAW(SettingsConverterRAW setConvertRAW) {
-		// old
-		this.setConvertRAW = setConvertRAW;
-	} 
-
 	public SettingsDataSaver getSetDataSaver() {
-		return (SettingsDataSaver) getSetByClass(SettingsDataSaver.class);
+		return (SettingsDataSaver) getSettingsByClass(SettingsDataSaver.class);
 	} 
 	public SettingsGeneralImage getSetGeneralImage() {
-		return (SettingsGeneralImage) getSetByClass(SettingsGeneralImage.class);
+		return (SettingsGeneralImage) getSettingsByClass(SettingsGeneralImage.class);
 	} 
 
 	public SettingsPaintScale getSetPaintScale() {
-		return (SettingsPaintScale) getSetByClass(SettingsPaintScale.class);
+		return (SettingsPaintScale) getSettingsByClass(SettingsPaintScale.class);
 	}
 
 
 	public SettingsChargeCalculator getSetChargeCalc() {
-		return (SettingsChargeCalculator) getSetByClass(SettingsChargeCalculator.class);
+		return (SettingsChargeCalculator) getSettingsByClass(SettingsChargeCalculator.class);
 	}
 
 	public SettingsGeneralValueFormatting getSetGeneralValueFormatting() {
-		return (SettingsGeneralValueFormatting) getSetByClass(SettingsGeneralValueFormatting.class);
+		return (SettingsGeneralValueFormatting) getSettingsByClass(SettingsGeneralValueFormatting.class);
 	}
 
 	public SettingsPlotSpectraLabelGenerator getSetVisPlotSpectraLabelGenerator() {
-		return (SettingsPlotSpectraLabelGenerator) getSetByClass(SettingsPlotSpectraLabelGenerator.class);
+		return (SettingsPlotSpectraLabelGenerator) getSettingsByClass(SettingsPlotSpectraLabelGenerator.class);
 	}
 
 	public SettingsExportGraphics getSetGraphicsExport() {
-		return (SettingsExportGraphics) getSetByClass(SettingsExportGraphics.class);
+		return (SettingsExportGraphics) getSettingsByClass(SettingsExportGraphics.class);
 	}
 
 
 	public SettingsThemes getSetPlotStyle() {
-		return (SettingsThemes) getSetByClass(SettingsThemes.class);
+		return (SettingsThemes) getSettingsByClass(SettingsThemes.class);
 	}
 
 	// SETTER
 	public void setSetPlotStyle(SettingsThemes setPlotStyle) {
-		setSetByClass(setPlotStyle);
+		replaceSettings(setPlotStyle);
 	}
 	public void setSetGraphicsExport(SettingsExportGraphics setGraphicsExport) {
-		setSetByClass(setGraphicsExport);
+		replaceSettings(setGraphicsExport);
 	}
 	public void setSetPaintScale(SettingsPaintScale setPaintScale) {
-		setSetByClass(setPaintScale);
+		replaceSettings(setPaintScale);
 	}
 	public void setSetOESImage(SettingsGeneralImage setOESImage) {
-		setSetByClass(setOESImage);
+		replaceSettings(setOESImage);
 	}
 	public void setSetMSIDiscon(SettingsMSImage setMSIDiscon) {
-		setSetByClass(setMSIDiscon);
+		replaceSettings(setMSIDiscon);
 	} 
 	public void setSetMSICon(SettingsMSImage setMSICon) {
-		setSetByClass(setMSICon);
+		replaceSettings(setMSICon);
 	} 
 	public void setSetDataSaver(SettingsDataSaver setDataSaver) {
-		setSetByClass(setDataSaver);
+		replaceSettings(setDataSaver);
 	} 
 
 	// get settings instance
@@ -438,19 +307,26 @@ public class SettingsHolder extends Settings {
 	}
 
 	public SettingsImage2DDataExport getSetImage2DDataExport() {
-		return setImage2DDataExport;
+		return (SettingsImage2DDataExport)getSettingsByClass(SettingsImage2DDataExport.class);
 	}
 
 	public SettingsImage2DDataSelectionsExport getSetImage2DDataSelectionsExport() {
-		return setImage2DDataSelectionsExport;
+		return (SettingsImage2DDataSelectionsExport)getSettingsByClass(SettingsImage2DDataSelectionsExport.class);
 	}
 	public SettingsGeneralPreferences getSetGeneralPreferences() {
-		return setGeneralPreferences;
+		return (SettingsGeneralPreferences)getSettingsByClass(SettingsGeneralPreferences.class);
 	}
 
-	public void setSetGeneralPreferences(
-			SettingsGeneralPreferences setGeneralPreferences) {
-		this.setGeneralPreferences = setGeneralPreferences;
+	public void setSetGeneralPreferences(SettingsGeneralPreferences setGeneralPreferences) {
+		replaceSettings(setGeneralPreferences);
+	}
+
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
 	}
 	
 }

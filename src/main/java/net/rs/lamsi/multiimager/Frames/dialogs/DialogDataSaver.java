@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -30,21 +30,13 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
-import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
-import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport.FileType;
+import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
-
-import java.awt.GridLayout;
-
-import javax.swing.BoxLayout;
-
-import com.itextpdf.text.pdf.qrcode.Mode;
 
 /**
  * is only for exporting data of image2d
@@ -65,7 +57,7 @@ public class DialogDataSaver extends JFrame {
 	final private JFileChooser fcDirectoriesChooser = new JFileChooser();
 	// 
 	private Image2D img;
-	private Vector<Image2D> imgList;
+	private List<Image2D> imgList;
 	private SettingsSelections selections;
 	// 
 	private JPanel contentPane;
@@ -394,7 +386,7 @@ public class DialogDataSaver extends JFrame {
 	 * open the dialog with imagelist
 	 * @param imgList
 	 */
-	public static void startDialogWith(Vector<Image2D> imgList, Image2D img) {
+	public static void startDialogWith(List<Image2D> imgList, Image2D img) {
 		inst.setCurrentMode(MODE.ALL);
 		inst.img=img;
 		inst.imgList = imgList;

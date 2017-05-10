@@ -14,14 +14,16 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
     private static final long serialVersionUID = 1L;
     
     // selected mode
-    public static final int MODE_LINEAR = 0, MODE_ONE_POINT = 1, MODE_IS=3, MODE_BLANK = 4;
+    public enum MODE {
+    	LINEAR, ONE_POINT, IS, BLANK;
+    }
     
-    protected final int mode;
+    protected final MODE mode;
     protected boolean isActive = false;
-    protected Image2D currentImg = null;
+    protected transient Image2D currentImg = null;
 	
 	
-	public SettingsImage2DQuantifier(int mode) {
+	public SettingsImage2DQuantifier(MODE mode) {
 		super("SettingsImage2DQuantifier", "/Settings/operations/", "setQuantifier"); 
 		this.mode = mode;
 		resetAll();		
@@ -31,22 +33,30 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 		isActive = false;
 	}
 	
-	public int getMode() {
+	public MODE getMode() {
 		return mode;
 	}
 	public boolean isActive() {
 		return isActive;
 	}
-	public void setActive(boolean isActive) {
+	
+	/**
+	 * 
+	 * @param isActive
+	 * @return true if state has changed
+	 */
+	public boolean setActive(boolean isActive) {
+		boolean state = this.isActive!=isActive;
 		this.isActive = isActive;
+		return state;
 	}
 	public String getModeAsString() { 
 		switch(getMode()) {
-		case MODE_IS:
+		case IS:
 			return "internal standard";
-		case MODE_LINEAR:
+		case LINEAR:
 			return "linear";
-		case MODE_ONE_POINT:
+		case ONE_POINT:
 			return "one point calibration";
 		default: 
 			return "";

@@ -1232,16 +1232,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	}
 
 
-	// a name for lists
-	public String toListName() { 
-		return settings.getSettImage().toListName();
-	} 
-
-	@Override
-	public String toString() {
-		return toListName();
-	}
-
 	public String getTitle() { 
 		return settings.getSettImage().getTitle();
 	} 
@@ -2190,4 +2180,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 				&& data.getTotalDPCount()==i.getData().getTotalDPCount();
 	}
 
+	// a name for lists
+	public String toListName() { 
+		return settings.getSettImage().toListName();
+	} 
 }

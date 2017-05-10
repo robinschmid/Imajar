@@ -1,5 +1,8 @@
 package net.rs.lamsi.general.settings.image;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
@@ -18,7 +21,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     
-    protected Image2D currentImg = null;
+    protected transient Image2D currentImg = null;
     //
 
 	public SettingsImage2D() {
@@ -133,4 +136,14 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 	public SettingsSelections getSettSelections() {
 		return (SettingsSelections) getSettingsByClass(SettingsSelections.class);
 	}
-}
+
+
+	//###########################################################
+	// XML
+	@Override
+	public void appendSettingsValuesToXML(Element elParent, Document doc) {
+	}
+	@Override
+	public void loadValuesFromXML(Element el, Document doc) {
+	}
+	}

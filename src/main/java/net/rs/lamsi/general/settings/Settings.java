@@ -26,8 +26,8 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -193,6 +193,14 @@ public abstract class Settings implements Serializable {
 		    	paramElement.setTextContent(f.getName());
 		    	paramElement.setAttribute("style", ""+f.getStyle());
 		    	paramElement.setAttribute("size", ""+f.getSize());
+		    }
+		    else if(Collectable2D.class.isInstance(o)) {
+		    	Collectable2D c = (Collectable2D)o;
+		    	// save name, group, project
+		    	paramElement.setTextContent(c.getTitle());
+		    	paramElement.setAttribute("group", c.getImageGroup().getName());
+		    	if(c.getImageGroup().getProject()!=null)
+		    		paramElement.setAttribute("project", c.getImageGroup().getProject().getName());
 		    }
 		    else paramElement.setTextContent(String.valueOf(o));
 		}

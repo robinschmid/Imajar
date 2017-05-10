@@ -691,7 +691,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																																// send image to imageeditor // TODO
 																																if(currentHeat!=null && currentHeat.getImage()!=null) {
 																																	// TODO txtID.getText()
-																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(), getTxtImgGroupID().getText());
+																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(),"MS project", getTxtImgGroupID().getText());
 																																}
 																															}
 																														});

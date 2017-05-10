@@ -16,13 +16,13 @@ public class IconNodeRenderer extends DefaultTreeCellRenderer {
 			boolean hasFocus) {
 
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-
-		Icon icon = ((IconNode) value).getIcon(); 
-		setIcon(icon);
-		if(icon!=null) 
-			height = icon.getIconHeight();
-		else height=0;
-
+		if(IconNode.class.isInstance(value)) {
+			Icon icon = ((IconNode) value).getIcon(); 
+			setIcon(icon);
+			if(icon!=null) 
+				height = icon.getIconHeight();
+			else height=0;
+		}
 		return this;
 	}
 		  @Override

@@ -125,8 +125,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 
 		for(int i=0; i<psSettings.size(); i++)
 			psSettings.get(i).appendSettingsToXML(elParent, doc);
-		
-		super.appendSettingsValuesToXML(elParent, doc);
 	}
 	
 	@Override
@@ -159,7 +157,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 			setToStandardColors();
 		
 		// load sub settings
-		super.loadValuesFromXML(el, doc);
 	}
 	
 	

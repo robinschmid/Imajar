@@ -15,6 +15,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -52,6 +53,7 @@ import javax.swing.tree.TreeSelectionModel;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.framework.basics.ColorChangedListener;
@@ -63,8 +65,8 @@ import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AspectRatioListener;
-import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AxesRangeChangedListener;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AspectRatioListener.RATIO;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AxesRangeChangedListener;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
@@ -73,6 +75,7 @@ import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
@@ -326,8 +329,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 						JMenuItem mnImportData = new JMenuItem(FileAndPathUtil.eraseFormat(f.getName())+"; "+f.getParentFile().getAbsolutePath());
 						mnImportData.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
+								// choose project dialog
+								ImagingProject project = DialogChooseProject.choose(getModuleTreeImages().getSelectedProject(), getModuleTreeImages());
+
 								// import file as image2d
-								logicRunner.loadImage2DFromFile(f);
+								logicRunner.loadImage2DFromFile(f, project);
 							}
 						});
 						mnImportData.setPreferredSize(new Dimension(280, (int)mnImportData.getPreferredSize().getHeight()));
@@ -426,7 +432,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				// show dialog with mutliple image view
 				if(path!=null) { 
 					// TODO correct?
-					ImageGroupMD img = getModuleTreeImages().getImageCollection(path);
+					ImageGroupMD img = getModuleTreeImages().getImageGroup(path);
 					if(img!=null) {
 						MultiImageFrame frame = new MultiImageFrame();
 						frame.init(img); 
@@ -1238,7 +1244,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * the list of images or null if the editor is not initialized
 	 * @return
 	 */
-	public static Vector<Collectable2D> getImages() { 
+	public static ArrayList<Collectable2D> getImages() { 
 		if(getEditor()==null)
 			return null;
 		else {
