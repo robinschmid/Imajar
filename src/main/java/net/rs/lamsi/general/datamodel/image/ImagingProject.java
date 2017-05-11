@@ -60,8 +60,22 @@ public class ImagingProject  implements Serializable {
 	 * @param img
 	 */
 	public void add(ImageGroupMD grp) {
-			groups.add(grp);
-			grp.setProject(this); 
+		// same name?
+		int c = 1;
+		for(int i=0; i<groups.size(); i++) {
+			ImageGroupMD g = groups.get(i);
+			if(grp.getName().equals(g.getName())) {
+				c++;
+				i=-1;
+				String name = grp.getName();
+				if(c>2) name = name.substring(0, String.valueOf(c).length()+2);
+				name += "("+c+")";
+				grp.getSettings().setName(name);
+			}
+		}
+		//
+		groups.add(grp);
+		grp.setProject(this); 
 	}
 	public boolean remove(ImageGroupMD g) {
 		g.setProject(null);

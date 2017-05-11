@@ -23,6 +23,7 @@ import net.lingala.zip4j.util.Zip4jConstants;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
@@ -33,6 +34,7 @@ import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.SettingsImagingProject;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
@@ -50,38 +52,134 @@ public class Image2DImportExportUtil {
 	private static final TxtWriter txtWriter = new TxtWriter();
 	private static final String SEPARATION = ";";
 
-	
+
 	//######################################################################################
-		// Standard format as zipped text files and settings
+	// Standard format as zipped text files and settings
 
-		/**
-		 * saves an imageGroup to one file
-		 * @param group
-		 * @param file
-		 * @throws IOException
-		 */
-		public static void writeToStandardZip(ImageGroupMD group, File file) throws IOException {
-			// parameters
-			ZipParameters parameters = new ZipParameters();
-	        parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
+	/**
+	 * saves an project to one file (img2dproject)
+	 * @param project
+	 * @param file
+	 * @throws IOException
+	 */
+	public static void writeToStandardZip(ImagingProject project, File file) throws IOException {
+		// parameters
+		ZipParameters parameters = new ZipParameters();
+		parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
 
-	        //DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
-	        //DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
-	        //DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
-	        //DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
-	        //DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
-	        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
-	        
-	        Image2D[] images = group.getImagesOnly();
+		//DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
+		//DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
+		//DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
+		//DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
+		//DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
+		parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 
-			// zip file 
-			parameters.setSourceExternalStream(true); 
-			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
-			
-			// export group settings
+		// zip file 
+		parameters.setSourceExternalStream(true); 
+		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
+
+		// save project to file
+		writeProjectToZip(out, parameters, project);
+
+		try {
+			out.finish();
+		} catch (ZipException e) {
+			e.printStackTrace();
+		}
+		// end 
+		out.close();
+	}
+
+
+	/**
+	 * write the project to zip
+	 * @param out
+	 * @param parameters
+	 * @param project
+	 */
+	private static void writeProjectToZip(ZipOutputStream out, ZipParameters parameters, ImagingProject project) throws IOException {
+		File folder = new File(project.getName());
+		
+		// write project settings
+		try {
+			Settings sett = project.getSettings();
+			parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"project", sett.getFileEnding()).getPath());
+			out.putNextEntry(null, parameters);
+			sett.saveToXML(out);
+			out.closeEntry();
+		} catch (ZipException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// write all groups in separate folders
+		for(ImageGroupMD g : project.getGroups())
+			writeImageGroupToZip(out, parameters, g, folder);
+	}
+
+	/**
+	 * write the project to zip
+	 * @param out
+	 * @param parameters
+	 * @param project
+	 */
+	private static void writeImageGroupToZip(ZipOutputStream out, ZipParameters parameters, ImageGroupMD group, File folderParent) throws IOException {
+		Image2D[] images = group.getImagesOnly();
+		
+		File folder = new File(folderParent, group.getName());
+		
+		// export group settings
+		try {
+			Settings sett = group.getSettings();
+			parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"group", sett.getFileEnding()).getPath());
+			out.putNextEntry(null, parameters);
+			sett.saveToXML(out);
+			out.closeEntry();
+		} catch (ZipException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// export xmatrix
+		// intensity matrix
+		if(MDDataset.class.isInstance(images[0].getData())) {
+			if(((MDDataset)images[0].getData()).hasXData()) {
+				String xmatrix = images[0].toXCSV(true, SEPARATION, false);
+				try {
+					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, "xmatrix", "csv").getPath());
+					out.putNextEntry(null, parameters);
+					byte[] data = xmatrix.getBytes();
+					out.write(data, 0, data.length);
+					out.closeEntry();
+				} catch (ZipException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		// for all images:
+		NumberFormat format = new DecimalFormat("0000");
+		int c = 0;
+		for(Image2D img : images) {	
+			c++;
+			String num = format.format(c)+"_";
 			try {
-				Settings sett = group.getSettings();
-				parameters.setFileNameInZip(FileAndPathUtil.addFormat("group", sett.getFileEnding()));
+				// export ymatrix
+				String matrix = img.toICSV(true, SEPARATION, false);
+				parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, num+img.getTitle(), "csv").getPath());
+				out.putNextEntry(null, parameters);
+				byte[] data = matrix.getBytes();
+				out.write(data, 0, data.length);
+				out.closeEntry();
+
+				// export settings
+				Settings sett = img.getSettings();
+				parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,num+img.getTitle(), sett.getFileEnding()).getPath());
 				out.putNextEntry(null, parameters);
 				sett.saveToXML(out);
 				out.closeEntry();
@@ -90,74 +188,27 @@ public class Image2DImportExportUtil {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
-	        // export xmatrix
-			// intensity matrix
-	        if(MDDataset.class.isInstance(images[0].getData())) {
-	        	if(((MDDataset)images[0].getData()).hasXData()) {
-		            String xmatrix = images[0].toXCSV(true, SEPARATION, false);
-		    		try {
-						parameters.setFileNameInZip("xmatrix.csv");
-						out.putNextEntry(null, parameters);
-		    			byte[] data = xmatrix.getBytes();
-		    			out.write(data, 0, data.length);
-		    			out.closeEntry();
-		    		} catch (ZipException e) {
-		    			// TODO Auto-generated catch block
-		    			e.printStackTrace();
-		    		} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	        	}
-	        }
-	        // for all images:
-	        NumberFormat format = new DecimalFormat("0000");
-	        int c = 0;
-	        for(Image2D img : images) {	
-	        	c++;
-	        	String num = format.format(c)+"_";
-	        	try {
-		        	// export ymatrix
-					String matrix = img.toICSV(true, SEPARATION, false);
-					parameters.setFileNameInZip(num+img.getTitle()+".csv");
-					out.putNextEntry(null, parameters);
-					byte[] data = matrix.getBytes();
-					out.write(data, 0, data.length);
-					out.closeEntry();
-					
-		        	// export settings
-					Settings sett = img.getSettings();
-					parameters.setFileNameInZip(FileAndPathUtil.addFormat(num+img.getTitle(), sett.getFileEnding()));
-					out.putNextEntry(null, parameters);
-					sett.saveToXML(out);
-					out.closeEntry();
-				} catch (ZipException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-	        }
-	        // for all overlays
-	        Collectable2D[] c2d = group.getOtherThanImagesOnly();
-	        for(Collectable2D img : c2d) {	
-	        	try {
-		        	// export settings
-					Settings sett = img.getSettings();
-					parameters.setFileNameInZip(FileAndPathUtil.addFormat(img.getTitle(), sett.getFileEnding()));
-					out.putNextEntry(null, parameters);
-					sett.saveToXML(out);
-					out.closeEntry();
-				} catch (ZipException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-	        }
-	        
-	        try {
-				File bg = group.getBGImagePath();
-				if(bg!=null) {
+		}
+		// for all overlays
+		Collectable2D[] c2d = group.getOtherThanImagesOnly();
+		for(Collectable2D img : c2d) {	
+			try {
+				// export settings
+				Settings sett = img.getSettings();
+				parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,img.getTitle(), sett.getFileEnding()).getPath());
+				out.putNextEntry(null, parameters);
+				sett.saveToXML(out);
+				out.closeEntry();
+			} catch (ZipException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		try {
+			File bg = group.getBGImagePath();
+			if(bg!=null) {
 				BufferedImage bgi = (BufferedImage)group.getBGImage();
 				if(bgi!=null) {
 					parameters.setFileNameInZip(bg.getName());
@@ -165,91 +216,177 @@ public class Image2DImportExportUtil {
 					ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
 					out.closeEntry();
 				}
+			}
+		} catch (ZipException e) {
+			e.printStackTrace();
+		} 
+	}
+
+	/**
+	 * saves an imageGroup to one file
+	 * @param group
+	 * @param file
+	 * @throws IOException
+	 */
+	public static void writeToStandardZip(ImageGroupMD group, File file) throws IOException {
+		// parameters
+		ZipParameters parameters = new ZipParameters();
+		parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
+
+		//DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
+		//DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
+		//DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
+		//DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
+		//DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
+		parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
+
+
+		// zip file 
+		parameters.setSourceExternalStream(true); 
+		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
+		
+		// write group
+		writeImageGroupToZip(out, parameters, group, new File(group.getName()));
+		
+		try {
+			out.finish();
+		} catch (ZipException e) {
+			e.printStackTrace();
+		}
+		// end 
+		out.close();
+
+
+		//	        // copy existing files directly
+		//			try {
+		//				ZipFile zipFile = new ZipFile(file);
+		//		        // copy background image over
+		//				File bg = group.getBGImagePath();
+		//				
+		//				if(bg!=null && bg.exists()) {
+		//					parameters.setFileNameInZip(bg.getName());
+		//					zipFile.addFile(bg, parameters);
+		//				}
+		//			} catch (ZipException e1) {
+		//				e1.printStackTrace();
+		//			}
+	}
+
+	/**
+	 * read x, read y dimensions and settings
+	 * @param f
+	 * @return
+	 * @throws IOException
+	 */
+	public static ImageGroupMD readFromStandardZip(File f) throws IOException {
+		// read files from zip
+		Map<String, InputStream> files = ZipUtil.readZip(f);
+		// try to find xmatrix
+		ArrayList<ScanLineMD> lines = new ArrayList<ScanLineMD>();
+		ArrayList<SettingsImage2D> settings = new ArrayList<SettingsImage2D>();
+
+		// only setting sno data for iamge overlays
+		ArrayList<SettingsImageOverlay> overlays = new ArrayList<SettingsImageOverlay>();
+
+		// background image
+		Image bgimg = null;
+		File bgFile = null;
+		//
+		InputStream is = files.get("xmatrix.csv");
+		if(is!=null) {
+			ImageEditorWindow.log("reading x", LOG.MESSAGE);
+			ArrayList<Float>[] x = null;
+
+			// line by line add datapoints to current Scanlines
+			BufferedReader br = null;
+			try {
+				br = txtWriter.getBufferedReader(is);
+				String sline;
+				int k = 0;
+				while ((sline = br.readLine()) != null) {
+					// try to seperate by seperation
+					String[] sep = sline.split(SEPARATION);
+					// data
+					if(sep.length>0) {
+						if(x==null) {
+							//create new array
+							x = new ArrayList[sep.length];
+							for(int i=0; i<sep.length; i++) {
+								x[i] = new ArrayList<Float>();
+								x[i].add(Float.valueOf(sep[i]));
+							}
+						}
+						else {
+							for(int i=0; i<x.length; i++) {
+								x[i].add(Float.valueOf(sep[i]));
+							}
+						}
+					}
 				}
-			} catch (ZipException e) {
+				// create new lines and set x
+				for(ArrayList<Float> xi : x) {
+					lines.add(new ScanLineMD(xi));
+				}
+			} catch (IOException e) {
 				e.printStackTrace();
-			} finally {
-		        try {
-		        	out.finish();
-		        } catch (ZipException e) {
+			}
+			finally {
+				try {
+					if(br!=null) br.close();
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-	        
-	        // end 
-			out.close();
-
-	        
-//	        // copy existing files directly
-//			try {
-//				ZipFile zipFile = new ZipFile(file);
-//		        // copy background image over
-//				File bg = group.getBGImagePath();
-//				
-//				if(bg!=null && bg.exists()) {
-//					parameters.setFileNameInZip(bg.getName());
-//					zipFile.addFile(bg, parameters);
-//				}
-//			} catch (ZipException e1) {
-//				e1.printStackTrace();
-//			}
+			ImageEditorWindow.log("reading x (FINISHED)", LOG.MESSAGE);
 		}
+		// settings
+		SettingsImage2D sett = new SettingsImage2D();
 
-		/**
-		 * read x, read y dimensions and settings
-		 * @param f
-		 * @return
-		 * @throws IOException
-		 */
-		public static ImageGroupMD readFromStandardZip(File f) throws IOException {
-			// read files from zip
-			Map<String, InputStream> files = ZipUtil.readZip(f);
-			// try to find xmatrix
-			ArrayList<ScanLineMD> lines = new ArrayList<ScanLineMD>();
-			ArrayList<SettingsImage2D> settings = new ArrayList<SettingsImage2D>();
-			
-			// only setting sno data for iamge overlays
-			ArrayList<SettingsImageOverlay> overlays = new ArrayList<SettingsImageOverlay>();
-			
-			// background image
-			Image bgimg = null;
-			File bgFile = null;
-			//
-			InputStream is = files.get("xmatrix.csv");
-			if(is!=null) {
-	            ImageEditorWindow.log("reading x", LOG.MESSAGE);
-				ArrayList<Float>[] x = null;
+		// y data
+		for (String fileName : files.keySet()) {
+			if(!fileName.equals("xmatrix.csv") && fileName.endsWith(".csv")) {
+				ImageEditorWindow.log("reading file: "+fileName, LOG.MESSAGE);
+				System.out.println("read file: " + fileName);
 
-				// line by line add datapoints to current Scanlines
+				ArrayList<Double>[] y = null;
+
 				BufferedReader br = null;
 				try {
-					br = txtWriter.getBufferedReader(is);
+					br = txtWriter.getBufferedReader(files.get(fileName));
 					String sline;
 					int k = 0;
 					while ((sline = br.readLine()) != null) {
 						// try to seperate by seperation
 						String[] sep = sline.split(SEPARATION);
 						// data
-						if(sep.length>0) {
-							if(x==null) {
+						if(sep.length>1) {
+							if(y==null) {
 								//create new array
-								x = new ArrayList[sep.length];
+								y = new ArrayList[sep.length];
 								for(int i=0; i<sep.length; i++) {
-									x[i] = new ArrayList<Float>();
-									x[i].add(Float.valueOf(sep[i]));
+									y[i] = new ArrayList<Double>();
+									y[i].add(Double.valueOf(sep[i]));
 								}
 							}
 							else {
-								for(int i=0; i<x.length; i++) {
-									x[i].add(Float.valueOf(sep[i]));
+								// add data
+								for(int i=0; i<y.length; i++) {
+									y[i].add(Double.valueOf(sep[i]));
 								}
 							}
 						}
 					}
-					// create new lines and set x
-					for(ArrayList<Float> xi : x) {
-						lines.add(new ScanLineMD(xi));
-					}
+					// create new lines 
+					// lines size can be 0, 1 or the length of y 
+					// depending on the x matrix
+					if(lines.size()<y.length)
+						for(int i=lines.size(); i<y.length; i++)
+							lines.add(new ScanLineMD());
+
+					// set dimensions
+					for(int i=0; i<y.length && i<lines.size(); i++)
+						lines.get(i).addDimension(y[i]);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -260,143 +397,83 @@ public class Image2DImportExportUtil {
 						e.printStackTrace();
 					}
 				}
-	            ImageEditorWindow.log("reading x (FINISHED)", LOG.MESSAGE);
+
+				// load the correct settings file
+				InputStream isSett = files.get(FileAndPathUtil.getRealFileName(fileName, sett.getFileEnding()));
+				if(isSett!=null) {
+					ImageEditorWindow.log("reading settings file of: "+fileName, LOG.MESSAGE);
+					System.out.println("read settings file of: " + fileName);
+
+					settings.add(new SettingsImage2D());
+					settings.get(settings.size()-1).loadFromXML(isSett);
+				}
 			}
+			else if(SettingsHolder.getSettings().getSetGeneralPreferences().getFilePicture().accept(new File(fileName))) {
+				// add as microscopic image
+				try {
+					bgimg = ImageIO.read(files.get(fileName));
+					bgFile = new File(fileName);
+				} catch (Exception e) {
+					e.printStackTrace();
+					ImageEditorWindow.log("ERROR: Cannot load microscopic image: "+fileName+"\n"+e.getMessage(), LOG.ERROR);
+				}
+			}
+		}
+
+
+		// add new Image to image group
+		if(lines.size()>0) {
+			DatasetMD data = new DatasetMD(lines);
+			ImageGroupMD group = data.createImageGroup();
+			// add bg image
+			if(bgimg!=null) {
+				group.setBackgroundImage(bgimg, bgFile);
+			}
+
+			// set settings to images
+			for(int i=0; i<group.getImages().size(); i++)
+				((Image2D)group.getImages().get(i)).setSettings(settings.get(i));
+
+
+			// image overlays
 			// settings
-			SettingsImage2D sett = new SettingsImage2D();
+			SettingsImageOverlay tmpov = new SettingsImageOverlay();
 
 			// y data
-	        for (String fileName : files.keySet()) {
-	        	if(!fileName.equals("xmatrix.csv") && fileName.endsWith(".csv")) {
-		            ImageEditorWindow.log("reading file: "+fileName, LOG.MESSAGE);
-	        		System.out.println("read file: " + fileName);
-	        		
-					ArrayList<Double>[] y = null;
-	        		
-	        		BufferedReader br = null;
-					try {
-						br = txtWriter.getBufferedReader(files.get(fileName));
-						String sline;
-						int k = 0;
-						while ((sline = br.readLine()) != null) {
-							// try to seperate by seperation
-							String[] sep = sline.split(SEPARATION);
-							// data
-							if(sep.length>1) {
-								if(y==null) {
-									//create new array
-									y = new ArrayList[sep.length];
-									for(int i=0; i<sep.length; i++) {
-										y[i] = new ArrayList<Double>();
-										y[i].add(Double.valueOf(sep[i]));
-									}
-								}
-								else {
-									// add data
-									for(int i=0; i<y.length; i++) {
-										y[i].add(Double.valueOf(sep[i]));
-									}
-								}
-							}
-						}
-						// create new lines 
-						// lines size can be 0, 1 or the length of y 
-						// depending on the x matrix
-						if(lines.size()<y.length)
-							for(int i=lines.size(); i<y.length; i++)
-								lines.add(new ScanLineMD());
-						
-						// set dimensions
-						for(int i=0; i<y.length && i<lines.size(); i++)
-								lines.get(i).addDimension(y[i]);
-						
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					finally {
-						try {
-							if(br!=null) br.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
+			for (String fileName : files.keySet()) {
+				if(fileName.endsWith(tmpov.getFileEnding())) {
+					ImageEditorWindow.log("reading overlay file: "+fileName, LOG.MESSAGE);
+					System.out.println("read overlay file: " + fileName);
 
-					// load the correct settings file
-					InputStream isSett = files.get(FileAndPathUtil.getRealFileName(fileName, sett.getFileEnding()));
-					if(isSett!=null) {
-			            ImageEditorWindow.log("reading settings file of: "+fileName, LOG.MESSAGE);
-		        		System.out.println("read settings file of: " + fileName);
-		        		
-						settings.add(new SettingsImage2D());
-						settings.get(settings.size()-1).loadFromXML(isSett);
-		        	}
-	        	}
-	        	else if(SettingsHolder.getSettings().getSetGeneralPreferences().getFilePicture().accept(new File(fileName))) {
-	        		// add as microscopic image
-	        		try {
-		        		bgimg = ImageIO.read(files.get(fileName));
-		        		bgFile = new File(fileName);
+					// 
+					InputStream isSett = files.get(fileName);
+					SettingsImageOverlay settov = new SettingsImageOverlay();
+					settov.loadFromXML(isSett);
+
+					ImageOverlay newov;
+					try {
+						newov = new ImageOverlay(group, settov);
+						group.add(newov);
 					} catch (Exception e) {
 						e.printStackTrace();
-						ImageEditorWindow.log("ERROR: Cannot load microscopic image: "+fileName+"\n"+e.getMessage(), LOG.ERROR);
 					}
-	        	}
-	        }
-	        
-
-			// add new Image to image group
-			if(lines.size()>0) {
-				DatasetMD data = new DatasetMD(lines);
-				ImageGroupMD group = data.createImageGroup();
-				// add bg image
-				if(bgimg!=null) {
-					group.setBackgroundImage(bgimg, bgFile);
 				}
-				
-				// set settings to images
-				for(int i=0; i<group.getImages().size(); i++)
-					((Image2D)group.getImages().get(i)).setSettings(settings.get(i));
-		        
-
-		        // image overlays
-				// settings
-				SettingsImageOverlay tmpov = new SettingsImageOverlay();
-
-				// y data
-		        for (String fileName : files.keySet()) {
-		        	if(fileName.endsWith(tmpov.getFileEnding())) {
-			            ImageEditorWindow.log("reading overlay file: "+fileName, LOG.MESSAGE);
-		        		System.out.println("read overlay file: " + fileName);
-		        		
-		        		// 
-		        		InputStream isSett = files.get(fileName);
-		        		SettingsImageOverlay settov = new SettingsImageOverlay();
-						settov.loadFromXML(isSett);
-						
-						ImageOverlay newov;
-						try {
-							newov = new ImageOverlay(group, settov);
-							group.add(newov);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-		        	}
-		        }
-		        // load group settings
-				InputStream isSett = files.get(FileAndPathUtil.getRealFileName("group", group.getSettings().getFileEnding()));
-				if(isSett!=null) {
-		            ImageEditorWindow.log("reading settings file of: "+group, LOG.MESSAGE);
-	        		System.out.println("read settings file of: " + group);
-	        		
-					group.getSettings().loadFromXML(isSett);
-	        	}
-		        // return group
-		        return group;
 			}
-			return null;
+			// load group settings
+			InputStream isSett = files.get(FileAndPathUtil.getRealFileName("group", group.getSettings().getFileEnding()));
+			if(isSett!=null) {
+				ImageEditorWindow.log("reading settings file of: "+group, LOG.MESSAGE);
+				System.out.println("read settings file of: " + group);
+
+				group.getSettings().loadFromXML(isSett);
+			}
+			// return group
+			return group;
 		}
-		
-		
+		return null;
+	}
+
+
 	//######################################################################################
 	// TEXT BASED
 	/**
@@ -453,7 +530,7 @@ public class Image2DImportExportUtil {
 
 		ModeData mode = sett.getModeData();
 		int xmatrix = -1;
-		
+
 		if(mode.equals(ModeData.X_MATRIX_STANDARD)) {
 			// search for xmatrix.csv
 
@@ -495,11 +572,11 @@ public class Image2DImportExportUtil {
 		// store data in ArrayList
 		// x[line].get(dp)
 		ArrayList<ScanLineMD> scanLines = new ArrayList<ScanLineMD>();
-		  
-				ArrayList<String> meta = new ArrayList<String>();  
-				ArrayList<String> titles = new ArrayList<String>();
-				ArrayList<File> flist = new ArrayList<File>();
-		
+
+		ArrayList<String> meta = new ArrayList<String>();  
+		ArrayList<String> titles = new ArrayList<String>();
+		ArrayList<File> flist = new ArrayList<File>();
+
 		// one file is one dimension (image) of scanLines
 		for(int f=0; f<files.length; f++) {
 			// skip xmatrix
@@ -511,7 +588,7 @@ public class Image2DImportExportUtil {
 				// for metadata collection if selected in settings
 				String metadata = "";
 				String title = "";
-	
+
 				// read text file 
 				// line by line
 				BufferedReader br = txtWriter.getBufferedReader(file);
@@ -644,7 +721,7 @@ public class Image2DImportExportUtil {
 						break;
 						//TODO
 					}
-	
+
 				}
 				titles.add(title);
 				meta.add(metadata);
@@ -668,7 +745,7 @@ public class Image2DImportExportUtil {
 	public static ImageGroupMD importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
 		// reset title line
 		titleLine = null;
-		
+
 		ArrayList<ScanLineMD> lines;
 		if(sett.getModeImport()==IMPORT.PRESETS_THERMO_NEPTUNE)
 			lines = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles);
@@ -685,12 +762,12 @@ public class Image2DImportExportUtil {
 		// for all images
 		boolean continuous = sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV);
 		boolean hardsplit = continuous && sett.isUseHardSplit() && !(sett.getSplitAfter()==0 || sett.getSplitAfter()==-1);
-		
+
 		ImageGroupMD group = new ImageGroupMD();
 		// set data path and name
 		group.getSettings().setName((parent.getName()));
 		group.getSettings().setPathData(parent.getAbsolutePath());
-		
+
 		// add images
 		Image2D realImages[] = new Image2D[lines.get(0).getImageCount()];
 		ImageDataset data = null;
@@ -704,7 +781,7 @@ public class Image2DImportExportUtil {
 			// add to group (also sets the group for this image)
 			group.add(realImages[i]);
 		}
-		
+
 		if(continuous && !hardsplit) {
 			// set split settings for continuous data (non hardsplit)
 			DatasetContinuousMD data2 = (DatasetContinuousMD)data;
@@ -735,7 +812,7 @@ public class Image2DImportExportUtil {
 			files = FileAndPathUtil.sortFilesByNumber(files);
 		// images (getting created at first data reading)
 		ArrayList<ScanLineMD> lines=null; 
-		
+
 		// excluded columns
 		List<Integer> excludedCol = sett.getExcludeColumnsArray();
 		// calc fist used column
@@ -746,7 +823,7 @@ public class Image2DImportExportUtil {
 				else break;
 			}
 		}
-		
+
 		// perform hardsplit
 		boolean continuous = sett.getModeImport().equals(IMPORT.CONTINOUS_DATA_TXT_CSV);
 		boolean hardsplit = continuous && sett.isUseHardSplit() && !(sett.getSplitAfter()==0 || sett.getSplitAfter()==-1);
@@ -754,7 +831,7 @@ public class Image2DImportExportUtil {
 		boolean scanLinesSkipped = !hardsplit;
 		float startX = 0;
 		int cDP = 0;
-		
+
 		// file after file open text file
 		// start with starting line
 		for(int i=(sett.getStartLine()==0 || continuous? 0 : sett.getStartLine()-1); i<files.length && (sett.getEndLine()==0 || i<=sett.getEndLine()); i++) {
@@ -799,7 +876,7 @@ public class Image2DImportExportUtil {
 						}
 						colCount +=  -(sett.isNoXData()? 0:1);
 						iList = new ArrayList[colCount]; 
-						
+
 						// set titles only once
 						if(titleLine==null && lastLine!=null && lastLine.length==sep.length) {
 							int img = 1;
@@ -825,7 +902,7 @@ public class Image2DImportExportUtil {
 								}
 							}
 						}
-						
+
 						// has X data?
 						if(!sett.isNoXData()) {
 							x = new ArrayList<Float>(); 
@@ -893,26 +970,26 @@ public class Image2DImportExportUtil {
 							}
 						}
 					}
-					
+
 					// hardsplit continuous data
 					if(hardsplit && (x==null || x.size()>1)) {
 						// split after DP   / split after time
 						boolean endOfLine = false;
 						if(XUNIT.DP.equals(sett.getSplitUnit())) 
 							endOfLine = dp>=sett.getSplitAfterDP();
-						else {
-							float xstart = x.get(0);
-							float cx = x.get(lines.size()-1);
-							int currentLine = lines==null? 1 : lines.size()+1;
-							endOfLine = (cx-xstart)>=sett.getSplitAfter()*currentLine;
-						}  
+							else {
+								float xstart = x.get(0);
+								float cx = x.get(lines.size()-1);
+								int currentLine = lines==null? 1 : lines.size()+1;
+								endOfLine = (cx-xstart)>=sett.getSplitAfter()*currentLine;
+							}  
 						// has reached end of line
 						if(endOfLine) {
 							// add line
 							// init lines ArrayList
 							if(lines==null)
 								lines = new ArrayList<ScanLineMD>(); 
-				
+
 							// add new line
 							lines.add(new ScanLineMD()); 
 							// add data to line
@@ -931,7 +1008,7 @@ public class Image2DImportExportUtil {
 							// reset lists
 							if(x!=null)
 								x.clear();
-							
+
 							// enough lines?
 							if(lines.size()>=sett.getEndLine() && sett.getEndLine()!=0)
 								return lines;
@@ -955,7 +1032,7 @@ public class Image2DImportExportUtil {
 				// init lines ArrayList
 				if(lines==null)
 					lines = new ArrayList<ScanLineMD>(); 
-	
+
 				// add new line
 				lines.add(new ScanLineMD()); 
 				// add data to line
@@ -1067,7 +1144,7 @@ public class Image2DImportExportUtil {
 					int lineCount = sep.length-valueindex;
 					if(sett.getEndLine()!=0 && lineCount>sett.getEndLine()) lineCount = sett.getEndLine();
 					lineCount -= sett.getStartLine();
-					
+
 					iList = new ArrayList[lineCount];
 					for(int i=0; i<iList.length; i++) {
 						iList[i] = new ArrayList<Double>();

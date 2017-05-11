@@ -20,6 +20,7 @@ public class FileAndPathUtil {
 	public static File getRealFilePath(File path, String name, String format) { 
 		return new File(getFileAsFolder(path), getRealFileName(name, format));
 	} 
+
 	/**
 	 * Returns the real file path as path/filename.fileformat
 	 * @param file

@@ -44,6 +44,12 @@ public class ImageGroupMD  implements Serializable {
 		settings = new SettingsImageGroup();
 		images = new ArrayList<Collectable2D>();
 		add(img);
+		if(Image2D.class.isInstance(img)) {
+			Image2D i = ((Image2D)img);
+			settings.setName(i.getSettings().getSettImage().getRAWFolder()!=null? i.getSettings().getSettImage().getRAWFolderName():
+				i.getSettings().getSettImage().getRAWFileName()); 
+		}
+		else settings.setName(img.getTitle());
 	}
 	public ImageGroupMD(Collectable2D[] img) {
 		settings = new SettingsImageGroup();

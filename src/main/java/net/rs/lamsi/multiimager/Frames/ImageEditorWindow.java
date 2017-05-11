@@ -232,6 +232,28 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		final JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
 
+		// open save project
+		JMenuItem mntmOpenProject = new JMenuItem("Open project");
+		mntmOpenProject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// load in logicRunner
+				logicRunner.loadProjectFromFile();
+			}
+		});
+		mntmOpenProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		mnFile.add(mntmOpenProject);
+
+		JMenuItem mntmSaveProject = new JMenuItem("Save project file");
+		mntmSaveProject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// save in logicRunner  
+				logicRunner.saveProjectToFile();
+			}
+		});
+		mntmSaveProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		mnFile.add(mntmSaveProject);
+		
+		// open save image2d
 		JMenuItem mntmOpenImage = new JMenuItem("Open image");
 		mntmOpenImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -239,7 +261,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				logicRunner.loadImage2DFromFile();
 			}
 		});
-		mntmOpenImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		mntmOpenImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK+ InputEvent.SHIFT_MASK));
 		mnFile.add(mntmOpenImage);
 
 		JMenuItem mntmSaveImage = new JMenuItem("Save image file");
@@ -249,7 +271,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				logicRunner.saveImage2DToFile();
 			}
 		});
-		mntmSaveImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		mntmSaveImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK+InputEvent.SHIFT_MASK));
 		mnFile.add(mntmSaveImage);
 
 		JSeparator separator = new JSeparator();

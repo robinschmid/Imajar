@@ -343,20 +343,59 @@ public class ImageLogicRunner {
 	}
 
 	// saves selected Image to file
+	public void saveProjectToFile() {
+		saveImage2DAndProjectToFile(preferences.getFileTFProject());
+	}
 	public void saveImage2DToFile() {
-		if (selectedImage !=null && preferences.getFcSave().showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {   
+		saveImage2DAndProjectToFile(preferences.getFileTFImage2D());
+	}
+	private void saveImage2DAndProjectToFile(FileTypeFilter filter) {
+		// save filter type (image2d or project)
+		preferences.getFcSave().setFileFilter(filter);
+		if (selectedImage !=null && preferences.getFcSave().showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+			filter = (FileTypeFilter) preferences.getFcSave().getFileFilter();
 			File file = preferences.getFcSave().getSelectedFile();
-			file = preferences.getFileTFImage2D().addExtensionToFileName(file);
-			// save Image2D to file
-			ImageGroupMD group = selectedImage.getImageGroup();
-			if(group==null)
-				group = new ImageGroupMD(selectedImage);
-			try {
-				Image2DImportExportUtil.writeToStandardZip(group, file);
-				preferences.addImage2DImportExportPath(file);
-			} catch (IOException e) {
-				e.printStackTrace();
-				ImageEditorWindow.log("Error while writing "+file.getAbsolutePath()+"\n"+e.getMessage(), LOG.ERROR);
+			file = filter.addExtensionToFileName(file);
+			if(filter.getExtension().equals("image2d")) {
+				// save group to image2d
+				ImageGroupMD group = selectedImage.getImageGroup();
+				
+				boolean noGroup = group == null;
+				if(noGroup)
+					group = new ImageGroupMD(selectedImage);
+				try {
+					Image2DImportExportUtil.writeToStandardZip(group, file);
+					preferences.addImage2DImportExportPath(file);
+				} catch (IOException e) {
+					e.printStackTrace();
+					ImageEditorWindow.log("Error while writing "+file.getAbsolutePath()+"\n"+e.getMessage(), LOG.ERROR);
+				}
+				
+				if(noGroup)
+					selectedImage.setImageGroup(null);
+			}
+			else {
+				// save project to img2dproject
+				boolean noGroup = selectedImage.getImageGroup()==null;
+				if(noGroup)
+					new ImageGroupMD(selectedImage);
+					
+				ImagingProject project = selectedImage.getImageGroup().getProject();
+				boolean noProject = project==null;
+				if(noProject)
+					project = new ImagingProject(selectedImage.getImageGroup());
+				try {
+					Image2DImportExportUtil.writeToStandardZip(project, file);
+					preferences.addImage2DImportExportPath(file);
+				} catch (IOException e) {
+					e.printStackTrace();
+					ImageEditorWindow.log("Error while writing "+file.getAbsolutePath()+"\n"+e.getMessage(), LOG.ERROR);
+				}
+
+				if(noProject)
+					selectedImage.getImageGroup().setProject(null);
+				if(noGroup)
+					selectedImage.setImageGroup(null);
 			}
 		}
 	}
@@ -365,7 +404,15 @@ public class ImageLogicRunner {
 	 * opens a file chooser and
 	 * loads own format image2D
 	 */
+	public void loadProjectFromFile() {
+		loadImage2DAndProjectFromFile(preferences.getFileTFProject());
+	}
 	public void loadImage2DFromFile() {
+		loadImage2DAndProjectFromFile(preferences.getFileTFImage2D());
+	}
+	private void loadImage2DAndProjectFromFile(FileTypeFilter filter) {
+		// load filter type (image2d or project)
+		preferences.getFcOpen().setFileFilter(filter);
 		if (preferences.getFcOpen().showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {   
 			final File[] files = preferences.getFcOpen().getSelectedFiles(); 
 			
@@ -379,21 +426,40 @@ public class ImageLogicRunner {
 					//
 					// load file  
 					if(files.length>0) { 
+						// import all projects first
+						try {
+							// All files in fileList
+							for(File f : files) {
+								if(preferences.getFileTFProject().accept(f)) {
+									loadProjectFromFile(f);
+									// Progress:
+									addProgressStep(1); 
+								}
+							} 
+						} catch(Exception ex) {
+							ex.printStackTrace();
+						} finally {
+							ProgressDialog.getInst().setVisibleDialog(false);
+						}
+						
+						// import all groups (image2D)
 						// choose project dialog
 						ImagingProject project = DialogChooseProject.choose(treeImg.getSelectedProject(), treeImg); 
 						
 						try {
 							// All files in fileList
 							for(File f : files) {
+								if(preferences.getFileTFImage2D().accept(f)) {
 								loadImage2DFromFile(f, project);
 								// Progress:
 								addProgressStep(1); 
+								}
 							} 
-							// save changes
-							preferences.saveChanges();
 						} catch(Exception ex) {
 							ex.printStackTrace();
 						} finally {
+							// save changes
+							preferences.saveChanges();
 							ProgressDialog.getInst().setVisibleDialog(false);
 						}
 					}
@@ -404,6 +470,30 @@ public class ImageLogicRunner {
 		}
 	}
 
+	/**
+	 * loads own format image2D
+	 * set no project
+	 * @param project 
+	 */
+	public void loadProjectFromFile(File f) { 
+		// image
+		if(preferences.getFileTFProject().accept(f)) {
+			try {
+				// load image group from file 
+				ImagingProject project = Image2DImportExportUtil.readProjectFromStandardZip(f);
+				if(project!=null) {
+					addProject(project);
+					preferences.addImage2DImportExportPath(f, false);
+				}
+
+			}catch(Exception ex) {
+				ex.printStackTrace();
+				// Dialog
+				ImageEditorWindow.log("Error while reading "+f.getAbsolutePath()+"\n"+ex.getMessage(), LOG.ERROR);
+				JOptionPane.showMessageDialog(window, "Cannot load image file "+f.getPath()+"; "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
+			}
+		} 
+	} 
 
 	/**
 	 * loads own format image2D
@@ -412,7 +502,7 @@ public class ImageLogicRunner {
 	 */
 	public void loadImage2DFromFile(File f, ImagingProject project) { 
 		// image
-		if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase(preferences.getFileTFImage2D().getExtension())) {
+		if(preferences.getFileTFImage2D().accept(f)) {
 			try {
 				// load image group from file 
 				ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f);
@@ -420,9 +510,9 @@ public class ImageLogicRunner {
 					if(project!=null)
 						project.add(img);
 					addGroup(img, project);
+					preferences.addImage2DImportExportPath(f, false);
 				}
 
-				preferences.addImage2DImportExportPath(f, false);
 			}catch(Exception ex) {
 				ex.printStackTrace();
 				// Dialog

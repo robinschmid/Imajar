@@ -33,12 +33,12 @@ public class SettingsGeneralPreferences extends Settings {
     //private File fcOpen, fcImportPicture, fcImport, fcSave;
 
 	// Filechooser
-	private JFileChooser fcOpen = new JFileChooser();
-	private JFileChooser fcImportPicture = new JFileChooser();
-	private JFileChooser fcImport = new JFileChooser();
-	private JFileChooser fcSave = new JFileChooser();
-	private FileTypeFilter fileTFImage2D, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
-	private FileTypeFilter filePicture;
+	private final JFileChooser fcOpen = new JFileChooser();
+	private final JFileChooser fcImportPicture = new JFileChooser();
+	private final JFileChooser fcImport = new JFileChooser();
+	private final JFileChooser fcSave = new JFileChooser();
+	private final FileTypeFilter fileTFImage2D, fileTFProject, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
+	private final FileTypeFilter filePicture;
     
     // save a history of image2d imports/exports
     private Vector<File> img2DHistory = new Vector<File>(HISTORY_SIZE);
@@ -52,13 +52,16 @@ public class SettingsGeneralPreferences extends Settings {
 
 		// init filechooser 
 		// add Filter 
-		fileTFImage2D = new FileTypeFilter("image2d", "Image format from this application");
+		fileTFImage2D = new FileTypeFilter("image2d", "Image format of this application");
+		fileTFProject = new FileTypeFilter("img2dproject", "Project format of this application");
 		fcOpen.addChoosableFileFilter(fileTFImage2D);  
-		fcOpen.setFileFilter(fileTFImage2D);
+		fcOpen.addChoosableFileFilter(fileTFProject);  
+		fcOpen.setFileFilter(fileTFProject);
 		fcOpen.setMultiSelectionEnabled(true);
-		
+
 		fcSave.addChoosableFileFilter(fileTFImage2D); 
-		fcSave.setFileFilter(fileTFImage2D);
+		fcSave.addChoosableFileFilter(fileTFProject); 
+		fcSave.setFileFilter(fileTFProject);
 		fcSave.setMultiSelectionEnabled(false);
 
 		String[] txtcsv = {"txt","csv"};
@@ -229,6 +232,11 @@ public class SettingsGeneralPreferences extends Settings {
 
 	public void setImg2DHistory(Vector<File> img2dHistory) {
 		img2DHistory = img2dHistory;
+	}
+
+
+	public FileTypeFilter getFileTFProject() {
+		return fileTFProject;
 	}
 	
 }
