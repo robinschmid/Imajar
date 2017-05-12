@@ -42,11 +42,9 @@ public class MZFileConverter {
 		long endtime = System.currentTimeMillis();
 		System.out.println("ENDED in "+((endtime-starttime)/1000)+" seconds"); 
 		// Hälfte Prog gelaufen:
-		ProgressDialog.addProgressStep(0.5);
 		//
 		//logicRunner.loadMzXMLFile(outputFile);
 		// Nochmal hälfte Progress 
-		ProgressDialog.addProgressStep(0.5);
 		//
 		isReady = true;
 		//p.destroy(); 

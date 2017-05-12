@@ -181,8 +181,6 @@ public class DataSaverFrame extends JFrame {
 				// Save Data to file at path
 				try {
 					// Setup Progressbar
-					ProgressDialog.getInst().setVisibleDialog(true);
-					ProgressDialog.setProgress(0); 
 					// erfolgreich oder nicht gespeichert
 					if(window.saveDataFile(settings.getSetDataSaver(), excelWriter, currentMode))
 						JOptionPane.showMessageDialog(window.getFrame(), "Save of xlsx succeed", "SUCCEED!", JOptionPane.CANCEL_OPTION);
@@ -192,9 +190,7 @@ public class DataSaverFrame extends JFrame {
 					e1.printStackTrace();
 					// TODO open Message popup
 					JOptionPane.showMessageDialog(window.getFrame(), e1.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-				} finally {
-					ProgressDialog.getInst().setVisibleDialog(false);
-				}
+				} 
 			}
 		});
 		

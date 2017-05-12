@@ -71,7 +71,7 @@ public class Heatmap {
 	public Heatmap(IXYZDataset dataset, PlotChartPanel chartPanel,
 			PaintScale[] paintScale, JFreeChart chart, XYPlot plot,
 			//PaintScaleLegend legend, 
-			ImageOverlay image, ImageRenderer renderer, ScaleInPlot scaleInPlot) {
+			ImageOverlay image, ImageRenderer renderer, ScaleInPlot scaleInPlot, ImageTitle shortTitle2) {
 		super();
 		this.dataset = dataset; 
 		this.chartPanel = chartPanel;
@@ -82,6 +82,7 @@ public class Heatmap {
 		this.setImage(image);
 		this.renderer = renderer;
 		this.scaleInPlot = scaleInPlot;
+		this.shortTitle = shortTitle2;
 	}
 
 	public IXYZDataset getDataset() {

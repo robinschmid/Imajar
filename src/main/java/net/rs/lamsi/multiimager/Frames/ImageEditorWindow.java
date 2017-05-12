@@ -355,7 +355,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 								ImagingProject project = DialogChooseProject.choose(getModuleTreeImages().getSelectedProject(), getModuleTreeImages());
 
 								// import file as image2d
-								logicRunner.loadImage2DFromFile(f, project);
+								logicRunner.loadImage2DAndProjectFromFile(f, project);
 							}
 						});
 						mnImportData.setPreferredSize(new Dimension(280, (int)mnImportData.getPreferredSize().getHeight()));
@@ -536,6 +536,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {  
+		// init progres sdialog
+		ProgressDialog.initDialog(this);
 		// init
 		this.setBounds(100, 100, 934, 619);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -776,6 +778,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
 		pnDirectIANorthDisplay.add(horizontalStrut_1);
 		pnDirectIANorthDisplay.setVisible(false);
+		
+		
+		
 	}
 	// END OF CONSTRUCTOR
 	//###############################################################################################

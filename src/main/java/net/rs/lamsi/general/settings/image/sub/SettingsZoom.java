@@ -84,17 +84,27 @@ public class SettingsZoom extends Settings {
 			yrange=new Range(ylower, yu);
 	}
 	
+	@Override
+	public String toString() {
+		if(yrange==null || xrange == null)
+			return "";
+		return "(X: "+xrange.toString()+") (Y: "+yrange.toString()+")";
+	}
 	
 	public Range getXrange() {
 		return xrange;
 	}
-	public void setXrange(Range xrange) {
+	public boolean setXrange(Range xrange) {
+		boolean changed = this.xrange==null? false : this.xrange.equals(xrange);
 		this.xrange = xrange;
+		return changed;
 	}
 	public Range getYrange() {
 		return yrange;
 	}
-	public void setYrange(Range yrange) {
+	public boolean setYrange(Range yrange) {
+		boolean changed = this.yrange==null? false :  this.xrange.equals(xrange);
 		this.yrange = yrange;
+		return changed;
 	}
 }

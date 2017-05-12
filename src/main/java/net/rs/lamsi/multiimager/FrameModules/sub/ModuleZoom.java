@@ -79,6 +79,8 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
 		txtYUpper.setHorizontalAlignment(SwingConstants.RIGHT);
 		panel.add(txtYUpper, "cell 2 2,growx,aligny top");
 		txtYUpper.setColumns(10);
+		
+		setMaxPresets(15);
 	}
 	
 	@Override
@@ -119,13 +121,13 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
 			si = new SettingsZoom();
 			si.resetAll();
 		} 
-		if(si.getXrange()!=null) {
+		
+		if(si.getXrange()!=null && si.getXrange()!=null) {
 			getTxtXLower().setText(String.valueOf(si.getXrange().getLowerBound()));
 			getTxtXUpper().setText(String.valueOf(si.getXrange().getUpperBound()));
-		}
-		if(si.getYrange()!=null) {
 			getTxtYLower().setText(String.valueOf(si.getYrange().getLowerBound()));
 			getTxtYUpper().setText(String.valueOf(si.getYrange().getUpperBound()));
+			writeAllToSettings(si);
 		}
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
@@ -136,13 +138,21 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
 	public SettingsZoom writeAllToSettings(SettingsZoom si) {
 		if(si!=null) {
 			try {
+				// changed?
+				boolean changed = false;
+				
+				// new values
 				double xl = Double.valueOf(getTxtXLower().getText());
 				double xu = Double.valueOf(getTxtXUpper().getText());
-				si.setXrange(new Range(xl, xu));
+				changed = si.setXrange(new Range(xl, xu));
 				
 				xl = Double.valueOf(getTxtYLower().getText());
 				xu = Double.valueOf(getTxtYUpper().getText());
-				si.setYrange(new Range(xl, xu));
+				changed = si.setYrange(new Range(xl, xu)) || changed;
+				
+				// add preset if changed
+				if(changed)
+					addPreset(si, si.toString());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}

@@ -22,7 +22,7 @@ import java.awt.Component;
 import javax.swing.Box;
 
 public class Module extends JPanel {
-	private ModuleMenu menu;
+	protected ModuleMenu menu;
 	private JLabel lbTitle;
 	private JPanel pnOpen;
 	private JPanel pnHidden;

@@ -604,8 +604,6 @@ public class Window {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO
-				ProgressDialog.getInst().setVisibleDialog(true);
-				ProgressDialog.setProgress(500);
 			}
 		});
     	menu.add(menuItem);  

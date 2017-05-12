@@ -40,12 +40,12 @@ public class ImagingProject  implements Serializable {
 		this(); 
 		settings.setName(projectName);
 	}
-	public ImagingProject(ImageGroupMD group) {
-		this();
+	public ImagingProject(ImageGroupMD group, String name) {
+		this(name);
 		add(group);
 	}
-	public ImagingProject(ImageGroupMD[] groups) {
-		this();
+	public ImagingProject(ImageGroupMD[] groups, String name) {
+		this(name);
 		if(groups!=null && groups.length>0) {
 			for(ImageGroupMD i : groups)
 				add(i);
@@ -68,7 +68,7 @@ public class ImagingProject  implements Serializable {
 				c++;
 				i=-1;
 				String name = grp.getName();
-				if(c>2) name = name.substring(0, String.valueOf(c).length()+2);
+				if(c>2) name = name.substring(0, name.length()-String.valueOf(c).length()-2);
 				name += "("+c+")";
 				grp.getSettings().setName(name);
 			}

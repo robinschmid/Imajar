@@ -109,13 +109,21 @@ public class DialogChooseProject  extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						//
-						if(getTxtNewProject().getText().length()>0)
-							createNewProject();
 						setVisible(false);
 					}
 				});
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
+				
+				JButton createNew = new JButton("Create new");
+				createNew.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						//
+						if(createNewProject())
+						setVisible(false);
+					}
+				});
+				buttonPane.add(createNew);
 			}
 		}
 		// wait for this dialog
@@ -134,6 +142,18 @@ public class DialogChooseProject  extends JDialog {
 		return inst.project;
 	}
 
+	/**
+	 * returns a selected or new project
+	 * @param project
+	 * @param tree
+	 * @return
+	 */
+	public static ImagingProject choose(ImagingProject project, ModuleTree tree, String newProject) {
+		inst.init(project, tree, newProject);
+		inst.setVisible(true);
+		return inst.project;
+	}
+
 	private void init(ImagingProject project2, ModuleTree tree2) {
 		if(project2!=null)
 			project = project2;
@@ -143,6 +163,10 @@ public class DialogChooseProject  extends JDialog {
 		else getTxtCurrent().setText("");
 		
 		getTxtNewProject().setText("");
+	}
+	private void init(ImagingProject project2, ModuleTree tree2, String newP) {
+		init(project2, tree2);
+		getTxtNewProject().setText(newP);
 	}
 
 	protected boolean createNewProject() {

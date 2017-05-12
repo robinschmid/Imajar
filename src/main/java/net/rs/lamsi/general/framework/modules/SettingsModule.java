@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
@@ -29,6 +30,8 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 
 	protected T settings; 
 	protected int presetindex = 4;
+	protected ArrayList<JMenuItem> presets;
+	protected int maxPresets = -1;
 	
 	public SettingsModule(String title, boolean westside, Class csettings) { 
 		super(title, westside);
@@ -148,9 +151,46 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 				}
 			}
 		}); 
+		if(presets==null)
+			presets = new ArrayList<JMenuItem>();
+		presets.add (item);
+		if(presets.size()>maxPresets && maxPresets!=-1) {
+			JMenuItem i = presets.remove(0);
+			menu.removeMenuItem(i);
+		}
 		return item;
 	}
 	
+	/**
+	 * adds a preset to the menu
+	 * @param menu
+	 * @param settings
+	 * @param title
+	 * @return
+	 */
+	public JMenuItem addPreset(final T settings, String title) { 
+		// menuitem
+		JMenuItem item = new JMenuItem(title); 
+		menu.addMenuItem(item, presetindex);
+		item.addActionListener(new ActionListener() {  
+			@Override
+			public void actionPerformed(ActionEvent e) { 
+				try {
+					setSettings((T) BinaryWriterReader.deepCopy(settings));
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		}); 
+		if(presets==null)
+			presets = new ArrayList<JMenuItem>();
+		presets.add (item);
+		if(presets.size()>maxPresets && maxPresets!=-1) {
+			JMenuItem i = presets.remove(0);
+			menu.removeMenuItem(i);
+		}
+		return item;
+	}
 	
 
 	// settings changed via load --> menu
@@ -236,5 +276,13 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 
 		public Class getSettingsClass() {
 			return classsettings;
+		}
+
+		public int getMaxPresets() {
+			return maxPresets;
+		}
+
+		public void setMaxPresets(int maxPresets) {
+			this.maxPresets = maxPresets;
 		}
 }

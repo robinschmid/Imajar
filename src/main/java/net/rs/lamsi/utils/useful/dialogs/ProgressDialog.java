@@ -2,6 +2,7 @@ package net.rs.lamsi.utils.useful.dialogs;
 
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -13,18 +14,20 @@ import javax.swing.border.EmptyBorder;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class ProgressDialog extends JDialog {
-	private static ProgressDialog instance;
 	
 	private final JPanel contentPanel = new JPanel();
 	private JProgressBar progressBar;
 
 	private int stepwidth=0;
+	
+	private static JFrame mainframe;
+	private static ArrayList<ProgressDialog> dialogs;
  
 
 	/**
 	 * Create the dialog.
 	 */
-	public ProgressDialog(JFrame mainframe) {
+	public ProgressDialog() {
 		super(mainframe, "Progress Dialog", ModalityType.MODELESS);
 		
 		setBounds(100, 100, 256, 159);
@@ -42,27 +45,44 @@ public class ProgressDialog extends JDialog {
 	    this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); 
 	    
 	    this.pack();
+	    this.setVisible(false);
 	}
 	
-	public static void initDialog(JFrame mainframe) {
-		instance = new ProgressDialog(mainframe);
+	public static void initDialog(JFrame frame) {
+		mainframe = frame;
+		dialogs = new ArrayList<ProgressDialog>(10);
+		for(int i=0; i<10; i++) {
+			dialogs.add(new ProgressDialog());
+		}
 	}
 
 	// Allways a new Task
-	public ProgressUpdateTask startTask(ProgressUpdateTask task) {
-		setVisibleDialog(true);
+	public static ProgressUpdateTask startTask(ProgressUpdateTask task) {
+		ProgressDialog d = getNextAvailableDialog();
+		task.setProgressDialog(d);
+		d.setVisibleDialog(true);
 		
 	    // UpdatingTask  
 		task.execute(); 
 		return task;
 	}
  
-
-	public static void setProgress(int promille) {
-		getInst().getProgressBar().setValue(promille);    
+	private static ProgressDialog getNextAvailableDialog() {
+		for (ProgressDialog d : dialogs) {
+			if(!d.isVisible())
+				return d;
+		}
+		// add new
+		ProgressDialog d = new ProgressDialog();
+		dialogs.add(d);
+		return d;
 	}
-	public static int getProgress() {
-		return getInst().getProgressBar().getValue();  
+
+	public void setProgress(int promille) {
+		getProgressBar().setValue(promille);    
+	}
+	public int getProgress() {
+		return getProgressBar().getValue();  
 	}
 	
 	public void setVisibleDialog(boolean flag) {
@@ -70,22 +90,19 @@ public class ProgressDialog extends JDialog {
 		setVisible(flag);
 	}
 	
-	public static ProgressDialog getInst() {
-		return instance;
-	}
 	public JProgressBar getProgressBar() {
 		return progressBar;
 	}
 
-	public static void addProgressStep(double a) {
-		setProgress(getProgress()+(int)(getInst().getStepwidth()*a));
+	public void addProgressStep(double a) {
+		setProgress(getProgress()+(int)(getStepwidth()*a));
 	}
 	public void setProgressBar(JProgressBar progressBar) {
 		this.progressBar = progressBar;
 	}
 
-	public static void setProgressSteps(int steps) {
-		getInst().setStepWidth(steps);
+	public void setProgressSteps(int steps) {
+		setStepWidth(steps);
 	}
 
 	protected void setStepWidth(int steps) {

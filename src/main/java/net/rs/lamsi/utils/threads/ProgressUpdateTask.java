@@ -11,9 +11,8 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 	ProgressDialog progressDialog;
 	private int stepwidth=0;
 
-	public ProgressUpdateTask(ProgressDialog progressDialog2, int steps) {
+	public ProgressUpdateTask(int steps) {
 		this.setStepWidth(steps);
-		this.progressDialog = progressDialog2;
 		addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -38,14 +37,14 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 	@Override
 	protected void process(java.util.List<Void> chunks) { 
 		super.process(chunks);
-		
 	}
 
 	// Steps 
 	public void addProgressStep(double a) {
-		setProgress(getProgress()+(int)(getStepwidth()*a));
+		int progress = Math.min(getProgress()+(int)(getStepwidth()*a), 100);
+		setProgress(progress);
 
-		int progress = (Integer) getProgress()+(int)(getStepwidth()*a)*10;
+		progress = progress*10;
 		progressDialog.getProgressBar().setValue(progress);
 		progressDialog.validate();
 	} 
@@ -60,5 +59,13 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 	} 
 	public int getStepwidth() {
 		return stepwidth;
+	}
+
+	public ProgressDialog getProgressDialog() {
+		return progressDialog;
+	}
+
+	public void setProgressDialog(ProgressDialog progressDialog) {
+		this.progressDialog = progressDialog;
 	}
 }

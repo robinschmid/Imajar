@@ -70,6 +70,18 @@ public class FileAndPathUtil {
 			return name.substring(0, lastDot); 
 		else return name;
 	}
+	/**
+	 * erases the format. "image.png" will be returned as "image"
+	 * this method is used by getRealFilePath and getRealFileName
+	 * @param name
+	 * @return
+	 */
+	public static File eraseFormat(File f) { 
+		int lastDot = f.getName().lastIndexOf(".");
+		if(lastDot!=-1) 
+			return new File(f.getParent(), f.getName().substring(0, lastDot)); 
+		else return f;
+	}
 	
 	/**
 	 * Adds the format. "image" will be returned as "image.format"

@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
@@ -47,6 +49,9 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.ZipUtil;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
+
 
 public class Image2DImportExportUtil {
 	private static final TxtWriter txtWriter = new TxtWriter();
@@ -62,164 +67,185 @@ public class Image2DImportExportUtil {
 	 * @param file
 	 * @throws IOException
 	 */
-	public static void writeToStandardZip(ImagingProject project, File file) throws IOException {
-		// parameters
-		ZipParameters parameters = new ZipParameters();
-		parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
+	public static void writeToStandardZip(final ImagingProject project, final File file) throws IOException {
+		ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(3) {
+			// Load all Files
+			@Override
+			protected Boolean doInBackground() throws Exception {
+				boolean state = true;
+				// parameters
+				ZipParameters parameters = new ZipParameters();
+				parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
 
-		//DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
-		//DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
-		//DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
-		//DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
-		//DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
-		parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
+				//DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
+				//DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
+				//DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
+				//DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
+				//DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
+				parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 
-		// zip file 
-		parameters.setSourceExternalStream(true); 
-		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
+				// zip file 
+				parameters.setSourceExternalStream(true); 
+				ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
 
-		// save project to file
-		writeProjectToZip(out, parameters, project);
+				// set progress steps
+				setProgressSteps(project.size()+2);
+				
+				// save project to file
 
-		try {
-			out.finish();
-		} catch (ZipException e) {
-			e.printStackTrace();
-		}
-		// end 
-		out.close();
-	}
+				File folder = new File(project.getName());
 
-
-	/**
-	 * write the project to zip
-	 * @param out
-	 * @param parameters
-	 * @param project
-	 */
-	private static void writeProjectToZip(ZipOutputStream out, ZipParameters parameters, ImagingProject project) throws IOException {
-		File folder = new File(project.getName());
-		
-		// write project settings
-		try {
-			Settings sett = project.getSettings();
-			parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"project", sett.getFileEnding()).getPath());
-			out.putNextEntry(null, parameters);
-			sett.saveToXML(out);
-			out.closeEntry();
-		} catch (ZipException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		// write all groups in separate folders
-		for(ImageGroupMD g : project.getGroups())
-			writeImageGroupToZip(out, parameters, g, folder);
-	}
-
-	/**
-	 * write the project to zip
-	 * @param out
-	 * @param parameters
-	 * @param project
-	 */
-	private static void writeImageGroupToZip(ZipOutputStream out, ZipParameters parameters, ImageGroupMD group, File folderParent) throws IOException {
-		Image2D[] images = group.getImagesOnly();
-		
-		File folder = new File(folderParent, group.getName());
-		
-		// export group settings
-		try {
-			Settings sett = group.getSettings();
-			parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"group", sett.getFileEnding()).getPath());
-			out.putNextEntry(null, parameters);
-			sett.saveToXML(out);
-			out.closeEntry();
-		} catch (ZipException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		// export xmatrix
-		// intensity matrix
-		if(MDDataset.class.isInstance(images[0].getData())) {
-			if(((MDDataset)images[0].getData()).hasXData()) {
-				String xmatrix = images[0].toXCSV(true, SEPARATION, false);
+				// write project settings
 				try {
-					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, "xmatrix", "csv").getPath());
+					Settings sett = project.getSettings();
+					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"project", sett.getFileEnding()).getPath());
 					out.putNextEntry(null, parameters);
-					byte[] data = xmatrix.getBytes();
-					out.write(data, 0, data.length);
+					sett.saveToXML(out);
+					out.closeEntry();
+
+					addProgressStep(1);
+				} catch (ZipException e) {
+					e.printStackTrace();
+					state = false;
+				} catch (IOException e) {
+					e.printStackTrace();
+					state = false;
+				}
+				addProgressStep(1);
+
+				// write all groups in separate folders
+				for(ImageGroupMD g : project.getGroups()) {
+					writeImageGroupToZip(out, parameters, g, folder, this);
+				}
+
+				try {
+					out.finish();
+				} catch (ZipException e) {
+					e.printStackTrace();
+					state = false;
+				}
+				// end 
+				out.close();
+
+				addProgressStep(1);
+				return state;
+			}
+		});
+	}
+
+
+	/**
+	 * write the project to zip
+	 * @param out
+	 * @param parameters
+	 * @param task 
+	 * @param project
+	 */
+	private static void writeImageGroupToZip(ZipOutputStream out, ZipParameters parameters, ImageGroupMD group,File folderParent, ProgressUpdateTask task) throws IOException {
+			int steps = 2+group.size()+2;
+			
+				Image2D[] images = group.getImagesOnly();
+
+				File folder = new File(folderParent, group.getName().replace(".", "_"));
+
+				// export group settings
+				try {
+					Settings sett = group.getSettings();
+					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"group", sett.getFileEnding()).getPath());
+					out.putNextEntry(null, parameters);
+					sett.saveToXML(out);
 					out.closeEntry();
 				} catch (ZipException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
-		}
-		// for all images:
-		NumberFormat format = new DecimalFormat("0000");
-		int c = 0;
-		for(Image2D img : images) {	
-			c++;
-			String num = format.format(c)+"_";
-			try {
-				// export ymatrix
-				String matrix = img.toICSV(true, SEPARATION, false);
-				parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, num+img.getTitle(), "csv").getPath());
-				out.putNextEntry(null, parameters);
-				byte[] data = matrix.getBytes();
-				out.write(data, 0, data.length);
-				out.closeEntry();
+				if(task!=null) task.addProgressStep(1.0/steps);
 
-				// export settings
-				Settings sett = img.getSettings();
-				parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,num+img.getTitle(), sett.getFileEnding()).getPath());
-				out.putNextEntry(null, parameters);
-				sett.saveToXML(out);
-				out.closeEntry();
-			} catch (ZipException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		// for all overlays
-		Collectable2D[] c2d = group.getOtherThanImagesOnly();
-		for(Collectable2D img : c2d) {	
-			try {
-				// export settings
-				Settings sett = img.getSettings();
-				parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,img.getTitle(), sett.getFileEnding()).getPath());
-				out.putNextEntry(null, parameters);
-				sett.saveToXML(out);
-				out.closeEntry();
-			} catch (ZipException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		try {
-			File bg = group.getBGImagePath();
-			if(bg!=null) {
-				BufferedImage bgi = (BufferedImage)group.getBGImage();
-				if(bgi!=null) {
-					parameters.setFileNameInZip(bg.getName());
-					out.putNextEntry(null, parameters);
-					ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
-					out.closeEntry();
+				// export xmatrix
+				// intensity matrix
+				if(MDDataset.class.isInstance(images[0].getData())) {
+					if(((MDDataset)images[0].getData()).hasXData()) {
+						String xmatrix = images[0].toXCSV(true, SEPARATION, false);
+						try {
+							parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, "xmatrix", "csv").getPath());
+							out.putNextEntry(null, parameters);
+							byte[] data = xmatrix.getBytes();
+							out.write(data, 0, data.length);
+							out.closeEntry();
+						} catch (ZipException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
-			}
-		} catch (ZipException e) {
-			e.printStackTrace();
-		} 
+				if(task!=null) task.addProgressStep(1.0/steps); 
+				// for all images:
+				NumberFormat format = new DecimalFormat("0000");
+				int c = 0;
+				for(Image2D img : images) {	
+					c++;
+					String num = format.format(c)+"_";
+					try {
+						// export ymatrix
+						String matrix = img.toICSV(true, SEPARATION, false);
+						parameters.setFileNameInZip(new File(folder, num+img.getTitle() + ".csv").getPath());
+						out.putNextEntry(null, parameters);
+						byte[] data = matrix.getBytes();
+						out.write(data, 0, data.length);
+						out.closeEntry();
+						if(task!=null) task.addProgressStep(1.0/steps);
+
+						// export settings
+						Settings sett = img.getSettings();
+						parameters.setFileNameInZip(new File(folder,num+img.getTitle() + "."+ sett.getFileEnding()).getPath());
+						out.putNextEntry(null, parameters);
+						sett.saveToXML(out);
+						out.closeEntry();
+						if(task!=null) task.addProgressStep(1.0/steps);
+					} catch (ZipException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				// for all overlays
+				Collectable2D[] c2d = group.getOtherThanImagesOnly();
+				for(Collectable2D img : c2d) {	
+					try {
+						// export settings
+						Settings sett = img.getSettings();
+						parameters.setFileNameInZip(new File(folder,img.getTitle() + "."+sett.getFileEnding()).getPath());
+						out.putNextEntry(null, parameters);
+						sett.saveToXML(out);
+						out.closeEntry();
+						if(task!=null) task.addProgressStep(1.0/steps);
+					} catch (ZipException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				try {
+					File bg = group.getBGImagePath();
+					if(bg!=null) {
+						BufferedImage bgi = (BufferedImage)group.getBGImage();
+						if(bgi!=null) {
+							parameters.setFileNameInZip(bg.getName());
+							out.putNextEntry(null, parameters);
+							ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
+							out.closeEntry();
+							if(task!=null) task.addProgressStep(1.0/steps);
+						}
+					}
+				} catch (ZipException e) {
+					e.printStackTrace();
+				} 
+				ImageEditorWindow.log("Group "+group.getName()+" successfully written", LOG.MESSAGE);
 	}
 
 	/**
@@ -228,34 +254,46 @@ public class Image2DImportExportUtil {
 	 * @param file
 	 * @throws IOException
 	 */
-	public static void writeToStandardZip(ImageGroupMD group, File file) throws IOException {
-		// parameters
-		ZipParameters parameters = new ZipParameters();
-		parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
+	public static void writeToStandardZip(final ImageGroupMD group, final File file) throws IOException {
+		ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(3) {
+			// Load all Files
+			@Override
+			protected Boolean doInBackground() throws Exception {
+				boolean state = true;
+				// parameters
+				ZipParameters parameters = new ZipParameters();
+				parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE); // set compression method to deflate compression
 
-		//DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
-		//DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
-		//DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
-		//DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
-		//DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
-		parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
+				//DEFLATE_LEVEL_FASTEST     - Lowest compression level but higher speed of compression
+				//DEFLATE_LEVEL_FAST        - Low compression level but higher speed of compression
+				//DEFLATE_LEVEL_NORMAL  - Optimal balance between compression level/speed
+				//DEFLATE_LEVEL_MAXIMUM     - High compression level with a compromise of speed
+				//DEFLATE_LEVEL_ULTRA       - Highest compression level but low speed
+				parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_FAST);
 
 
-		// zip file 
-		parameters.setSourceExternalStream(true); 
-		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
-		
-		// write group
-		writeImageGroupToZip(out, parameters, group, new File(group.getName()));
-		
-		try {
-			out.finish();
-		} catch (ZipException e) {
-			e.printStackTrace();
-		}
-		// end 
-		out.close();
+				// zip file 
+				parameters.setSourceExternalStream(true); 
+				ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
 
+				addProgressStep(1);
+
+				// write group
+				writeImageGroupToZip(out, parameters, group, new File(group.getName()), this);
+
+				try {
+					out.finish();
+				} catch (ZipException e) {
+					e.printStackTrace();
+					state = false;
+				}
+				// end 
+				out.close();
+				addProgressStep(1);
+
+				return state;
+			}
+		});
 
 		//	        // copy existing files directly
 		//			try {
@@ -278,15 +316,37 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws IOException
 	 */
-	public static ImageGroupMD readFromStandardZip(File f) throws IOException {
+	public static ImageGroupMD readFromStandardZip(File f, ProgressUpdateTask task) throws IOException {
 		// read files from zip
 		Map<String, InputStream> files = ZipUtil.readZip(f);
+		try {
+			return readGroup(files, task);
+		}
+		catch(Exception ex) {
+			throw(ex);
+		}
+		finally {
+			for(InputStream is : files.values())
+				is.close();
+		}
+	}
+
+	/**
+	 * 
+	 * @param files
+	 * @param task 
+	 * @return
+	 * @throws IOException 
+	 */
+	private static ImageGroupMD readGroup(Map<String, InputStream> files, ProgressUpdateTask task) throws IOException {
 		// try to find xmatrix
 		ArrayList<ScanLineMD> lines = new ArrayList<ScanLineMD>();
 		ArrayList<SettingsImage2D> settings = new ArrayList<SettingsImage2D>();
 
 		// only setting sno data for iamge overlays
 		ArrayList<SettingsImageOverlay> overlays = new ArrayList<SettingsImageOverlay>();
+		
+		int steps = files.size();
 
 		// background image
 		Image bgimg = null;
@@ -339,6 +399,9 @@ public class Image2DImportExportUtil {
 			}
 			ImageEditorWindow.log("reading x (FINISHED)", LOG.MESSAGE);
 		}
+		// finished x matrix
+		if(task!=null) task.addProgressStep(1.0/steps);
+		
 		// settings
 		SettingsImage2D sett = new SettingsImage2D();
 
@@ -397,9 +460,11 @@ public class Image2DImportExportUtil {
 						e.printStackTrace();
 					}
 				}
-
+				// finished y data
+				if(task!=null) task.addProgressStep(1.0/steps);
+				
 				// load the correct settings file
-				InputStream isSett = files.get(FileAndPathUtil.getRealFileName(fileName, sett.getFileEnding()));
+				InputStream isSett = files.get(FileAndPathUtil.addFormat(fileName.substring(0, fileName.length()-4), sett.getFileEnding()));
 				if(isSett!=null) {
 					ImageEditorWindow.log("reading settings file of: "+fileName, LOG.MESSAGE);
 					System.out.println("read settings file of: " + fileName);
@@ -407,6 +472,8 @@ public class Image2DImportExportUtil {
 					settings.add(new SettingsImage2D());
 					settings.get(settings.size()-1).loadFromXML(isSett);
 				}
+				// finished settings
+				if(task!=null) task.addProgressStep(1.0/steps);
 			}
 			else if(SettingsHolder.getSettings().getSetGeneralPreferences().getFilePicture().accept(new File(fileName))) {
 				// add as microscopic image
@@ -417,6 +484,8 @@ public class Image2DImportExportUtil {
 					e.printStackTrace();
 					ImageEditorWindow.log("ERROR: Cannot load microscopic image: "+fileName+"\n"+e.getMessage(), LOG.ERROR);
 				}
+				// finished microscopic image
+				if(task!=null) task.addProgressStep(1.0/steps);
 			}
 		}
 
@@ -457,6 +526,8 @@ public class Image2DImportExportUtil {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
+					// finished image overlay
+					if(task!=null) task.addProgressStep(1.0/steps);
 				}
 			}
 			// load group settings
@@ -464,15 +535,66 @@ public class Image2DImportExportUtil {
 			if(isSett!=null) {
 				ImageEditorWindow.log("reading settings file of: "+group, LOG.MESSAGE);
 				System.out.println("read settings file of: " + group);
-
 				group.getSettings().loadFromXML(isSett);
 			}
+			// finished group settings
+			if(task!=null) task.addProgressStep(1.0/steps);
 			// return group
 			return group;
 		}
 		return null;
 	}
 
+
+	/**
+	 * read x, read y dimensions and settings
+	 * @param f
+	 * @param task 
+	 * @return
+	 * @throws IOException
+	 */
+	public static ImagingProject readProjectFromStandardZip(File f, ProgressUpdateTask task) throws IOException {
+		// read files from zip
+		// the folders that either contain the projects settings 
+		TreeMap<String, TreeMap<String, InputStream>> folders = ZipUtil.readProjectZip(f);
+
+		// generate project
+		ImagingProject project = new ImagingProject();
+		SettingsImagingProject projectSettings = project.getSettings();
+		String projectSettingsName = "project." + projectSettings.getFileEnding();
+
+		if(task!=null) {
+			task.setProgressSteps(folders.size());
+		}
+		
+		// for all folders
+		for(Entry<String, TreeMap<String, InputStream>> e : folders.entrySet()) {
+			TreeMap<String, InputStream> folder = e.getValue();
+
+			// contains project settings?
+			InputStream projectSettingsIS = folder.get(projectSettingsName);
+			if(projectSettingsIS!=null) {
+				// load settings
+				ImageEditorWindow.log("reading project settings", LOG.MESSAGE);
+				projectSettings.loadFromXML(projectSettingsIS);
+				projectSettingsIS.close();
+				if(task!=null) task.addProgressStep(1);
+			}
+			else {
+				// if not read group
+				try {
+					ImageEditorWindow.log("NEXT Import group "+e.getKey(), LOG.ERROR);
+					ImageGroupMD group = readGroup(folder, task);
+					if(group!=null)
+						project.add(group);
+				} catch (Exception ex) {
+					ImageEditorWindow.log("Can't import group "+e.getKey(), LOG.ERROR);
+					ex.printStackTrace();
+				}
+			}
+		}
+		return project;
+	}
 
 	//######################################################################################
 	// TEXT BASED

@@ -93,7 +93,6 @@ public class OESFileReaderWriter {
     		// For ElementLine
     		for(int i=0; i<oesf.size(); i++) {
     			// Progress:
-    			ProgressDialog.setProgress(1000*(i/(oesf.size()-1)));
     			//
     			OESElementLine el = oesf.get(i);
         		XSSFSheet sheet = writer.getSheet(wb, el.getName());

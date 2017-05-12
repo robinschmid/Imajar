@@ -180,6 +180,10 @@ public class HeatmapFactory {
 			
 			// add scale legend
 			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
+
+			// add short title
+			ImageTitle shortTitle = new ImageTitle(img, setTheme.getFontShortTitle(), setTheme.getcShortTitle(), setTheme.getcBGShortTitle(), false, 0.9f, 0.9f);
+			plot.addAnnotation(shortTitle.getAnnotation());
 			
 			// theme
 			img.getSettTheme().applyToChart(chart);
@@ -188,7 +192,7 @@ public class HeatmapFactory {
 			chart.setBorderVisible(false);
 			 
 			// Heatmap
-			Heatmap heat = new Heatmap(dataset, chartPanel, scales, chart, plot, img, renderer, scaleInPlot);
+			Heatmap heat = new Heatmap(dataset, chartPanel, scales, chart, plot, img, renderer, scaleInPlot, shortTitle);
 			
 			// return Heatmap
 	        return heat;
