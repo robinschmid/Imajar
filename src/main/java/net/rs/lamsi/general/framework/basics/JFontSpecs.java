@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.framework.basics;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ItemListener;
 
@@ -37,6 +38,8 @@ public class JFontSpecs extends JPanel {
 		add(color);
 		color.setColor(Color.WHITE);
 		
+		setPreferredSize(new Dimension(400, 30));
+		setMaximumSize(getPreferredSize());
 	}
 
 
