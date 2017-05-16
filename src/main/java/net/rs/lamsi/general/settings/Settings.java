@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.settings;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -12,6 +13,8 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Vector;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -30,7 +33,9 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
+import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,7 +44,7 @@ import org.w3c.dom.NodeList;
 public abstract class Settings implements Serializable {  
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
-	
+
 	// the super class
 	protected static final String XMLATT_CLASS = "realClass";
 	//
@@ -49,7 +54,7 @@ public abstract class Settings implements Serializable {
 	protected final String description;
 	protected final String path;
 	protected final String fileEnding;
-	
+
 	// change listener
 	protected Vector<SettingsChangedListener> changeListener;
 
@@ -59,7 +64,7 @@ public abstract class Settings implements Serializable {
 		this.fileEnding = fileEnding; 
 		this.description = description;
 	}
-	
+
 	/**
 	 * the super class to find settings in hashmaps
 	 * @return
@@ -88,7 +93,7 @@ public abstract class Settings implements Serializable {
 			changeListener = new Vector<SettingsChangedListener>();
 		changeListener.add(listener);
 	}
-	
+
 	/**
 	 * notifies all change listeners
 	 */
@@ -97,9 +102,39 @@ public abstract class Settings implements Serializable {
 			for(SettingsChangedListener l : changeListener)
 				l.settingsChanged(this);
 	}
-	
+
 	//##################################################################
 	// xml write and read
+
+	/**
+	 * opens a JFileChooser and saves the setting sto the selected file
+	 * @param parent
+	 * @return
+	 * @throws IOException
+	 */
+	public File saveToXML(Component parent) throws IOException {
+		// Open new FC
+		// create Path 
+		File path = new File(FileAndPathUtil.getPathOfJar(), this.getPathSettingsFile());
+		FileAndPathUtil.createDirectory(path);
+		JFileChooser fc = new JFileChooser(path); 
+		FileTypeFilter ffilter = new FileTypeFilter(this.getFileEnding(), "Save settings to");
+		fc.addChoosableFileFilter(ffilter);  
+		fc.setFileFilter(ffilter);
+		// getting the file
+		if (fc.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();  
+			// extention anbringen
+			file = ffilter.addExtensionToFileName(file);
+			//
+			this.saveToXML(file);
+			return file;
+		}
+		else {
+			return null;
+		}
+	}
+
 	/**
 	 * saves settings to a file
 	 * @param file
@@ -109,7 +144,7 @@ public abstract class Settings implements Serializable {
 		FileAndPathUtil.createDirectory(file.getParentFile());
 		saveToXML(new FileOutputStream(file));
 	}
-	
+
 	/**
 	 * saves settings to a file
 	 * @param file
@@ -142,6 +177,7 @@ public abstract class Settings implements Serializable {
 			throw new IOException(e);
 		}
 	}
+	
 
 	/**
 	 * saves settings and calls abstract appendSettingsValuesToXML
@@ -170,78 +206,94 @@ public abstract class Settings implements Serializable {
 	// save specific values
 	public static void toXML(Element elParent, Document doc, String name, Object o) {
 		if(o!=null) {
-		    //Element paramElement = doc.createElement(parameterElement);
-		    //paramElement.setAttribute(nameAttribute, name);
+			//Element paramElement = doc.createElement(parameterElement);
+			//paramElement.setAttribute(nameAttribute, name);
 			Element paramElement = doc.createElement(name);
-		    elParent.appendChild(paramElement); 
-		    
-		    if(Color.class.isInstance(o)) {
-		    	Color c = (Color) o;
-		    	paramElement.setTextContent(String.valueOf(c.getRGB()));
-		    	paramElement.setAttribute("alpha", String.valueOf(c.getAlpha()));
-		    }
-		    else if(File.class.isInstance(o)) {
-		    	paramElement.setTextContent(((File)o).getAbsolutePath());
-		    } 
-		    else if(Point2D.class.isInstance(o)) {
-		    	Point2D p = (Point2D)o;
-		    	String s = String.valueOf(p.getX())+";"+String.valueOf(p.getY());
-		    	paramElement.setTextContent(s);
-		    }
-		    else if(Font.class.isInstance(o)) {
-		    	Font f = (Font)o;
-		    	paramElement.setTextContent(f.getName());
-		    	paramElement.setAttribute("style", ""+f.getStyle());
-		    	paramElement.setAttribute("size", ""+f.getSize());
-		    }
-		    else if(Collectable2D.class.isInstance(o)) {
-		    	Collectable2D c = (Collectable2D)o;
-		    	// save name, group, project
-		    	paramElement.setTextContent(c.getTitle());
-		    	paramElement.setAttribute("group", c.getImageGroup().getName());
-		    	if(c.getImageGroup().getProject()!=null)
-		    		paramElement.setAttribute("project", c.getImageGroup().getProject().getName());
-		    }
-		    else paramElement.setTextContent(String.valueOf(o));
+			elParent.appendChild(paramElement); 
+
+			if(Color.class.isInstance(o)) {
+				Color c = (Color) o;
+				paramElement.setTextContent(String.valueOf(c.getRGB()));
+				paramElement.setAttribute("alpha", String.valueOf(c.getAlpha()));
+			}
+			else if(File.class.isInstance(o)) {
+				paramElement.setTextContent(((File)o).getAbsolutePath());
+			} 
+			else if(Point2D.class.isInstance(o)) {
+				Point2D p = (Point2D)o;
+				String s = String.valueOf(p.getX())+";"+String.valueOf(p.getY());
+				paramElement.setTextContent(s);
+			}
+			else if(Font.class.isInstance(o)) {
+				Font f = (Font)o;
+				paramElement.setTextContent(f.getName());
+				paramElement.setAttribute("style", ""+f.getStyle());
+				paramElement.setAttribute("size", ""+f.getSize());
+			}
+			else if(Collectable2D.class.isInstance(o)) {
+				Collectable2D c = (Collectable2D)o;
+				// save name, group, project
+				paramElement.setTextContent(c.getTitle());
+				paramElement.setAttribute("group", c.getImageGroup().getName());
+				if(c.getImageGroup().getProject()!=null)
+					paramElement.setAttribute("project", c.getImageGroup().getProject().getName());
+			}
+			else paramElement.setTextContent(String.valueOf(o));
 		}
 	}
 	public static void toXML(Element elParent, Document doc, String name, Object o, String[] attributes, Object[] attValues) {
 		if(o!=null) {
-		    //Element paramElement = doc.createElement(parameterElement);
-		    //paramElement.setAttribute(nameAttribute, name);
+			//Element paramElement = doc.createElement(parameterElement);
+			//paramElement.setAttribute(nameAttribute, name);
 			Element paramElement = doc.createElement(name);
-		    elParent.appendChild(paramElement); 
-		    
-		    paramElement.setTextContent(String.valueOf(o));
-		    for(int i=0; i<attributes.length; i++) {
-		    	paramElement.setAttribute(attributes[i], String.valueOf(attValues[i]));
-		    }
+			elParent.appendChild(paramElement); 
+
+			paramElement.setTextContent(String.valueOf(o));
+			for(int i=0; i<attributes.length; i++) {
+				paramElement.setAttribute(attributes[i], String.valueOf(attValues[i]));
+			}
 		}
 	}
 	public static void toXMLArray(Element elParent, Document doc, String name, Object[][] o) {
 		if(o!=null) {
-		    //Element paramElement = doc.createElement(parameterElement);
-		    //paramElement.setAttribute(nameAttribute, name);
+			//Element paramElement = doc.createElement(parameterElement);
+			//paramElement.setAttribute(nameAttribute, name);
 			Element paramElement = doc.createElement(name);
-		    elParent.appendChild(paramElement); 
-		    StringBuilder res = new StringBuilder();
-		    for(int i=0; i<o.length; i++) {
-		    	for(int x=0; x<o[i].length; x++) {
-		    		res.append(String.valueOf(o[i][x]));
-		    		if(x<o[i].length-1)
-		    			res.append(";");
-		    	}
-		    	if(i<o.length-1)
-	    			res.append("\n");
-		    }
-		    	
-		    paramElement.setTextContent(res.toString());
+			elParent.appendChild(paramElement); 
+			StringBuilder res = new StringBuilder();
+			for(int i=0; i<o.length; i++) {
+				for(int x=0; x<o[i].length; x++) {
+					res.append(String.valueOf(o[i][x]));
+					if(x<o[i].length-1)
+						res.append(";");
+				}
+				if(i<o.length-1)
+					res.append("\n");
+			}
+
+			paramElement.setTextContent(res.toString());
 		}
 	}
 
-	
+
 	//'''''''''''''''''''''''''''''''''
 	// load
+
+	public void loadSettingsFromFile(Component parentFrame)  throws Exception {
+		// TODO Auto-generated method stub 
+		// Open new FC
+		File path = new File(FileAndPathUtil.getPathOfJar(), this.getPathSettingsFile());
+		FileAndPathUtil.createDirectory(path);
+		JFileChooser fc = new JFileChooser(path); 
+		FileFilter ffilter = new FileTypeFilter(this.getFileEnding(), "Load settings from");
+		fc.addChoosableFileFilter(ffilter);  
+		fc.setFileFilter(ffilter);
+		// getting the file
+		if (fc.showOpenDialog(parentFrame) == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();   
+			loadFromXML(file);
+		}
+	} 
 	/**
 	 * load xml settings from a file
 	 * @param file
@@ -264,7 +316,7 @@ public abstract class Settings implements Serializable {
 			throw new IOException(e);
 		}
 	}
-	
+
 	/**
 	 * load xml settings from a file
 	 * @param file
@@ -311,138 +363,138 @@ public abstract class Settings implements Serializable {
 	 */
 	public abstract void loadValuesFromXML(Element el, Document doc);
 
-	
 
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Double doubleFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-            return Double.parseDouble(numString);
-        }
-        return null;
-    }
-    
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Point2D point2DDoubleFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-        	String[] split = numString.split(";");
-        	if(split.length==2) {
-        		return new Point2D.Double(Double.parseDouble(split[0]), Double.parseDouble(split[1]));
-        	}
-        }
-        return null;
-    }
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static File fileFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-            return new File(numString);
-        }
-        return null;
-    }
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Integer intFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-            return Integer.parseInt(numString);
-        }
-        return null;
-    }
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Float floatFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-            return Float.parseFloat(numString);
-        }
-        return null;
-    }
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Font fontFromXML(final Element el) {
-        final String family = el.getTextContent();
-        if (family.length() > 0) {
-        	int style = Integer.valueOf(el.getAttribute("style"));
-        	int size = Integer.valueOf(el.getAttribute("size"));
-            return new Font(family, style, size);
-        }
-        return null;
-    }
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Color colorFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-            int rgb =  Integer.parseInt(numString);
-            int alpha = Integer.parseInt(el.getAttribute("alpha"));
-            Color c = new Color(rgb);
-            return new Color(c.getRed(),c.getGreen(),c.getBlue(),alpha);
-        }
-        return null;
-    }
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Boolean booleanFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-            return Boolean.parseBoolean(numString);
-        }
-        return null;
-    }
-	
 
-    /**
-     * 
-     * @param el
-     * @return null if no value was found
-     */
-    public static Boolean[][] mapFromXML(final Element el) {
-        final String numString = el.getTextContent();
-        if (numString.length() > 0) {
-        	String[] lines = numString.split("\n");
-        	Boolean[][] map = new Boolean[lines.length][];
-        	for(int i=0; i<lines.length; i++) {
-        		String l = lines[i];
-        		String[] split = l.split(";");
-        		map[i] = new Boolean[split.length];
-        		for(int x=0; x<split.length; x++) {
-        			map[i][x] = Boolean.parseBoolean(split[x]);
-        		}
-        	}
-            return map;
-        }
-        return null;
-    }
-    
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Double doubleFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			return Double.parseDouble(numString);
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Point2D point2DDoubleFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			String[] split = numString.split(";");
+			if(split.length==2) {
+				return new Point2D.Double(Double.parseDouble(split[0]), Double.parseDouble(split[1]));
+			}
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static File fileFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			return new File(numString);
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Integer intFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			return Integer.parseInt(numString);
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Float floatFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			return Float.parseFloat(numString);
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Font fontFromXML(final Element el) {
+		final String family = el.getTextContent();
+		if (family.length() > 0) {
+			int style = Integer.valueOf(el.getAttribute("style"));
+			int size = Integer.valueOf(el.getAttribute("size"));
+			return new Font(family, style, size);
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Color colorFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			int rgb =  Integer.parseInt(numString);
+			int alpha = Integer.parseInt(el.getAttribute("alpha"));
+			Color c = new Color(rgb);
+			return new Color(c.getRed(),c.getGreen(),c.getBlue(),alpha);
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Boolean booleanFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			return Boolean.parseBoolean(numString);
+		}
+		return null;
+	}
+
+
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Boolean[][] mapFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			String[] lines = numString.split("\n");
+			Boolean[][] map = new Boolean[lines.length][];
+			for(int i=0; i<lines.length; i++) {
+				String l = lines[i];
+				String[] split = l.split(";");
+				map[i] = new Boolean[split.length];
+				for(int x=0; x<split.length; x++) {
+					map[i][x] = Boolean.parseBoolean(split[x]);
+				}
+			}
+			return map;
+		}
+		return null;
+	}
+
 
 	/**
 	 * hashed map is the super class of the class in the xml node
@@ -479,7 +531,7 @@ public abstract class Settings implements Serializable {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * checks if the node is a settingsnode of this class
 	 * @param nextElement
@@ -524,7 +576,7 @@ public abstract class Settings implements Serializable {
 		}
 		return null;
 	}
-	
+
 	//##################################################################
 	// binary write and read
 	/**

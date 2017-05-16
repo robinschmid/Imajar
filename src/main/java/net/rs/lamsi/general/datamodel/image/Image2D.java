@@ -13,9 +13,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
@@ -80,11 +79,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	// max and min z (intensity)
 	protected double averageIProcessed = -1;
 	protected double minZ=-1, maxZ=-1;
-	protected float maxX = -1;
 	protected double minZFiltered = -1;
 	protected double maxZFiltered = -1;
 	// store total dp count 
-	protected int totalDPCount = -1;
 
 	public Image2D() { 
 		super((new SettingsImage2D()));
@@ -139,7 +136,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			listLines.add(new ScanLineMD(x,z));
 		}
 		// Image erstellen 
-		return  new Image2D(new DatasetMD(listLines), 0, new SettingsImage2D(settPaintScale, setImage)); 
+		return  new Image2D(new DatasetLinesMD(listLines), 0, new SettingsImage2D(settPaintScale, setImage)); 
 	}
 
 	// Discontinous MS-Image
@@ -548,7 +545,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @param setImg
 	 * @return
 	 */
-	public XYIData2D toXYIArray(boolean raw, boolean useSettings) {
+	public double[][] toXYIArray(boolean raw, boolean useSettings) {
 		if(useSettings) {
 			SettingsGeneralImage s = settings.getSettImage();
 			return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), 
@@ -563,13 +560,13 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public Object[][] toXYIMatrix(boolean raw, boolean useSettings) {
-		XYIData2D data = toXYIArray(raw, useSettings);
+		double[][] data = toXYIArray(raw, useSettings);
 
-		Object[][] real = new Object[data.getI().length][3];
+		Object[][] real = new Object[data[2].length][3];
 		for(int i=0; i<real.length; i++) {
-			real[i][0] = data.getX()[i];
-			real[i][1] = data.getY()[i];
-			real[i][2] = data.getI()[i];
+			real[i][0] = data[0][i];
+			real[i][1] = data[1][i];
+			real[i][2] = data[2][i];
 		}
 		return real;
 	}
@@ -583,7 +580,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @param reflectV
 	 * @return
 	 */
-	public XYIData2D toXYIArray(boolean raw, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
+	public double[][] toXYIArray(boolean raw, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
 		// count scan points
 		int scanpoints = getTotalDPCount();
 		// Datenerstellen
@@ -618,7 +615,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			} 
 		}
 		//
-		return new XYIData2D(x, y, z);
+		return new double[][]{x, y, z};
 	} 
 
 	/**
@@ -639,93 +636,13 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	}
 
 
-	/*
-	 * old version: not for alpha map
-	public XYIData2D toXYIArray(boolean raw, int imgMode, int rotation, boolean reflectH, boolean reflectV) {
-		// easy?
-		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
-			return toXYIArray(raw);
-		}
-		else if(rotation==180) {
-			return toXYIArray(raw, imgMode, 0, !reflectH, !reflectV);
-		}
-		else {
-			// count scan points
-			int scanpoints = 0;
-			for(int i=0; i<data.getLinesCount(); i++) {
-				scanpoints += data.getLineLength(i);
-			}
-			// create data
-			double[] x = new double[scanpoints];
-			double[] y = new double[scanpoints];
-			double[] z = new double[scanpoints];
-			//
-			ScanLine2D line; 
-			int currentdp = 0;
-			double height = getMaxYRaw(raw)-1;
-			// for all lines
-			for(int iy=0; iy<data.getLinesCount(); iy++) {
-				// width  
-				double width = getMaxXRaw(raw, iy);
-				// for all datapoints in line
-				for(int ix=0; ix<data.getLineLength(iy); ix++) {
-					// reverse x if two way
-					int cx = ix;
-					if(imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
-						cx = data.getLineLength(iy)-1-cx;
-					}
-					// x = time; NOT distance; so calc TODO
-					x[currentdp] = getXRaw(raw,iy, cx);
-					y[currentdp] = getYRaw(raw, iy);
-					z[currentdp] = getIRaw(raw, iy, cx);
-
-					// imagecreation mode: if twoways -> first reflect every 2. line (x values)
-					if(imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
-						// reflect x
-						x[currentdp] += distPercent(width, x[currentdp]) *width; 
-					}
-
-					// flip values of x and y
-						if((reflectH)) {// y 
-							y[currentdp] += distPercent(height, y[currentdp]) *height; 
-						}
-						if(reflectV) {// x
-							x[currentdp] += distPercent(width, x[currentdp]) *width; 
-						}
-					// 90°
-					if(rotation==90) {
-						// x0 -> y0   xn -> yn
-						double savey = y[currentdp];
-						y[currentdp] = x[currentdp];
-						// y0 -> xn   yn -> x0  ==> reflectH and then same as x 
-						savey += distPercent(height, savey) *height; // reflectH
-						x[currentdp] = savey;
-					}
-					// -90° = 270°
-					if(rotation==270 || rotation ==-90) {
-						// y0 -> x0   yn -> xn
-						double savex = x[currentdp];
-						x[currentdp] = y[currentdp];
-						// x0 -> yn   xn -> y0  ==> reflectV and then same as y 
-						savex += distPercent(width, savex) *width; // reflectV
-						y[currentdp] = savex;
-					}
-
-					currentdp++;
-				} 
-			}
-			//
-			return new XYIData2D(x, y, z);
-		}
-	} 
-	 */
 
 	/**
 	 * xyi array without rotation, reflection, imaging mode
 	 * @param raw
 	 * @return
 	 */
-	private XYIData2D toXYIArrayNoRot() {
+	private double[][] toXYIArrayNoRot() {
 		// Erst Messpunkteanzahl ausrechnen 
 		int scanpoints = data.getTotalDPCount(); 
 		// Datenerstellen
@@ -746,7 +663,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			} 
 		}
 		//
-		return new XYIData2D(x, y, z);
+		return new double[][]{x, y, z};
 	}
 
 	//###############################################################################################
@@ -836,7 +753,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		if(useSettings) {
 			int cols = getMaxLineCount();
 			int rows = getMaxDP();
-			
+
 			Double[][] z = new Double[cols][rows];
 			Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
 
@@ -856,20 +773,22 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		}
 		else {
 			int cols = data.getLinesCount();
-			int rows = data.getMaxDP();
-			
-			Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
-			Double[][] z = new Double[cols][rows];
-			
+
+			Float[][] x = new Float[cols][], y = new Float[cols][];
+			Double[][] z = new Double[cols][];
+
 			for(int c=0; c<cols; c++) {
 				int length = data.getLineLength(c);
+				x[c] = new Float[length];
+				y[c] = new Float[length];
+				z[c] = new Double[length];
 				// increment l
-				for(int r = 0; r<rows; r++) {
+				for(int r = 0; r<length; r++) {
 					// only if not null: write Intensity
-					z[c][r] = r<length? getIRaw(c,r) : Double.NaN;
+					z[c][r] = getIRaw(c,r);
 					// NaN?
-					x[c][r] = r<length? getXRaw(raw,c,r) : Float.NaN;
-					y[c][r] = r<length? getYRaw(raw,c) : Float.NaN;
+					x[c][r] = getXRaw(raw,c,r);
+					y[c][r] = getYRaw(raw,c);
 				} 
 			}
 			return new XYIDataMatrix(x,y,z);
@@ -923,7 +842,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		if(MDDataset.class.isInstance(data)) {
 			if(((MDDataset)data).hasXData()) {
 				// has only one x line
-				if(DatasetMD.class.isInstance(data) && ((DatasetMD)data).hasOnlyOneXColumn()) 
+				if(DatasetLinesMD.class.isInstance(data) && ((DatasetLinesMD)data).hasOnlyOneXColumn()) 
 					return toXCSV(raw, sep, 1, useSettings);
 				else return toXCSV(raw, sep, data.getLinesCount(), useSettings);
 			}
@@ -1280,7 +1199,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 				// save name and path
 				String name = img.getTitle();
 				String shortName = img.getShortTitle();
-				
+
 				String path = img.getSettings().getSettImage().getRAWFilepath();
 				// copy all TODO
 				img.setSettings(BinaryWriterReader.deepCopy(this.settings.getSettImage()));
@@ -1806,7 +1725,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			internalQ.getImgIS().getSettings().getOperations().setBlankQuantifier(settings.getOperations().getBlankQuantifier());
 			internalQ.getImgIS().fireIntensityProcessingChanged();
 		}
-		
+
 		// register changes
 		// e.g. for regression SettingsSelection
 		for(IntensityProcessingChangedListener l : listenerProcessingChanged)
@@ -1818,8 +1737,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public void removeIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
 		listenerProcessingChanged.remove(li);
 	}
-	
-	
+
+
 	public Image2D getParent() {
 		return parent;
 	}
@@ -2142,7 +2061,10 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		return data;
 	}
 	public void setData(ImageDataset data) {
+		boolean changed = !data.equals(this.data);
 		this.data = data;
+		if(changed)
+			fireIntensityProcessingChanged();
 	}
 	public void shiftIndex(int i) {
 		index += i;

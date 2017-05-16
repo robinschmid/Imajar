@@ -2,7 +2,7 @@ package net.rs.lamsi.general.datamodel.image;
 
 import java.util.Random;
 
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 
@@ -27,7 +27,7 @@ public class TestImageFactory {
 				else lines[l].addDimension(i);
 			}
 		}
-		DatasetMD data = new DatasetMD(lines);
+		DatasetLinesMD data = new DatasetLinesMD(lines);
 		return data.createImageGroup("Non Normal");
 	}
 
@@ -54,7 +54,7 @@ public class TestImageFactory {
 				else lines[l].addDimension(i);
 			}
 		}
-		DatasetMD data = new DatasetMD(lines);
+		DatasetLinesMD data = new DatasetLinesMD(lines);
 		return data.createImageGroup("Test Standards");
 	}
 
@@ -93,7 +93,7 @@ public class TestImageFactory {
 				else lines[l].addDimension(i);
 			}
 		}
-		DatasetMD data = new DatasetMD(lines);
+		DatasetLinesMD data = new DatasetLinesMD(lines);
 		ImageGroupMD img = data.createImageGroup("Overlay Test");
 
 		// add overlay

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Vector;
 
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
@@ -262,13 +263,13 @@ public class FileAndPathUtil {
 	 * @param dir2
 	 * @return
 	 */
-	public static Vector<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter) { 
+	public static List<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter) { 
 		return findFilesInDir(dir, fileFilter, true, false);
 	}
-	public static Vector<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter, boolean searchSubdir) { 
+	public static List<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter, boolean searchSubdir) { 
 		return findFilesInDir(dir, fileFilter, searchSubdir, false);
 	}
-	public static Vector<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter, boolean searchSubdir, boolean filesInSeparateFolders) { 
+	public static List<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter, boolean searchSubdir, boolean filesInSeparateFolders) { 
 		File[] subDir = FileAndPathUtil.getSubDirectories(dir);
 		// result: each vector element stands for one img
 		Vector<File[]> list = new Vector<File[]>();

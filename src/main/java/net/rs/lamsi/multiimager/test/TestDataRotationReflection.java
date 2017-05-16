@@ -4,9 +4,8 @@ import java.io.File;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -33,7 +32,7 @@ public class TestDataRotationReflection {
 			lines[i] = new ScanLineMD(x, val);
 		}
 		
-		DatasetMD data = new DatasetMD(lines);
+		DatasetLinesMD data = new DatasetLinesMD(lines);
 		
 		ImageGroupMD group = data.createImageGroup("rot");
 		Image2D img = (Image2D)group.get(0);
@@ -88,17 +87,7 @@ public class TestDataRotationReflection {
 		printAr(img.toXYIMatrix(true, true));
 		
 		
-		System.out.println("NOOOrot XYI arr::: 90\n");
-		printAr(img.toXYIArray(true, false));
-		System.out.println("rot XYI arr:::\n");
-		printAr(img.toXYIArray(true, true));
 		//  
-	}
-	private static void printAr(XYIData2D a) {
-		for(int i=0; i<a.getI().length; i++) { 
-			System.out.println(a.getX()[i]+"\t"+a.getY()[i]+"\t"+a.getI()[i]);
-		}
-		System.out.println("");
 	}
 	
 	private static void printAr(Object[][] a) {

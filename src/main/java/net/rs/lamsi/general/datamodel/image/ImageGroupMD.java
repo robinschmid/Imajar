@@ -274,6 +274,12 @@ public class ImageGroupMD  implements Serializable {
 	public MDDataset getData() {
 		return data;
 	}
+	public void setData(MDDataset data) {
+		this.data = data;
+		for(Collectable2D c : images)
+			if(Image2D.class.isInstance(c))
+				((Image2D)c).setData(data);
+	}
 	public Collectable2D get(int i) { 
 		if(images!=null && i>=0 && i<images.size())
 			return images.get(i);
@@ -339,5 +345,21 @@ public class ImageGroupMD  implements Serializable {
 	@Override
 	public String toString() {
 		return getName()+"; "+settings.getPathData();
+	}
+	/**
+	 * 
+	 * @param index
+	 * @param class1
+	 * @return the object[index] of an sub array of class1
+	 */
+	public Collectable2D get(int index, Class class1) {
+		int c = 0;
+		for(int i=0; i<size(); i++)
+			if(class1.isInstance(images.get(i))) {
+				if(c==index)
+					return images.get(i);
+				c++;
+			}
+		return null;
 	}
 }

@@ -9,7 +9,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -50,7 +51,7 @@ public class ImportDataDialog extends JDialog {
 	protected ImageLogicRunner runner;
 	private final ImportDataDialog thisframe;
 	// presets
-	private Vector<SettingsImageDataImportTxt> presets;
+	private ArrayList<SettingsImageDataImportTxt> presets;
 	private JTextField txtOwnSeperation;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JPanel tabTXT;
@@ -316,6 +317,7 @@ public class ImportDataDialog extends JDialog {
 				tabTXT.add(cbContinousData, "cell 1 9 2 1");
 				{
 					pnContinuousSplit = new JPanel();
+					pnContinuousSplit.setVisible(false);
 					tabTXT.add(pnContinuousSplit, "cell 1 10 2 1,grow");
 					pnContinuousSplit.setLayout(new MigLayout("", "[][][]", "[][][]"));
 					{
@@ -475,7 +477,7 @@ public class ImportDataDialog extends JDialog {
 							public void actionPerformed(ActionEvent e) { 
 								try {
 									SettingsImageDataImportTxt sett = createSettingsForImport();
-									File file = SettingsHolder.getSettings().saveSettingsToFile(null, sett);
+									File file = sett.saveToXML(thisframe);
 									if(file!=null)
 										addPreset(sett, FileAndPathUtil.eraseFormat(file.getName()));
 								} catch (Exception e1) {
@@ -491,8 +493,9 @@ public class ImportDataDialog extends JDialog {
 						btnLoadPreset.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) { 
 								try {
-									Settings sett = createSettingsForImport();
-									sett = SettingsHolder.getSettings().loadSettingsFromFile(thisframe, sett);
+									SettingsImageDataImportTxt sett = new SettingsImageDataImportTxt();
+									sett.loadSettingsFromFile(thisframe);
+									setAllViaExistingSettings(sett);
 								} catch (Exception e1) { 
 									e1.printStackTrace();
 									ImageEditorWindow.log("Cannot load preset "+e1.getMessage(), LOG.ERROR);
@@ -523,10 +526,10 @@ public class ImportDataDialog extends JDialog {
 		// load presets to list
 		loadPresets();
 	}
-	
 	protected void setAllViaExistingSettings(int i) {
-		// TODO Auto-generated method stub
-		SettingsImageDataImportTxt sett = presets.get(i);
+		setAllViaExistingSettings(presets.get(i));
+	}
+	protected void setAllViaExistingSettings(SettingsImageDataImportTxt sett) {
 		// set active tab
 		if(SettingsImageDataImportTxt.class.isInstance(sett)) {
 			SettingsImageDataImportTxt s = (SettingsImageDataImportTxt)sett;
@@ -607,25 +610,26 @@ public class ImportDataDialog extends JDialog {
 	 * load presets to list
 	 */
 	private void loadPresets() { 
-		presets = new Vector<SettingsImageDataImportTxt>();
+		presets = new ArrayList<SettingsImageDataImportTxt>();
 		// load files from directory as presets
-		Settings sett = createSettingsForImport();
+		SettingsImageDataImportTxt sett = new SettingsImageDataImportTxt();
 		
 		if(sett!=null) {
 			File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
 			String type = sett.getFileEnding();
 			try {
 				if(path.exists()) {
-					Vector<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false, false);
+					List<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false, false);
 					// load each file as settings and add to menu as preset
 					for(File f : files.get(0)) {
 						// load
 						try {
-							SettingsImageDataImportTxt load = (SettingsImageDataImportTxt)SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
-							if(load !=null)
-								addPreset(load, FileAndPathUtil.eraseFormat(f.getName()));
+							sett.loadFromXML(f);
+							if(sett !=null)
+								addPreset((SettingsImageDataImportTxt) sett.copy(), FileAndPathUtil.eraseFormat(f.getName()));
 						} catch(Exception ex) {
-							ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath(), LOG.WARNING);
+							ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath()+ex.getLocalizedMessage(), LOG.WARNING);
+							ex.printStackTrace();
 						}
 					}
 				}
@@ -646,7 +650,7 @@ public class ImportDataDialog extends JDialog {
 	public void addPreset(final SettingsImageDataImportTxt settings, String title) { 
 		// add to lists
 		((DefaultListModel)(getListPresets().getModel())).addElement(title);
-		presets.addElement(settings);
+		presets.add(settings);
 	}
 	
 	

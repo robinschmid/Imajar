@@ -75,6 +75,7 @@ public class PlotChartPanel extends ChartPanel {
 		
 		ValueAxis rangeAxis = this.getChart().getXYPlot().getRangeAxis();
 		ValueAxis domainAxis = this.getChart().getXYPlot().getDomainAxis();
+		if(rangeAxis!=null) {
 		rangeAxis.addChangeListener(new AxisRangeChangedListener() {
 			@Override
 			public void axisRangeChanged(ValueAxis axis, Range lastR, Range newR) {
@@ -86,6 +87,8 @@ public class PlotChartPanel extends ChartPanel {
 						l.axesRangeChanged(chartPanel, axis, false, lastR, newR);
 			}
 		});
+		}
+		if(domainAxis!=null) {
 		domainAxis.addChangeListener(new AxisRangeChangedListener() {
 			@Override
 			public void axisRangeChanged(ValueAxis axis, Range lastR, Range newR) {
@@ -97,6 +100,7 @@ public class PlotChartPanel extends ChartPanel {
 						l.axesRangeChanged(chartPanel, axis,true, lastR, newR);
 			}
 		});
+		}
 		
 		
 		// mouse adapter for scrolling and zooming
@@ -122,6 +126,8 @@ public class PlotChartPanel extends ChartPanel {
 					pressed = null; 
 	
 					Point2D pos = ChartLogics.mouseXYToPlotXY(chartPanel, e.getX(), e.getY());
+
+					if(pos!=null) {
 					// nur speichern wenn innerhalb des charts
 					Range yrange = chartPanel.getChart().getXYPlot().getRangeAxis().getRange();
 					Range xrange = chartPanel.getChart().getXYPlot().getDomainAxis().getRange();
@@ -142,33 +148,35 @@ public class PlotChartPanel extends ChartPanel {
 						wasMouseZoomable = isMouseZoomable;
 						chartPanel.setMouseZoomable(false); 
 					}
+					}
 				}
 			} 
 			@Override
 			public void mouseDragged(MouseEvent e) { 
 					// get Plot Values  
 					Point2D released = ChartLogics.mouseXYToPlotXY(chartPanel, e.getX(), e.getY());
-	
-					// nur wenn innerhalb der range
-					Range yrange = chartPanel.getChart().getXYPlot().getRangeAxis().getRange();
-					Range xrange = chartPanel.getChart().getXYPlot().getDomainAxis().getRange(); 
-					if(pressed!=null) { 
-						if(released.getY()<yrange.getLowerBound() && scrollsXAxis) { 
-							// scroll x axis if mouse pressed and moved on axis
-							double xoffset = -(released.getX()-last.getX());
-							
-							ChartLogics.offsetDomainAxisAbsolute(chartPanel, xoffset, true);
-							last = ChartLogics.mouseXYToPlotXY(chartPanel, e.getX(), e.getY());
-						}
-						//
-						if(released.getX()<xrange.getLowerBound() && scrollsYAxis) {  
-							// zoom in yaxis on dragged over yaxis
-							double yzoom = -(released.getY()-last.getY())/yrange.getLength()*4;
-							
-							ChartLogics.zoomRangeAxis(chartPanel, yzoom, true);
-							last = ChartLogics.mouseXYToPlotXY(chartPanel, e.getX(), e.getY());
-						}
-					} 
+					if(released!=null) {
+						// nur wenn innerhalb der range
+						Range yrange = chartPanel.getChart().getXYPlot().getRangeAxis().getRange();
+						Range xrange = chartPanel.getChart().getXYPlot().getDomainAxis().getRange(); 
+						if(pressed!=null) { 
+							if(released.getY()<yrange.getLowerBound() && scrollsXAxis) { 
+								// scroll x axis if mouse pressed and moved on axis
+								double xoffset = -(released.getX()-last.getX());
+								
+								ChartLogics.offsetDomainAxisAbsolute(chartPanel, xoffset, true);
+								last = ChartLogics.mouseXYToPlotXY(chartPanel, e.getX(), e.getY());
+							}
+							//
+							if(released.getX()<xrange.getLowerBound() && scrollsYAxis) {  
+								// zoom in yaxis on dragged over yaxis
+								double yzoom = -(released.getY()-last.getY())/yrange.getLength()*4;
+								
+								ChartLogics.zoomRangeAxis(chartPanel, yzoom, true);
+								last = ChartLogics.mouseXYToPlotXY(chartPanel, e.getX(), e.getY());
+							}
+						} 
+					}
 			}
 		};
 		this.addMouseListener(mouseAdapter);

@@ -106,7 +106,8 @@ public class SettingsThemes extends Settings {
 
 	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
 			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
-			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle) {
+			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
+			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale) {
 		this.setAntiAliased(antiAlias);
 		this.setShowTitle(showTitle);
 		this.setNoBackground(noBG);
@@ -123,7 +124,23 @@ public class SettingsThemes extends Settings {
 		//
 		theme.setScaleXPos(scaleXPos);
 		theme.setScaleYPos(scaleYPos);
-
+		
+		theme.setFontScaleInPlot(fScale);
+		theme.setScaleFontColor(cScale);
+		
+		setFontAxesTitle(fAxesT);
+		setFontAxesLabels(fAxesL);
+		setFontTitle(fTitle);
+		setFontGeneral(fMaster);
+		setcAxesFont(cAxesT);
+		setcTitle(cTitle);
+		
+		theme.setExtraLargeFont(fTitle);
+		theme.setLargeFont(fAxesT);
+		theme.setRegularFont(fAxesL);
+		theme.setAxisLabelPaint(cAxesT);
+		theme.setTickLabelPaint(cAxesL);
+		theme.setTitlePaint(cTitle);
 		
 		// significant intensities
 		this.useScientificIntensities = useScientificIntensities;
@@ -290,6 +307,7 @@ public class SettingsThemes extends Settings {
 		s.setValue(theme.getScaleValue());
 		s.setVisible(theme.isShowScale());
 		s.setPosition(theme.getScaleXPos(),theme.getScaleYPos());
+		
 		
 		heat.getShortTitle().setFont(fontShortTitle);
 		heat.getShortTitle().setPaint(cShortTitle);
@@ -660,6 +678,21 @@ public class SettingsThemes extends Settings {
 	}
 	public void setUsePaintScaleTitle(boolean usePaintScaleTitle) {
 		this.usePaintScaleTitle = usePaintScaleTitle;
+	}
+	public Font getFontScaleInPlot() {
+		return theme.getFontScaleInPlot();
+	}
+
+	public Color getScaleFontColor() {
+		return theme.getScaleFontColor();
+	}
+
+	public void setFontScaleInPlot(Font fontScaleInPlot) {
+		theme.setFontScaleInPlot(fontScaleInPlot);
+	}
+
+	public void setScaleFontColor(Color scaleFontColor) {
+		theme.setScaleFontColor(scaleFontColor);
 	}
 	
 }

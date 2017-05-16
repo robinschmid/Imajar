@@ -76,8 +76,9 @@ public class ScaleInPlot extends Title {
 			
 			// draw label
 			String label = getValue()+" "+getUnit();
-			g.setFont(theme.getSmallFont()); 
+			g.setFont(theme.getFontScaleInPlot()); 
 		    FontMetrics fm = g.getFontMetrics();
+		    g.setColor(theme.getScaleFontColor());
 		    double sx = x+ (width - fm.stringWidth(label)) / 2;
 		    double sy = y + tick/2 + (fm.getAscent());
 			g.drawString(label, (float) (sx), (float)(sy));

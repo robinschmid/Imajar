@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.framework.modules;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -74,7 +75,16 @@ public class ModuleTree <T> extends Module {
 			ImageEditorWindow.log(ex.getMessage(), LOG.ERROR);
 		}
 	}
-
+	/**
+	 * object of this path
+	 * @param path
+	 * @return
+	 */
+	public Object getObjectFromPath(TreePath path) {
+		if(path==null) return null;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+		return node.getUserObject();
+	}
 	/**
 	 * only if image is selected otherwise returns null
 	 * @param path
@@ -168,6 +178,17 @@ public class ModuleTree <T> extends Module {
 	}
 	public boolean isProjectNode(DefaultMutableTreeNode node) {
 		return ImagingProject.class.isInstance(node.getUserObject());
+	}
+	
+	public void toList(List list, Class c) {
+		toList(list, c, root.getFirstLeaf());
+	} 
+	private void toList(List list, Class c, DefaultMutableTreeNode leaf) { 
+		if(leaf!=null) {
+			if(c.isInstance(leaf.getUserObject()))
+				list.add(leaf.getUserObject());
+			toList(list, c, leaf.getNextLeaf());
+		} 
 	}
 
 	public ArrayList<T> toList() {

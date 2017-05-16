@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -28,6 +29,7 @@ import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
+import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
@@ -169,9 +171,6 @@ public class ImageLogicRunner {
 	 * @param project
 	 */
 	public void addGroup(ImageGroupMD group, ImagingProject project) {
-		addGroup(group, project, 1);
-	}
-	private void addGroup(ImageGroupMD group, ImagingProject project, int duplicate) {
 		// only one image? do not create subnodes
 		if(group==null || group.getImages().size()==0) {
 			return;
@@ -316,14 +315,28 @@ public class ImageLogicRunner {
 	 */
 	public void applySettingsToAllImagesInList() {
 		boolean state = DialogLoggerUtil.showDialogYesNo(window, "Change settings of all images in list?", "Attention: You are about to replace all settings of all images! Ok?");
-		if(state && getSelectedImage()!=null) {
+		final Collectable2D current = getSelectedImage();
+		if(state && current!=null) {
 			// current settings as image 
-
+			
 			// get List of images
-			for(Collectable2D img : getListImages()) { 
-				// for each replace all settings	
-				getSelectedImage().applySettingsToOtherImage((img));
-			}
+			ProgressDialog.startTask(new ProgressUpdateTask(1) {
+				
+				@Override
+				protected Boolean doInBackground() throws Exception {
+					Settings sett = current.getSettings();
+					List<Collectable2D> list = getListImages();
+					for(Collectable2D img : list) { 
+						// for each replace all settings	
+						if(current.getClass().isInstance(img))
+							current.applySettingsToOtherImage((img));
+						
+						addProgressStep(1.0/list.size());
+					}
+					return true;
+				}
+			});
+			
 		}
 	} 
 
@@ -607,7 +620,7 @@ public class ImageLogicRunner {
 								if(f.isDirectory()) {
 									// get all files in this folder TODO change csv to settings
 									// each file[] element is for one image
-									Vector<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
+									List<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
 
 									for(File[] i : sub) {
 										// load them as image set
@@ -830,8 +843,10 @@ public class ImageLogicRunner {
 	//##################################################################################
 	//GETTERS AND SETTERS
 
-	public ArrayList<Collectable2D> getListImages() {
-		return treeImg.toList();
+	public List<Collectable2D> getListImages() {
+		ArrayList<Collectable2D> list = new ArrayList<Collectable2D>();
+		treeImg.toList(list, Collectable2D.class);
+		return list;
 	}
 
 	public ArrayList<Image2D> getListImage2DOnly() {

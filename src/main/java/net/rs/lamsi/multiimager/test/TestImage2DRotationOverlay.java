@@ -5,7 +5,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Vector;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,11 +14,9 @@ import javax.swing.border.EmptyBorder;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.heatmap.IXYZDataset;
-import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
@@ -27,8 +25,6 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.PaintScale;
 import org.jfree.ui.RectangleAnchor;
 
 public class TestImage2DRotationOverlay extends JFrame {
@@ -105,7 +101,7 @@ public class TestImage2DRotationOverlay extends JFrame {
 			if(f.isDirectory()) {
 				// get all files in this folder TODO change csv to settings
 				// each file[] element is for one image
-				Vector<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
+				List<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
 
 				for(File[] i : sub) {
 					// load them as image set
@@ -119,9 +115,9 @@ public class TestImage2DRotationOverlay extends JFrame {
 							map = HeatmapFactory.generateHeatmap(img);
 							
 							// add second map to second axis 
-							XYIData2D dat = img.toXYIArray(false, true); 
+							double[][] dat = img.toXYIArray(false, true); 
 					        IXYZDataset dataset = new IXYZDataset();
-					        dataset.addSeries("SECOND", new double[][] { dat.getX(), dat.getY(), dat.getI() });
+					        dataset.addSeries("SECOND", dat);
 					        
 							// XAchse
 					        NumberAxis xAxis = new NumberAxis("x2");

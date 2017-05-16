@@ -15,7 +15,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -75,6 +75,7 @@ import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
@@ -376,7 +377,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Open Dialog
-				
+				Collectable2D img = getLogicRunner().getSelectedImage();
+				if(img!=null && Image2D.class.isInstance(img) && img.getImageGroup()!=null) {
+					CroppingDialog d = new CroppingDialog();
+					d.startDialog(img.getImageGroup(), (Image2D)img);
+				}
 			}
 		});
 		mnAction.add(btnCrop);
@@ -1271,7 +1276,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * the list of images or null if the editor is not initialized
 	 * @return
 	 */
-	public static ArrayList<Collectable2D> getImages() { 
+	public static List<Collectable2D> getImages() { 
 		if(getEditor()==null)
 			return null;
 		else {

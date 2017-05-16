@@ -14,6 +14,8 @@ public class JFontBox extends JComboBox<String> {
 		super(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
 
 		setSelectedItem("Arial");
+		setMaximumSize(getPreferredSize());
+		setMaximumRowCount(20);
 		setRenderer(new FontBoxRenderer(this));
 		addItemListener(new ItemListener() {
 

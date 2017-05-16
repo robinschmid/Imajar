@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
@@ -161,10 +160,10 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 	public void updateStatistics() {
 		if(currentImg!=null && selections!=null && selections.size()>0) {
 			// TODO do statistics for all shape selections
-			XYIData2D data = currentImg.toXYIArray(false, true);
-			double[] x = data.getX();
-			double[] y = data.getY();
-			double[] z = data.getI();
+			double[][] data = currentImg.toXYIArray(false, true);
+			double[] x = data[0];
+			double[] y = data[1];
+			double[] z = data[2];
 			
 			float w = (float)currentImg.getMaxBlockWidth();
 			float h = (float)currentImg.getMaxBlockHeight();
@@ -201,10 +200,10 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 	public void updateStatistics(SettingsShapeSelection s) {
 		if(currentImg!=null && s!=null) {
 			// TODO do statistics for all shape selections
-			XYIData2D data = currentImg.toXYIArray(false, true);
-			double[] x = data.getX();
-			double[] y = data.getY();
-			double[] z = data.getI();
+			double[][] data = currentImg.toXYIArray(false, true);
+			double[] x = data[0];
+			double[] y = data[1];
+			double[] z = data[2];
 			
 			float w = (float)currentImg.getMaxBlockWidth();
 			float h = (float)currentImg.getMaxBlockHeight();

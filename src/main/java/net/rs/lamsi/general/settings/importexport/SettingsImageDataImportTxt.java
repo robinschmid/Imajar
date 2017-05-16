@@ -55,6 +55,10 @@ public class SettingsImageDataImportTxt extends Settings {
 		this.modeImport = modeImport;
 	}
 
+	public SettingsImageDataImportTxt() {
+		super("ImageDataImportTxt", "/Settings/Import/", "txt2img");  
+		resetAll();
+	}
 	public SettingsImageDataImportTxt(String path, String fileEnding, IMPORT modeImport, boolean isSearchingForMetaData, String sSeparation, FileNameExtFilter filter) {
 		super("ImageDataImportTxt", path, fileEnding);  
 		this.sSeparation = sSeparation;
@@ -103,6 +107,7 @@ public class SettingsImageDataImportTxt extends Settings {
 
 	@Override
 	public void resetAll() { 
+		filter = new FileNameExtFilter("", "");
 		isSearchingForMetaData = true;
 		sSeparation = ",";
 		modeData = ModeData.X_MATRIX_STANDARD;

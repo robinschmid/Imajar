@@ -5,7 +5,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Vector;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -97,7 +97,7 @@ public class TestImage2DRotation extends JFrame {
 			if(f.isDirectory()) {
 				// get all files in this folder TODO change csv to settings
 				// each file[] element is for one image
-				Vector<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
+				List<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
 
 				for(File[] i : sub) {
 					// load them as image set

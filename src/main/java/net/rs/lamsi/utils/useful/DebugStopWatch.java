@@ -21,6 +21,14 @@ public class DebugStopWatch {
 		}
 		return "";
 	}
+	public String stopAndLOG(String message) {
+		if(ImageEditorWindow.isDebugging() && start!=0) {
+			String s = (System.nanoTime()-start)/1000000/1000.0+" s";
+			ImageEditorWindow.log("TIME: "+s+" for "+message, LOG.DEBUG);
+			return s;
+		}
+		return "";
+	}
 	public String stop() {
 		if(ImageEditorWindow.isDebugging() && start!=0) {
 			String s = (System.nanoTime()-start)/1000000/1000.0+" s";

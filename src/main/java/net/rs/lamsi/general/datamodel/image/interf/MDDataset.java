@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.datamodel.image.interf;
 
-import java.util.Vector;
+import java.io.Serializable;
+import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 
@@ -9,21 +10,23 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
  * @author r_schm33
  *
  */
-public interface MDDataset {
+public abstract class MDDataset extends ImageDataset  implements Serializable {	 
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * removes the dimension i from the data set
 	 * @param i
 	 * @return
 	 */
-	public boolean removeDimension(int i);
+	public abstract boolean removeDimension(int i);
 	
 	/**
 	 * Adds a dimension to the data set 
 	 * @param dim
 	 * @return the index of the added dimension
 	 */
-	public int addDimension(Vector<Double[]> dim);
+	public abstract int addDimension(List<Double[]> dim);
 
 	/**
 	 * adds the image img as a new dimension
@@ -32,7 +35,7 @@ public interface MDDataset {
 	 * @param img
 	 * @return 
 	 */
-	public boolean addDimension(Image2D img);
+	public abstract boolean addDimension(Image2D img);
 
 
 	/**

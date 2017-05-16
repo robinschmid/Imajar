@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import javax.swing.Icon;
 
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
@@ -220,10 +219,10 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 	}
 	/**
 	 * returns all active datasets
-	 * @return
+	 * @return [series][x,y,z][dp]
 	 */
-	public XYIData2D[] getDataSets() {
-		XYIData2D[] dat = new XYIData2D[countActive()];
+	public double[][][] getDataSets() {
+		double[][][] dat = new double[countActive()][][];
 		int c = 0;
 		for(int i=0; i<group.image2dCount(); i++) {
 			if(settings.isActive(i)) {

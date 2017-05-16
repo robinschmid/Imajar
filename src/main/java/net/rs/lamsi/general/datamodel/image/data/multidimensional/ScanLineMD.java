@@ -21,6 +21,7 @@ public class ScanLineMD  implements Serializable  {
 	// end x as right edge of line
 	protected float endX = -1;
 	
+	// all dimensions
 	protected List<Double[]> intensity = null;
 
 	public ScanLineMD(List<Float> x, List<Double[]> intensity) {

@@ -3,21 +3,18 @@ package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralRotation;
-import net.rs.lamsi.utils.FileAndPathUtil;
 
 /**
  * basic dataset of multiple scan lines
  * @author Robin Schmid
  *
  */
-public class DatasetMD extends ImageDataset implements MDDataset, Serializable  {
+public class DatasetLinesMD extends MDDataset implements Serializable  {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     
@@ -33,11 +30,11 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 	protected SettingsGeneralRotation settRot;
 	
 	
-	public DatasetMD(ScanLineMD[] listLines) { 
+	public DatasetLinesMD(ScanLineMD[] listLines) { 
 		settRot = new SettingsGeneralRotation();
 		lines = listLines;
 	}
-	public DatasetMD(List<ScanLineMD> scanLines) {
+	public DatasetLinesMD(List<ScanLineMD> scanLines) {
 		settRot = new SettingsGeneralRotation();
 		lines = new ScanLineMD[scanLines.size()];
 		for(int i=0; i<lines.length; i++)
@@ -99,7 +96,7 @@ public class DatasetMD extends ImageDataset implements MDDataset, Serializable  
 		return removed;
 	}
 	@Override
-	public int addDimension(Vector<Double[]> dim) {
+	public int addDimension(List<Double[]> dim) {
 		for(int i=0; i<lines.length; i++)
 			lines[i].addDimension(dim.get(i));
 		return lines[0].getImageCount()-1;

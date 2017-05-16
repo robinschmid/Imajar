@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -19,12 +18,17 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.SettingsModule;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 public class ModuleMenu extends JButton {
 	
@@ -119,52 +123,80 @@ public class ModuleMenu extends JButton {
 					//int[] ind = DialogLoggerUtil.showListDialogAndChoose(ImageEditorWindow.getEditor(), list, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					
 
-					TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(ImageEditorWindow.getEditor(), ImageEditorWindow.getEditor().getModuleTreeImages().getRoot(), TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, ImageEditorWindow.getEditor().getModuleTreeImages().getTree().getSelectionPaths());
+					final TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(ImageEditorWindow.getEditor(), ImageEditorWindow.getEditor().getModuleTreeImages().getRoot(), TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, ImageEditorWindow.getEditor().getModuleTreeImages().getTree().getSelectionPaths());
 					if(paths==null) return;
-					// apply settings to all images
-					// save parent collection for avoiding double processing
-					Vector<DefaultMutableTreeNode> parent = new Vector<DefaultMutableTreeNode>();
-					//
-					for(TreePath p : paths) { 
-						DefaultMutableTreeNode node = (DefaultMutableTreeNode)p.getLastPathComponent();
-						// check if already done in parents!
-						boolean added = false;
-						for(DefaultMutableTreeNode pnode : parent) {
-							if(pnode.isNodeChild(node)) {
-								added = true;
-								break;
-							}
-						}
-						// otherwise 
-						if(added == false) {
-							if(Image2D.class.isInstance(node.getUserObject())) {
-								menu.applyToImage(mod.getSettings(), (Image2D)node.getUserObject());
-							}
-							else {
-								// is a parent
-								parent.addElement(node);
-								// add all children
-								for(int i=0; i<node.getChildCount(); i++) {
-									Object obj = ((DefaultMutableTreeNode)node.getChildAt(i)).getUserObject();
-									if(Image2D.class.isInstance(obj)) {
-										menu.applyToImage(mod.getSettings(), (Image2D)obj);
+					ProgressDialog.startTask(new ProgressUpdateTask(paths.length) {
+						@Override
+						protected Boolean doInBackground() throws Exception {
+							// apply settings to all images
+							for(TreePath p : paths) { 
+								try {
+									// null, project, group or image2d (collectable2d
+									Object o = ((DefaultMutableTreeNode)p.getLastPathComponent()).getUserObject();
+									if(o!=null) {
+										// project?
+										if(ImagingProject.class.isInstance(o)) {
+											applyToImagingProject(mod.getSettings(), (ImagingProject)o, this);
+										}
+										else if(ImageGroupMD.class.isInstance(o)) {
+											applyToImageGroup(mod.getSettings(), (ImageGroupMD)o, this);
+										}
+										else if(Image2D.class.isInstance(o)) {
+											applyToImage(mod.getSettings(), (Image2D)o, this);
+										}
 									}
+								} catch (Exception e1) { 
+									e1.printStackTrace();
+									DialogLoggerUtil.showErrorDialog(mod, "Error while applying settings to other images", e1);
 								}
 							}
+							return true;
 						}
-						
-					}
+						private void applyToImagingProject(Settings sett, ImagingProject img, ProgressUpdateTask task) throws Exception {
+							for(ImageGroupMD g : img.getGroups()) {
+								applyToImageGroup(sett, g, task);
+								addProgressStep(-1.0 + 1.0/img.getGroups().size());
+							}
+						}
+						private void applyToImageGroup(Settings sett, ImageGroupMD img, ProgressUpdateTask task) throws Exception {
+							for(Collectable2D c : img.getImages()) {
+								if(Image2D.class.isInstance(c)) 
+									applyToImage(sett, (Image2D)c, task);
+
+								addProgressStep(-1.0 + 1.0/img.getImages().size());
+							}
+						}
+						private void applyToImage(Settings sett, Image2D img, ProgressUpdateTask task) throws Exception {
+							sett.applyToImage(img);
+							if(menu.applyToListener!=null)
+								for(ModuleMenuApplyToImage l : menu.applyToListener)
+									l.applyToImage(sett, img);
+							
+							addProgressStep(1.0);
+						}
+					});
+					
 				} catch (Exception e1) { 
 					e1.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(mod, "Error while applying settings to other images", e1);
 				}
 			}
 		}); 
+		
 		menu.addMenuItem(applyToImg); 
 		// 
 		return menu;
 	}
 	
+	public void applyToImagingProject(Settings sett, ImagingProject img) throws Exception {
+		for(ImageGroupMD g : img.getGroups())
+			applyToImageGroup(sett, g);
+	}
+	public void applyToImageGroup(Settings sett, ImageGroupMD img) throws Exception {
+		for(Collectable2D c : img.getImages())
+			if(Image2D.class.isInstance(c))
+				applyToImage(sett, (Image2D)c);
+	}
 	public void applyToImage(Settings sett, Image2D img) throws Exception {
 		sett.applyToImage(img);
 		if(applyToListener!=null)

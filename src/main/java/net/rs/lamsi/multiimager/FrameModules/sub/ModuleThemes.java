@@ -38,6 +38,7 @@ import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import org.jfree.chart.editor.ChartEditor;
 import org.jfree.chart.editor.ChartEditorManager;
 import org.jfree.chart.util.ResourceBundleWrapper;
+import net.rs.lamsi.general.framework.basics.JFontSpecs;
 
 public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Collectable2D> {
 	// mystuff
@@ -62,6 +63,11 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	private JCheckBox cbScientificIntensities;
 	private JTextField txtPaintScaleTitle;
 	private JCheckBox cbUsePaintscaleTitle;
+	private JFontSpecs fontMaster;
+	private JFontSpecs fontAxesCaption;
+	private JFontSpecs fontAxesLabels;
+	private JFontSpecs fontPlotTitle;
+	private JFontSpecs fontScale;
 	//
 
 	/**
@@ -79,7 +85,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		JPanel panel_1 = new JPanel();
 		general.getPnContent().add(panel_1, BorderLayout.NORTH);
-		panel_1.setLayout(new MigLayout("", "[grow][][][grow]", "[][][][]"));
+		panel_1.setLayout(new MigLayout("", "[grow][][][grow]", "[][][]"));
 		
 		JButton btnPlotSettings = new JButton("Plot settings");
 		btnPlotSettings.addActionListener(new ActionListener() {
@@ -114,7 +120,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		JPanel panel_2 = new JPanel();
 		pnFonts.getPnContent().add(panel_2, BorderLayout.NORTH);
-		panel_2.setLayout(new MigLayout("", "[grow][][][grow]", "[][]")); 
+		panel_2.setLayout(new MigLayout("", "[grow][center][grow]", "[][grow][grow][grow]")); 
 		
 		JButton btnForPrint = new JButton("For print");
 		btnForPrint.addActionListener(new ActionListener() {
@@ -122,7 +128,41 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 				applyChangeThemeForPrint(true);
 			}
 		});
-		panel_2.add(btnForPrint, "cell 1 1");
+		panel_2.add(btnForPrint, "flowx,cell 1 0");
+		
+		JPanel panel_5 = new JPanel();
+		panel_2.add(panel_5, "cell 1 1,growy");
+		panel_5.setLayout(new MigLayout("", "[][grow]", "[][grow][grow][grow][grow]"));
+		
+		JLabel lblFont = new JLabel("Font");
+		panel_5.add(lblFont, "cell 0 0,alignx center");
+		
+		JLabel lblGeneral = new JLabel("Master");
+		lblGeneral.setFont(new Font("Tahoma", Font.BOLD, 13));
+		lblGeneral.setToolTipText("The master font changes all sub fonts");
+		panel_5.add(lblGeneral, "cell 0 1,alignx right");
+		
+		fontMaster = new JFontSpecs();
+		panel_5.add(fontMaster, "cell 1 1,alignx center,growy");
+		
+		JLabel lblAxesCaptions = new JLabel("Axes captions");
+		lblAxesCaptions.setFont(new Font("Tahoma", Font.BOLD, 11));
+		panel_5.add(lblAxesCaptions, "flowy,cell 0 2");
+		
+		fontAxesCaption = new JFontSpecs();
+		panel_5.add(fontAxesCaption, "cell 1 2,grow");
+		
+		JLabel lblAxelLabels = new JLabel("Axes labels");
+		panel_5.add(lblAxelLabels, "cell 0 3,alignx right");
+		
+		fontAxesLabels = new JFontSpecs();
+		panel_5.add(fontAxesLabels, "cell 1 3,grow");
+		
+		JLabel lblPlotTitle = new JLabel("Plot title");
+		panel_5.add(lblPlotTitle, "cell 0 4,alignx right");
+		
+		fontPlotTitle = new JFontSpecs();
+		panel_5.add(fontPlotTitle, "cell 1 4,grow");
 		
 		JButton btnForPresentation = new JButton("For presentation");
 		btnForPresentation.addActionListener(new ActionListener() {
@@ -130,7 +170,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 				applyChangeThemeForPrint(false); 
 			}
 		});
-		panel_2.add(btnForPresentation, "flowy,cell 2 1");
+		panel_2.add(btnForPresentation, "cell 1 0");
 		
 		Module modAxes = new Module("Axes and scale");
 		panel.add(modAxes, BorderLayout.CENTER); 
@@ -191,7 +231,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		JPanel panel_4 = new JPanel();
 		panel_3.add(panel_4, "cell 1 7 2 1");
-		panel_4.setLayout(new MigLayout("", "[][85.00][][grow]", "[][][][][]"));
+		panel_4.setLayout(new MigLayout("", "[][85.00,grow][][]", "[][][][][][grow][grow]"));
 		
 		JLabel lblUnit = new JLabel("value");
 		panel_4.add(lblUnit, "cell 0 0,alignx trailing");
@@ -200,14 +240,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		txtScaleValue.setToolTipText("Value for scale width");
 		txtScaleValue.setText("1");
 		txtScaleValue.setHorizontalAlignment(SwingConstants.TRAILING);
-		panel_4.add(txtScaleValue, "flowx,cell 1 0,growx");
+		panel_4.add(txtScaleValue, "flowx,cell 1 0,alignx left");
 		txtScaleValue.setColumns(10);
-		
-		txtScaleUnit = new JTextField();
-		txtScaleUnit.setToolTipText("Unit for scale width");
-		txtScaleUnit.setPreferredSize(new Dimension(5, 20));
-		panel_4.add(txtScaleUnit, "flowx,cell 2 0");
-		txtScaleUnit.setColumns(10);
 		
 		JLabel lblFactor = new JLabel("factor");
 		panel_4.add(lblFactor, "cell 0 1,alignx trailing");
@@ -216,7 +250,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		txtScaleFactor.setHorizontalAlignment(SwingConstants.TRAILING);
 		txtScaleFactor.setToolTipText("Factor used for scale width calculation");
 		txtScaleFactor.setText("1");
-		panel_4.add(txtScaleFactor, "cell 1 1,growx");
+		panel_4.add(txtScaleFactor, "cell 1 1,alignx left");
 		txtScaleFactor.setColumns(10);
 		
 		Component verticalStrut = Box.createVerticalStrut(20);
@@ -234,14 +268,23 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		JLabel lblYPos = new JLabel("y pos");
 		panel_4.add(lblYPos, "cell 0 4,alignx trailing");
 		
-		JLabel lblUnit_1 = new JLabel("unit");
-		panel_4.add(lblUnit_1, "cell 2 0");
-		
 		sliderScaleYPos = new JSlider();
 		sliderScaleYPos.setValue(10);
 		sliderScaleYPos.setPreferredSize(new Dimension(100, 23));
 		sliderScaleYPos.setMinimumSize(new Dimension(100, 23));
-		panel_4.add(sliderScaleYPos, "cell 1 4");
+		panel_4.add(sliderScaleYPos, "cell 1 4,growx");
+		
+		fontScale = new JFontSpecs();
+		panel_4.add(fontScale, "cell 0 5 4 1,alignx left,growy");
+		
+		txtScaleUnit = new JTextField();
+		txtScaleUnit.setToolTipText("Unit for scale width");
+		txtScaleUnit.setPreferredSize(new Dimension(5, 20));
+		panel_4.add(txtScaleUnit, "cell 1 0 2 1");
+		txtScaleUnit.setColumns(10);
+		
+		JLabel lblUnit_1 = new JLabel("unit");
+		panel_4.add(lblUnit_1, "cell 1 0");
 		
 		JLabel lblSignificantDifits = new JLabel("significant difits");
 		panel_3.add(lblSignificantDifits, "cell 2 3");
@@ -341,6 +384,15 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getTxtCSignificantDigits().getDocument().addDocumentListener(dl);
 		getCbUsePaintscaleTitle().addItemListener(il);
 		getTxtPaintScaleTitle().getDocument().addDocumentListener(dl);
+		
+		// font specs
+		getFontAxesCaption().addListener(ccl, il, dl);
+		getFontAxesLabels().addListener(ccl, il, dl);
+		getFontPlotTitle().addListener(ccl, il, dl);
+		getFontScale().addListener(ccl, il, dl);
+		
+		// change? TODO
+		getFontMaster().addListener(ccl, il, dl);
 	}
 	
 	//################################################################################################
@@ -380,6 +432,21 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getCbUsePaintscaleTitle().setSelected(st.isUsePaintScaleTitle());
 		getTxtPaintScaleTitle().setText(st.getPaintScaleTitle());
 		
+		// set fonts:
+		getFontAxesCaption().setSelectedFont(st.getFontAxesTitle());
+		getFontAxesLabels().setSelectedFont(st.getFontAxesLabels());
+		getFontMaster().setSelectedFont(st.getFontGeneral());
+		getFontPlotTitle().setSelectedFont(st.getFontTitle());
+		getFontScale().setSelectedFont(st.getFontScaleInPlot());
+		
+		// colors
+		getFontAxesCaption().setColor(st.getcAxesFont());
+		getFontAxesLabels().setColor(st.getcAxesFont());
+		getFontMaster().setColor(st.getcGeneralFontColor());
+		getFontAxesLabels().setColor(st.getcAxesFont());
+		getFontPlotTitle().setColor(st.getcTitle());
+		getFontScale().setColor(st.getScaleFontColor());
+		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		ImageEditorWindow.getEditor().fireUpdateEvent(true);
@@ -395,7 +462,12 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 						getCbShowXAxis().isSelected(), getCbShowYAxis().isSelected(), 
 						getCbShowScale().isSelected(), getTxtScaleUnit().getText(), floatFromTxt(getTxtScaleFactor()), floatFromTxt(getTxtScaleValue()),
 						getCbPaintscaleInPlot().isSelected(), getSliderScaleXPos().getValue()/100.f, getSliderScaleYPos().getValue()/100.f,
-						cbScientificIntensities.isSelected(), intFromTxt(txtCSignificantDigits), txtPaintScaleTitle.getText(), cbUsePaintscaleTitle.isSelected());
+						cbScientificIntensities.isSelected(), intFromTxt(txtCSignificantDigits), txtPaintScaleTitle.getText(), cbUsePaintscaleTitle.isSelected(),
+						getFontMaster().getSelectedFont(), getFontMaster().getColor(),
+						getFontAxesCaption().getSelectedFont(), getFontAxesCaption().getColor(),
+						getFontAxesLabels().getSelectedFont(), getFontAxesLabels().getColor(),
+						getFontPlotTitle().getSelectedFont(), getFontPlotTitle().getColor(),
+						getFontScale().getSelectedFont(), getFontScale().getColor());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -453,5 +525,20 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	}
 	public JTextField getTxtPaintScaleTitle() {
 		return txtPaintScaleTitle;
+	}
+	public JFontSpecs getFontMaster() {
+		return fontMaster;
+	}
+	public JFontSpecs getFontAxesCaption() {
+		return fontAxesCaption;
+	}
+	public JFontSpecs getFontAxesLabels() {
+		return fontAxesLabels;
+	}
+	public JFontSpecs getFontPlotTitle() {
+		return fontPlotTitle;
+	}
+	public JFontSpecs getFontScale() {
+		return fontScale;
 	}
 }

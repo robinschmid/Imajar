@@ -5,7 +5,6 @@ import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageOverlayRenderer;
@@ -17,8 +16,8 @@ import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -38,8 +37,23 @@ import org.jfree.ui.RectangleInsets;
 
 
 public class HeatmapFactory {
-	// Variablen 
-	
+	/**
+	 * generate heatmap from data
+	 * @param settings
+	 * @param settImage
+	 * @param title
+	 * @param xvalues
+	 * @param yvalues
+	 * @param zvalues
+	 * @return
+	 * @throws Exception
+	 */
+	public static Heatmap generateHeatmap(Image2D img,  String title, double[][] data)  throws Exception  {
+		return createChart(img, createDataset(title, data));
+	}
+	public static Heatmap generateHeatmap(Image2D img,  String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
+		return generateHeatmap(img, title, new double[][]{xvalues, yvalues, zvalues});
+	}
 
 	// Image2D to Heatmap Image
 	public static Heatmap generateHeatmap(Collectable2D image)  throws Exception { 
@@ -56,9 +70,9 @@ public class HeatmapFactory {
 		SettingsPaintScale setPaint = image.getSettings().getSettPaintScale();
 		SettingsGeneralImage setImg = image.getSettings().getSettImage();
 		// get rotated and reflected dataset
-		XYIData2D dat = image.toXYIArray(false, true); 
+		double[][] dat = image.toXYIArray(false, true); 
 		// Heatmap erzeugen
-		Heatmap h = createChart(image, setPaint, setImg, createDataset(image.getSettings().getSettImage().getTitle(), dat.getX(), dat.getY(), dat.getI()));
+		Heatmap h = createChart(image, setPaint, setImg, createDataset(image.getSettings().getSettImage().getTitle(), dat));
 		// TODO WHY?
 		
 		image.getSettings().applyToHeatMap(h);
@@ -67,7 +81,7 @@ public class HeatmapFactory {
 	
 	private static Heatmap generateHeatmapFromImageOverlay(ImageOverlay image)  throws Exception { 
 		// get rotated and reflected dataset
-		XYIData2D[] dat = image.getDataSets();
+		double[][][] dat = image.getDataSets();
 		// Heatmap erzeugen
 		Heatmap h = createChartOverlay(image, createDatasetOverlay(image.getTitles(), dat), "x", "y");
 		// TODO WHY?
@@ -197,18 +211,12 @@ public class HeatmapFactory {
 			// return Heatmap
 	        return heat;
     } 
-	
-	
-	
-	// Diese wird aufgerufen um Heatmap zu generieren.
-	// test heatmap bei ColorPicker Dialog
-	public static Heatmap generateHeatmap(SettingsPaintScale settings, SettingsGeneralImage settImage,  String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
-		// chartpanel der Heatmap hinzufügen 
-		return createChart(null, settings, settImage, createDataset(title, xvalues, yvalues, zvalues));
-	}
-	
 
-	// erstellt ein JFreeChart Plot der heatmap
+	// creates jfreechart plot for heatmap
+	private static Heatmap createChart(Image2D img, IXYZDataset dataset)  throws Exception  {
+    	return createChart(img, (SettingsPaintScale)img.getSettingsByClass(SettingsPaintScale.class),
+    			(SettingsGeneralImage)img.getSettingsByClass(SettingsGeneralImage.class), dataset, "x", "y");
+    }
 	private static Heatmap createChart(Image2D img, SettingsPaintScale settings, SettingsGeneralImage settImage, IXYZDataset dataset)  throws Exception  {
     	return createChart(img, settings, settImage, dataset, "x", "y");
     }
@@ -345,9 +353,9 @@ public class HeatmapFactory {
 	}
 
 	// erstellt XYZDataset aus xyz
-	private static IXYZDataset createDataset(String title, double[] xvalues, double[] yvalues, double[] zvalues) {  
+	private static IXYZDataset createDataset(String title, double[][] dat) {  
         IXYZDataset dataset = new IXYZDataset();
-        dataset.addSeries(title, new double[][] { xvalues, yvalues, zvalues });
+        dataset.addSeries(title, dat);
         return dataset;
     } 
 
@@ -359,15 +367,15 @@ public class HeatmapFactory {
 	 * @param zvalues
 	 * @return
 	 */
-	private static IXYZDataset createDatasetOverlay(String[] title, XYIData2D[] dat) {  
+	private static IXYZDataset createDatasetOverlay(String[] title, double[][][] dat) {  
         IXYZDataset dataset = new IXYZDataset();
         // add one black layer / white layer
         // TODO for overlay
         
         // add all series
         for(int i=0; i<dat.length; i++) {
-        	XYIData2D d  = dat[i];
-        	dataset.addSeries(title[i], new double[][] { d.getX(), d.getY(), d.getI() });
+        	double[][] d  = dat[i];
+        	dataset.addSeries(title[i], d);
         }
         	// might need one dataset for each ?
         return dataset;

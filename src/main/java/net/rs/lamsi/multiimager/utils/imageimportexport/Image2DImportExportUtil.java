@@ -27,7 +27,7 @@ import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
@@ -492,7 +492,7 @@ public class Image2DImportExportUtil {
 
 		// add new Image to image group
 		if(lines.size()>0) {
-			DatasetMD data = new DatasetMD(lines);
+			DatasetLinesMD data = new DatasetLinesMD(lines);
 			ImageGroupMD group = data.createImageGroup();
 			// add bg image
 			if(bgimg!=null) {
@@ -851,7 +851,7 @@ public class Image2DImportExportUtil {
 			}
 		}
 
-		DatasetMD data = new DatasetMD(scanLines);
+		DatasetLinesMD data = new DatasetLinesMD(scanLines);
 		ImageGroupMD group = data.createImageGroup(files[0].getParentFile());
 		for(int i=0;i<group.getImages().size() && i<titles.size(); i++) 
 			setSettingsImage2D(((Image2D)group.getImages().get(i)), flist.get(i), titles.get(i), meta.get(i));
@@ -894,7 +894,7 @@ public class Image2DImportExportUtil {
 		Image2D realImages[] = new Image2D[lines.get(0).getImageCount()];
 		ImageDataset data = null;
 		if(continuous && !hardsplit) data = new DatasetContinuousMD(lines.get(0));
-		else data = new DatasetMD(lines);
+		else data = new DatasetLinesMD(lines);
 		for(int i=0; i<realImages.length; i++) {   
 			// has title line? with xyyyy
 			if(titleLine!=null && titleLine.length>=realImages.length+1)
@@ -1341,7 +1341,7 @@ public class Image2DImportExportUtil {
 			} 
 		}
 		// Generate Image2D from scanLines 
-		DatasetMD data = new DatasetMD(scanLines); 
+		DatasetLinesMD data = new DatasetLinesMD(scanLines); 
 		return data.createImageGroup(file);
 	}
 

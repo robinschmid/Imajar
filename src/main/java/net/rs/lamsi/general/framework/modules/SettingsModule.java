@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
@@ -25,14 +26,14 @@ import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 
 public abstract class SettingsModule<T extends Settings> extends Module implements SettingsChangedListener {
- 
+
 	protected final Class classsettings;
 
 	protected T settings; 
 	protected int presetindex = 4;
 	protected ArrayList<JMenuItem> presets;
 	protected int maxPresets = -1;
-	
+
 	public SettingsModule(String title, boolean westside, Class csettings) { 
 		super(title, westside);
 		classsettings = csettings;
@@ -46,13 +47,13 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 		menu.addSeparator();
 		// load files from directory as presets
 		Settings sett = SettingsHolder.getSettings().getSettingsByClass(csettings);
-		
+
 		if(sett!=null) {
 			File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
 			String type = sett.getFileEnding();
 			try {
 				if(path.exists()) {
-					Vector<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
+					List<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
 					// load each file as settings and add to menu as preset
 					for(File f : files.get(0)) {
 						// load
@@ -69,41 +70,41 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 				ex.printStackTrace();
 			}
 		}
-		
+
 		this.addPopupMenu(menu);
 	} 
-	
+
 	public void addMenu(ModuleMenu menu) {
-			// sep
-			menu.addSeparator();
-			// load files from directory as presets
-			Settings sett = SettingsHolder.getSettings().getSettingsByClass(classsettings);
-			
-			if(sett!=null) {
-				File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
-				String type = sett.getFileEnding();
-				try {
-					if(path.exists()) {
-						Vector<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
-						// load each file as settings and add to menu as preset
-						for(File f : files.get(0)) {
-							// load
-							try {
-								Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
-								if(load !=null)
-									addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
-							} catch(Exception ex) {
-								ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath(), LOG.WARNING);
-							}
+		// sep
+		menu.addSeparator();
+		// load files from directory as presets
+		Settings sett = SettingsHolder.getSettings().getSettingsByClass(classsettings);
+
+		if(sett!=null) {
+			File path = new File(FileAndPathUtil.getPathOfJar(), sett.getPathSettingsFile());
+			String type = sett.getFileEnding();
+			try {
+				if(path.exists()) {
+					List<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
+					// load each file as settings and add to menu as preset
+					for(File f : files.get(0)) {
+						// load
+						try {
+							Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
+							if(load !=null)
+								addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
+						} catch(Exception ex) {
+							ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath(), LOG.WARNING);
 						}
 					}
-				} catch(Exception ex) {
-					ex.printStackTrace();
 				}
+			} catch(Exception ex) {
+				ex.printStackTrace();
 			}
-			
-			this.addPopupMenu(menu);
-		} 
+		}
+
+		this.addPopupMenu(menu);
+	} 
 
 	//################################################################################################
 	// Autoupdate
@@ -128,8 +129,8 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 	 */
 	public abstract void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il);
 
-	
-	
+
+
 	/**
 	 * adds a preset to the menu
 	 * @param menu
@@ -138,6 +139,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 	 * @return
 	 */
 	public JMenuItem addPreset(ModuleMenu menu, final T settings, String title) { 
+		if(presets== null || presets.size()==0 || !presets.get(0).getText().equals(title)) {
 		// menuitem
 		JMenuItem item = new JMenuItem(title); 
 		menu.addMenuItem(item, presetindex);
@@ -160,7 +162,9 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 		}
 		return item;
 	}
-	
+	return null;
+	}
+
 	/**
 	 * adds a preset to the menu
 	 * @param menu
@@ -169,120 +173,100 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 	 * @return
 	 */
 	public JMenuItem addPreset(final T settings, String title) { 
-		// menuitem
-		JMenuItem item = new JMenuItem(title); 
-		menu.addMenuItem(item, presetindex);
-		item.addActionListener(new ActionListener() {  
-			@Override
-			public void actionPerformed(ActionEvent e) { 
-				try {
-					setSettings((T) BinaryWriterReader.deepCopy(settings));
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-		}); 
-		if(presets==null)
-			presets = new ArrayList<JMenuItem>();
-		presets.add (item);
-		if(presets.size()>maxPresets && maxPresets!=-1) {
-			JMenuItem i = presets.remove(0);
-			menu.removeMenuItem(i);
-		}
-		return item;
+		return addPreset(menu, settings, title);
 	}
-	
+
 
 	// settings changed via load --> menu
 	@Override
 	public void settingsChanged(Settings settings) {
 		this.setSettings((T)settings);
 	}
-	
 
-		//################################################################################################
-		// LOGIC
-		// Paintsclae from Image
-		/**
-		 * set all settings --> panel
-		 * @param si
-		 * @throws Exception 
-		 */
-		public abstract void setAllViaExistingSettings(T si) throws Exception;
-		
-		/**
-		 * set all panel --> settings
-		 * @return
-		 */
-		public T writeAllToSettings() {
-			return writeAllToSettings(settings);
-		}
 
-		public abstract T writeAllToSettings(T si);
-		
+	//################################################################################################
+	// LOGIC
+	// Paintsclae from Image
+	/**
+	 * set all settings --> panel
+	 * @param si
+	 * @throws Exception 
+	 */
+	public abstract void setAllViaExistingSettings(T si) throws Exception;
 
-		//################################################################################################
-		// GETTERS and SETTERS
-		public T getSettings() {
-			return settings;
-		}
-		/**
-		 * gets called by window? like every other method
-		 * @param settings
-		 */
-		public void setSettings(T settings) {
-			this.settings = settings;
-			if(settings!=null) {
-				try {
-					setAllViaExistingSettings(settings);
-					// transfer to Settingsholder
-					SettingsHolder.getSettings().replaceSettings((Settings)settings);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
+	/**
+	 * set all panel --> settings
+	 * @return
+	 */
+	public T writeAllToSettings() {
+		return writeAllToSettings(settings);
+	}
 
-		/**
-		 * gets called by menu 
-		 * saves settings to file
-		 */
-		public void saveSettings() {
+	public abstract T writeAllToSettings(T si);
+
+
+	//################################################################################################
+	// GETTERS and SETTERS
+	public T getSettings() {
+		return settings;
+	}
+	/**
+	 * gets called by window? like every other method
+	 * @param settings
+	 */
+	public void setSettings(T settings) {
+		this.settings = settings;
+		if(settings!=null) {
 			try {
-				SettingsHolder settings = SettingsHolder.getSettings(); 
-				Settings s = (Settings) getSettings();
-				if(s!=null) {
-					File f = settings.saveSettingsToFile(this, s);
-					File presetpath = new File(FileAndPathUtil.getPathOfJar(), s.getPathSettingsFile());
-					// path in presets?
-					if(f!=null && f.getParentFile().equals(presetpath)) {
-						// add to presets
-						addPreset(getPopupMenu(), (T)s, FileAndPathUtil.eraseFormat(f.getName()));
-					}
-				}
-			} catch (Exception e1) { 
-				e1.printStackTrace();
-				DialogLoggerUtil.showErrorDialog(this, "Error while saving", e1);
+				setAllViaExistingSettings(settings);
+				// transfer to Settingsholder
+				SettingsHolder.getSettings().replaceSettings((Settings)settings);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
+	}
 
-		public int getPresetindex() {
-			return presetindex;
+	/**
+	 * gets called by menu 
+	 * saves settings to file
+	 */
+	public void saveSettings() {
+		try {
+			SettingsHolder settings = SettingsHolder.getSettings(); 
+			Settings s = (Settings) getSettings();
+			if(s!=null) {
+				File f = settings.saveSettingsToFile(this, s);
+				File presetpath = new File(FileAndPathUtil.getPathOfJar(), s.getPathSettingsFile());
+				// path in presets?
+				if(f!=null && f.getParentFile().equals(presetpath)) {
+					// add to presets
+					addPreset(getPopupMenu(), (T)s, FileAndPathUtil.eraseFormat(f.getName()));
+				}
+			}
+		} catch (Exception e1) { 
+			e1.printStackTrace();
+			DialogLoggerUtil.showErrorDialog(this, "Error while saving", e1);
 		}
+	}
 
-		public void setPresetindex(int presetindex) {
-			this.presetindex = presetindex;
-		} 
+	public int getPresetindex() {
+		return presetindex;
+	}
 
-		public Class getSettingsClass() {
-			return classsettings;
-		}
+	public void setPresetindex(int presetindex) {
+		this.presetindex = presetindex;
+	} 
 
-		public int getMaxPresets() {
-			return maxPresets;
-		}
+	public Class getSettingsClass() {
+		return classsettings;
+	}
 
-		public void setMaxPresets(int maxPresets) {
-			this.maxPresets = maxPresets;
-		}
+	public int getMaxPresets() {
+		return maxPresets;
+	}
+
+	public void setMaxPresets(int maxPresets) {
+		this.maxPresets = maxPresets;
+	}
 }

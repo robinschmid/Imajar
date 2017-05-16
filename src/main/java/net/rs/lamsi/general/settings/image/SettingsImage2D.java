@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.filter.SettingsCropAndShift;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
@@ -16,6 +17,7 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class SettingsImage2D extends SettingsContainerCollectable2D implements Image2DSett {
 	// do not change the version!
@@ -34,6 +36,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		addSettings(new SettingsImage2DOperations());
 		addSettings(new SettingsZoom());
 		addSettings(new SettingsSelections());
+		addSettings(new SettingsCropAndShift());
 	} 
 
 
@@ -48,6 +51,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
 			addSettings(new SettingsSelections());
+			addSettings(new SettingsCropAndShift());
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -62,6 +66,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
 			addSettings(new SettingsSelections());
+			addSettings(new SettingsCropAndShift());
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
@@ -74,7 +79,10 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		String name = img.getTitle();
 		String shortTitle = sg.getShortTitle();
 		String path = img.getSettings().getSettImage().getRAWFilepath();
+
+		DebugStopWatch t = new DebugStopWatch();
 		super.applyToImage(img);
+		t.stopAndLOG(" copy image2d settings");
 		
 		// reset to old short title only if not the same title
 		if(!name.equals(img.getTitle()))
@@ -82,7 +90,6 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 
 		// reset to old title
 		img.getSettings().getSettImage().setTitle(name);
-		
 		img.getSettings().getSettImage().setRAWFilepath(path);
 	}
 

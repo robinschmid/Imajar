@@ -4,7 +4,7 @@ import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -16,7 +16,7 @@ public class DIATask {
 	private int newFileIndex = 0;
 	private FileDim[] lastFiles; 
 	// save all lines in here. old lines have to be deleted and new lines are to be added
-	private DatasetMD data;
+	private DatasetLinesMD data;
 	
 	private ImageGroupMD img;
 	private IconNode[] nodes;
@@ -31,7 +31,7 @@ public class DIATask {
 		//
 		this.nodes = nodes;
 		// add lines to this data set
-		data = (DatasetMD) img.getData();
+		data = (DatasetLinesMD) img.getData();
 	}
 
 

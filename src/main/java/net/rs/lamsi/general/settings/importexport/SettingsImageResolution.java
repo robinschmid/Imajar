@@ -146,6 +146,12 @@ public class SettingsImageResolution extends Settings {
 	public void setSize(int width, int height) { 
 		this.size = new Dimension((int)width, (int)height);
 	}
+	public void setHeight(int height) {
+		setSize((int)size.getWidth(), height);
+	}
+	public void setWidth(int width) {
+		setSize(width, (int)size.getHeight());
+	}
 	
 	/**
 	 * 

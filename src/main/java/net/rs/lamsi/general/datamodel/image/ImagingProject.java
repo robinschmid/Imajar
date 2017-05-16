@@ -60,7 +60,11 @@ public class ImagingProject  implements Serializable {
 	 * @param img
 	 */
 	public void add(ImageGroupMD grp) {
-		// same name?
+		// same name as project
+		if(getName().equals(grp.getName())) {
+			grp.getSettings().setName(grp.getName()+" (G)");
+		}
+		// same name as other group?
 		int c = 1;
 		for(int i=0; i<groups.size(); i++) {
 			ImageGroupMD g = groups.get(i);

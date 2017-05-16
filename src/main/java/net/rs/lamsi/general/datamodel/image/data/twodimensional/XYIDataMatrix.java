@@ -2,6 +2,7 @@ package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
 public class XYIDataMatrix {
 
+	// NaN  at line end
 	protected Double[][] i;
 	protected Float[][] x,y;
 
@@ -34,5 +35,43 @@ public class XYIDataMatrix {
 	}
 	public void setY(Float[][] y) {
 		this.y = y;
+	}
+	
+	public int getMinimumLineLength() {
+		int min = Integer.MAX_VALUE;
+		for(Double[] d : i) {
+			int length = lineLength(d);
+			if(length<min) min = length;
+		}
+		return min;
+	}
+	public int getMaximumLineLength() {
+		int max = 0;
+		for(Double[] d : i) {
+			int length = lineLength(d);
+			if(length>max) max = length;
+		}
+		return max;
+	}
+	public int getAverageLineLength() {
+		int max = 0;
+		for(Double[] d : i) {
+			int length = lineLength(d);
+			max += length;
+		}
+		max = max / i.length;
+		return max;
+	}
+	public int lineLength(int line) {
+		if(line>=i.length)
+			return 0;
+		return lineLength(i[line]);
+	}
+	private int lineLength(Double[] l) {
+		for(int i=l.length-1; i>=0; i--) {
+			if(!Double.isNaN(l[i]))
+				return i+1;
+		}
+		return 0;
 	}
 }

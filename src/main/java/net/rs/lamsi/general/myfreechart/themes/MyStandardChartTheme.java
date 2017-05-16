@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.myfreechart.themes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Paint;
 
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
@@ -25,6 +26,8 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	protected boolean showXGrid = false, showYGrid = false;
 	protected boolean showXAxis= true, showYAxis = true;
 	// scale for x / y width
+	protected Font fontScaleInPlot = new Font("Arial", Font.PLAIN, 11);
+	protected Color scaleFontColor = Color.black;
 	protected boolean showScale = false;
 	protected String scaleUnit = "";
 	protected float scaleFactor = 1;
@@ -91,7 +94,9 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Settings.toXML(el, doc, "scaleFactor", scaleFactor); 
 		Settings.toXML(el, doc, "scaleValue", scaleValue); 
 		Settings.toXML(el, doc, "scaleXPos", scaleXPos); 
-		Settings.toXML(el, doc, "scaleYPos", scaleYPos);  
+		Settings.toXML(el, doc, "scaleYPos", scaleYPos); 
+		Settings.toXML(el, doc, "fontScaleInPlot", fontScaleInPlot); 
+		Settings.toXML(el, doc, "scaleFontColor", scaleFontColor);  
 	}
 
 	public void loadValuesFromXML(Element el, Document doc) {
@@ -113,6 +118,8 @@ public class MyStandardChartTheme extends StandardChartTheme {
 				else if(paramName.equals("scaleValue"))scaleValue = Settings.floatFromXML(nextElement);  
 				else if(paramName.equals("scaleXPos"))scaleXPos = Settings.floatFromXML(nextElement);  
 				else if(paramName.equals("scaleYPos"))scaleYPos = Settings.floatFromXML(nextElement);  
+				else if(paramName.equals("fontScaleInPlot"))fontScaleInPlot = Settings.fontFromXML(nextElement);  
+				else if(paramName.equals("scaleFontColor"))scaleFontColor = Settings.colorFromXML(nextElement);  
 			}
 		}
 	}
@@ -214,5 +221,21 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
 	public void setScaleYPos(float scaleYPos) {
 		this.scaleYPos = scaleYPos;
+	}
+
+	public Font getFontScaleInPlot() {
+		return fontScaleInPlot;
+	}
+
+	public Color getScaleFontColor() {
+		return scaleFontColor;
+	}
+
+	public void setFontScaleInPlot(Font fontScaleInPlot) {
+		this.fontScaleInPlot = fontScaleInPlot;
+	}
+
+	public void setScaleFontColor(Color scaleFontColor) {
+		this.scaleFontColor = scaleFontColor;
 	}
 }

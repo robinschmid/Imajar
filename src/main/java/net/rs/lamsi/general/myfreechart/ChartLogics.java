@@ -1,9 +1,13 @@
 package net.rs.lamsi.general.myfreechart;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+
+import javax.swing.JPanel;
 
 import net.sf.mzmine.util.Range;
 
@@ -16,7 +20,8 @@ import org.jfree.ui.RectangleEdge;
 
 public class ChartLogics {
 
-	
+
+    private static JPanel p = new JPanel(new BorderLayout());
 	
 	/**
 	 * Translates mouse coordinates to chart coordinates (xy-axis)
@@ -33,15 +38,18 @@ public class ChartLogics {
         Rectangle2D dataArea = info.getPlotInfo().getDataArea(); 
 
         ValueAxis domainAxis = plot.getDomainAxis();
-        RectangleEdge domainAxisEdge = plot.getDomainAxisEdge();
         ValueAxis rangeAxis = plot.getRangeAxis();
-        RectangleEdge rangeAxisEdge = plot.getRangeAxisEdge();
-        double chartX = domainAxis.java2DToValue(p.getX(), dataArea,
-                domainAxisEdge);
-        double chartY = rangeAxis.java2DToValue(p.getY(), dataArea,
-                rangeAxisEdge); 
- 
-		return new Point2D.Double(chartX, chartY);
+        if(domainAxis!=null && rangeAxis!=null) {
+	        RectangleEdge domainAxisEdge = plot.getDomainAxisEdge();
+	        RectangleEdge rangeAxisEdge = plot.getRangeAxisEdge();
+	        double chartX = domainAxis.java2DToValue(p.getX(), dataArea,
+	                domainAxisEdge);
+	        double chartY = rangeAxis.java2DToValue(p.getY(), dataArea,
+	                rangeAxisEdge); 
+		 
+			return new Point2D.Double(chartX, chartY);
+        }
+        else return null;
 	}
     
     /**
@@ -75,76 +83,70 @@ public class ChartLogics {
 	}
     
     /**
-     * 
+     * calls this method twice (2 iterations) with an estimated chartHeight of 3*chartWidth
      * @param myChart
      * @param dataWidth width of data
      * @param axis for width calculation 
      * @return
      */
     public static double calcHeightToWidth(ChartPanel myChart, double chartWidth) {  
-    	//if(myChart.getChartRenderingInfo()==null || myChart.getChartRenderingInfo().getChartArea()==null || myChart.getChartRenderingInfo().getChartArea().getWidth()==0)
-//    	myChart.setBounds(0, 0, 3000, 3000);	
-    	myChart.setSize((int)chartWidth, (int)chartWidth*3);
-    	myChart.paintImmediately(myChart.getBounds());
-    		
-        XYPlot plot = (XYPlot) myChart.getChart().getPlot();
-        ChartRenderingInfo info = myChart.getChartRenderingInfo();
-        Rectangle2D dataArea = info.getPlotInfo().getDataArea();
-        Rectangle2D chartArea = info.getChartArea(); 
-        
-        // calc title space: will be added later to the right plot size
-        double titleWidth = chartArea.getWidth()-dataArea.getWidth();
-        double titleHeight = chartArea.getHeight()-dataArea.getHeight(); 
-        
-        // calc right plot size with axis dim.
-        // real plot width is given by factor;  
-        double realPW = chartWidth-titleWidth;
-        
-        // ranges
-        ValueAxis domainAxis = plot.getDomainAxis();
-        org.jfree.data.Range x = domainAxis.getRange();
-        ValueAxis rangeAxis = plot.getRangeAxis();
-        org.jfree.data.Range y = rangeAxis.getRange();
-        
-        // real plot height can be calculated by 
-        double realPH = realPW / x.getLength()*y.getLength();
-        
-        double height = realPH + titleHeight; 
-        
-        //return height;
-		return calcHeightToWidth(myChart, chartWidth, height);
+    	return calcHeightToWidth(myChart, chartWidth, (int)chartWidth*3, 2);
 	}
-    
-    private static double calcHeightToWidth(ChartPanel myChart, double chartWidth, double estimatedHeight) {  
+    /**
+     * calculates the correct height with multiple iterations
+     * @param myChart
+     * @param dataWidth width of data
+     * @param axis for width calculation 
+     * @return
+     */
+    public static double calcHeightToWidth(ChartPanel myChart, double chartWidth, double estimatedHeight, int iterations) {  
     	//if(myChart.getChartRenderingInfo()==null || myChart.getChartRenderingInfo().getChartArea()==null || myChart.getChartRenderingInfo().getChartArea().getWidth()==0)
-//    	myChart.setBounds(0, 0, 3000, 3000);	
-    	myChart.setSize((int)chartWidth, (int)estimatedHeight);
-    	myChart.paintImmediately(myChart.getBounds());
+    	// result
+    	double height = estimatedHeight;
+    	
+    	// paint on a ghost panel
+    	JPanel parent = (JPanel)myChart.getParent();
+    	JPanel p = new JPanel();
+    	p.removeAll();
+    	p.add(myChart, BorderLayout.CENTER);
+    	try {
+    	for(int i=0; i<iterations; i++) {
+    		// paint on ghost panel with estimated height
+        	p.setSize((int)chartWidth, (int)estimatedHeight);
+        	p.paintImmediately(p.getBounds());
+
+        	XYPlot plot = (XYPlot) myChart.getChart().getPlot();
+            ChartRenderingInfo info = myChart.getChartRenderingInfo();
+            Rectangle2D dataArea = info.getPlotInfo().getDataArea();
+            Rectangle2D chartArea = info.getChartArea(); 
+            
+            // calc title space: will be added later to the right plot size
+            double titleWidth = chartArea.getWidth()-dataArea.getWidth();
+            double titleHeight = chartArea.getHeight()-dataArea.getHeight(); 
+            
+            // calc right plot size with axis dim.
+            // real plot width is given by factor;  
+            double realPW = chartWidth-titleWidth;
+            
+            // ranges
+            ValueAxis domainAxis = plot.getDomainAxis();
+            org.jfree.data.Range x = domainAxis.getRange();
+            ValueAxis rangeAxis = plot.getRangeAxis();
+            org.jfree.data.Range y = rangeAxis.getRange();
+            
+            // real plot height can be calculated by 
+            double realPH = realPW / x.getLength()*y.getLength();
+            
+            height = realPH + titleHeight; 
+    	}
+    	}catch(Exception ex) {
+    		ex.printStackTrace();
+    	}
+    	
+    	// reset to frame
+    	p.removeAll();
+    	parent.add(myChart);
     		
-        XYPlot plot = (XYPlot) myChart.getChart().getPlot();
-        ChartRenderingInfo info = myChart.getChartRenderingInfo();
-        Rectangle2D dataArea = info.getPlotInfo().getDataArea();
-        Rectangle2D chartArea = info.getChartArea(); 
-        
-        // calc title space: will be added later to the right plot size
-        double titleWidth = chartArea.getWidth()-dataArea.getWidth();
-        double titleHeight = chartArea.getHeight()-dataArea.getHeight(); 
-        
-        // calc right plot size with axis dim.
-        // real plot width is given by factor;  
-        double realPW = chartWidth-titleWidth;
-        
-        // ranges
-        ValueAxis domainAxis = plot.getDomainAxis();
-        org.jfree.data.Range x = domainAxis.getRange();
-        ValueAxis rangeAxis = plot.getRangeAxis();
-        org.jfree.data.Range y = rangeAxis.getRange();
-        
-        // real plot height can be calculated by 
-        double realPH = realPW / x.getLength()*y.getLength();
-        
-        double height = realPH + titleHeight; 
-        
 		return height;
 	}
     
@@ -154,7 +156,16 @@ public class ChartLogics {
      * @return
      */
     public static double calcWidthToHeight(ChartPanel myChart, double chartHeight) {  
-    	myChart.paintImmediately(myChart.getBounds());
+    	// paint on a ghost panel
+    	JPanel parent = (JPanel)myChart.getParent();
+    	JPanel p = new JPanel();
+    	p.removeAll();
+    	p.add(myChart, BorderLayout.CENTER);
+    	p.setBounds(myChart.getBounds());
+    	p.paintImmediately(myChart.getBounds());
+    	p.removeAll();
+    	parent.add(myChart);
+    	
         XYPlot plot = (XYPlot) myChart.getChart().getPlot();
         ChartRenderingInfo info = myChart.getChartRenderingInfo();
         Rectangle2D dataArea = info.getPlotInfo().getDataArea();
@@ -189,7 +200,16 @@ public class ChartLogics {
      * @return
      */
     public static Dimension calcMaxSize(ChartPanel myChart, double chartWidth, double chartHeight) {  
-    	myChart.paintImmediately(myChart.getBounds());
+    	// paint on a ghost panel
+    	JPanel parent = (JPanel)myChart.getParent();
+    	JPanel p = new JPanel();
+    	p.removeAll();
+    	p.add(myChart, BorderLayout.CENTER);
+    	p.setBounds(myChart.getBounds());
+    	p.paintImmediately(myChart.getBounds());
+    	p.removeAll();
+    	parent.add(myChart);
+    	
         XYPlot plot = (XYPlot) myChart.getChart().getPlot();
         ChartRenderingInfo info = myChart.getChartRenderingInfo();
         Rectangle2D dataArea = info.getPlotInfo().getDataArea();

@@ -1,22 +1,20 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 
 /**
  * basic dataset of multiple scan lines
  * @author Robin Schmid
  *
  */
-public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Serializable  {
+public class DatasetContinuousMD  extends MDDataset implements Serializable  {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
@@ -112,7 +110,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		return line.removeDimension(i);
 	}
 	@Override
-	public int addDimension(Vector<Double[]> dim) {
+	public int addDimension(List<Double[]> dim) {
 		line.addDimension(dim.get(0));
 		return line.getImageCount()-1;
 	}
