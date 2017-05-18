@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.datamodel.image.interf;
+package net.rs.lamsi.general.datamodel.image.data.interf;
 
 import java.io.Serializable;
 import java.util.List;

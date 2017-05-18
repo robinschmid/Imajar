@@ -6,7 +6,8 @@ import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralRotation;
 
 /**
@@ -69,6 +70,22 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 		if(dataFile!=null) {
 			g.getSettings().setName((dataFile.getName()));
 			g.getSettings().setPathData(dataFile.getAbsolutePath());
+		}
+		return g;
+	}
+	public ImageGroupMD createImageGroup(File dataFile, List<String> titles) {
+		ImageGroupMD g = createImageGroup();
+		// set data path and name
+		if(dataFile!=null) {
+			g.getSettings().setName((dataFile.getName()));
+			g.getSettings().setPathData(dataFile.getAbsolutePath());
+		}
+		
+		// set titles
+		int i = 0;
+		for(Collectable2D c : g.getImages()) {
+			((Image2D) c).getSettings().getSettImage().setTitle(titles.get(i));
+			i++;
 		}
 		return g;
 	}

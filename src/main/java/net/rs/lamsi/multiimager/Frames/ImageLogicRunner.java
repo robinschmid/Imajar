@@ -21,9 +21,9 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
@@ -395,7 +395,7 @@ public class ImageLogicRunner {
 				if(noProject)
 					project = new ImagingProject(selectedImage.getImageGroup(), selectedImage.getImageGroup().getName());
 				try {
-					Image2DImportExportUtil.writeToStandardZip(project, file);
+					Image2DImportExportUtil.writeProjectToStandardZip(project, file);
 					preferences.addImage2DImportExportPath(file);
 				} catch (IOException e) {
 					e.printStackTrace();

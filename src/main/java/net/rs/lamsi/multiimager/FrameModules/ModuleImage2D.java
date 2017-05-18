@@ -87,7 +87,7 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 		addModule(moduleOperations);
 
 		// add all modules for Image settings TODO add all mods
-		listSettingsModules.addElement(moduleGeneral.getModSplitConImg());
+		listSettingsModules.add(moduleGeneral.getModSplitConImg());
 	}
 	
 

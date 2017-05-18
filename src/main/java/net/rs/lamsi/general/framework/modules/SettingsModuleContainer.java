@@ -4,7 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
@@ -41,7 +41,7 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 	private JCheckBox cbAuto;
 	
 	// list of all Modules
-	protected Vector<Module> listSettingsModules = new Vector<Module>();
+	protected ArrayList<Module> listSettingsModules = new ArrayList<Module>();
 
 	public SettingsModuleContainer(String title, boolean westside, Class settc, Class objclass) { 
 		super(title, westside, settc, objclass);
@@ -77,7 +77,7 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 	 */
 	public void addModule(Module mod) {
 		gridsettings.add(mod);
-		listSettingsModules.addElement(mod);
+		listSettingsModules.add(mod);
 	}
 	
 	/**

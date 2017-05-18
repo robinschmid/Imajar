@@ -12,13 +12,13 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
 import net.rs.lamsi.general.settings.Settings;
@@ -34,6 +34,8 @@ import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
+import net.rs.lamsi.general.settings.interf.DatasetSettings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -1170,8 +1172,13 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		if(settings== null)
 			return;
 
-		super.setSettings(settings);
-
+		// dataset settings
+		if(DatasetSettings.class.isInstance(settings)) {
+				getData().setSettings(settings);
+		}
+		else super.setSettings(settings);
+		
+		// fire changes
 		if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
 			((SettingsImage2D) settings).setCurrentImage(this);
 			fireIntensityProcessingChanged();
@@ -1185,6 +1192,19 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			if(DatasetContinuousMD.class.isInstance(data)) 
 				((DatasetContinuousMD)data).setSplitSettings((SettingsImageContinousSplit)settings);
 	} 
+
+	/**
+	 * get settings by class
+	 * @param classsettings
+	 * @return
+	 */
+	public Settings getSettingsByClass(Class classsettings) {
+		// return dataset settings
+		if(DatasetSettings.class.isAssignableFrom(classsettings)){
+			return getData().getSettingsByClass(classsettings);
+		}
+		else return super.getSettingsByClass(classsettings);
+	}
 
 	/**
 	 * Given image img will be setup like this image

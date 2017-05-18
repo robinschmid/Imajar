@@ -79,7 +79,7 @@ public class ImportDataDialog extends JDialog {
 	private JCheckBox cbFilesInSeparateFolders;
 	private JRadioButton rbNeptune;
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
-	private JTextField txtThermoSeparation;
+	private JTextField txtSeparationOwnSpecial;
 	private JComboBox combo2DDataMode;
 	private JLabel lblData;
 	private JComboBox comboSep;
@@ -109,6 +109,8 @@ public class ImportDataDialog extends JDialog {
 	private JLabel lblExcludeColumns;
 	private JTextField txtExcludeColumns;
 	private JCheckBox cbNoXData;
+	private JRadioButton rbiCAPQOneRow;
+	private JComboBox comboSeparationSpecial;
 
 	/**
 	 * Launch the application.
@@ -141,9 +143,9 @@ public class ImportDataDialog extends JDialog {
 				{
 					panel_1 = new JPanel();
 					tabMSPresets.add(panel_1, BorderLayout.NORTH);
-					panel_1.setLayout(new MigLayout("", "[][]", "[][]"));
+					panel_1.setLayout(new MigLayout("", "[][][]", "[][][]"));
 					{
-						rbMP17Thermo = new JRadioButton("iCAP-Q - Thermo Fischer Scientific");
+						rbMP17Thermo = new JRadioButton("iCAP-Q - Thermo Fisher Scientific");
 						rbMP17Thermo.addActionListener(new ActionListener() { 
 							@Override
 							public void actionPerformed(ActionEvent e) {
@@ -155,7 +157,7 @@ public class ImportDataDialog extends JDialog {
 						panel_1.add(rbMP17Thermo, "cell 0 0");
 					}
 					{
-						rbNeptune = new JRadioButton("Thermo Neptune sector field");
+						rbNeptune = new JRadioButton("Thermo Element sector field");
 						rbNeptune.addActionListener(new ActionListener() { 
 							@Override
 							public void actionPerformed(ActionEvent e) {
@@ -163,14 +165,32 @@ public class ImportDataDialog extends JDialog {
 							}
 						});
 						{
-							txtThermoSeparation = new JTextField();
-							txtThermoSeparation.setToolTipText("Separation for columns (\\t for tab)");
-							txtThermoSeparation.setText("\\t");
-							panel_1.add(txtThermoSeparation, "cell 1 0,growx");
-							txtThermoSeparation.setColumns(5);
+							comboSeparationSpecial = new JComboBox();
+							comboSeparationSpecial.setModel(new DefaultComboBoxModel(new String[] {"COMMA", "SPACE", "TAB", "SEMICOLON", "OWN"}));
+							comboSeparationSpecial.setSelectedIndex(0);
+							comboSeparationSpecial.addItemListener(new ItemListener() {
+									@Override
+								    public void itemStateChanged(ItemEvent event) {
+								       if (event.getStateChange() == ItemEvent.SELECTED) {
+								    	   getTxtSpecialSeparation().setEditable(comboSeparationSpecial.getSelectedItem().equals("OWN"));
+								       }
+								    }
+							});
+							panel_1.add(comboSeparationSpecial, "cell 1 0,growx");
+						}
+						{
+							txtSeparationOwnSpecial = new JTextField();
+							txtSeparationOwnSpecial.setToolTipText("Separation for columns (\\t for tab)");
+							panel_1.add(txtSeparationOwnSpecial, "cell 2 0,growx");
+							txtSeparationOwnSpecial.setColumns(5);
+						}
+						{
+							rbiCAPQOneRow = new JRadioButton("iCAP-Q - all in one row");
+							buttonGroup_2.add(rbiCAPQOneRow);
+							panel_1.add(rbiCAPQOneRow, "cell 0 1");
 						}
 						buttonGroup_2.add(rbNeptune);
-						panel_1.add(rbNeptune, "cell 0 1");
+						panel_1.add(rbNeptune, "cell 0 2");
 					}
 				}
 				{
@@ -593,10 +613,33 @@ public class ImportDataDialog extends JDialog {
 				getCbContinousData().setSelected(mode==IMPORT.CONTINOUS_DATA_TXT_CSV);
 				getCbFilesInSeparateFolders().setSelected(s.isFilesInSeparateFolders());
 				break;
-			case PRESETS_THERMO_MP17:
+			case PRESETS_THERMO_iCAPQ:
 				getTabbedPane().setSelectedComponent(getTabMSPresets());
-				getTxtThermoSeparation().setText(sep.equals("\t")? "\t" : sep);
+				
+				// seperation   
+				if(sep.equals(",")) getComboSeparationSpecial().setSelectedIndex(0);
+				else if(sep.equals(" ")) getComboSeparationSpecial().setSelectedIndex(1);
+				else if(sep.equals("	")) getComboSeparationSpecial().setSelectedIndex(2);
+				else if(sep.equals(";")) getComboSeparationSpecial().setSelectedIndex(3);
+				else { 
+					getComboSeparationSpecial().setSelectedIndex(4);
+					getTxtSpecialSeparation().setText(sep);
+				} 
 				getRbMP17Thermo().setSelected(true);
+				break;
+			case PRESETS_THERMO_iCAPQ_ONE_ROW:
+				getTabbedPane().setSelectedComponent(getTabMSPresets());
+				
+				// seperation   
+				if(sep.equals(",")) getComboSeparationSpecial().setSelectedIndex(0);
+				else if(sep.equals(" ")) getComboSeparationSpecial().setSelectedIndex(1);
+				else if(sep.equals("	")) getComboSeparationSpecial().setSelectedIndex(2);
+				else if(sep.equals(";")) getComboSeparationSpecial().setSelectedIndex(3);
+				else { 
+					getComboSeparationSpecial().setSelectedIndex(4);
+					getTxtSpecialSeparation().setText(sep);
+				} 
+				getRbiCAPQOneRow().setSelected(true);
 				break;
 			}
 		}
@@ -667,7 +710,7 @@ public class ImportDataDialog extends JDialog {
 		// text file
 		if(getTabbedPane().getSelectedComponent().equals(getTabTXT())) {
 			// seperation
-			String separation = getSeparationChar(getComboSepLines().getSelectedItem(), false);
+			String separation = getSeparationChar(getComboSepLines(), getTxtOwnSeparation());
 			// check for meta
 			boolean checkformeta = getChckbxSearchForMeta().isSelected();
 			boolean isContinousData = getCbContinousData().isSelected();
@@ -690,7 +733,7 @@ public class ImportDataDialog extends JDialog {
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTab2DIntensity())) {
 			// seperation
-			String separation = getSeparationChar(getComboSep().getSelectedItem(), true);
+			String separation = getSeparationChar(getComboSep(), getTxt2DOwnSeparation());
 			// mode of data:
 			ModeData mode = (ModeData) getCombo2DDataMode().getSelectedItem();
 			
@@ -702,12 +745,15 @@ public class ImportDataDialog extends JDialog {
 					startLine, endLine, startDP, endDP);
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTabMSPresets())) {
-			String separation = "	";
+			String separation =getSeparationChar(getComboSeparationSpecial(), getTxtSpecialSeparation());
 			boolean checkformeta = true;
 			if(rbMP17Thermo.isSelected()) { 
-				if(getTxtThermoSeparation().getText().length()>0)
-					separation = getTxtThermoSeparation().getText();
-				IMPORT importMode = IMPORT.PRESETS_THERMO_MP17; 
+				IMPORT importMode = IMPORT.PRESETS_THERMO_iCAPQ; 
+				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, null, filter, false,
+						startLine, endLine, startDP, endDP);
+			}
+			else if(getRbiCAPQOneRow().isSelected()) { 
+				IMPORT importMode = IMPORT.PRESETS_THERMO_iCAPQ_ONE_ROW;
 				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, null, filter, false,
 						startLine, endLine, startDP, endDP);
 			}
@@ -726,14 +772,14 @@ public class ImportDataDialog extends JDialog {
 	 * @param for2DMatrix
 	 * @return separation character
 	 */
-	private String getSeparationChar(Object s, boolean for2DMatrix) {
+	private String getSeparationChar(JComboBox combo, JTextField txt) {
+		Object s = combo.getSelectedItem();
 		if(s.equals("COMMA")) return ",";
 		else if(s.equals("TAB")) return "	";
 		else if(s.equals("SPACE")) return " ";
 		else if(s.equals("SEMICOLON")) return ";";
 		else if(s.equals("OWN")) {
-			if(for2DMatrix) return getTxt2DOwnSeparation().getText();
-			else return getTxtOwnSeparation().getText();
+			return txt.getText();
 		} 
 		else return ",";
 	}
@@ -785,8 +831,8 @@ public class ImportDataDialog extends JDialog {
 	public JCheckBox getCbFilesInSeparateFolders() {
 		return cbFilesInSeparateFolders;
 	}
-	public JTextField getTxtThermoSeparation() {
-		return txtThermoSeparation;
+	public JTextField getTxtSpecialSeparation() {
+		return txtSeparationOwnSpecial;
 	}
 	public JComboBox getComboSep() {
 		return comboSep;
@@ -829,5 +875,11 @@ public class ImportDataDialog extends JDialog {
 	}
 	public JTextField getTxtExcludeColumns() {
 		return txtExcludeColumns;
+	}
+	public JComboBox getComboSeparationSpecial() {
+		return comboSeparationSpecial;
+	}
+	public JRadioButton getRbiCAPQOneRow() {
+		return rbiCAPQOneRow;
 	}
 }

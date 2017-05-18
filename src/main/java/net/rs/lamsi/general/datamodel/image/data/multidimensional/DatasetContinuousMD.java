@@ -4,10 +4,15 @@ import java.io.Serializable;
 import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.interf.DatasetSettings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * basic dataset of multiple scan lines
@@ -102,7 +107,29 @@ public class DatasetContinuousMD  extends MDDataset implements Serializable  {
 		avgDP=-1;
 		lastX=-1;
 	}
-
+	
+	/**
+	 * get settings by class
+	 * @param classsettings
+	 * @return
+	 */
+	@Override
+	public Settings getSettingsByClass(Class classsettings) {
+		// split settings
+		if(classsettings.isInstance(sett)) {
+			return sett;
+		}
+		else return null;
+	}
+	/**
+	 * set settings by class
+	 * @param classsettings
+	 */
+	public void setSettingsByClass(Settings sett) {
+		if(SettingsImageContinousSplit.class.isInstance(sett)) {
+			setSplitSettings((SettingsImageContinousSplit)sett);
+		}
+	}
 	//##################################################
 	// Multi dimensional
 	@Override

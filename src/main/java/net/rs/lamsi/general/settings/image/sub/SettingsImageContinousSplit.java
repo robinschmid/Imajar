@@ -1,15 +1,15 @@
 package net.rs.lamsi.general.settings.image.sub;
 
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.general.settings.interf.DatasetSettings;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
-
-public class SettingsImageContinousSplit extends Settings {
+public class SettingsImageContinousSplit extends Settings implements DatasetSettings {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	// 

@@ -1,9 +1,12 @@
-package net.rs.lamsi.general.datamodel.image.interf;
+package net.rs.lamsi.general.datamodel.image.data.interf;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * Basic methods of a imaging data set
@@ -15,7 +18,7 @@ public abstract class ImageDataset  implements Serializable {
 	private static final long serialVersionUID = 1L;
 	//############################################################
 	// listener
-	protected Vector<RawDataChangedListener> rawDataChangedListener;
+	protected ArrayList<RawDataChangedListener> rawDataChangedListener;
 
 	/**
 	 * counts the lines in a data set
@@ -79,6 +82,8 @@ public abstract class ImageDataset  implements Serializable {
 	public abstract int getAvgDP();
 	
 
+	
+	
 	/**
 	 * right edge of x data
 	 * right edge of last data point (for later width calc
@@ -126,6 +131,25 @@ public abstract class ImageDataset  implements Serializable {
 		return true;
 	}
 
+	//##########################################################################
+	// settings
+	/**
+	 * get settings by class
+	 * 
+	 * @param classsettings
+	 * @return
+	 */
+	public Settings getSettingsByClass(Class classsettings) {
+		ImageEditorWindow.log("getSettingsByClass was called in ImagingDataset - this method should only be used in sub classes", LOG.ERROR);
+		return null;
+	}
+	/**
+	 * set settings by class
+	 * @param sett
+	 */
+	public void setSettings(Settings sett) {
+		ImageEditorWindow.log("Setter setSettingsByClass was called in ImagingDataset - this method should only be used in sub classes", LOG.ERROR);
+	}
 
 	//########################################################################
 	// listener
@@ -145,7 +169,7 @@ public abstract class ImageDataset  implements Serializable {
 	 * @param listener
 	 */
 	public void addRawDataChangedListener(RawDataChangedListener listener) {
-		if(rawDataChangedListener==null) rawDataChangedListener = new Vector<RawDataChangedListener>();
+		if(rawDataChangedListener==null) rawDataChangedListener = new ArrayList<RawDataChangedListener>();
 		rawDataChangedListener.add(listener);
 	}
 	public void removeRawDataChangedListener(RawDataChangedListener list) {

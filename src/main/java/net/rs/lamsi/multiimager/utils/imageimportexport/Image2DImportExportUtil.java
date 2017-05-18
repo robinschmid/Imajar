@@ -26,12 +26,12 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
@@ -67,7 +67,7 @@ public class Image2DImportExportUtil {
 	 * @param file
 	 * @throws IOException
 	 */
-	public static void writeToStandardZip(final ImagingProject project, final File file) throws IOException {
+	public static void writeProjectToStandardZip(final ImagingProject project, final File file) throws IOException {
 		ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(3) {
 			// Load all Files
 			@Override
@@ -90,7 +90,7 @@ public class Image2DImportExportUtil {
 
 				// set progress steps
 				setProgressSteps(project.size()+2);
-				
+
 				// save project to file
 
 				File folder = new File(project.getName());
@@ -142,110 +142,110 @@ public class Image2DImportExportUtil {
 	 * @param project
 	 */
 	private static void writeImageGroupToZip(ZipOutputStream out, ZipParameters parameters, ImageGroupMD group,File folderParent, ProgressUpdateTask task) throws IOException {
-			int steps = 2+group.size()+2;
-			
-				Image2D[] images = group.getImagesOnly();
+		int steps = 2+group.size()+2;
 
-				File folder = new File(folderParent, group.getName().replace(".", "_"));
+		Image2D[] images = group.getImagesOnly();
 
-				// export group settings
+		File folder = new File(folderParent, group.getName().replace(".", "_"));
+
+		// export group settings
+		try {
+			Settings sett = group.getSettings();
+			parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"group", sett.getFileEnding()).getPath());
+			out.putNextEntry(null, parameters);
+			sett.saveToXML(out);
+			out.closeEntry();
+		} catch (ZipException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if(task!=null) task.addProgressStep(1.0/steps);
+
+		// export xmatrix
+		// intensity matrix
+		if(MDDataset.class.isInstance(images[0].getData())) {
+			if(((MDDataset)images[0].getData()).hasXData()) {
+				String xmatrix = images[0].toXCSV(true, SEPARATION, false);
 				try {
-					Settings sett = group.getSettings();
-					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"group", sett.getFileEnding()).getPath());
+					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, "xmatrix", "csv").getPath());
 					out.putNextEntry(null, parameters);
-					sett.saveToXML(out);
+					byte[] data = xmatrix.getBytes();
+					out.write(data, 0, data.length);
 					out.closeEntry();
 				} catch (ZipException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			}
+		}
+		if(task!=null) task.addProgressStep(1.0/steps); 
+		// for all images:
+		NumberFormat format = new DecimalFormat("0000");
+		int c = 0;
+		for(Image2D img : images) {	
+			c++;
+			String num = format.format(c)+"_";
+			try {
+				// export ymatrix
+				String matrix = img.toICSV(true, SEPARATION, false);
+				parameters.setFileNameInZip(new File(folder, num+img.getTitle() + ".csv").getPath());
+				out.putNextEntry(null, parameters);
+				byte[] data = matrix.getBytes();
+				out.write(data, 0, data.length);
+				out.closeEntry();
 				if(task!=null) task.addProgressStep(1.0/steps);
 
-				// export xmatrix
-				// intensity matrix
-				if(MDDataset.class.isInstance(images[0].getData())) {
-					if(((MDDataset)images[0].getData()).hasXData()) {
-						String xmatrix = images[0].toXCSV(true, SEPARATION, false);
-						try {
-							parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, "xmatrix", "csv").getPath());
-							out.putNextEntry(null, parameters);
-							byte[] data = xmatrix.getBytes();
-							out.write(data, 0, data.length);
-							out.closeEntry();
-						} catch (ZipException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-				if(task!=null) task.addProgressStep(1.0/steps); 
-				// for all images:
-				NumberFormat format = new DecimalFormat("0000");
-				int c = 0;
-				for(Image2D img : images) {	
-					c++;
-					String num = format.format(c)+"_";
-					try {
-						// export ymatrix
-						String matrix = img.toICSV(true, SEPARATION, false);
-						parameters.setFileNameInZip(new File(folder, num+img.getTitle() + ".csv").getPath());
-						out.putNextEntry(null, parameters);
-						byte[] data = matrix.getBytes();
-						out.write(data, 0, data.length);
-						out.closeEntry();
-						if(task!=null) task.addProgressStep(1.0/steps);
+				// export settings
+				Settings sett = img.getSettings();
+				parameters.setFileNameInZip(new File(folder,num+img.getTitle() + "."+ sett.getFileEnding()).getPath());
+				out.putNextEntry(null, parameters);
+				sett.saveToXML(out);
+				out.closeEntry();
+				if(task!=null) task.addProgressStep(1.0/steps);
+			} catch (ZipException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		// for all overlays
+		Collectable2D[] c2d = group.getOtherThanImagesOnly();
+		for(Collectable2D img : c2d) {	
+			try {
+				// export settings
+				Settings sett = img.getSettings();
+				parameters.setFileNameInZip(new File(folder,img.getTitle() + "."+sett.getFileEnding()).getPath());
+				out.putNextEntry(null, parameters);
+				sett.saveToXML(out);
+				out.closeEntry();
+				if(task!=null) task.addProgressStep(1.0/steps);
+			} catch (ZipException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
-						// export settings
-						Settings sett = img.getSettings();
-						parameters.setFileNameInZip(new File(folder,num+img.getTitle() + "."+ sett.getFileEnding()).getPath());
-						out.putNextEntry(null, parameters);
-						sett.saveToXML(out);
-						out.closeEntry();
-						if(task!=null) task.addProgressStep(1.0/steps);
-					} catch (ZipException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+		try {
+			File bg = group.getBGImagePath();
+			if(bg!=null) {
+				BufferedImage bgi = (BufferedImage)group.getBGImage();
+				if(bgi!=null) {
+					parameters.setFileNameInZip(bg.getName());
+					out.putNextEntry(null, parameters);
+					ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
+					out.closeEntry();
+					if(task!=null) task.addProgressStep(1.0/steps);
 				}
-				// for all overlays
-				Collectable2D[] c2d = group.getOtherThanImagesOnly();
-				for(Collectable2D img : c2d) {	
-					try {
-						// export settings
-						Settings sett = img.getSettings();
-						parameters.setFileNameInZip(new File(folder,img.getTitle() + "."+sett.getFileEnding()).getPath());
-						out.putNextEntry(null, parameters);
-						sett.saveToXML(out);
-						out.closeEntry();
-						if(task!=null) task.addProgressStep(1.0/steps);
-					} catch (ZipException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-
-				try {
-					File bg = group.getBGImagePath();
-					if(bg!=null) {
-						BufferedImage bgi = (BufferedImage)group.getBGImage();
-						if(bgi!=null) {
-							parameters.setFileNameInZip(bg.getName());
-							out.putNextEntry(null, parameters);
-							ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
-							out.closeEntry();
-							if(task!=null) task.addProgressStep(1.0/steps);
-						}
-					}
-				} catch (ZipException e) {
-					e.printStackTrace();
-				} 
-				ImageEditorWindow.log("Group "+group.getName()+" successfully written", LOG.MESSAGE);
+			}
+		} catch (ZipException e) {
+			e.printStackTrace();
+		} 
+		ImageEditorWindow.log("Group "+group.getName()+" successfully written", LOG.MESSAGE);
 	}
 
 	/**
@@ -345,7 +345,7 @@ public class Image2DImportExportUtil {
 
 		// only setting sno data for iamge overlays
 		ArrayList<SettingsImageOverlay> overlays = new ArrayList<SettingsImageOverlay>();
-		
+
 		int steps = files.size();
 
 		// background image
@@ -401,7 +401,7 @@ public class Image2DImportExportUtil {
 		}
 		// finished x matrix
 		if(task!=null) task.addProgressStep(1.0/steps);
-		
+
 		// settings
 		SettingsImage2D sett = new SettingsImage2D();
 
@@ -462,7 +462,7 @@ public class Image2DImportExportUtil {
 				}
 				// finished y data
 				if(task!=null) task.addProgressStep(1.0/steps);
-				
+
 				// load the correct settings file
 				InputStream isSett = files.get(FileAndPathUtil.addFormat(fileName.substring(0, fileName.length()-4), sett.getFileEnding()));
 				if(isSett!=null) {
@@ -566,7 +566,7 @@ public class Image2DImportExportUtil {
 		if(task!=null) {
 			task.setProgressSteps(folders.size());
 		}
-		
+
 		// for all folders
 		for(Entry<String, TreeMap<String, InputStream>> e : folders.entrySet()) {
 			TreeMap<String, InputStream> folder = e.getValue();
@@ -632,8 +632,10 @@ public class Image2DImportExportUtil {
 			return list.toArray(new ImageGroupMD[list.size()]);
 		case ONE_FILE_2D_INTENSITY:  
 			return new ImageGroupMD[]{import2DIntensityToImage(files, sett, separation)};
-		case PRESETS_THERMO_MP17: 
+		case PRESETS_THERMO_iCAPQ: 
 			return importFromThermoMP17FileToImage(files, sett); 
+		case PRESETS_THERMO_iCAPQ_ONE_ROW:
+			return new ImageGroupMD[]{importFromThermoiCapOneRowFileToImage(files, sett)};
 		}
 
 		return null;
@@ -1188,16 +1190,30 @@ public class Image2DImportExportUtil {
 	 */
 	public static ImageGroupMD[] importFromThermoMP17FileToImage(File[] file, SettingsImageDataImportTxt sett) throws Exception { 
 		// images
-		ArrayList<ImageGroupMD> images=new ArrayList<ImageGroupMD>();
+		ArrayList<ImageGroupMD> groups=new ArrayList<ImageGroupMD>();
+
 		// all files
 		for(File f : file) {
 			ImageGroupMD group = importFromThermoMP17FileToImage(f, sett);
-			if(group!=null)
-				images.add(group);
+
+			// group size is 1 and dimensions are the same?
+			if(groups.size()>=1 && group.size()==1 && group.getData().hasSameDataDimensionsAs(groups.get(0).getData())) {
+				// add to data set
+				groups.get(0).getData().addDimension((Image2D) group.get(0));
+				// add image to first group
+				groups.get(0).add(group.get(0));
+			}
+			// else - add to group list
+			else {
+				if(group!=null)
+					groups.add(group);
+			}
 		}
+
+
 		//return image 
-		ImageGroupMD imgArray [] = new ImageGroupMD[images.size()];
-		imgArray = images.toArray(imgArray);
+		ImageGroupMD imgArray [] = new ImageGroupMD[groups.size()];
+		imgArray = groups.toArray(imgArray);
 		return imgArray;
 	}
 	private static ImageGroupMD importFromThermoMP17FileToImage(File file, SettingsImageDataImportTxt sett) throws Exception { 
@@ -1342,7 +1358,184 @@ public class Image2DImportExportUtil {
 		}
 		// Generate Image2D from scanLines 
 		DatasetLinesMD data = new DatasetLinesMD(scanLines); 
-		return data.createImageGroup(file);
+		return data.createImageGroup(file, titles);
+	}
+
+	/**
+	 * imports from Thermo MP17 Files (iCAP-Q) (different separations) ONE ROW
+	 * 
+	 * one file = one imaging line
+	 * data is stored in one row 
+	 * 0		1	2			3	4	
+	 * 	0	MainRuns	MainRuns MainRuns MainRuns
+	 *  1 	Scan number  1111111 2222222 333333
+	 *  2   Titles   Cu  Cu Cu  Fe Fe Fe
+	 *  3	X (u)  Y  Time Analog  Counter X(u) Y ....
+	 *  4   Values
+	 * @param file
+	 * @param sett
+	 * @return
+	 * @throws Exception
+	 */
+	public static ImageGroupMD importFromThermoiCapOneRowFileToImage(File[] files, SettingsImageDataImportTxt sett) throws Exception { 
+		// sort text files by name:
+		files = FileAndPathUtil.sortFilesByNumber(files);
+
+		// separation 
+		String separation = sett.getSeparation();
+		// separation for UTF-8 space 
+		char splitc = 0;
+		String splitUTF8 = String.valueOf(splitc);
+
+		// images (getting created at first data reading)
+		ArrayList<ScanLineMD> lines= new ArrayList<ScanLineMD>(); 
+
+		ArrayList<String> titles = new ArrayList<String>();
+
+		// store data in ArrayList
+		ArrayList<Float> x = new ArrayList<Float>();
+		ArrayList<Double> z = new ArrayList<Double>();
+
+		// 
+		int columnsPerScanAndElement = 0;
+		int indexIntensity = -1;
+		int indexTime = -1;
+		// columns per element 
+		int columnsTotalPerScan = 0;
+		
+		// start col
+		int startColumn = 0;
+		int lastColumn = 0;
+
+		// all files - each one line
+		for(File f : files) {
+			x.clear();
+			// result - scanline
+			ScanLineMD line = new ScanLineMD();
+
+			BufferedReader br = txtWriter.getBufferedReader(f);
+			String s;
+
+
+			// count rows (zero based)
+			int row = -1;
+			while ((s = br.readLine()) != null) {
+				row++;
+				if(row>=2) {
+					// try to separate by separation
+					String[] sep = s.split(separation);
+					// if sep.size==1 try and split symbol=space try utf8 space
+					if(separation.equals(" ") && sep.length<=1) {
+						sep = s.split(splitUTF8);
+						if(sep.length>1)
+							separation = splitUTF8; 
+					}
+
+					if(row==2) {
+						String firstTitle = null;
+						if(titles.size()==0) {
+							// count columns per element
+							// read titles
+							firstTitle = null;
+							String lastTitle = null;
+							for(String t : sep) {
+								if(t.length()==0 && titles.size()==0)
+									startColumn++;
+								else if(lastTitle==null || !lastTitle.equals(t)) {
+									if(firstTitle==null) firstTitle = t;
+									// end reached for first scan if t is the first name
+									else if(t.equals(firstTitle))
+										break;
+									
+									lastTitle = t;
+									titles.add(t);
+								}
+								// count columns per element
+									if(titles.size()>0)
+										columnsTotalPerScan++;
+							}
+						}
+						
+						// find last (different for all files)
+						if(firstTitle==null) firstTitle = sep[startColumn];
+						for(int i=startColumn; i<sep.length; i+=columnsTotalPerScan) {
+							if(!firstTitle.equals(sep[i])) {
+								lastColumn = i-1;
+								break;
+							}
+						}
+					}
+					else if(row==3 && columnsPerScanAndElement==0) {
+						// read column titles (X Y Time ...
+
+						String firstHeader = null;
+						for(int i=startColumn; i<lastColumn; i++) {
+							String t = sep[i];
+							if(firstHeader!=null && t.equals(firstHeader)) {
+								break;
+							}
+							else {
+								columnsPerScanAndElement++;
+								
+								if(firstHeader==null) firstHeader = t;
+
+								if(t.startsWith("Y"))
+									indexIntensity = columnsPerScanAndElement-1;
+								else if(t.startsWith("Time"))
+									indexTime = columnsPerScanAndElement-1;
+							}
+						}
+					}
+					else if(row==4) {
+						// read values
+						// for all elements
+						for(int t=0; t<titles.size(); t++) {
+							// for all datapoints
+							for(int i=startColumn; i<=lastColumn; i+=columnsTotalPerScan) {
+								// add data point
+								try {
+									String time = sep[i+columnsPerScanAndElement*t+indexTime];
+									if(time.length()==0)
+										break;
+									
+									if(indexTime!=-1 && t==0)
+										x.add(Float.valueOf(time));
+
+									String intensity = sep[i+columnsPerScanAndElement*t+indexIntensity];
+									if(intensity.length()==0)
+										break;
+									
+									z.add(Double.valueOf(intensity));
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+							// set x
+							if(indexTime!=-1 && t==0)
+								line.setX(x);
+
+							// add dimension	
+							line.addDimension(z);
+							
+							// reset
+							z.clear();
+						}
+					}
+				}
+			}
+
+			if(line.getImageCount()>0) {
+				lines.add(line);
+			}
+		}
+		
+		if(lines.size()>0) {
+			DatasetLinesMD data = new DatasetLinesMD(lines);
+
+			//return image 
+			return data.createImageGroup(files[0].getParentFile(), titles);
+		}
+		else return null;
 	}
 
 	/**

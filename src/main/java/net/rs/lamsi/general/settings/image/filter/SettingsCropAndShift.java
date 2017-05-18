@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;

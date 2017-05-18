@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 
 /**
  * A scan line of multi dimensional data:

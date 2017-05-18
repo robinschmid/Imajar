@@ -2,6 +2,7 @@ package net.rs.lamsi.general.settings.image.visualisation;
 
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageTableModel;
 
 import org.w3c.dom.Document;
@@ -9,7 +10,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsAlphaMap extends Settings {
+public class SettingsAlphaMap extends Settings  implements GroupSettings {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	// 

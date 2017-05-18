@@ -12,6 +12,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
@@ -20,7 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsBackgroundImg extends Settings {
+public class SettingsBackgroundImg extends Settings  implements GroupSettings  {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	

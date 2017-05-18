@@ -35,7 +35,7 @@ import javax.swing.event.ChangeListener;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.general.framework.basics.RangeSliderColumn;
 import net.rs.lamsi.general.heatmap.Heatmap;

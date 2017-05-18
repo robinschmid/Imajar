@@ -7,17 +7,12 @@ import javax.swing.Icon;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
-import net.rs.lamsi.general.settings.image.SettingsImage2D;
-import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.interf.DatasetSettings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
 
 public abstract class Collectable2D <T extends SettingsContainerSettings>  implements Serializable {	 
 	// do not change the version!
@@ -86,8 +81,15 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 	public void setSettings(Settings settings){
 		if(settings==null)
 			return;
+		// change master settings collection
 		else if(settings.getClass().isInstance(this.settings))
 			this.settings = (T)settings;
+		// group settings
+		else if(GroupSettings.class.isInstance(settings)) {
+			if(getImageGroup()!=null)
+				getImageGroup().getSettings().replaceSettings(settings);
+		}
+		// replace sub settings
 		else {
 			((SettingsContainerSettings)this.settings).replaceSettings(settings);
 		}
@@ -107,14 +109,17 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 	 * @return
 	 */
 	public Settings getSettingsByClass(Class classsettings) {
+		// return this settings container
 		if(classsettings.isInstance(this.settings))
 			return this.settings;
+		// return group settings
+		else if(GroupSettings.class.isAssignableFrom(classsettings)){
+			return imageGroup.getSettingsByClass(classsettings);
+		}
+		// return collectable2d sub settings
 		else {
-			Settings s = ((SettingsContainerSettings)this.settings).getSettingsByClass(classsettings);
-			if(s==null && imageGroup!=null) {
-				s = imageGroup.getSettingsByClass(classsettings);
-			}
-			return s;
+			// find settings in this collectable2d settings
+			return settings.getSettingsByClass(classsettings);
 		}
 	}
 	

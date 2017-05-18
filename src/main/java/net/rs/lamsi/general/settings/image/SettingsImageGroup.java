@@ -1,17 +1,16 @@
 package net.rs.lamsi.general.settings.image;
 
-import java.io.File;
-
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsImageGroup extends SettingsContainerSettings {
+public class SettingsImageGroup extends SettingsContainerSettings implements GroupSettings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
