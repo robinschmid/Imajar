@@ -29,6 +29,7 @@ public class ImageTitle extends TextTitle {
 
 		this.img = img;
 		 
+		
 		this.setFrame(new BlockBorder(Color.white));
 		this.setPosition(RectangleEdge.BOTTOM);
 		ta = new XYTitleAnnotation(x, y, this,RectangleAnchor.BOTTOM_RIGHT); 

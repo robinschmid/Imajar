@@ -3,6 +3,7 @@ package net.rs.lamsi.general.settings.importexport;
 import java.awt.Dimension;
 
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.utils.useful.FloatDim;
 
 import org.jfree.ui.FloatDimension;
@@ -143,6 +144,42 @@ public class SettingsImageResolution extends Settings {
 		
 		this.size = new Dimension((int)width, (int)height);
 	} 
+	
+	public static float toPixel(float val, DIM_UNIT unit) {
+			// convert to pt
+			switch(unit) {
+			case CM:
+				return Utilities.millimetersToPoints(val*10.f);
+			case MM:
+				return Utilities.millimetersToPoints(val);
+			case INCH:
+				return Utilities.inchesToPoints(val);
+			case PX:
+			case PT:
+				return val;
+			}
+			return Float.NaN;
+	}
+	public static float pixelToUnit(float val, DIM_UNIT unit) {
+		// convert to pt
+		switch(unit) {
+		case CM:
+			return Utilities.pointsToMillimeters(val)/10.f;
+		case MM:
+			return Utilities.pointsToMillimeters(val);
+		case INCH:
+			return Utilities.pointsToInches(val);
+		case PX:
+		case PT:
+			return val;
+		}
+		return Float.NaN;
+}
+
+	public static float changeUnit(float val, DIM_UNIT startUnit, DIM_UNIT resultUnit) {
+		return pixelToUnit(toPixel(val, startUnit), resultUnit);
+	}
+	
 	public void setSize(int width, int height) { 
 		this.size = new Dimension((int)width, (int)height);
 	}

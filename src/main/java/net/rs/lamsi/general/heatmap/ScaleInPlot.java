@@ -69,7 +69,7 @@ public class ScaleInPlot extends Title {
 			double y = area.getY();
 			int w = 2;
 			// draw stuff for test 
-			g.setColor((Color) theme.getAxisLinePaint());
+		    g.setColor(theme.getScaleFontColor());
 			g.fill(new Rectangle2D.Double(x, y, width, w));  
 			g.fill(new Rectangle2D.Double(x, y-tick/2, w, tick+w));  
 			g.fill(new Rectangle2D.Double(x+width-w, y-tick/2, w, tick+w));  
@@ -78,9 +78,9 @@ public class ScaleInPlot extends Title {
 			String label = getValue()+" "+getUnit();
 			g.setFont(theme.getFontScaleInPlot()); 
 		    FontMetrics fm = g.getFontMetrics();
-		    g.setColor(theme.getScaleFontColor());
 		    double sx = x+ (width - fm.stringWidth(label)) / 2;
 		    double sy = y + tick/2 + (fm.getAscent());
+		    g.setColor(theme.getScaleFontColor());
 			g.drawString(label, (float) (sx), (float)(sy));
 		}
 		return null;

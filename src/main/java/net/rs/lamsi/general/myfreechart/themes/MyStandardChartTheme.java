@@ -3,6 +3,8 @@ package net.rs.lamsi.general.myfreechart.themes;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.Settings;
@@ -18,6 +20,32 @@ import org.w3c.dom.NodeList;
  
 
 public class MyStandardChartTheme extends StandardChartTheme {
+	
+// master font
+	protected Font masterFont;
+	protected Color masterFontColor;
+	
+	// ShortTitle
+	protected Font fontShortTitle;
+	protected Color cShortTitle, cBGShortTitle;
+	
+	// scientific intensities
+	protected boolean useScientificIntensities = true;
+	protected int significantDigits = 2;
+	protected NumberFormat intensitiesNumberFormat;
+	
+	// paintscale title
+	protected String paintScaleTitle = "I";
+	protected boolean usePaintScaleTitle = true;
+	
+	// Chart appearance 
+	protected boolean isAntiAliased = true;
+	// orientation : 0 - 2 (90° CW)
+	protected int chartOrientation;
+	
+	protected boolean isShowTitle = false;
+	
+	
 	
 	public static final String XML_DESC = "ChartTheme";
 	protected Paint axisLinePaint = Color.black;
@@ -40,7 +68,82 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	public MyStandardChartTheme(THEME themeID, String name) {
 		super(name);
 		this.themeID = themeID;
+
+		// in theme
+		setAntiAliased(false);
+		setNoBackground(false);
+		// general
+		
+		// Short title in plot
+		fontShortTitle = new Font("Arial", Font.BOLD, 14);
+		cShortTitle = Color.WHITE;
+		cBGShortTitle = new Color(60,120,155, 120);
+		
+		isAntiAliased = true;
+		chartOrientation = 0;
+		
+		// significant intensities
+		useScientificIntensities = true;
+		significantDigits = 2;
+		intensitiesNumberFormat = new DecimalFormat("0.0E0");
+		intensitiesNumberFormat.setMaximumFractionDigits(significantDigits);
+		intensitiesNumberFormat.setMinimumFractionDigits(significantDigits);
+		
+		// paintscale title
+		paintScaleTitle = "I";
+		usePaintScaleTitle = true;
+		
+		masterFont = new Font("Arial", Font.PLAIN, 11);
+		masterFontColor = Color.black;
 	}
+	
+	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
+			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
+			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
+			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale) {
+		this.setAntiAliased(antiAlias);
+		this.setShowTitle(showTitle);
+		this.setNoBackground(noBG);
+		this.setShowXGrid(showXGrid);
+		this.setShowYGrid(showYGrid);
+		this.setShowXAxis(showXAxis);
+		this.setShowYAxis(showYAxis);
+		// scale
+		this.setShowScale(showScale);
+		this.setScaleUnit(scaleUnit);
+		this.setScaleFactor(scaleFactor);
+		this.setScaleValue(scaleValue);
+		this.setPaintScaleInPlot(isPaintScaleInPlot);
+		//
+		this.setScaleXPos(scaleXPos);
+		this.setScaleYPos(scaleYPos);
+		
+		this.setFontScaleInPlot(fScale);
+		this.setScaleFontColor(cScale);
+		
+		this.setExtraLargeFont(fTitle);
+		this.setLargeFont(fAxesT);
+		this.setRegularFont(fAxesL);
+		this.setAxisLabelPaint(cAxesT);
+		this.setTickLabelPaint(cAxesL);
+		this.setTitlePaint(cTitle);
+		
+		masterFont = fMaster;
+		masterFontColor = cMaster;
+		
+		// significant intensities
+		this.useScientificIntensities = useScientificIntensities;
+		this.significantDigits = significantDigits;
+		intensitiesNumberFormat = new DecimalFormat(useScientificIntensities? "0.0E0" : "#.0");
+		int digits = useScientificIntensities? significantDigits-1 : significantDigits;
+		intensitiesNumberFormat.setMaximumFractionDigits(digits);
+		intensitiesNumberFormat.setMinimumFractionDigits(digits);
+		
+		// paintscale title
+		this.paintScaleTitle = paintScaleTitle;
+		this.usePaintScaleTitle = usePaintScaleTitle;
+	}
+	
 
 	@Override
 	public void apply(JFreeChart chart) {
@@ -73,8 +176,19 @@ public class MyStandardChartTheme extends StandardChartTheme {
         		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(this.getPlotBackgroundPaint());
         if(chart.getLegend()!=null)
         	chart.getLegend().setBackgroundPaint(this.getPlotBackgroundPaint());
+        
+		//
+		chart.setAntiAlias(isAntiAliased());
+		chart.getTitle().setVisible(isShowTitle()); 
+        chart.getPlot().setBackgroundAlpha(isNoBackground()?0:1);
 	}
 
+
+	public void setShortTitle(Color c, Color bg, Font font) {
+		cShortTitle = c;
+		cBGShortTitle = bg;
+		fontShortTitle = font;
+	}
 
 	//#########################################################################
 	// xml import export
@@ -97,6 +211,19 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Settings.toXML(el, doc, "scaleYPos", scaleYPos); 
 		Settings.toXML(el, doc, "fontScaleInPlot", fontScaleInPlot); 
 		Settings.toXML(el, doc, "scaleFontColor", scaleFontColor);  
+		Settings.toXML(elParent, doc, "isAntiAliased", isAntiAliased); 
+		Settings.toXML(elParent, doc, "showTitle", isShowTitle); 
+		Settings.toXML(elParent, doc, "noBackground", isNoBackground()); 
+		
+		Settings.toXML(elParent, doc, "fontShortTitle", fontShortTitle); 
+		Settings.toXML(elParent, doc, "cShortTitle", cShortTitle); 
+		Settings.toXML(elParent, doc, "cBGShortTitle", cBGShortTitle); 
+		
+		Settings.toXML(elParent, doc, "significantDigits", significantDigits); 
+		Settings.toXML(elParent, doc, "useScientificIntensities", useScientificIntensities); 
+		
+		Settings.toXML(elParent, doc, "paintScaleTitle", paintScaleTitle); 
+		Settings.toXML(elParent, doc, "usePaintScaleTitle", usePaintScaleTitle); 
 	}
 
 	public void loadValuesFromXML(Element el, Document doc) {
@@ -120,14 +247,110 @@ public class MyStandardChartTheme extends StandardChartTheme {
 				else if(paramName.equals("scaleYPos"))scaleYPos = Settings.floatFromXML(nextElement);  
 				else if(paramName.equals("fontScaleInPlot"))fontScaleInPlot = Settings.fontFromXML(nextElement);  
 				else if(paramName.equals("scaleFontColor"))scaleFontColor = Settings.colorFromXML(nextElement);  
+				else  if(paramName.equals("isAntiAliased")) isAntiAliased = Settings.booleanFromXML(nextElement); 
+					else if(paramName.equals("showTitle"))isShowTitle = Settings.booleanFromXML(nextElement);  
+					else if(paramName.equals("noBackground"))setNoBackground(Settings.booleanFromXML(nextElement));  
+					else if(paramName.equals("fontShortTitle"))fontShortTitle = Settings.fontFromXML(nextElement);  
+					else if(paramName.equals("cShortTitle")) cShortTitle = Settings.colorFromXML(nextElement);  
+					else if(paramName.equals("cBGShortTitle")) cBGShortTitle = Settings.colorFromXML(nextElement);  
+					else if(paramName.equals("significantDigits")) significantDigits = Settings.intFromXML(nextElement);  
+					else if(paramName.equals("useScientificIntensities")) useScientificIntensities = Settings.booleanFromXML(nextElement);
+					else if(paramName.equals("paintScaleTitle")) paintScaleTitle = (nextElement.getTextContent());  
+					else if(paramName.equals("usePaintScaleTitle")) usePaintScaleTitle = Settings.booleanFromXML(nextElement);  
 			}
 		}
+
+		// 
+		if(paintScaleTitle.equals("null"))
+			paintScaleTitle = null;
+		// create numberformats
+		intensitiesNumberFormat = new DecimalFormat(useScientificIntensities? "0.0E0" : "#.0");
+		int digits = significantDigits - (useScientificIntensities? 1 : 0);
+		intensitiesNumberFormat.setMaximumFractionDigits(digits);
+		intensitiesNumberFormat.setMinimumFractionDigits(digits);
 	}
-	
+
+	public boolean isNoBackground() { 
+		return ((Color)this.getPlotBackgroundPaint()).getAlpha() == 0;
+	}
+	public void setNoBackground(boolean state) { 
+		Color c = ((Color)this.getPlotBackgroundPaint());
+		Color cchart = ((Color)this.getChartBackgroundPaint());
+		this.setPlotBackgroundPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), state? 0 : 255));
+		this.setChartBackgroundPaint(new Color(cchart.getRed(), cchart.getGreen(), cchart.getBlue(), state? 0 : 255));
+	}
 	
 	// GETTERS AND SETTERS
 	public Paint getAxisLinePaint() {
 		return axisLinePaint;
+	}
+	public boolean isShowTitle() {
+		return isShowTitle;
+	}
+
+	public boolean isAntiAliased() {
+		return isAntiAliased;
+	}
+
+	public void setAntiAliased(boolean isAntiAliased) {
+		this.isAntiAliased = isAntiAliased;
+	}
+
+	public int getChartOrientation() {
+		return chartOrientation;
+	}
+
+	public void setChartOrientation(int chartOrientation) {
+		this.chartOrientation = chartOrientation;
+	}
+	public Font getFontShortTitle() {
+		return fontShortTitle;
+	}
+	public Color getcShortTitle() {
+		return cShortTitle;
+	}
+	public void setFontShortTitle(Font fontShortTitle) {
+		this.fontShortTitle = fontShortTitle;
+	}
+	public void setcShortTitle(Color cShortTitle) {
+		this.cShortTitle = cShortTitle;
+	}
+	public Color getcBGShortTitle() {
+		return cBGShortTitle;
+	}
+	public void setcBGShortTitle(Color cBGShortTitle) {
+		this.cBGShortTitle = cBGShortTitle;
+	}
+	public boolean isUseScientificIntensities() {
+		return useScientificIntensities;
+	}
+	public int getSignificantDigits() {
+		return significantDigits;
+	}
+	public void setUseScientificIntensities(boolean useScientificIntensities) {
+		this.useScientificIntensities = useScientificIntensities;
+	}
+	public void setSignificantDigits(int significantDigits) {
+		this.significantDigits = significantDigits;
+	}
+	public NumberFormat getIntensitiesNumberFormat() {
+		return intensitiesNumberFormat;
+	}
+	public String getPaintScaleTitle() {
+		return paintScaleTitle;
+	}
+	public boolean isUsePaintScaleTitle() {
+		return usePaintScaleTitle;
+	}
+	public void setPaintScaleTitle(String paintScaleTitle) {
+		this.paintScaleTitle = paintScaleTitle;
+	}
+	public void setUsePaintScaleTitle(boolean usePaintScaleTitle) {
+		this.usePaintScaleTitle = usePaintScaleTitle;
+	}
+
+	public void setShowTitle(boolean showTitle) {
+		isShowTitle = showTitle;
 	}
 
 	public void setAxisLinePaint(Paint axisLinePaint) {
@@ -237,5 +460,21 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
 	public void setScaleFontColor(Color scaleFontColor) {
 		this.scaleFontColor = scaleFontColor;
+	}
+
+	public Font getMasterFont() {
+		return masterFont;
+	}
+
+	public Color getMasterFontColor() {
+		return masterFontColor;
+	}
+
+	public void setMasterFont(Font masterFont) {
+		this.masterFont = masterFont;
+	}
+
+	public void setMasterFontColor(Color masterFontColor) {
+		this.masterFontColor = masterFontColor;
 	}
 }

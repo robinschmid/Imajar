@@ -34,6 +34,7 @@ public class ModuleBackgroundImg extends Collectable2DSettingsModule<SettingsBac
 	private JCheckBox cbActive;
 	// action listener for update
 	private ActionListener al;
+	private JButton btnAddImage;
 	//
 	
 	// AUTOGEN
@@ -48,17 +49,17 @@ public class ModuleBackgroundImg extends Collectable2DSettingsModule<SettingsBac
 		getPnContent().add(panel, BorderLayout.CENTER);
 		panel.setLayout(new MigLayout("", "[][][grow]", "[][][bottom][][]"));
 		
-		JButton btnAddImage = new JButton("Add image");
+		btnAddImage = new JButton("Add image");
 		btnAddImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				File f = ImageEditorWindow.getEditor().getLogicRunner().importMicroscopicImageBG();
 				getSettings().setPathBGImage(f);
-				if(f!=null) 
+				if(f!=null)
 					getTxtPath().setText(f.getAbsolutePath());
 				else 
 					getTxtPath().setText("No background image selected");
 				
-				al.actionPerformed(e);
+				cbActive.setSelected(f!=null);
 			}
 		});
 		panel.add(btnAddImage, "cell 0 0");
@@ -116,6 +117,10 @@ public class ModuleBackgroundImg extends Collectable2DSettingsModule<SettingsBac
 		cbActive = new JCheckBox("Background");
 		panel_1.add(cbActive);
 		
+	}
+	
+	public JButton getBtnAddImage() {
+		return btnAddImage;
 	}
 	
 	//################################################################################################

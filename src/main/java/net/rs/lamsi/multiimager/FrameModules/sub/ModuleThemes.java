@@ -30,6 +30,7 @@ import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -38,12 +39,14 @@ import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import org.jfree.chart.editor.ChartEditor;
 import org.jfree.chart.editor.ChartEditorManager;
 import org.jfree.chart.util.ResourceBundleWrapper;
+
 import net.rs.lamsi.general.framework.basics.JFontSpecs;
 
 public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Collectable2D> {
 	// mystuff
 	protected boolean isForPrint = true;
 	
+	private ActionListener al;
 	
 	// auto
 	private JCheckBox cbAntiAlias; 
@@ -120,7 +123,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		JPanel panel_2 = new JPanel();
 		pnFonts.getPnContent().add(panel_2, BorderLayout.NORTH);
-		panel_2.setLayout(new MigLayout("", "[grow][center][grow]", "[][grow][grow][grow]")); 
+		panel_2.setLayout(new MigLayout("", "[center]", "[][grow][grow][grow]")); 
 		
 		JButton btnForPrint = new JButton("For print");
 		btnForPrint.addActionListener(new ActionListener() {
@@ -128,10 +131,10 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 				applyChangeThemeForPrint(true);
 			}
 		});
-		panel_2.add(btnForPrint, "flowx,cell 1 0");
+		panel_2.add(btnForPrint, "flowx,cell 0 0");
 		
 		JPanel panel_5 = new JPanel();
-		panel_2.add(panel_5, "cell 1 1,growy");
+		panel_2.add(panel_5, "cell 0 1,growy");
 		panel_5.setLayout(new MigLayout("", "[][grow]", "[][grow][grow][grow][grow]"));
 		
 		JLabel lblFont = new JLabel("Font");
@@ -145,14 +148,14 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		fontMaster = new JFontSpecs();
 		panel_5.add(fontMaster, "cell 1 1,alignx center,growy");
 		
-		JLabel lblAxesCaptions = new JLabel("Axes captions");
+		JLabel lblAxesCaptions = new JLabel("Captions");
 		lblAxesCaptions.setFont(new Font("Tahoma", Font.BOLD, 11));
 		panel_5.add(lblAxesCaptions, "flowy,cell 0 2");
 		
 		fontAxesCaption = new JFontSpecs();
 		panel_5.add(fontAxesCaption, "cell 1 2,grow");
 		
-		JLabel lblAxelLabels = new JLabel("Axes labels");
+		JLabel lblAxelLabels = new JLabel("Labels");
 		panel_5.add(lblAxelLabels, "cell 0 3,alignx right");
 		
 		fontAxesLabels = new JFontSpecs();
@@ -170,14 +173,14 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 				applyChangeThemeForPrint(false); 
 			}
 		});
-		panel_2.add(btnForPresentation, "cell 1 0");
+		panel_2.add(btnForPresentation, "cell 0 0");
 		
 		Module modAxes = new Module("Axes and scale");
 		panel.add(modAxes, BorderLayout.CENTER); 
 		
 		JPanel panel_3 = new JPanel();
 		modAxes.getPnContent().add(panel_3, BorderLayout.CENTER);
-		panel_3.setLayout(new MigLayout("", "[][][grow]", "[][][][][][][][]"));
+		panel_3.setLayout(new MigLayout("", "[][][]", "[][][][][][][][]"));
 		
 		JLabel lblXAxis = new JLabel("x axis");
 		lblXAxis.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -230,8 +233,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		panel_3.add(cbShowScale, "cell 1 6");
 		
 		JPanel panel_4 = new JPanel();
-		panel_3.add(panel_4, "cell 1 7 2 1");
-		panel_4.setLayout(new MigLayout("", "[][85.00,grow][][]", "[][][][][][grow][grow]"));
+		panel_3.add(panel_4, "cell 0 7 3 1");
+		panel_4.setLayout(new MigLayout("", "[][85.00][][]", "[][][][][][grow][grow]"));
 		
 		JLabel lblUnit = new JLabel("value");
 		panel_4.add(lblUnit, "cell 0 0,alignx trailing");
@@ -263,7 +266,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		sliderScaleXPos.setPreferredSize(new Dimension(100, 23));
 		sliderScaleXPos.setMinimumSize(new Dimension(100, 23));
 		sliderScaleXPos.setValue(90);
-		panel_4.add(sliderScaleXPos, "cell 1 3,growx");
+		panel_4.add(sliderScaleXPos, "cell 1 3 3 1,growx");
 		
 		JLabel lblYPos = new JLabel("y pos");
 		panel_4.add(lblYPos, "cell 0 4,alignx trailing");
@@ -272,7 +275,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		sliderScaleYPos.setValue(10);
 		sliderScaleYPos.setPreferredSize(new Dimension(100, 23));
 		sliderScaleYPos.setMinimumSize(new Dimension(100, 23));
-		panel_4.add(sliderScaleYPos, "cell 1 4,growx");
+		panel_4.add(sliderScaleYPos, "cell 1 4 3 1,growx");
 		
 		fontScale = new JFontSpecs();
 		panel_4.add(fontScale, "cell 0 5 4 1,alignx left,growy");
@@ -280,7 +283,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		txtScaleUnit = new JTextField();
 		txtScaleUnit.setToolTipText("Unit for scale width");
 		txtScaleUnit.setPreferredSize(new Dimension(5, 20));
-		panel_4.add(txtScaleUnit, "cell 1 0 2 1");
+		panel_4.add(txtScaleUnit, "cell 1 0");
 		txtScaleUnit.setColumns(10);
 		
 		JLabel lblUnit_1 = new JLabel("unit");
@@ -338,6 +341,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 					else {
 						theme = new SettingsThemes(themeid);
 						setSettings(theme); 
+						al.actionPerformed(null);
 					} 
 				} catch (Exception e1) {
 					e1.printStackTrace();
@@ -393,6 +397,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		// change? TODO
 		getFontMaster().addListener(ccl, il, dl);
+		
+		this.al = al;
 	}
 	
 	//################################################################################################
@@ -405,10 +411,12 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 			st = new SettingsThemes();
 			st.resetAll();
 		} 
+		
+		MyStandardChartTheme t = st.getTheme();
 		// set all to txt 
-		getCbAntiAlias().setSelected(st.isAntiAliased());
-		getCbShowTitle().setSelected(st.isShowTitle());
-		getCbNoBackground().setSelected(st.isNoBackground()); 
+		getCbAntiAlias().setSelected(t.isAntiAliased());
+		getCbShowTitle().setSelected(t.isShowTitle());
+		getCbNoBackground().setSelected(t.isNoBackground()); 
 		 
 		getCbShowScale().setSelected(st.getTheme().isShowScale());
 		getCbShowXAxis().setSelected(st.getTheme().isShowXAxis());
@@ -425,27 +433,26 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getSliderScaleYPos().setValue((int)(st.getTheme().getScaleYPos()*100)); 
 		
 		// significant scientific notion
-		getCbScientificIntensities().setSelected(st.isUseScientificIntensities());
-		getTxtCSignificantDigits().setText(String.valueOf(st.getSignificantDigits()));
+		getCbScientificIntensities().setSelected(t.isUseScientificIntensities());
+		getTxtCSignificantDigits().setText(String.valueOf(t.getSignificantDigits()));
 		
 		// paintscale title
-		getCbUsePaintscaleTitle().setSelected(st.isUsePaintScaleTitle());
-		getTxtPaintScaleTitle().setText(st.getPaintScaleTitle());
+		getCbUsePaintscaleTitle().setSelected(t.isUsePaintScaleTitle());
+		getTxtPaintScaleTitle().setText(t.getPaintScaleTitle());
 		
 		// set fonts:
-		getFontAxesCaption().setSelectedFont(st.getFontAxesTitle());
-		getFontAxesLabels().setSelectedFont(st.getFontAxesLabels());
-		getFontMaster().setSelectedFont(st.getFontGeneral());
-		getFontPlotTitle().setSelectedFont(st.getFontTitle());
-		getFontScale().setSelectedFont(st.getFontScaleInPlot());
+		getFontAxesCaption().setSelectedFont(t.getRegularFont());
+		getFontAxesLabels().setSelectedFont(t.getSmallFont());
+		getFontMaster().setSelectedFont(t.getMasterFont());
+		getFontPlotTitle().setSelectedFont(t.getExtraLargeFont());
+		getFontScale().setSelectedFont(t.getFontScaleInPlot());
 		
 		// colors
-		getFontAxesCaption().setColor(st.getcAxesFont());
-		getFontAxesLabels().setColor(st.getcAxesFont());
-		getFontMaster().setColor(st.getcGeneralFontColor());
-		getFontAxesLabels().setColor(st.getcAxesFont());
-		getFontPlotTitle().setColor(st.getcTitle());
-		getFontScale().setColor(st.getScaleFontColor());
+		getFontAxesCaption().setColor(t.getAxisLabelPaint());
+		getFontAxesLabels().setColor(t.getAxisLabelPaint());
+		getFontMaster().setColor(t.getMasterFontColor());
+		getFontPlotTitle().setColor(t.getTitlePaint());
+		getFontScale().setColor(t.getScaleFontColor());
 		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);

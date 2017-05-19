@@ -60,6 +60,9 @@ public class ChartExportUtil {
 		// Size only by width?
 		if(sett.isUseOnlyWidth()) {
 			sett.setHeight(ChartLogics.calcHeightToWidth(chart, sett.getSize().getWidth()));
+			chart.setPreferredSize(sett.getSize());
+			chart.setMaximumSize(sett.getSize());
+			chart.setMinimumSize(sett.getSize());
 		}
 		writeChartToImage(chart.getChart(), sett);
 	}

@@ -73,6 +73,7 @@ import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
@@ -418,8 +419,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Open Dialog
-				logicRunner.importMicroscopicImageBG();
-				
+				if(activeModuleContainer!=null) {
+					ModuleBackgroundImg mod = (ModuleBackgroundImg)activeModuleContainer.getModuleByClass(ModuleBackgroundImg.class);
+					if(mod!=null) {
+						mod.getBtnAddImage().doClick();
+					}
+				}
 			}
 		});
 		mnAction.add(btnImportMicroscopic2);

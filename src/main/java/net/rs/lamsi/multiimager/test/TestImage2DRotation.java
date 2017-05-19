@@ -103,7 +103,7 @@ public class TestImage2DRotation extends JFrame {
 					// load them as image set
 					// add
 						try {
-							ImageGroupMD[] groups = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true);
+							ImageGroupMD[] groups = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true, null);
 							map = HeatmapFactory.generateHeatmap((Image2D)groups[0].get(0));
 							panel.add(map.getChartPanel(), BorderLayout.CENTER);
 							panel.revalidate();

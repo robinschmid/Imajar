@@ -98,7 +98,7 @@ public class Image2DImportExportUtil {
 				// write project settings
 				try {
 					Settings sett = project.getSettings();
-					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"project", sett.getFileEnding()).getPath());
+					parameters.setFileNameInZip(new File(folder,"project."+sett.getFileEnding()).getPath());
 					out.putNextEntry(null, parameters);
 					sett.saveToXML(out);
 					out.closeEntry();
@@ -151,7 +151,7 @@ public class Image2DImportExportUtil {
 		// export group settings
 		try {
 			Settings sett = group.getSettings();
-			parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder,"group", sett.getFileEnding()).getPath());
+			parameters.setFileNameInZip(new File(folder,"group."+sett.getFileEnding()).getPath());
 			out.putNextEntry(null, parameters);
 			sett.saveToXML(out);
 			out.closeEntry();
@@ -168,7 +168,7 @@ public class Image2DImportExportUtil {
 			if(((MDDataset)images[0].getData()).hasXData()) {
 				String xmatrix = images[0].toXCSV(true, SEPARATION, false);
 				try {
-					parameters.setFileNameInZip(FileAndPathUtil.getRealFilePath(folder, "xmatrix", "csv").getPath());
+					parameters.setFileNameInZip(new File(folder, "xmatrix.csv").getPath());
 					out.putNextEntry(null, parameters);
 					byte[] data = xmatrix.getBytes();
 					out.write(data, 0, data.length);
@@ -364,7 +364,7 @@ public class Image2DImportExportUtil {
 				String sline;
 				int k = 0;
 				while ((sline = br.readLine()) != null) {
-					// try to seperate by seperation
+					// try to separate by separation
 					String[] sep = sline.split(SEPARATION);
 					// data
 					if(sep.length>0) {
@@ -373,12 +373,14 @@ public class Image2DImportExportUtil {
 							x = new ArrayList[sep.length];
 							for(int i=0; i<sep.length; i++) {
 								x[i] = new ArrayList<Float>();
-								x[i].add(Float.valueOf(sep[i]));
+								if(sep[i].length()>0)
+									x[i].add(Float.valueOf(sep[i]));
 							}
 						}
 						else {
-							for(int i=0; i<x.length; i++) {
-								x[i].add(Float.valueOf(sep[i]));
+							for(int i=0; i<x.length && i<sep.length; i++) {
+								if(sep[i].length()>0)
+									x[i].add(Float.valueOf(sep[i]));
 							}
 						}
 					}
@@ -428,13 +430,15 @@ public class Image2DImportExportUtil {
 								y = new ArrayList[sep.length];
 								for(int i=0; i<sep.length; i++) {
 									y[i] = new ArrayList<Double>();
-									y[i].add(Double.valueOf(sep[i]));
+									if(sep[i].length()>0)
+										y[i].add(Double.valueOf(sep[i]));
 								}
 							}
 							else {
 								// add data
-								for(int i=0; i<y.length; i++) {
-									y[i].add(Double.valueOf(sep[i]));
+								for(int i=0; i<y.length && i<sep.length; i++) {
+									if(sep[i].length()>0)
+										y[i].add(Double.valueOf(sep[i]));
 								}
 							}
 						}
@@ -602,10 +606,12 @@ public class Image2DImportExportUtil {
 	 * switches the available modes for import
 	 * @param files
 	 * @param sett
+	 * @param task 
 	 * @return
 	 * @throws Exception
 	 */
-	public static ImageGroupMD[] importTextDataToImage(File[] files, SettingsImageDataImportTxt sett, boolean sortFiles) throws Exception { 
+	public static ImageGroupMD[] importTextDataToImage(File[] files, SettingsImageDataImportTxt sett, 
+			boolean sortFiles, ProgressUpdateTask task) throws Exception { 
 		// get separation strng
 		String separation = "";
 		if(sett.getSeparation().equalsIgnoreCase("AUTO")) {
@@ -620,22 +626,22 @@ public class Image2DImportExportUtil {
 		switch(sett.getModeImport()){
 		case MULTIPLE_FILES_LINES_TXT_CSV:
 		case PRESETS_THERMO_NEPTUNE:
-			return new ImageGroupMD[]{importTextFilesToImage(files, sett, separation, sortFiles)};
+			return new ImageGroupMD[]{importTextFilesToImage(files, sett, separation, sortFiles, task)};
 		case CONTINOUS_DATA_TXT_CSV:
 			// do the import for one file after each other because one image=one file
 			ArrayList<ImageGroupMD> list = new ArrayList<ImageGroupMD>(); 
 			for(File f : files) {
-				ImageGroupMD imgList = importTextFilesToImage(new File[]{f}, sett, separation, sortFiles);
+				ImageGroupMD imgList = importTextFilesToImage(new File[]{f}, sett, separation, sortFiles, task);
 				// add all 
 				list.add(imgList);
 			}
 			return list.toArray(new ImageGroupMD[list.size()]);
 		case ONE_FILE_2D_INTENSITY:  
-			return new ImageGroupMD[]{import2DIntensityToImage(files, sett, separation)};
+			return new ImageGroupMD[]{import2DIntensityToImage(files, sett, separation, task)};
 		case PRESETS_THERMO_iCAPQ: 
-			return importFromThermoMP17FileToImage(files, sett); 
+			return importFromThermoMP17FileToImage(files, sett, task); 
 		case PRESETS_THERMO_iCAPQ_ONE_ROW:
-			return new ImageGroupMD[]{importFromThermoiCapOneRowFileToImage(files, sett)};
+			return new ImageGroupMD[]{importFromThermoiCapOneRowFileToImage(files, sett, task)};
 		}
 
 		return null;
@@ -646,7 +652,7 @@ public class Image2DImportExportUtil {
 	// txt /csv / Excel
 	// I0	i1	i2	i3	i4
 	// i5	i6	i7	i8	i9 ...
-	public static ImageGroupMD import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation) throws Exception { 		
+	public static ImageGroupMD import2DIntensityToImage(File[] files, SettingsImageDataImportTxt sett, String separation, ProgressUpdateTask task) throws Exception { 		
 		// read x only once
 		ArrayList<Float>[] x = null; 
 		float[] startXValue = null;
@@ -690,6 +696,8 @@ public class Image2DImportExportUtil {
 							}
 						}
 					}
+
+					if(task!=null) task.addProgressStep(1.0);
 				}
 			}
 		}
@@ -850,6 +858,8 @@ public class Image2DImportExportUtil {
 				titles.add(title);
 				meta.add(metadata);
 				flist.add(file);
+				
+				if(task!=null) task.addProgressStep(1.0);
 			}
 		}
 
@@ -866,14 +876,14 @@ public class Image2DImportExportUtil {
 	// load text files with separation
 	// time  SEPARATION   intensity
 	// new try the first is not good
-	public static ImageGroupMD importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
+	public static ImageGroupMD importTextFilesToImage(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles, ProgressUpdateTask task) throws Exception { 
 		// reset title line
 		titleLine = null;
 
 		ArrayList<ScanLineMD> lines;
 		if(sett.getModeImport()==IMPORT.PRESETS_THERMO_NEPTUNE)
-			lines = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles);
-		else lines = importTextFilesToScanLines(files, sett, separation, sortFiles);
+			lines = importNeptuneTextFilesToScanLines(files, sett, separation, sortFiles, task);
+		else lines = importTextFilesToScanLines(files, sett, separation, sortFiles, task);
 
 		// parent directory as raw file path 
 		File parent = files[0].getParentFile();
@@ -926,10 +936,11 @@ public class Image2DImportExportUtil {
 	 * @param files
 	 * @param sett
 	 * @param separation
+	 * @param task 
 	 * @return an array of ArrayList<ScanLine> that can be converted to images
 	 * @throws Exception
 	 */
-	public static ArrayList<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
+	public static ArrayList<ScanLineMD> importTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles, ProgressUpdateTask task) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
@@ -1169,6 +1180,8 @@ public class Image2DImportExportUtil {
 					lines.get(lines.size()-1).addDimension(iList[img]);
 				} 
 			}
+
+			if(task!=null) task.addProgressStep(1.0);
 		}
 		//return image
 		return lines;
@@ -1188,7 +1201,7 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ImageGroupMD[] importFromThermoMP17FileToImage(File[] file, SettingsImageDataImportTxt sett) throws Exception { 
+	public static ImageGroupMD[] importFromThermoMP17FileToImage(File[] file, SettingsImageDataImportTxt sett, ProgressUpdateTask task) throws Exception { 
 		// images
 		ArrayList<ImageGroupMD> groups=new ArrayList<ImageGroupMD>();
 
@@ -1208,6 +1221,8 @@ public class Image2DImportExportUtil {
 				if(group!=null)
 					groups.add(group);
 			}
+
+			if(task!=null) task.addProgressStep(1.0);
 		}
 
 
@@ -1377,7 +1392,7 @@ public class Image2DImportExportUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ImageGroupMD importFromThermoiCapOneRowFileToImage(File[] files, SettingsImageDataImportTxt sett) throws Exception { 
+	public static ImageGroupMD importFromThermoiCapOneRowFileToImage(File[] files, SettingsImageDataImportTxt sett, ProgressUpdateTask task) throws Exception { 
 		// sort text files by name:
 		files = FileAndPathUtil.sortFilesByNumber(files);
 
@@ -1522,6 +1537,8 @@ public class Image2DImportExportUtil {
 						}
 					}
 				}
+				
+				if(task!=null) task.addProgressStep(1.0);
 			}
 
 			if(line.getImageCount()>0) {
@@ -1545,10 +1562,11 @@ public class Image2DImportExportUtil {
 	 * 1	16:17:44:334	-1.4410645627666198e-004
 	 * @param file
 	 * @param sett
+	 * @param task 
 	 * @return
 	 * @throws Exception
 	 */
-	public static ArrayList<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles) throws Exception { 
+	public static ArrayList<ScanLineMD> importNeptuneTextFilesToScanLines(File[] files, SettingsImageDataImportTxt sett, String separation, boolean sortFiles, ProgressUpdateTask task) throws Exception { 
 		long time1 = System.currentTimeMillis();
 		// sort text files by name:
 		if(sortFiles)
@@ -1626,6 +1644,8 @@ public class Image2DImportExportUtil {
 				// add new lines to each list 
 				lines.get(lines.size()-1).addDimension(iList[img]);
 			} 
+			
+			if(task!=null) task.addProgressStep(1.0);
 		}
 		//return image
 		return lines;

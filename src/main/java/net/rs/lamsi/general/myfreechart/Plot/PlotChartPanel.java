@@ -32,12 +32,16 @@ public class PlotChartPanel extends ChartPanel {
 	protected Vector<AxesRangeChangedListener> axesRangeListener;
 	protected AspectRatioListener aspectRatioListener;
 	protected boolean isMouseZoomable = true;
- 
+
 	public PlotChartPanel(JFreeChart chart) {
+		this(chart, true);
+	}
+	public PlotChartPanel(JFreeChart chart, boolean addExportMenu) {
 		super(chart,true,false,true,true,true);  
 		initChartPanel();  
         // Add Export to Excel Menu
-        addExportMenu();
+		if(addExportMenu)
+			addExportMenu();
         
 		// try to find in plot scale
         // set this chart panel
@@ -203,9 +207,7 @@ public class PlotChartPanel extends ChartPanel {
 		exportGraphics.addActionListener(new ActionListener() { 
 			@Override
 			public void actionPerformed(ActionEvent e) { 
-				List<Collectable2D> list = ImageEditorWindow.getImages();
-				// open export Graphics dialog 
-				GraphicsExportDialog.openDialog(getChart(), list); 
+				exportGraphics();
 			}
 		}); 
 		
@@ -214,6 +216,11 @@ public class PlotChartPanel extends ChartPanel {
 	}
 	
 	
+
+	protected void exportGraphics() {
+		// open export Graphics dialog 
+		GraphicsExportDialog.openDialog(getChart()); 
+	}
 
 	public void addPopupMenuItem(JMenuItem item) { 
         this.getPopupMenu().add(item); 

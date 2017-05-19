@@ -2,7 +2,9 @@ package net.rs.lamsi.general.framework.basics;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Paint;
 import java.awt.event.ItemListener;
 
 import javax.swing.JPanel;
@@ -59,6 +61,9 @@ public class JFontSpecs extends JPanel {
 		color.setColor(c);
 	}
 
+	public void setColor(Paint c) {
+		color.setColor((Color)c);
+	}
 
 	public void addListener(ColorChangedListener ccl, ItemListener il, DocumentListener dl) {
 		fontBox.addItemListener(il);

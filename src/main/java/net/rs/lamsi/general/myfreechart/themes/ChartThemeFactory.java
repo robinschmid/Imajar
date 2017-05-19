@@ -176,6 +176,7 @@ public class ChartThemeFactory {
         
         theme.setAxisLinePaint(Color.white); 
         
+        theme.setMasterFontColor(Color.WHITE);
         // axis offset
         theme.setAxisOffset(new RectangleInsets(0,0,0,0));
         return theme;
@@ -234,6 +235,7 @@ public class ChartThemeFactory {
         theme.setDomainGridlinePaint(transp); 
         
         theme.setAxisLinePaint(Color.yellow);
+        theme.setMasterFontColor(Color.yellow);
         
         // axis offset
         theme.setAxisOffset(new RectangleInsets(0,0,0,0));

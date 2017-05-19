@@ -107,7 +107,7 @@ public class TestImage2DRotationOverlay extends JFrame {
 					// load them as image set
 					// add
 						try {
-							ImageGroupMD[] groups = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true);
+							ImageGroupMD[] groups = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true, null);
 
 							Image2D img = (Image2D)groups[0].get(0);
 							img.getSettings().getSettPaintScale().setUsesMinAsInvisible(true);

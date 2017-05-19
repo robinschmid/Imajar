@@ -359,10 +359,10 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
 		SettingsThemes s = currentImage.getSettTheme();
 		// font 
-		fontShortTitle.setSelectedFont(s.getFontShortTitle());
+		fontShortTitle.setSelectedFont(s.getTheme().getFontShortTitle());
 		// bg color
-		fontShortTitle.setColor(s.getcShortTitle());
-		colorBGShortTitle.setColor(s.getcBGShortTitle());
+		fontShortTitle.setColor(s.getTheme().getcShortTitle());
+		colorBGShortTitle.setColor(s.getTheme().getcBGShortTitle());
 		
 		this.getCbBiaryData().setSelected(si.isBinaryData());
 		// 
@@ -398,9 +398,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 						imagingMode, getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation, getCbBiaryData().isSelected());
 			
 				SettingsThemes s = currentImage.getSettTheme();
-				s.setcShortTitle(fontShortTitle.getColor());
-				s.setcBGShortTitle(colorBGShortTitle.getColor());
-				s.setFontShortTitle(fontShortTitle.getSelectedFont());
+				s.getTheme().setcShortTitle(fontShortTitle.getColor());
+				s.getTheme().setcBGShortTitle(colorBGShortTitle.getColor());
+				s.getTheme().setFontShortTitle(fontShortTitle.getSelectedFont());
 				
 			} catch(Exception ex) {
 				ex.printStackTrace();

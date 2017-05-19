@@ -196,7 +196,7 @@ public class HeatmapFactory {
 			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
 
 			// add short title
-			ImageTitle shortTitle = new ImageTitle(img, setTheme.getFontShortTitle(), setTheme.getcShortTitle(), setTheme.getcBGShortTitle(), false, 0.9f, 0.9f);
+			ImageTitle shortTitle = new ImageTitle(img, setTheme.getTheme().getFontShortTitle(), setTheme.getTheme().getcShortTitle(), setTheme.getTheme().getcBGShortTitle(), false, 0.9f, 0.9f);
 			plot.addAnnotation(shortTitle.getAnnotation());
 			
 			// theme
@@ -315,7 +315,7 @@ public class HeatmapFactory {
 			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
 			
 			// add short title
-			ImageTitle shortTitle = new ImageTitle(img, setTheme.getFontShortTitle(), setTheme.getcShortTitle(), setTheme.getcBGShortTitle(), settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
+			ImageTitle shortTitle = new ImageTitle(img, setTheme.getTheme().getFontShortTitle(), setTheme.getTheme().getcShortTitle(), setTheme.getTheme().getcBGShortTitle(), settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
 			plot.addAnnotation(shortTitle.getAnnotation());
 			
 			// theme
@@ -402,8 +402,8 @@ public class HeatmapFactory {
 	
 	// ScaleAxis
 	private static NumberAxis createScaleAxis(SettingsPaintScale settings, SettingsThemes theme, IXYZDataset dataset) {
-		NumberAxis scaleAxis = new NumberAxis(theme.isUsePaintScaleTitle()? theme.getPaintScaleTitle() : null);
-		scaleAxis.setNumberFormatOverride(theme.getIntensitiesNumberFormat());
+		NumberAxis scaleAxis = new NumberAxis(theme.getTheme().isUsePaintScaleTitle()? theme.getTheme().getPaintScaleTitle() : null);
+		scaleAxis.setNumberFormatOverride(theme.getTheme().getIntensitiesNumberFormat());
 		scaleAxis.setLabelLocation(AxisLabelLocation.HIGH_END);
 		scaleAxis.setLabelAngle(Math.toRadians(-180));
 		return scaleAxis;

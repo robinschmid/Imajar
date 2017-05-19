@@ -4,13 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -30,7 +31,8 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.modules.Module;
@@ -41,6 +43,7 @@ import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.general.settings.importexport.SettingsImageResolution;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -49,12 +52,30 @@ import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.ui.FloatDimension;
 
 public class GraphicsExportDialog extends JFrame implements SettingsPanel {
+
+	public enum EXPORT_STRUCTURE {
+		IMAGE("Single image"),
+		GROUP("Group"),
+		PROJECT("Project"),
+		ALL("All images");
+
+		private String text;
+		EXPORT_STRUCTURE(String text) {
+			this.text  = text;
+		}
+		@Override
+		public String toString() {
+			return text;
+		}
+	}
 
 	// only one instance!
 	private static GraphicsExportDialog inst;
@@ -83,21 +104,24 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	private JButton btnPath;
 	private JButton btnRenewPreview;
 
-	
+
 
 	//###################################################################
 	// Vars
 	private ChartPanel chartPanel;
-	private List<Collectable2D> list;
+	private Collectable2D selected;
+
 	private boolean canExport;
 	private final JFileChooser chooser = new JFileChooser();
 	private JPanel pnChartPreview;
 	private JRadioButton rbSVG;
 	private JRadioButton rbEPS;
 	private JRadioButton rbJPG;
-	private JCheckBox cbExportAll;
-	
-	
+	private JComboBox comboExportStruc;
+	private JLabel lblExportTheFollowing;
+	private JPanel panel;
+
+
 	//###################################################################
 	// create instance in window and imageeditor 
 	public static GraphicsExportDialog createInstance() {
@@ -109,21 +133,22 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	public static GraphicsExportDialog getInst() {
 		return inst;
 	}
-	
+
 	//###################################################################
 	// get Settings
 	/**
 	 * OPen Dialog with chart
 	 * @param chart
 	 */
-	public static void openDialog2(JFreeChart chart) {
+	public static void openDialog(JFreeChart chart) {
 		inst.openDialogI(chart, null); 
 	}
-	public static void openDialog(JFreeChart chart, List<Collectable2D> list) {
-		inst.openDialogI(chart, list); 
+	public static void openDialog(JFreeChart chart, Collectable2D selected) {
+		inst.openDialogI(chart, selected); 
 	}
-	protected void openDialogI(JFreeChart chart, List<Collectable2D> list) {
-		inst.list = list;
+	protected void openDialogI(JFreeChart chart, Collectable2D selected) {
+		inst.selected = selected;
+
 		//
 		try {
 			addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()));
@@ -132,92 +157,135 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			e.printStackTrace();
 		}
 	}
-	
+
 	protected void addChartToPanel(ChartPanel chart) { 
 		//
 		chartPanel = chart;
 		getPnChartPreview().removeAll();
-		getPnChartPreview().add(chartPanel, BorderLayout.CENTER);
-		getPnChartPreview().validate();
+		getPnChartPreview().add(chartPanel);
+		getPnChartPreview().revalidate();
 		getPnChartPreview().repaint();
 	}
-	
+
 
 	/**
 	 * choose a path by file chooser
 	 */
 	protected void choosePath() {
 		// open filechooser  
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();  
-    		// only a folder? or also a file name > then split
-            if(FileAndPathUtil.isOnlyAFolder(file)) {
-            	// only a folder
-            	getTxtPath().setText(file.getAbsolutePath()); 
-            }
-            else {
-            	// data file selected
-            	// get folder
-            	getTxtPath().setText(FileAndPathUtil.getFileAsFolder(file).getAbsolutePath());
-            	// get filename
-            	getTxtFileName().setText(FileAndPathUtil.getFileNameFromPath(file));            	
-            	// get format without .
-            	String format = FileAndPathUtil.getFormat(file);
-            	if(format.equalsIgnoreCase("pdf")) {
-            		getRbPDF().setSelected(true);
-            	}
-            	else if(format.equalsIgnoreCase("png")) {
-            		getRbPNG().setSelected(true);
-            	} 
-            	else if(format.equalsIgnoreCase("jpg")) {
-            		getRbJPG().setSelected(true);
-            	}
-            	else if(format.equalsIgnoreCase("eps")) {
-            		getRbEPS().setSelected(true);
-            	}
-            	else if(format.equalsIgnoreCase("svg")) {
-            		getRbSVG().setSelected(true);
-            	}
-            }
-        } 
+		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();  
+			// only a folder? or also a file name > then split
+			if(FileAndPathUtil.isOnlyAFolder(file)) {
+				// only a folder
+				getTxtPath().setText(file.getAbsolutePath()); 
+			}
+			else {
+				// data file selected
+				// get folder
+				getTxtPath().setText(FileAndPathUtil.getFileAsFolder(file).getAbsolutePath());
+				// get filename
+				getTxtFileName().setText(FileAndPathUtil.getFileNameFromPath(file));            	
+				// get format without .
+				String format = FileAndPathUtil.getFormat(file);
+				if(format.equalsIgnoreCase("pdf")) {
+					getRbPDF().setSelected(true);
+				}
+				else if(format.equalsIgnoreCase("png")) {
+					getRbPNG().setSelected(true);
+				} 
+				else if(format.equalsIgnoreCase("jpg")) {
+					getRbJPG().setSelected(true);
+				}
+				else if(format.equalsIgnoreCase("eps")) {
+					getRbEPS().setSelected(true);
+				}
+				else if(format.equalsIgnoreCase("svg")) {
+					getRbSVG().setSelected(true);
+				}
+			}
+		} 
 	}
-	
-	
+
+
 	private void saveGraphicsAs() {
 		setAllSettings(SettingsHolder.getSettings());
 		//
 		if(canExport) {
-			SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
+			final SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
 			try {
-				if(getCbExportAll().isSelected() && list!=null) {
-					File path = sett.getPath();
-					String fileName = sett.getFileName(); 
-					// import all
-					for(Collectable2D img : list) { 
-						try {
-							// create chart
-							Heatmap heat = HeatmapFactory.generateHeatmap(img);
-							// TODO maybe you have to put it on the chartpanel and show it? 
-							addChartToPanel(heat.getChartPanel());
-							// set the name and path 
-							String sub = img.getTitle();
-							if(Image2D.class.isInstance(img)) {
-								FileAndPathUtil.eraseFormat(((Image2D)img).getSettings().getSettImage().getRAWFileName());
+				if(selected==null)
+					ChartExportUtil.writeChartToImage(chartPanel, sett);
+				else {
+
+					ProgressDialog.startTask(new ProgressUpdateTask(1) {
+
+						@Override
+						protected Boolean doInBackground() throws Exception {
+							try {
+								EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE)getComboExportStruc().getSelectedItem();
+
+								switch(struc) {
+								case ALL:
+									File rootPath = (sett.getPath());
+									List<Collectable2D> list = ImageEditorWindow.getImages();
+									if(list!=null)
+										for(Collectable2D c : list) {
+											if(c.getImageGroup()!=null) {
+												if(c.getImageGroup().getProject()!=null) {
+													// add project and group folder
+													sett.setPath(new File(new File(rootPath, c.getImageGroup().getProject().getName().replace(".", "_")),
+															c.getImageGroup().getName().replace(".", "_")));
+												}
+												// add group folder
+												else  sett.setPath(new File(rootPath, c.getImageGroup().getName().replace(".", "_")));
+											}
+											saveCollectable2DGraphics(sett, c, c.getTitle());
+
+											addProgressStep(1.0/list.size());
+										}
+									break;
+								case PROJECT:
+									if(selected!=null && selected.getImageGroup()!=null && selected.getImageGroup().getProject()!=null) {
+										ImagingProject project = selected.getImageGroup().getProject();
+										File mainPath = new File(sett.getPath(), project.getName().replace(".", "_"));
+										for(ImageGroupMD g : project.getGroups()) {
+											sett.setPath(new File(mainPath, g.getName().replace(".", "_")));
+											for(Collectable2D c : g.getImages()) {
+												saveCollectable2DGraphics(sett, c, c.getTitle());
+
+												addProgressStep(1.0/g.getImages().size()/project.getGroups().size());
+											}
+										}
+									}
+									break;
+								case GROUP:
+									if(selected!=null && selected.getImageGroup()!=null) {
+										sett.setPath(new File(sett.getPath(), selected.getImageGroup().getName().replace(".", "_")));
+										for(Collectable2D c : selected.getImageGroup().getImages()) {
+											saveCollectable2DGraphics(sett, c, c.getTitle());
+
+											addProgressStep(1.0/selected.getImageGroup().getImages().size());
+										}
+									}
+									break;
+								case IMAGE:
+									ChartExportUtil.writeChartToImage(chartPanel, sett);
+									addProgressStep(1.0);
+									break;
+								}
+								// 
+								ImageEditorWindow.log("File written successfully", LOG.MESSAGE);
+								DialogLoggerUtil.showMessageDialogForTime(inst, "Information", "File written successfully ", 1000);
+							} catch (Exception e) {
+								e.printStackTrace();
+								ImageEditorWindow.log("File not written.", LOG.ERROR);
+								DialogLoggerUtil.showErrorDialog(inst, "File not written. ", e);
 							}
-							sett.setPath(new File(path,sub));
-							// title as filename
-							sett.setFileName(fileName+img.getTitle());
-							// export
-							ChartExportUtil.writeChartToImage(heat.getChartPanel(), sett);
-						} catch(Exception ex) {
-							ImageEditorWindow.log("FIle: "+sett.getFileName()+" is not saveable. \n"+ex.getMessage(), LOG.ERROR);
+							return true;
 						}
-					}
+					});
 				}
-				else ChartExportUtil.writeChartToImage(chartPanel, sett);
-				// 
-				ImageEditorWindow.log("File written successfully", LOG.MESSAGE);
-				DialogLoggerUtil.showMessageDialogForTime(this, "Information", "File written successfully ", 1000);
 			} catch (Exception e) {
 				e.printStackTrace();
 				ImageEditorWindow.log("File not written.", LOG.ERROR);
@@ -225,6 +293,32 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			}
 		}
 	}  
+
+	private void saveCollectable2DGraphics(SettingsExportGraphics sett, Collectable2D img, String title) {
+		// change file name
+		File path = sett.getPath();
+		String fileName = sett.getFileName(); 
+		// import all
+		try {
+			// create chart
+			Heatmap heat = HeatmapFactory.generateHeatmap(img);
+			// TODO maybe you have to put it on the chartpanel and show it? 
+			addChartToPanel(heat.getChartPanel());
+			// set the name and path 
+			// replace
+			title = title.replace("|"	, "_");
+			title = title.replace("."	, "_");
+			// title as filename
+			sett.setFileName(fileName+title);
+			// export
+			ChartExportUtil.writeChartToImage(heat.getChartPanel(), sett);
+
+			// reset
+			sett.setFileName(fileName);
+		} catch(Exception ex) {
+			ImageEditorWindow.log("FIle: "+sett.getFileName()+" is not saveable. \n"+ex.getMessage(), LOG.ERROR);
+		}
+	}
 
 	@Override
 	public void setAllSettings(SettingsHolder settings) { 
@@ -251,14 +345,14 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				sett.setResolution(72);
 			else 
 				sett.setResolution(Integer.valueOf(getTxtManualRes().getText()));
-			
+
 			// Size
 			float width = Float.valueOf(getTxtWidth().getText());
 			float height = Float.valueOf(getTxtHeight().getText());
 			DIM_UNIT unit = (DIM_UNIT)getComboSizeUnit().getSelectedItem();
 			sett.setSize(width, height, unit); 
 			sett.setUseOnlyWidth(getCbOnlyUseWidth().isSelected());
-			
+
 			// Background
 			if(getRbTransparent().isSelected())
 				sett.setColorBackground(new Color(255, 255, 255, 0));
@@ -268,7 +362,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				sett.setColorBackground(Color.WHITE);
 			else 
 				sett.setColorBackground(getBtnChooseBackgroundColor().getBackground());
-				
+
 			// is everything set right?
 			canExport = (sett.getPath()!=null && sett.getFileName().length()>0 && width>0 && height>0);
 		} catch(Exception ex) {
@@ -298,7 +392,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	} 
 	// 
 	//###################################################################
-	
+
 	/**
 	 * Launch the application.
 	 */
@@ -351,11 +445,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		{
 			JLabel lblFilename = new JLabel("filename");
 			contentPanel.add(lblFilename, "cell 2 1");
-		}
-		{
-			cbExportAll = new JCheckBox("Export all in list");
-			cbExportAll.setToolTipText("Exports all in the list.");
-			contentPanel.add(cbExportAll, "cell 0 2");
 		}
 		{
 			JPanel pnSettingsLeft = new JPanel();
@@ -514,9 +603,24 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			}
 		}
 		{
-			pnChartPreview = new JPanel();
-			contentPanel.add(pnChartPreview, "cell 3 3,grow");
-			pnChartPreview.setLayout(new BorderLayout(0, 0));
+			lblExportTheFollowing = new JLabel("Export the following:");
+			contentPanel.add(lblExportTheFollowing, "flowx,cell 0 2");
+		}
+		{
+			comboExportStruc = new JComboBox();
+			comboExportStruc.setFont(new Font("Tahoma", Font.BOLD, 12));
+			comboExportStruc.setModel(new DefaultComboBoxModel(EXPORT_STRUCTURE.values()));
+			contentPanel.add(comboExportStruc, "cell 0 2");
+		}
+		{
+			panel = new JPanel();
+			contentPanel.add(panel, "cell 3 3,grow");
+			panel.setLayout(new BorderLayout(0, 0));
+			{
+				pnChartPreview = new JPanel();
+				panel.add(pnChartPreview, BorderLayout.CENTER);
+				pnChartPreview.setLayout(new GridBagLayout());
+			}
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -547,8 +651,15 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 							DecimalFormat form = new DecimalFormat("#.###");
 							if(sett.isUseOnlyWidth()) {
 								double height = (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth()));
-								sett.setSize(Float.valueOf(getTxtWidth().getText()), height, sett.getUnit());
+								
+								sett.setSize((Float.valueOf(getTxtWidth().getText())), SettingsImageResolution.changeUnit((float)height, DIM_UNIT.PX, sett.getUnit()), sett.getUnit());
 								getTxtHeight().setText(""+form.format(sett.getSizeInUnit().getHeight())); 
+								
+								chartPanel.setPreferredSize(sett.getSize());
+								chartPanel.setMaximumSize(sett.getSize());
+								chartPanel.setMinimumSize(sett.getSize());
+								getPnChartPreview().revalidate();
+								getPnChartPreview().repaint();
 							}
 							else {
 								chartPanel.setSize((int)sett.getSize().getWidth(), (int)sett.getSize().getHeight());
@@ -640,7 +751,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	public JRadioButton getRbEPS() {
 		return rbEPS;
 	}
-	public JCheckBox getCbExportAll() {
-		return cbExportAll;
+	public JComboBox getComboExportStruc() {
+		return comboExportStruc;
 	}
 }

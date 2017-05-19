@@ -138,7 +138,26 @@ public class DatasetContinuousMD  extends MDDataset implements Serializable  {
 	}
 	@Override
 	public int addDimension(List<Double[]> dim) {
-		line.addDimension(dim.get(0));
+		if(dim.size()==1) {
+			line.addDimension(dim.get(0));
+		}
+		else {
+			// put all lines together
+			int size = 0;
+			for(Double[] d : dim)
+				size += d.length;
+			
+			Double[] sum = new Double[size];
+
+			int c = 0;
+			for(Double[] d : dim)
+				for(Double val : d) {
+					sum[c] = val;
+					c++;
+				}
+			
+			line.addDimension(sum);
+		}
 		return line.getImageCount()-1;
 	}
 

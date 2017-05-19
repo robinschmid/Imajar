@@ -93,6 +93,18 @@ public class ImageLogicRunner {
 						if(Collectable2D.class.isInstance(o)) { 
 							setSelectedImageAndShow((Collectable2D)o);
 						}
+						// select first image
+						else if(ImageGroupMD.class.isInstance(o)) {
+							ImageGroupMD g = (ImageGroupMD)o;
+							if(g.size()>0)
+								setSelectedImageAndShow(g.get(0));
+						}
+						// select first image
+						else if(ImagingProject.class.isInstance(o)) {
+							ImagingProject p = (ImagingProject)o;
+							if(p.size()>0 && p.get(0).size()>0)
+								setSelectedImageAndShow(p.get(0).get(0));
+						}
 					}
 				}catch(Exception ex) { 
 					ex.printStackTrace();
@@ -179,27 +191,27 @@ public class ImageLogicRunner {
 		else if(project!=null && project.getNode()==null)
 			addProject(project);
 		else {
-				// add group
-				DefaultMutableTreeNode parentPr = project!=null? project.getNode() : treeImg.getRoot();
-				// add group to parentProject
-				DefaultMutableTreeNode parent = new DefaultMutableTreeNode(group);
-				group.setNode(parent);
-				parentPr.add(parent);
+			// add group
+			DefaultMutableTreeNode parentPr = project!=null? project.getNode() : treeImg.getRoot();
+			// add group to parentProject
+			DefaultMutableTreeNode parent = new DefaultMutableTreeNode(group);
+			group.setNode(parent);
+			parentPr.add(parent);
 
-				// create img nodes
-				for(Collectable2D c2d : group.getImages()) {
-					if(Image2D.class.isInstance(c2d)) {
-						addImageNode(c2d, parent);
-					}
-				} 
-				// add overlays afterwards
-				for(Collectable2D c2d : group.getImages()) {
-					if(ImageOverlay.class.isInstance(c2d)) {
-						addImageNode(c2d, parent);
-					}
-				} 
-				treeImg.reload();
-			}
+			// create img nodes
+			for(Collectable2D c2d : group.getImages()) {
+				if(Image2D.class.isInstance(c2d)) {
+					addImageNode(c2d, parent);
+				}
+			} 
+			// add overlays afterwards
+			for(Collectable2D c2d : group.getImages()) {
+				if(ImageOverlay.class.isInstance(c2d)) {
+					addImageNode(c2d, parent);
+				}
+			} 
+			treeImg.reload();
+		}
 	}
 
 	/**
@@ -220,7 +232,7 @@ public class ImageLogicRunner {
 			// add number 
 			project.getSettings().setName(name+"("+c+")");
 		}
-		
+
 		// create subnode with image name
 		DefaultMutableTreeNode node= new DefaultMutableTreeNode(project);
 		project.setNode(node);
@@ -318,10 +330,10 @@ public class ImageLogicRunner {
 		final Collectable2D current = getSelectedImage();
 		if(state && current!=null) {
 			// current settings as image 
-			
+
 			// get List of images
 			ProgressDialog.startTask(new ProgressUpdateTask(1) {
-				
+
 				@Override
 				protected Boolean doInBackground() throws Exception {
 					Settings sett = current.getSettings();
@@ -330,13 +342,13 @@ public class ImageLogicRunner {
 						// for each replace all settings	
 						if(current.getClass().isInstance(img))
 							current.applySettingsToOtherImage((img));
-						
+
 						addProgressStep(1.0/list.size());
 					}
 					return true;
 				}
 			});
-			
+
 		}
 	} 
 
@@ -349,7 +361,7 @@ public class ImageLogicRunner {
 	 */
 	public void openExportHeatGraphicsDialog() {
 		if(currentHeat!=null)
-			GraphicsExportDialog.openDialog(currentHeat.getChart(), getListImages());
+			GraphicsExportDialog.openDialog(currentHeat.getChart(), getSelectedImage());
 	}
 
 	// saves selected Image to file
@@ -455,7 +467,7 @@ public class ImageLogicRunner {
 							// import all groups (image2D)
 							// choose project dialog
 							ImagingProject project = DialogChooseProject.choose(treeImg.getSelectedProject(), treeImg); 
-	
+
 							try {
 								// All files in fileList
 								for(File f : files) {
@@ -574,9 +586,10 @@ public class ImageLogicRunner {
 				// set mother directory as NEW Project
 				String newProject = files.length==1? files[0].getName() : files[0].getParentFile().getName();
 				newProject = FileAndPathUtil.eraseFormat(newProject);
-				
+
 				// choose project dialog
 				ImagingProject project = DialogChooseProject.choose(treeImg.getSelectedProject(), treeImg, newProject); 
+				if(project==null) project = new ImagingProject(newProject);
 
 				if(files.length>0) {
 					// open the files
@@ -607,13 +620,13 @@ public class ImageLogicRunner {
 		// load image
 		try { 
 			if(files.length>0) {
-				// folder or files?
-				if(files[0].isDirectory()) {
-					ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(files.length) {
-						// Load all Files
-						@Override
-						protected Boolean doInBackground() throws Exception {
-							boolean state = true;
+				ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(files.length) {
+					// Load all Files
+					@Override
+					protected Boolean doInBackground() throws Exception {
+						boolean state = true;
+						// folder or files?
+						if(files[0].isDirectory()) {
 							// go into sub folders to find data 
 							// load each folder as one set of images
 							for(File f : files) {
@@ -623,8 +636,10 @@ public class ImageLogicRunner {
 									List<File[]> sub = FileAndPathUtil.findFilesInDir(f, settingsDataImport.getFilter(), true, settingsDataImport.isFilesInSeparateFolders());
 
 									for(File[] i : sub) {
+										setProgress(0);
+										setProgressSteps(i.length);
 										// load them as image set
-										ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true); 
+										ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i, settingsDataImport, true, this); 
 
 										// add to project
 										if(project!=null)
@@ -641,29 +656,28 @@ public class ImageLogicRunner {
 									}
 								}
 							}
-
-							return state;
 						}
-					});
+						else {
+							// load all files as one image set
+							ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(files, settingsDataImport, true, this); 
 
-				}
-				else {
-					// load all files as one image set
-					ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(files, settingsDataImport, true); 
+							// add to project
+							if(project!=null)
+								for(ImageGroupMD g : imgs)
+									project.add(g);
 
-					// add to project
-					if(project!=null)
-						for(ImageGroupMD g : imgs)
-							project.add(g);
-
-					// add all
-					for(int coll = 0; coll<imgs.length; coll++) {
-						if(imgs[coll].getImages().size()>0) {
-							// add img to list
-							addGroup(imgs[coll], project);
+							// add all
+							for(int coll = 0; coll<imgs.length; coll++) {
+								if(imgs[coll].getImages().size()>0) {
+									// add img to list
+									addGroup(imgs[coll], project);
+								}
+							} 
 						}
-					} 
-				}
+
+						return state;
+					}
+				});
 			}
 
 		} catch (Exception e) { 
