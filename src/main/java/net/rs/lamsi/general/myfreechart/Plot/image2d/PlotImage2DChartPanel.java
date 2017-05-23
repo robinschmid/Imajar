@@ -17,6 +17,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.chart.JFreeChart;
 
 public class PlotImage2DChartPanel extends PlotChartPanel {
@@ -37,6 +38,8 @@ public class PlotImage2DChartPanel extends PlotChartPanel {
 	protected void addExportMenu() {
 		super.addExportMenu();
 		
+		final PlotImage2DChartPanel thispanel = this;
+		
 		if(img!=null && img.isImage2D()) {
 			this.getPopupMenu().addSeparator();
 			// Data Export 
@@ -51,8 +54,10 @@ public class PlotImage2DChartPanel extends PlotChartPanel {
 			});  
 			// add to panel
 			addPopupMenuItem(exportData);
+			
 			// TODO ADD MORE OPTIONS FOR CLIPBOARD BY DIFFERENT MENUBUTTONS
 			this.getPopupMenu().addSeparator(); 
+			
 			// Data Export 
 			JMenu exportDataMenu = new JMenu("Export data to clipboard..");  
 			addPopupMenu(exportDataMenu);

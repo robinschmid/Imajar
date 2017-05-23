@@ -43,6 +43,7 @@ import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
@@ -51,7 +52,6 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
-import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
@@ -112,7 +112,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	private Collectable2D selected;
 
 	private boolean canExport;
-	private final JFileChooser chooser = new JFileChooser();
 	private JPanel pnChartPreview;
 	private JRadioButton rbSVG;
 	private JRadioButton rbEPS;
@@ -120,6 +119,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	private JComboBox comboExportStruc;
 	private JLabel lblExportTheFollowing;
 	private JPanel panel;
+	private JRadioButton rbEmf;
 
 
 	//###################################################################
@@ -173,6 +173,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	 */
 	protected void choosePath() {
 		// open filechooser  
+		JFileChooser chooser = SettingsHolder.getSettings().getSetGeneralPreferences().getFcExportPicture();
 		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();  
 			// only a folder? or also a file name > then split
@@ -202,6 +203,9 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				}
 				else if(format.equalsIgnoreCase("svg")) {
 					getRbSVG().setSelected(true);
+				}
+				else if(format.equalsIgnoreCase("emf")) {
+					getRbEmf().setSelected(true);
 				}
 			}
 		} 
@@ -331,11 +335,12 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			sett.setFileName(getTxtFileName().getText());
 			sett.setPath(new File(getTxtPath().getText()));
 			// Format
-			int format = SettingsExportGraphics.FORMAT_PDF;
-			if(getRbSVG().isSelected()) format = SettingsExportGraphics.FORMAT_SVG;
-			else if(getRbEPS().isSelected()) format = SettingsExportGraphics.FORMAT_EPS;
-			else if(getRbPNG().isSelected()) format = SettingsExportGraphics.FORMAT_PNG;
-			else if(getRbJPG().isSelected()) format = SettingsExportGraphics.FORMAT_JPG;
+			FORMAT format = SettingsExportGraphics.FORMAT.PDF;
+			if(getRbSVG().isSelected()) format = SettingsExportGraphics.FORMAT.SVG;
+			else if(getRbEPS().isSelected()) format = SettingsExportGraphics.FORMAT.EPS;
+			else if(getRbPNG().isSelected()) format = SettingsExportGraphics.FORMAT.PNG;
+			else if(getRbJPG().isSelected()) format = SettingsExportGraphics.FORMAT.JPG;
+			else if(getRbEmf().isSelected()) format = SettingsExportGraphics.FORMAT.EMF;
 			sett.setFormat(format);
 
 			// Resolution
@@ -412,20 +417,16 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	public GraphicsExportDialog() {
 		final JFrame thisframe = this;
 		//
-		// create fileCooser 
-		chooser.addChoosableFileFilter(new FileTypeFilter("png", "Save to png")); 
-		chooser.addChoosableFileFilter(new FileTypeFilter("pdf", "Save to pdf")); 
-		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		//
 		setBounds(100, 100, 800, 627);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new MigLayout("", "[grow][][][grow]", "[][][][grow]"));
+		contentPanel.setLayout(new MigLayout("", "[][][grow]", "[][][][grow]"));
 		{
 			txtPath = new JTextField();
 			txtPath.setToolTipText("Path without filename");
-			contentPanel.add(txtPath, "cell 0 0 2 1,growx");
+			contentPanel.add(txtPath, "flowx,cell 0 0,growx");
 			txtPath.setColumns(10);
 		}
 		{
@@ -435,21 +436,21 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 					choosePath();
 				}
 			});
-			contentPanel.add(btnPath, "cell 2 0");
+			contentPanel.add(btnPath, "cell 1 0");
 		}
 		{
 			txtFileName = new JTextField();
-			contentPanel.add(txtFileName, "cell 0 1 2 1,growx");
+			contentPanel.add(txtFileName, "cell 0 1,growx");
 			txtFileName.setColumns(10);
 		}
 		{
 			JLabel lblFilename = new JLabel("filename");
-			contentPanel.add(lblFilename, "cell 2 1");
+			contentPanel.add(lblFilename, "cell 1 1");
 		}
 		{
 			JPanel pnSettingsLeft = new JPanel();
 			pnSettingsLeft.setMinimumSize(new Dimension(260, 260));
-			contentPanel.add(pnSettingsLeft, "cell 0 3 3 1,grow");
+			contentPanel.add(pnSettingsLeft, "cell 0 3,grow");
 			pnSettingsLeft.setLayout(new BorderLayout(0, 0));
 			{
 				JScrollPane scrollPane = new JScrollPane();
@@ -464,7 +465,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 						{
 							JPanel panel_2 = new JPanel();
 							panel_1.getPnContent().add(panel_2, BorderLayout.CENTER);
-							panel_2.setLayout(new MigLayout("", "[][][]", "[][]"));
+							panel_2.setLayout(new MigLayout("", "[][][][]", "[][]"));
 							{
 								rbPDF = new JRadioButton("PDF");
 								buttonGroup.add(rbPDF);
@@ -472,14 +473,20 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 								panel_2.add(rbPDF, "cell 0 0");
 							}
 							{
-								rbSVG = new JRadioButton("SVG");
-								buttonGroup.add(rbSVG);
-								panel_2.add(rbSVG, "cell 1 0");
+								rbEmf = new JRadioButton("EMF");
+								buttonGroup.add(rbEmf);
+								rbEmf.setToolTipText("Enhanced metafile (for Microsoft Office)");
+								panel_2.add(rbEmf, "cell 1 0");
 							}
 							{
 								rbEPS = new JRadioButton("EPS");
 								buttonGroup.add(rbEPS);
 								panel_2.add(rbEPS, "cell 2 0");
+							}
+							{
+								rbSVG = new JRadioButton("SVG");
+								buttonGroup.add(rbSVG);
+								panel_2.add(rbSVG, "cell 3 0");
 							}
 							{
 								rbPNG = new JRadioButton("PNG");
@@ -613,13 +620,10 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			contentPanel.add(comboExportStruc, "cell 0 2");
 		}
 		{
-			panel = new JPanel();
-			contentPanel.add(panel, "cell 3 3,grow");
-			panel.setLayout(new BorderLayout(0, 0));
 			{
 				pnChartPreview = new JPanel();
-				panel.add(pnChartPreview, BorderLayout.CENTER);
 				pnChartPreview.setLayout(new GridBagLayout());
+				contentPanel.add(pnChartPreview, "cell 1 3 2 1,grow");
 			}
 		}
 		{
@@ -753,5 +757,8 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	}
 	public JComboBox getComboExportStruc() {
 		return comboExportStruc;
+	}
+	public JRadioButton getRbEmf() {
+		return rbEmf;
 	}
 }

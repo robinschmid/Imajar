@@ -42,7 +42,7 @@ public class FileTypeFilter extends FileFilter {
         else { 
         	String desc = description+" (";
         	for(String e : extensions)
-        		desc = desc + "*"+extension+", ";
+        		desc = desc + "*"+e+", ";
         	desc = desc.substring(0, desc.length()-2) + ")";
         	return desc;
         }

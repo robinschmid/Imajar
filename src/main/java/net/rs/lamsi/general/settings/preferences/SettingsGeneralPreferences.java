@@ -37,7 +37,8 @@ public class SettingsGeneralPreferences extends Settings {
 	private final JFileChooser fcImportPicture = new JFileChooser();
 	private final JFileChooser fcImport = new JFileChooser();
 	private final JFileChooser fcSave = new JFileChooser();
-	private final FileTypeFilter fileTFImage2D, fileTFProject, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
+	private final JFileChooser fcExportPicture =  new JFileChooser();
+	private final FileTypeFilter fileTFImage2D, filePictureExport, fileTFProject, fileTFtxt, fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
 	private final FileTypeFilter filePicture;
     
     // save a history of image2d imports/exports
@@ -79,6 +80,11 @@ public class SettingsGeneralPreferences extends Settings {
 		fcImportPicture.setMultiSelectionEnabled(false);
 		fcImportPicture.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		
+
+		fcExportPicture.addChoosableFileFilter(filePictureExport = new FileTypeFilter(new String[]{"png", "jpg", "gif", "pdf", "eps", "svg"}, "Export images"));
+		fcExportPicture.setFileFilter(filePictureExport);
+		fcExportPicture.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		
 		// import general pref
 		try {
 			loadFromXML(generalPrefFile);
@@ -106,6 +112,7 @@ public class SettingsGeneralPreferences extends Settings {
 		
 		toXML(elParent, doc, "fcOpen", fcOpen.getCurrentDirectory().getAbsolutePath()); 
 		toXML(elParent, doc, "fcImportPicture", fcImportPicture.getCurrentDirectory().getAbsolutePath()); 
+		toXML(elParent, doc, "fcExportPicture", fcImportPicture.getCurrentDirectory().getAbsolutePath()); 
 		toXML(elParent, doc, "fcImport", fcImport.getCurrentDirectory().getAbsolutePath()); 
 		toXML(elParent, doc, "fcSave", fcSave.getCurrentDirectory().getAbsolutePath()); 
 		// image 2d import/export history
@@ -125,7 +132,8 @@ public class SettingsGeneralPreferences extends Settings {
 				else if(paramName.equals("iconHeight"))iconHeight = intFromXML(nextElement);  
 				else if(paramName.equals("generatesIcons"))generatesIcons = booleanFromXML(nextElement);  
 				else if(paramName.equals("fcOpen"))fcOpen.setCurrentDirectory(new File(nextElement.getTextContent()));  
-				else if(paramName.equals("fcImportPicture"))fcImportPicture.setCurrentDirectory(new File(nextElement.getTextContent()));  
+				else if(paramName.equals("fcImportPicture"))fcImportPicture.setCurrentDirectory(new File(nextElement.getTextContent())); 
+				else if(paramName.equals("fcExportPicture"))fcExportPicture.setCurrentDirectory(new File(nextElement.getTextContent()));  
 				else if(paramName.equals("fcImport"))fcImport.setCurrentDirectory(new File(nextElement.getTextContent()));  
 				else if(paramName.equals("fcSave"))fcSave.setCurrentDirectory(new File(nextElement.getTextContent()));  
 				else if(paramName.startsWith("img2DHistory")) {
@@ -195,6 +203,9 @@ public class SettingsGeneralPreferences extends Settings {
 	}
 	public JFileChooser getFcImportPicture() {
 		return fcImportPicture;
+	}
+	public JFileChooser getFcExportPicture() {
+		return fcExportPicture;
 	}
 	public JFileChooser getFcImport() {
 		return fcImport;

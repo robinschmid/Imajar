@@ -18,11 +18,16 @@ public class SettingsExportGraphics extends Settings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
-	public static final int FORMAT_PDF = 0, FORMAT_PNG = 1, FORMAT_JPG = 2, FORMAT_SVG = 4, FORMAT_EPS = 5;
+    public enum FORMAT {
+    	PDF, EMF, EPS, SVG, PNG, JPG;
+    	public String toString() {
+    		return super.toString().toLowerCase();
+    	};
+    }
 	//
 	private String fileName = "";
 	private File path;
-	private int format; 
+	private FORMAT format; 
 	
 	// resolution
 	private SettingsImageResolution resolution;
@@ -40,7 +45,7 @@ public class SettingsExportGraphics extends Settings {
 	@Override
 	public void resetAll() {
 		path = null;
-		format = 0;  
+		format = FORMAT.PDF;  
 		fileName = "";
 		resolution = new SettingsImageResolution();
 	}
@@ -67,7 +72,7 @@ public class SettingsExportGraphics extends Settings {
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("fileName")) fileName = nextElement.getTextContent(); 
 				else if(paramName.equals("path"))path = fileFromXML(nextElement);  
-				else if(paramName.equals("format"))format = intFromXML(nextElement);  
+				else if(paramName.equals("format"))format = FORMAT.valueOf(nextElement.getTextContent());  
 				else if(paramName.equals("useOnlyWidth"))useOnlyWidth = booleanFromXML(nextElement);  
 				else if(paramName.equals("colorBackground"))colorBackground = colorFromXML(nextElement);  
 				else if(isSettingsNode(nextElement, resolution.getSuperClass()))
@@ -83,19 +88,7 @@ public class SettingsExportGraphics extends Settings {
 		return FileAndPathUtil.getRealFilePath(path, fileName, getFormatAsString());
 	}
 	public String getFormatAsString() {
-		switch (format) {
-		case FORMAT_PDF:
-			return "pdf";  
-		case FORMAT_PNG:
-			return "png"; 
-		case FORMAT_JPG:
-			return "jpg"; 
-		case FORMAT_EPS:
-			return "eps"; 
-		case FORMAT_SVG:
-			return "svg";  
-		}
-		return "";
+		return format.toString();
 	}
 	public File getPath() {
 		return path;
@@ -103,10 +96,10 @@ public class SettingsExportGraphics extends Settings {
 	public void setPath(File path) {
 		this.path = path;
 	}
-	public int getFormat() {
+	public FORMAT getFormat() {
 		return format;
 	}
-	public void setFormat(int format) {
+	public void setFormat(FORMAT format) {
 		this.format = format;
 	}
 	public int getResolution() {

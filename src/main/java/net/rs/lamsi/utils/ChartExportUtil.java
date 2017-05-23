@@ -25,6 +25,8 @@ import net.sf.epsgraphics.EpsGraphics;
 import org.apache.batik.anim.dom.SVGDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.svggen.SVGGraphics2DIOException;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.emf.EMFGraphics2D;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -97,20 +99,23 @@ public class ChartExportUtil {
         
 		// Format
 		switch (sett.getFormat()) {
-		case SettingsExportGraphics.FORMAT_PDF:
+		case PDF:
 			writeChartToPDF(chart, sett.getSize().width, sett.getSize().height, f);
 			break;
-		case SettingsExportGraphics.FORMAT_PNG:
+		case PNG:
 			writeChartToPNG(chart, sett.getSize().width, sett.getSize().height, f, sett.getResolution());
 			break;
-		case SettingsExportGraphics.FORMAT_JPG:
+		case JPG:
 			writeChartToJPEG(chart, sett.getSize().width, sett.getSize().height, f, sett.getResolution());
 			break;
-		case SettingsExportGraphics.FORMAT_EPS:
+		case EPS:
 			writeChartToEPS(chart, sett.getSize().width, sett.getSize().height, f);
 			break;
-		case SettingsExportGraphics.FORMAT_SVG:
+		case SVG:
 			writeChartToSVG(chart, sett.getSize().width, sett.getSize().height, f);
+			break;
+		case EMF:
+			writeChartToEMF(chart, sett.getSize().width, sett.getSize().height, f);
 			break;
 		} 
 		// 
@@ -310,12 +315,20 @@ public class ChartExportUtil {
 			e.printStackTrace();
 			throw e;
 		}
-		/*
-		Writer out=new FileWriter(name);
-		out.write(g.toString());
-		out.close();
-		*/
 	}
 
 
+	public static void writeChartToEMF(JFreeChart chart, int width, int height, File name) throws IOException {
+		try {
+			VectorGraphics g = new EMFGraphics2D(name, new Dimension(width, height));
+			g.startExport();	
+			Rectangle2D rectangle2d = new Rectangle2D.Double(0, 0, width, height);
+			chart.draw((Graphics2D) g,rectangle2d); 
+			g.endExport();		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		}
+	}
 }
