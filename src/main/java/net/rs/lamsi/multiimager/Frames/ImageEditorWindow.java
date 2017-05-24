@@ -313,7 +313,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JSeparator separator_1 = new JSeparator();
 		mnFile.add(separator_1);
 
-		JMenu mnImportData = new JMenu("Import data");
+		JMenuItem mnImportData = new JMenuItem("Import data");
 		mnImportData.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// opens the import data frame 
@@ -322,16 +322,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		});
 		mnFile.add(mnImportData);
 
-
-		JMenuItem mntmOpenDialog = new JMenuItem("Open dialog");
-		mntmOpenDialog.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				// opens the import data frame 
-				importDataDialog.setVisible(true);
-			}
-		});
-		mnImportData.add(mntmOpenDialog);
-		
 		// ######################################################################
 		// add image2D history TODO
 		SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
@@ -1146,7 +1136,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
  * @return
  */
 	public static boolean isDebugging() { 
-		return getEditor().getCbDebug().isSelected();
+		return (getEditor()!=null && getEditor().getCbDebug()!=null && getEditor().getCbDebug().isSelected());
 	}
 	/**
 	 * prints a message to the log 

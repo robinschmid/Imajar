@@ -2,11 +2,13 @@ package net.rs.lamsi.utils;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 public class FileAndPathUtil { 
@@ -200,9 +202,12 @@ public class FileAndPathUtil {
 	 */
     public static File[] sortFilesByNumber(File[] files) {
         Arrays.sort(files, new Comparator<File>() {
+        	private Boolean endsWithNumber = null;
+        	
             @Override
             public int compare(File o1, File o2) { 
 				try {
+					if(endsWithNumber==null) checkEndsWithNumber(o1.getName());
 					int n1 = extractNumber(o1.getName());
 	                int n2 = extractNumber(o2.getName());
 	                return n1 - n2;
@@ -214,23 +219,44 @@ public class FileAndPathUtil {
             private int extractNumber(String name) throws Exception {
                 int i = 0;
                 try { 
-                    int e = name.lastIndexOf('.');
-                    e = e==-1? name.length() : e;
-                    int f = e-1;
-                    for(; f>0; f--) {
-                    	if(!isNumber(name.charAt(f))){
-                    		f++;
-                    		break;
-                    	}
-                    }
-                    if(f<0) f=0;
-                    String number = name.substring(f, e);
-                    i = Integer.parseInt(number);
+                	if(endsWithNumber) {
+	                	// ends with number?
+	                    int e = name.lastIndexOf('.');
+	                    e = e==-1? name.length() : e;
+	                    int f = e-1;
+	                    for(; f>0; f--) {
+	                    	if(!isNumber(name.charAt(f))){
+	                    		f++;
+	                    		break;
+	                    	}
+	                    }
+	                    // 
+	                    if(f<0) f=0;
+	                    String number = name.substring(f, e);
+	                    i = Integer.parseInt(number);
+                	}
+                	else {
+                		int f = 0;
+	                    for(; f<name.length(); f++) {
+	                    	if(!isNumber(name.charAt(f))){
+	                    		break;
+	                    	}
+	                    }
+	                    String number = name.substring(0,f);
+	                    i = Integer.parseInt(number);
+                	}
                 } catch(Exception e) {
                     i = 0; // if filename does not match the format
                     throw e;       // then default to 0
                 }
                 return i;
+            }
+            
+            private void checkEndsWithNumber(String name) {
+            	// ends with number?
+                int e = name.lastIndexOf('.');
+                e = e==-1? name.length() : e;
+                endsWithNumber = new Boolean(isNumber(name.charAt(e-1)));
             }
         }); 
         return files;
@@ -270,12 +296,19 @@ public class FileAndPathUtil {
 		return findFilesInDir(dir, fileFilter, searchSubdir, false);
 	}
 	public static List<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter, boolean searchSubdir, boolean filesInSeparateFolders) { 
+		DebugStopWatch t = new DebugStopWatch();
 		File[] subDir = FileAndPathUtil.getSubDirectories(dir);
+		t.stopAndLOG(" found "+subDir.length+" sub directories in "+dir.getName());
 		// result: each vector element stands for one img
-		Vector<File[]> list = new Vector<File[]>();
+		ArrayList<File[]> list = new ArrayList<File[]>();
 		// add all files as first image
 		// sort all files and return them
-		File[] files = FileAndPathUtil.sortFilesByNumber(dir.listFiles(fileFilter));
+		t.setNewStartTime();
+		File[] files = dir.listFiles(fileFilter);
+		t.stopAndLOG(" listing all "+files.length+" files in "+dir.getName());
+		t.setNewStartTime();
+		files = FileAndPathUtil.sortFilesByNumber(files);
+		t.stopAndLOG(" sorting all "+files.length+" files in "+dir.getName());
 		if(files!=null && files.length>0) list.add(files);
 		
 		if(subDir==null || subDir.length<=0 || !searchSubdir) {
@@ -284,12 +317,20 @@ public class FileAndPathUtil {
 		}
 		else {
 			// sort dirs
+			t.setNewStartTime();
 			subDir = FileAndPathUtil.sortFilesByNumber(subDir);
+			t.stopAndLOG(" sorting all "+subDir.length+" sub directories in "+dir.getName());
 			// go in all sub and subsub... folders to find files
-			if(filesInSeparateFolders)
+			if(filesInSeparateFolders) {
+				t.setNewStartTime();
 				findFilesInSubDirSeparatedFolders(dir, subDir, list, fileFilter);
-			else 
+				t.stopAndLOG(" finding files in sub directories (FILES IN SEPARATE FOLDERS)");
+			}
+			else  {
+				t.setNewStartTime();
 				findFilesInSubDir(subDir, list, fileFilter);
+				t.stopAndLOG(" finding files in sub directories");
+			}
 			// return as array (unsorted because they are sorted folder wise)
 			return list;
 		} 
@@ -301,9 +342,9 @@ public class FileAndPathUtil {
 	 * @param list
 	 * @return
 	 */
-	private static void findFilesInSubDirSeparatedFolders(File parent, File[] dirs, Vector<File[]> list, FileNameExtFilter fileFilter) { 
+	private static void findFilesInSubDirSeparatedFolders(File parent, File[] dirs, ArrayList<File[]> list, FileNameExtFilter fileFilter) { 
 		// go into folder and find files 
-		Vector<File> img = null;
+		ArrayList<File> img = null;
 		// each file in one folder
 		for(int i=0; i<dirs.length; i++) {
 			// find all suiting files
@@ -311,10 +352,10 @@ public class FileAndPathUtil {
 			// if there are some suiting files in here directory has been found! create image of these dirs
 			if(subFiles.length>0) {
 				if(img==null)
-					img = new Vector<File>();
+					img = new ArrayList<File>();
 				// put them into the list
 				for(int f=0; f<subFiles.length; f++) {
-					img.addElement(subFiles[f]);
+					img.add(subFiles[f]);
 				}
 			}
 			else {
@@ -339,7 +380,7 @@ public class FileAndPathUtil {
 	 * @param list
 	 * @return
 	 */
-	private static void findFilesInSubDir(File[] dirs, Vector<File[]> list, FileNameExtFilter fileFilter) { 
+	private static void findFilesInSubDir(File[] dirs, ArrayList<File[]> list, FileNameExtFilter fileFilter) { 
 		// All files in one folder
 		for(int i=0; i<dirs.length; i++) {
 			// find all suiting files

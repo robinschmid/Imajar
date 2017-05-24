@@ -9,7 +9,8 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 	ProgressDialog progressDialog;
-	private int stepwidth=0;
+	private double stepwidth=0;
+	private double progress = 0;
 
 	public ProgressUpdateTask(int steps) {
 		this.setStepWidth(steps);
@@ -41,23 +42,27 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 
 	// Steps 
 	public void addProgressStep(double a) {
-		int progress = Math.min(getProgress()+(int)(getStepwidth()*a), 100);
-		setProgress(progress);
-
-		progress = progress*10;
-		progressDialog.getProgressBar().setValue(progress);
-		progressDialog.validate();
+		double p = Math.min(progress+getStepwidth()*a, 100);
+		setProgress(p);
 	} 
 
+	public void setProgress(double progress) {
+		this.progress = progress;
+		super.setProgress((int)progress);
+		
+		progressDialog.getProgressBar().setValue((int)(progress*10));
+		progressDialog.validate();
+	}
+	
 	public void setProgressSteps(int steps) {
 		setStepWidth(steps);
 	}
 
 	protected void setStepWidth(int steps) {
 		if(steps>0) 
-			this.stepwidth = 100/steps;
+			this.stepwidth = 100.0/steps;
 	} 
-	public int getStepwidth() {
+	public double getStepwidth() {
 		return stepwidth;
 	}
 

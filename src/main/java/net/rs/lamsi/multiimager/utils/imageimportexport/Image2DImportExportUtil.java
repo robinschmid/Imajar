@@ -1178,10 +1178,10 @@ public class Image2DImportExportUtil {
 				for(int img=0; img<iList.length; img++) {  
 					// add data
 					lines.get(lines.size()-1).addDimension(iList[img]);
-				} 
-			}
+				}
 
-			if(task!=null) task.addProgressStep(1.0);
+				if(task!=null) task.addProgressStep(1.0);
+			}
 		}
 		//return image
 		return lines;
