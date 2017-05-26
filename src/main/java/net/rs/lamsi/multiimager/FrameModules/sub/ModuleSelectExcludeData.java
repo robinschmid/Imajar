@@ -34,12 +34,14 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 	private JLabel lbUsedDataPerc;
 	private JLabel lbSelectedRects;
 	private JCheckBox cbShowSelExcl;
+	private JButton btnOpenSelectData;
 
 	/**
 	 * Create the panel.
 	 */
 	public ModuleSelectExcludeData(ImageEditorWindow wnd) {
 		super("Data selection", false, SettingsSelections.class, Image2D.class);  
+		window = wnd;
 		setShowTitleAlways(true);
 		
 		JPanel panel = new JPanel();
@@ -80,8 +82,8 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 		lbUsedDataPerc.setFont(new Font("Tahoma", Font.BOLD, 11));
 		panel.add(lbUsedDataPerc, "cell 2 3");
 		
-		JButton btnNewButton = new JButton("Select data");
-		btnNewButton.addActionListener(new ActionListener() { 
+		btnOpenSelectData = new JButton("Select data");
+		btnOpenSelectData.addActionListener(new ActionListener() { 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// open dialog with image ex
@@ -110,8 +112,7 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 				}
 			}
 		});
-		panel.add(btnNewButton, "cell 1 4");
-		window = wnd;
+		panel.add(btnOpenSelectData, "cell 1 4");
 	}
 	
 	@Override
@@ -145,6 +146,9 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 		return si;
 	}
 	
+	public JButton getBtnOpenSelectData() {
+		return btnOpenSelectData;
+	}
 	
 	public JLabel getLbExcludedRects() {
 		return lbExcludedRects;

@@ -74,6 +74,7 @@ import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
@@ -463,6 +464,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			}
 		});
 		mnView.add(mntmMultiImageExplorer);
+		
+		JMenuItem mntmSelectData = new JMenuItem("Select data");
+		mntmSelectData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(activeModuleContainer!=null) { 
+					// TODO correct?
+					ModuleSelectExcludeData mod = (ModuleSelectExcludeData)activeModuleContainer.getModuleByClass(ModuleSelectExcludeData.class);
+					if(mod!=null) {
+						mod.getBtnOpenSelectData().doClick();
+					}
+				}
+			}
+		});
+		mnView.add(mntmSelectData);
 
 		JMenu mnWindow = new JMenu("Window");
 		menuBar.add(mnWindow);

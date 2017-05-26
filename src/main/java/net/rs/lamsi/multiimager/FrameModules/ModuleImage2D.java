@@ -32,7 +32,6 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 	private ModulePaintscale modulePaintscale;
 	private ModuleThemes moduleThemes;
 	private ModuleBackgroundImg moduleBG;
-	private ModuleOperations moduleOperations;
 	private ModuleSelectExcludeData moduleSelect;
 	private ModuleQuantifyStrategy modQuantifier;
 	//
@@ -83,9 +82,6 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 		modQuantifier = new ModuleQuantifyStrategy(window);
 		addModule(modQuantifier);
 		
-		moduleOperations = new ModuleOperations(window);
-		addModule(moduleOperations);
-
 		// add all modules for Image settings TODO add all mods
 		listSettingsModules.add(moduleGeneral.getModSplitConImg());
 	}
@@ -94,9 +90,6 @@ public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Imag
 	
 	//################################################################################################
 	// GETTERS AND SETTERS  
-	public ModuleOperations getModuleOperations() {
-		return moduleOperations;
-	}
 	public ModuleGeneral getModuleGeneral() {
 		return moduleGeneral;
 	}

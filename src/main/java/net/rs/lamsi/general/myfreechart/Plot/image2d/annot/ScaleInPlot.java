@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.heatmap;
+package net.rs.lamsi.general.myfreechart.Plot.image2d.annot;
 
 import java.awt.Color;
 import java.awt.FontMetrics;

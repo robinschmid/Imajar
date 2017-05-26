@@ -392,6 +392,7 @@ public class DialogDataSaver extends JFrame {
 		inst.imgList = imgList;
 		inst.selections = null;
 		inst.renewAllSettings();
+		inst.pack();
 		inst.setVisible(true); 
 	}
 	public static void startDialogWith(Image2D img) {
@@ -400,6 +401,7 @@ public class DialogDataSaver extends JFrame {
 		inst.imgList = null;
 		inst.selections = null;
 		inst.renewAllSettings();
+		inst.pack();
 		inst.setVisible(true);
 	}
 	
@@ -411,6 +413,7 @@ public class DialogDataSaver extends JFrame {
 		inst.selections = selections;
 		inst.setCurrentMode(MODE.SELECTED_RECTS);
 		inst.renewAllSettings();
+		inst.pack();
 		inst.setVisible(true);
 	}
 	

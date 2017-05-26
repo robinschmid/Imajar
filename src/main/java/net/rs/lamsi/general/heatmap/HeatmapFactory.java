@@ -12,6 +12,7 @@ import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageRenderer;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ImageTitle;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;

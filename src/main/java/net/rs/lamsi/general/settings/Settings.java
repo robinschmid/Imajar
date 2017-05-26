@@ -3,6 +3,7 @@ package net.rs.lamsi.general.settings;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Paint;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,7 +36,6 @@ import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
-import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -211,7 +211,7 @@ public abstract class Settings implements Serializable {
 			Element paramElement = doc.createElement(name);
 			elParent.appendChild(paramElement); 
 
-			if(Color.class.isInstance(o)) {
+			if(Color.class.isInstance(o) || Paint.class.isInstance(o)) {
 				Color c = (Color) o;
 				paramElement.setTextContent(String.valueOf(c.getRGB()));
 				paramElement.setAttribute("alpha", String.valueOf(c.getAlpha()));

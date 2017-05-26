@@ -13,8 +13,8 @@ import javax.swing.JMenuItem;
 
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
-import net.rs.lamsi.general.heatmap.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AspectRatioListener;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AxesRangeChangedListener;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AxisRangeChangedListener;

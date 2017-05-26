@@ -235,7 +235,7 @@ public class Image2DImportExportUtil {
 			if(bg!=null) {
 				BufferedImage bgi = (BufferedImage)group.getBGImage();
 				if(bgi!=null) {
-					parameters.setFileNameInZip(bg.getName());
+					parameters.setFileNameInZip(new File(folder,bg.getName()).getPath());
 					out.putNextEntry(null, parameters);
 					ImageIO.write(bgi, FileAndPathUtil.getFormat(bg).toUpperCase(), out);
 					out.closeEntry();

@@ -47,7 +47,7 @@ public abstract class AspectRatioListener implements ComponentListener {
 				//pnChartAspectRatio.setSize(dim);
 				break;
 			case LIMIT_TO_PN_WIDTH:
-				int height = (int) ChartLogics.calcHeightToWidth(pn, pn.getWidth());
+				int height = (int) ChartLogics.calcHeightToWidth(pn, pn.getWidth(), true);
 				dim = new Dimension(50, height); 
 				break;
 			}

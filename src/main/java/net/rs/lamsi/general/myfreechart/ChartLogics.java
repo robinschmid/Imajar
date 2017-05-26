@@ -85,35 +85,37 @@ public class ChartLogics {
     /**
      * calls this method twice (2 iterations) with an estimated chartHeight of 3*chartWidth
      * @param myChart
+     * @param copyToNewPanel 
      * @param dataWidth width of data
      * @param axis for width calculation 
      * @return
      */
-    public static double calcHeightToWidth(ChartPanel myChart, double chartWidth) {  
-    	return calcHeightToWidth(myChart, chartWidth, (int)chartWidth*3, 2);
+    public static double calcHeightToWidth(ChartPanel myChart, double chartWidth, boolean copyToNewPanel) {  
+    	return calcHeightToWidth(myChart, chartWidth, (int)chartWidth*3, 4, copyToNewPanel);
 	}
     /**
      * calculates the correct height with multiple iterations
      * @param myChart
+     * @param copyToNewPanel 
      * @param dataWidth width of data
      * @param axis for width calculation 
      * @return
      */
-    public static double calcHeightToWidth(ChartPanel myChart, double chartWidth, double estimatedHeight, int iterations) {  
+    public static double calcHeightToWidth(ChartPanel myChart, double chartWidth, double estimatedHeight, int iterations, boolean copyToNewPanel) {  
     	//if(myChart.getChartRenderingInfo()==null || myChart.getChartRenderingInfo().getChartArea()==null || myChart.getChartRenderingInfo().getChartArea().getWidth()==0)
     	// result
     	double height = estimatedHeight;
     	
     	// paint on a ghost panel
     	JPanel parent = (JPanel)myChart.getParent();
-    	JPanel p = new JPanel();
-    	p.removeAll();
-    	p.add(myChart, BorderLayout.CENTER);
+    	JPanel p = copyToNewPanel? new JPanel() : parent;
+    	if(copyToNewPanel)
+    		p.add(myChart, BorderLayout.CENTER);
     	try {
     	for(int i=0; i<iterations; i++) {
-    		// paint on ghost panel with estimated height
-        	p.setSize((int)chartWidth, (int)estimatedHeight);
-        	p.paintImmediately(p.getBounds());
+    		// paint on ghost panel with estimated height (if copy panel==true)
+        	myChart.setSize((int)chartWidth, (int)estimatedHeight);
+        	myChart.paintImmediately(myChart.getBounds());
 
         	XYPlot plot = (XYPlot) myChart.getChart().getPlot();
             ChartRenderingInfo info = myChart.getChartRenderingInfo();
@@ -137,15 +139,21 @@ public class ChartLogics {
             // real plot height can be calculated by 
             double realPH = realPW / x.getLength()*y.getLength();
             
+            // the real height
             height = realPH + titleHeight; 
+            
+            // for next iteration
+            estimatedHeight = height;
     	}
     	}catch(Exception ex) {
     		ex.printStackTrace();
     	}
     	
-    	// reset to frame
-    	p.removeAll();
-    	parent.add(myChart);
+    	if(copyToNewPanel) {
+	    	// reset to frame
+	    	p.removeAll();
+	    	parent.add(myChart);
+    	}
     		
 		return height;
 	}
@@ -162,7 +170,7 @@ public class ChartLogics {
     	p.removeAll();
     	p.add(myChart, BorderLayout.CENTER);
     	p.setBounds(myChart.getBounds());
-    	p.paintImmediately(myChart.getBounds());
+    	myChart.paintImmediately(myChart.getBounds());
     	p.removeAll();
     	parent.add(myChart);
     	
@@ -206,7 +214,7 @@ public class ChartLogics {
     	p.removeAll();
     	p.add(myChart, BorderLayout.CENTER);
     	p.setBounds(myChart.getBounds());
-    	p.paintImmediately(myChart.getBounds());
+    	myChart.paintImmediately(myChart.getBounds());
     	p.removeAll();
     	parent.add(myChart);
     	

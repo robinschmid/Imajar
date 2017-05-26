@@ -61,10 +61,12 @@ public class ChartExportUtil {
 	public static void writeChartToImage(ChartPanel chart, SettingsExportGraphics sett) throws Exception { 
 		// Size only by width?
 		if(sett.isUseOnlyWidth()) {
-			sett.setHeight(ChartLogics.calcHeightToWidth(chart, sett.getSize().getWidth()));
+			sett.setHeight(ChartLogics.calcHeightToWidth(chart, sett.getSize().getWidth(), false));
 			chart.setPreferredSize(sett.getSize());
 			chart.setMaximumSize(sett.getSize());
 			chart.setMinimumSize(sett.getSize());
+			chart.revalidate();
+			chart.repaint();
 		}
 		writeChartToImage(chart.getChart(), sett);
 	}

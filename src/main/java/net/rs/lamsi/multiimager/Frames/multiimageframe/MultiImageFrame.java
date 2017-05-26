@@ -360,7 +360,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 				
 				// calculate height if keep aspect ratio==true
 				if(getCbKeepAspectRatio().isSelected()) {
-					height = (int) ChartLogics.calcHeightToWidth(cp, width);
+					height = (int) ChartLogics.calcHeightToWidth(cp, width, false);
 				}
 				if(height>maxHeight) maxHeight = height;
 				// pos

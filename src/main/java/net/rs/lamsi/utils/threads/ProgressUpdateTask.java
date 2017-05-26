@@ -42,15 +42,16 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 
 	// Steps 
 	public void addProgressStep(double a) {
-		double p = Math.min(progress+getStepwidth()*a, 100);
-		setProgress(p);
+		setProgress(progress+getStepwidth()*a);
 	} 
 
 	public void setProgress(double progress) {
-		this.progress = progress;
-		super.setProgress((int)progress);
+		double p = Math.min(progress, 100);
+		p = Math.max(0, p);
+		this.progress = p;
+		super.setProgress((int)p);
 		
-		progressDialog.getProgressBar().setValue((int)(progress*10));
+		progressDialog.getProgressBar().setValue((int)(p*10));
 		progressDialog.validate();
 	}
 	

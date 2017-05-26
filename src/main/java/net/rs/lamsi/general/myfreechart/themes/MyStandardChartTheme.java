@@ -211,22 +211,24 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Settings.toXML(el, doc, "scaleYPos", scaleYPos); 
 		Settings.toXML(el, doc, "fontScaleInPlot", fontScaleInPlot); 
 		Settings.toXML(el, doc, "scaleFontColor", scaleFontColor);  
-		Settings.toXML(elParent, doc, "isAntiAliased", isAntiAliased); 
-		Settings.toXML(elParent, doc, "showTitle", isShowTitle); 
-		Settings.toXML(elParent, doc, "noBackground", isNoBackground()); 
+		Settings.toXML(el, doc, "isAntiAliased", isAntiAliased); 
+		Settings.toXML(el, doc, "showTitle", isShowTitle); 
+		Settings.toXML(el, doc, "noBackground", isNoBackground()); 
 		
-		Settings.toXML(elParent, doc, "fontShortTitle", fontShortTitle); 
-		Settings.toXML(elParent, doc, "cShortTitle", cShortTitle); 
-		Settings.toXML(elParent, doc, "cBGShortTitle", cBGShortTitle); 
+		Settings.toXML(el, doc, "fontShortTitle", fontShortTitle); 
+		Settings.toXML(el, doc, "cShortTitle", cShortTitle); 
+		Settings.toXML(el, doc, "cBGShortTitle", cBGShortTitle); 
 		
-		Settings.toXML(elParent, doc, "significantDigits", significantDigits); 
-		Settings.toXML(elParent, doc, "useScientificIntensities", useScientificIntensities); 
+		Settings.toXML(el, doc, "significantDigits", significantDigits); 
+		Settings.toXML(el, doc, "useScientificIntensities", useScientificIntensities); 
 		
-		Settings.toXML(elParent, doc, "paintScaleTitle", paintScaleTitle); 
-		Settings.toXML(elParent, doc, "usePaintScaleTitle", usePaintScaleTitle); 
+		Settings.toXML(el, doc, "paintScaleTitle", paintScaleTitle); 
+		Settings.toXML(el, doc, "usePaintScaleTitle", usePaintScaleTitle); 
+		Settings.toXML(el, doc, "cBackground", getPlotBackgroundPaint());
 	}
 
 	public void loadValuesFromXML(Element el, Document doc) {
+		boolean hasNoBG = false;
 		NodeList list = el.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {
 			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
@@ -249,7 +251,10 @@ public class MyStandardChartTheme extends StandardChartTheme {
 				else if(paramName.equals("scaleFontColor"))scaleFontColor = Settings.colorFromXML(nextElement);  
 				else  if(paramName.equals("isAntiAliased")) isAntiAliased = Settings.booleanFromXML(nextElement); 
 					else if(paramName.equals("showTitle"))isShowTitle = Settings.booleanFromXML(nextElement);  
-					else if(paramName.equals("noBackground"))setNoBackground(Settings.booleanFromXML(nextElement));  
+					else if(paramName.equals("noBackground")){
+						hasNoBG = true;
+						setNoBackground(Settings.booleanFromXML(nextElement));  
+					}
 					else if(paramName.equals("fontShortTitle"))fontShortTitle = Settings.fontFromXML(nextElement);  
 					else if(paramName.equals("cShortTitle")) cShortTitle = Settings.colorFromXML(nextElement);  
 					else if(paramName.equals("cBGShortTitle")) cBGShortTitle = Settings.colorFromXML(nextElement);  
@@ -257,6 +262,11 @@ public class MyStandardChartTheme extends StandardChartTheme {
 					else if(paramName.equals("useScientificIntensities")) useScientificIntensities = Settings.booleanFromXML(nextElement);
 					else if(paramName.equals("paintScaleTitle")) paintScaleTitle = (nextElement.getTextContent());  
 					else if(paramName.equals("usePaintScaleTitle")) usePaintScaleTitle = Settings.booleanFromXML(nextElement);  
+					else if(paramName.equals("cBackground") && !hasNoBG) {
+						Color c = Settings.colorFromXML(nextElement);
+						setPlotBackgroundPaint(c);  
+						setChartBackgroundPaint(c);  
+					}
 			}
 		}
 

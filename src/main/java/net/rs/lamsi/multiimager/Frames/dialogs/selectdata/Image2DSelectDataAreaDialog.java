@@ -132,118 +132,6 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		
-		JPanel pnNorthMenu = new JPanel();
-		contentPane.add(pnNorthMenu, BorderLayout.NORTH);
-		
-		JButton btnDelete = new JButton("Delete");
-		btnDelete.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				deleteSelection(currentSelect);
-				currentSelect = null;
-			}
-		});
-		
-		comboShape = new JComboBox();
-		comboShape.setModel(new DefaultComboBoxModel(SHAPE.values()));
-		comboShape.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				contentPane.requestFocusInWindow();
-			}
-		});
-		
-		cbPerformance = new JCheckBox("Performance");
-		cbPerformance.setToolTipText("Calculates statistics at the end of the creation of a shape. (Saves performance)");
-		pnNorthMenu.add(cbPerformance);
-		
-		cbMarkDp = new JCheckBox("Mark dp");
-		cbMarkDp.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				showMarkingMap(cbMarkDp.isSelected());
-			}
-		});
-		pnNorthMenu.add(cbMarkDp);
-		
-		comboRoi = new JComboBox<ROI>();
-		comboRoi.setModel(new DefaultComboBoxModel(ROI.values()));
-		pnNorthMenu.add(comboRoi);
-		pnNorthMenu.add(comboShape);
-		
-		comboSelectionMode = new JComboBox<SelectionMode>();
-		comboSelectionMode.setModel(new DefaultComboBoxModel(SelectionMode.values()));
-		comboSelectionMode.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				contentPane.requestFocusInWindow();
-			}
-		});
-		pnNorthMenu.add(comboSelectionMode);
-		
-
-		JButton btnFinish = new JButton("Finish shape");
-		btnFinish.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// concentration insert dialog for QUANTIFIER
-				if(currentSelect!=null && currentSelect.getRoi().equals(ROI.QUANTIFIER) && currentSelect.getConcentration()==0) {
-					// open dialog
-					try {
-						double concentration = Double.valueOf(JOptionPane.showInputDialog("concentration", "0"));
-						currentSelect.setConcentration(concentration);
-					} catch (Exception ex) {
-					}
-				}
-				// desselect
-				setCurrentSelect(null);
-			}
-		});
-		pnNorthMenu.add(btnFinish);
-		
-		btnChoose = new JToggleButton("Choose");
-		btnChoose.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				heat.getChartPanel().setMouseZoomable(((JToggleButton)e.getSource()).isSelected());
-			}
-		});
-		pnNorthMenu.add(btnChoose);
-		
-		btnRegression = new JButton("Regression");
-		btnRegression.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// get data for regression
-				double[][] data = settSel.getRegressionData();
-				// create dialog
-				if(data!=null) {
-					DialogLinearRegression d = DialogLinearRegression.createInstance(data, true);
-					DialogLoggerUtil.centerOnScreen(d, true);
-					d.setVisible(true);
-				}				
-			}
-		});
-		pnNorthMenu.add(btnRegression);
-		pnNorthMenu.add(btnDelete);
-		
-		JButton btnDeleteAll = new JButton("Delete All");
-		btnDeleteAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				tableModel.removeAllRows();
-				currentSelect = null;
-				settSel.removeAllSelections();
-				heat.getPlot().clearAnnotations();
-				heat.getChart().fireChartChanged();
-			}
-		}); 
-		pnNorthMenu.add(btnDeleteAll);
-		
-		JButton btnExportData = new JButton("Export data");
-		btnExportData.setToolTipText("Export all selected/not excluded data points as raw or processed data.");
-		btnExportData.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				DialogDataSaver.startDialogWith(img, settSel);
-			}
-		});
-		pnNorthMenu.add(btnExportData);
-		
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.9);
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -285,6 +173,125 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		pnChartView = new JPanel();
 		splitPane.setLeftComponent(pnChartView);
 		pnChartView.setLayout(new BorderLayout(0, 0));
+		
+		JPanel pnNorthMenuContainer = new JPanel();
+		contentPane.add(pnNorthMenuContainer, BorderLayout.NORTH);
+		pnNorthMenuContainer.setLayout(new BorderLayout(0, 0));
+		
+		JPanel pnNorthMenu = new JPanel();
+		pnNorthMenuContainer.add(pnNorthMenu, BorderLayout.NORTH);
+		
+		cbPerformance = new JCheckBox("Performance");
+		cbPerformance.setToolTipText("Calculates statistics at the end of the creation of a shape. (Saves performance)");
+		pnNorthMenu.add(cbPerformance);
+		
+		cbMarkDp = new JCheckBox("Mark dp");
+		cbMarkDp.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				showMarkingMap(cbMarkDp.isSelected());
+			}
+		});
+		pnNorthMenu.add(cbMarkDp);
+		
+		JButton btnDeleteAll = new JButton("Delete All");
+		btnDeleteAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tableModel.removeAllRows();
+				currentSelect = null;
+				settSel.removeAllSelections();
+				heat.getPlot().clearAnnotations();
+				heat.getChart().fireChartChanged();
+			}
+		}); 
+		pnNorthMenu.add(btnDeleteAll);
+		
+		JButton btnExportData = new JButton("Export data");
+		btnExportData.setToolTipText("Export all selected/not excluded data points as raw or processed data.");
+		btnExportData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DialogDataSaver.startDialogWith(img, settSel);
+			}
+		});
+		
+		btnRegression = new JButton("Regression");
+		btnRegression.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// get data for regression
+				double[][] data = settSel.getRegressionData();
+				// create dialog
+				if(data!=null) {
+					DialogLinearRegression d = DialogLinearRegression.createInstance(data, true);
+					DialogLoggerUtil.centerOnScreen(d, true);
+					d.setVisible(true);
+				}				
+			}
+		});
+		pnNorthMenu.add(btnRegression);
+		pnNorthMenu.add(btnExportData);
+		
+		JPanel panel_1 = new JPanel();
+		pnNorthMenuContainer.add(panel_1, BorderLayout.CENTER);
+		
+		comboRoi = new JComboBox<ROI>();
+		panel_1.add(comboRoi);
+		comboRoi.setModel(new DefaultComboBoxModel(ROI.values()));
+		
+		comboShape = new JComboBox();
+		panel_1.add(comboShape);
+		comboShape.setModel(new DefaultComboBoxModel(SHAPE.values()));
+		
+		comboSelectionMode = new JComboBox<SelectionMode>();
+		panel_1.add(comboSelectionMode);
+		comboSelectionMode.setModel(new DefaultComboBoxModel(SelectionMode.values()));
+		
+
+		JButton btnFinish = new JButton("Finish shape");
+		panel_1.add(btnFinish);
+		
+		btnChoose = new JToggleButton("Choose/Zoom");
+		panel_1.add(btnChoose);
+		
+		JButton btnDelete = new JButton("Delete");
+		panel_1.add(btnDelete);
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				deleteSelection(currentSelect);
+				currentSelect = null;
+			}
+		});
+		btnChoose.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				heat.getChartPanel().setMouseZoomable(((JToggleButton)e.getSource()).isSelected());
+			}
+		});
+		btnFinish.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// concentration insert dialog for QUANTIFIER
+				if(currentSelect!=null && currentSelect.getRoi().equals(ROI.QUANTIFIER) && currentSelect.getConcentration()==0) {
+					// open dialog
+					try {
+						double concentration = Double.valueOf(JOptionPane.showInputDialog("concentration", "0"));
+						currentSelect.setConcentration(concentration);
+					} catch (Exception ex) {
+					}
+				}
+				// desselect
+				setCurrentSelect(null);
+			}
+		});
+		comboSelectionMode.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				contentPane.requestFocusInWindow();
+			}
+		});
+		comboShape.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				contentPane.requestFocusInWindow();
+			}
+		});
 		//
 		addKeys();
 		// 

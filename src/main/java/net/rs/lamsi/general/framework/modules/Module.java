@@ -97,6 +97,13 @@ public class Module extends JPanel {
 		btnHide.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				hideModul(true);
+				
+				// resize parent
+				if(getParent().getParent()!=null)
+					getParent().getParent().revalidate();
+				else if(getParent()!=null)
+					getParent().revalidate();
+				
 				if(showListener!=null)
 					showListener.moduleChangedToShown(false);
 			}

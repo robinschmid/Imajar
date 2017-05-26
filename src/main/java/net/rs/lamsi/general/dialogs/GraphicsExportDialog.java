@@ -151,7 +151,10 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
 		//
 		try {
-			addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()));
+			if(selected!=null) {
+				addChartToPanel(HeatmapFactory.generateHeatmap(selected).getChartPanel());
+			}
+			else addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()));
 			setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -163,8 +166,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		chartPanel = chart;
 		getPnChartPreview().removeAll();
 		getPnChartPreview().add(chartPanel);
-		getPnChartPreview().revalidate();
-		getPnChartPreview().repaint();
+		renewPreview();
 	}
 
 
@@ -622,7 +624,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		{
 			{
 				pnChartPreview = new JPanel();
-				pnChartPreview.setLayout(new GridBagLayout());
+				pnChartPreview.setLayout(null);
 				contentPanel.add(pnChartPreview, "cell 1 3 2 1,grow");
 			}
 		}
@@ -646,32 +648,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				btnRenewPreview = new JButton("Renew Preview");
 				btnRenewPreview.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						// set dimensions to chartpanel
-						// set height
-						try {
-							setAllSettings(SettingsHolder.getSettings());
-							SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
-
-							DecimalFormat form = new DecimalFormat("#.###");
-							if(sett.isUseOnlyWidth()) {
-								double height = (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth()));
-								
-								sett.setSize((Float.valueOf(getTxtWidth().getText())), SettingsImageResolution.changeUnit((float)height, DIM_UNIT.PX, sett.getUnit()), sett.getUnit());
-								getTxtHeight().setText(""+form.format(sett.getSizeInUnit().getHeight())); 
-								
-								chartPanel.setPreferredSize(sett.getSize());
-								chartPanel.setMaximumSize(sett.getSize());
-								chartPanel.setMinimumSize(sett.getSize());
-								getPnChartPreview().revalidate();
-								getPnChartPreview().repaint();
-							}
-							else {
-								chartPanel.setSize((int)sett.getSize().getWidth(), (int)sett.getSize().getHeight());
-								chartPanel.paintImmediately(chartPanel.getBounds());
-							}
-						} catch(Exception ex) {
-							ex.printStackTrace();
-						}
+						renewPreview();
 					}
 				});
 				buttonPane.add(btnRenewPreview);
@@ -689,6 +666,31 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		}
 	}
 
+	protected void renewPreview() {
+		// set dimensions to chartpanel
+		// set height
+		try {
+			setAllSettings(SettingsHolder.getSettings());
+			SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
+
+			DecimalFormat form = new DecimalFormat("#.###");
+			if(sett.isUseOnlyWidth()) {
+				double height = (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth(), false));
+				
+				sett.setSize((Float.valueOf(getTxtWidth().getText())), SettingsImageResolution.changeUnit((float)height, DIM_UNIT.PX, sett.getUnit()), sett.getUnit());
+				getTxtHeight().setText(""+form.format(sett.getSizeInUnit().getHeight())); 
+				
+				chartPanel.setSize(sett.getSize());
+				getPnChartPreview().repaint();
+			}
+			else {
+				chartPanel.setSize((int)sett.getSize().getWidth(), (int)sett.getSize().getHeight());
+				chartPanel.repaint();
+			}
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 	public JRadioButton getRbPDF() {
 		return rbPDF;
 	}

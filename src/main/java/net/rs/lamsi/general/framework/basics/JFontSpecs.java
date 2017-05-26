@@ -34,13 +34,14 @@ public class JFontSpecs extends JPanel {
 		txtSize.setHorizontalAlignment(SwingConstants.RIGHT);
 		txtSize.setText("14");
 		add(txtSize);
-		txtSize.setColumns(4);
+		txtSize.setColumns(3);
 		
 		color = new JColorPickerButton(this);
 		add(color);
 		color.setColor(Color.WHITE);
 		
-		setPreferredSize(new Dimension(400, 30));
+//		setPreferredSize(new Dimension(280, 30));
+		this.validate();
 		setMaximumSize(getPreferredSize());
 	}
 
