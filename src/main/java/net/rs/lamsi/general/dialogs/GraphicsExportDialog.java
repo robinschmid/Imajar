@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -43,6 +42,7 @@ import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FIXED_SIZE;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
@@ -120,6 +120,9 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	private JLabel lblExportTheFollowing;
 	private JPanel panel;
 	private JRadioButton rbEmf;
+	private JPanel panel_3;
+	private JLabel lblSizeFor;
+	private JComboBox comboWidthPlotChart;
 
 
 	//###################################################################
@@ -152,23 +155,50 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		//
 		try {
 			if(selected!=null) {
-				addChartToPanel(HeatmapFactory.generateHeatmap(selected).getChartPanel());
+				addChartToPanel(HeatmapFactory.generateHeatmap(selected).getChartPanel(), true);
 			}
-			else addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()));
+			else addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()), true);
 			setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	protected void addChartToPanel(ChartPanel chart) { 
+	protected void addChartToPanel(ChartPanel chart, boolean renew) { 
 		//
 		chartPanel = chart;
 		getPnChartPreview().removeAll();
 		getPnChartPreview().add(chartPanel);
-		renewPreview();
+		if(renew)
+			renewPreview();
 	}
 
+
+	protected void renewPreview() {
+		// set dimensions to chartpanel
+		// set height
+		try {
+			setAllSettings(SettingsHolder.getSettings());
+			SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
+
+			DecimalFormat form = new DecimalFormat("#.###");
+			if(sett.isUseOnlyWidth()) {
+				double height = (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth(), false));
+				
+				sett.setSize((Float.valueOf(getTxtWidth().getText())), SettingsImageResolution.changeUnit((float)height, DIM_UNIT.PX, sett.getUnit()), sett.getUnit());
+				getTxtHeight().setText(""+form.format(sett.getSizeInUnit().getHeight())); 
+				
+				chartPanel.setSize(sett.getSize());
+				getPnChartPreview().repaint();
+			}
+			else {
+				chartPanel.setSize((int)sett.getSize().getWidth(), (int)sett.getSize().getHeight());
+				chartPanel.repaint();
+			}
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 
 	/**
 	 * choose a path by file chooser
@@ -309,7 +339,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			// create chart
 			Heatmap heat = HeatmapFactory.generateHeatmap(img);
 			// TODO maybe you have to put it on the chartpanel and show it? 
-			addChartToPanel(heat.getChartPanel());
+			addChartToPanel(heat.getChartPanel(), false);
 			// set the name and path 
 			// replace
 			title = title.replace("|"	, "_");
@@ -352,6 +382,9 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				sett.setResolution(72);
 			else 
 				sett.setResolution(Integer.valueOf(getTxtManualRes().getText()));
+			
+			// fixed size for chart or plot
+			sett.setFixedSize(getComboWidthPlotChart().getSelectedItem().equals("Plot")? FIXED_SIZE.PLOT : FIXED_SIZE.CHART);
 
 			// Size
 			float width = Float.valueOf(getTxtWidth().getText());
@@ -389,6 +422,9 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		FloatDimension size = sett.getSizeInUnit();
 		getTxtWidth().setText(""+form.format(size.getWidth()));
 		getTxtHeight().setText(""+form.format(size.getHeight())); 
+		
+		getComboWidthPlotChart().setSelectedItem(sett.getFixedSize().equals(FIXED_SIZE.PLOT)? "Plot" : "Chart");
+		
 		// not everything set ! TODO cb rb combo
 		getCbOnlyUseWidth().setSelected(sett.isUseOnlyWidth());
 	}
@@ -420,7 +456,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		final JFrame thisframe = this;
 		//
 		//
-		setBounds(100, 100, 800, 627);
+		setBounds(100, 100, 808, 795);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -508,67 +544,78 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 						{
 							JPanel panel_1 = new JPanel();
 							module.getPnContent().add(panel_1, BorderLayout.CENTER);
-							panel_1.setLayout(new MigLayout("", "[][][grow]", "[][][][][][][]"));
+							panel_1.setLayout(new MigLayout("", "[][][][grow]", "[][][][][][][][]"));
+							{
+								lblSizeFor = new JLabel("Fixed size for");
+								lblSizeFor.setFont(new Font("Tahoma", Font.BOLD, 12));
+								panel_1.add(lblSizeFor, "flowx,cell 0 0");
+							}
+							{
+								comboWidthPlotChart = new JComboBox();
+								comboWidthPlotChart.setToolTipText("A fixed size can either be set for the plot (image region) or the whole chart.");
+								comboWidthPlotChart.setModel(new DefaultComboBoxModel(new String[] {"Plot", "Chart"}));
+								panel_1.add(comboWidthPlotChart, "cell 1 0");
+							}
 							{
 								JLabel lblWidth = new JLabel("Width");
-								panel_1.add(lblWidth, "flowx,cell 0 0");
+								panel_1.add(lblWidth, "cell 0 1,alignx right");
 							}
 							{
-								comboSizeUnit = new JComboBox();
-								comboSizeUnit.setModel(new DefaultComboBoxModel(DIM_UNIT.values()));
-								panel_1.add(comboSizeUnit, "cell 1 0,growx");
+								{
+									JLabel lblHeight = new JLabel("Height");
+									panel_1.add(lblHeight, "cell 0 2,alignx right");
+								}
 							}
-							{
-								JLabel lblHeight = new JLabel("Height");
-								panel_1.add(lblHeight, "flowx,cell 0 1,alignx left");
-							}
-							{
-								cbOnlyUseWidth = new JCheckBox("Only use width");
-								cbOnlyUseWidth.addItemListener(new ItemListener() {
-									public void itemStateChanged(ItemEvent e) {
-										JCheckBox cb = (JCheckBox) e.getSource();
-										if(getTxtHeight()!=null) 
-											getTxtHeight().setEnabled(!cb.isSelected());
-									}
-								});
-								cbOnlyUseWidth.setSelected(true);
-								panel_1.add(cbOnlyUseWidth, "cell 0 2");
-							}
+							cbOnlyUseWidth = new JCheckBox("Only use width");
+							cbOnlyUseWidth.addItemListener(new ItemListener() {
+								public void itemStateChanged(ItemEvent e) {
+									JCheckBox cb = (JCheckBox) e.getSource();
+									if(getTxtHeight()!=null) 
+										getTxtHeight().setEnabled(!cb.isSelected());
+								}
+							});
+							cbOnlyUseWidth.setSelected(true);
+							panel_1.add(cbOnlyUseWidth, "cell 1 3");
 							{
 								rbManual = new JRadioButton("manual");
 								buttonGroup_1.add(rbManual);
 								rbManual.setSelected(true);
-								panel_1.add(rbManual, "flowx,cell 0 4");
+								panel_1.add(rbManual, "cell 0 5");
 							}
 							{
 								rbForPrintRes = new JRadioButton("for print (300 dpi)");
 								buttonGroup_1.add(rbForPrintRes);
-								panel_1.add(rbForPrintRes, "cell 0 5");
-							}
-							{
-								rbForPresentationRes = new JRadioButton("for presentation (72 dpi)");
-								buttonGroup_1.add(rbForPresentationRes);
-								panel_1.add(rbForPresentationRes, "cell 0 6");
+								panel_1.add(rbForPrintRes, "cell 0 6 2 1");
 							}
 							{
 								txtWidth = new JTextField();
 								txtWidth.setText("15");
-								panel_1.add(txtWidth, "cell 0 0,alignx trailing");
+								panel_1.add(txtWidth, "flowx,cell 1 1,alignx left");
 								txtWidth.setColumns(10);
 							}
 							{
 								txtManualRes = new JTextField();
 								txtManualRes.setToolTipText("Resolution in dpi");
 								txtManualRes.setText("300");
-								panel_1.add(txtManualRes, "cell 0 4");
+								panel_1.add(txtManualRes, "cell 1 5");
 								txtManualRes.setColumns(10);
 							}
 							{
 								txtHeight = new JTextField();
 								txtHeight.setEnabled(false);
 								txtHeight.setText("8");
-								panel_1.add(txtHeight, "cell 0 1");
+								panel_1.add(txtHeight, "cell 1 2");
 								txtHeight.setColumns(10);
+							}
+							{
+								comboSizeUnit = new JComboBox();
+								comboSizeUnit.setModel(new DefaultComboBoxModel(DIM_UNIT.values()));
+								panel_1.add(comboSizeUnit, "cell 1 1,growx");
+							}
+							{
+								rbForPresentationRes = new JRadioButton("for presentation (72 dpi)");
+								buttonGroup_1.add(rbForPresentationRes);
+								panel_1.add(rbForPresentationRes, "cell 0 7 2 1");
 							}
 						}
 					}
@@ -607,6 +654,11 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 								btnChooseBackgroundColor.setColor(Color.BLUE);
 							}
 						}
+					}
+					{
+						panel_3 = new JPanel();
+						grid.add(panel_3);
+						panel_3.setLayout(new BorderLayout(0, 0));
 					}
 				}
 			}
@@ -663,32 +715,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);
 			}
-		}
-	}
-
-	protected void renewPreview() {
-		// set dimensions to chartpanel
-		// set height
-		try {
-			setAllSettings(SettingsHolder.getSettings());
-			SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
-
-			DecimalFormat form = new DecimalFormat("#.###");
-			if(sett.isUseOnlyWidth()) {
-				double height = (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth(), false));
-				
-				sett.setSize((Float.valueOf(getTxtWidth().getText())), SettingsImageResolution.changeUnit((float)height, DIM_UNIT.PX, sett.getUnit()), sett.getUnit());
-				getTxtHeight().setText(""+form.format(sett.getSizeInUnit().getHeight())); 
-				
-				chartPanel.setSize(sett.getSize());
-				getPnChartPreview().repaint();
-			}
-			else {
-				chartPanel.setSize((int)sett.getSize().getWidth(), (int)sett.getSize().getHeight());
-				chartPanel.repaint();
-			}
-		} catch(Exception ex) {
-			ex.printStackTrace();
 		}
 	}
 	public JRadioButton getRbPDF() {
@@ -762,5 +788,8 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	}
 	public JRadioButton getRbEmf() {
 		return rbEmf;
+	}
+	public JComboBox getComboWidthPlotChart() {
+		return comboWidthPlotChart;
 	}
 }

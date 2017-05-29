@@ -19,6 +19,7 @@ import java.io.Writer;
 
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
+import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FIXED_SIZE;
 import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
 
@@ -59,16 +60,39 @@ public class ChartExportUtil {
 	 * @throws Exception
 	 */
 	public static void writeChartToImage(ChartPanel chart, SettingsExportGraphics sett) throws Exception { 
+		boolean repaint = false;
+		FIXED_SIZE fixed = sett.getFixedSize();
+		
+		Dimension oldSize = sett.getSize();
+		
 		// Size only by width?
 		if(sett.isUseOnlyWidth()) {
-			sett.setHeight(ChartLogics.calcHeightToWidth(chart, sett.getSize().getWidth(), false));
-			chart.setPreferredSize(sett.getSize());
-			chart.setMaximumSize(sett.getSize());
-			chart.setMinimumSize(sett.getSize());
+			// fixed size for chart or plot
+			if(fixed.equals(FIXED_SIZE.CHART)) {
+				sett.setHeight(ChartLogics.calcHeightToWidth(chart, sett.getSize().getWidth(), false));
+			}
+			else {
+				// fixed plot width
+				sett.setSize(ChartLogics.calcSizeForPlotWidth(chart, sett.getSize().getWidth()));
+			}
+		}
+		else if(fixed.equals(FIXED_SIZE.PLOT)){
+			// fixed plot size - width and height are given
+			sett.setSize(ChartLogics.calcSizeForPlotSize(chart, sett.getSize().getWidth(), sett.getSize().getHeight()));
+		}
+
+		// resize
+		chart.setPreferredSize(sett.getSize());
+		chart.setMaximumSize(sett.getSize());
+		chart.setMinimumSize(sett.getSize());
+		// repaint
+		if(repaint) {
 			chart.revalidate();
 			chart.repaint();
 		}
 		writeChartToImage(chart.getChart(), sett);
+		// reset size
+		sett.setSize(oldSize);
 	}
 
 	/**

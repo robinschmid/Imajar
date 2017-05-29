@@ -1,7 +1,6 @@
 package net.rs.lamsi.general.myfreechart;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -9,6 +8,8 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.JPanel;
 
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.sf.mzmine.util.Range;
 
 import org.jfree.chart.ChartPanel;
@@ -82,6 +83,87 @@ public class ChartLogics {
 		return width2D;
 	}
     
+
+    /**
+     * caculates the size of a chart for a given fixed plot width
+     * @param chart
+     * @param width
+     * @return
+     */
+	public static Dimension calcSizeForPlotWidth(ChartPanel myChart, double plotWidth) {
+    	return calcSizeForPlotWidth(myChart, plotWidth, 4);
+	}
+    
+	 /**
+     * caculates the size of a chart for a given fixed plot width
+     * @param chart
+     * @param width
+     * @return
+     */
+	public static Dimension calcSizeForPlotWidth(ChartPanel myChart, double plotWidth, int iterations) {
+        // ranges
+    	XYPlot plot = (XYPlot) myChart.getChart().getPlot();
+        ValueAxis domainAxis = plot.getDomainAxis();
+        org.jfree.data.Range x = domainAxis.getRange();
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        org.jfree.data.Range y = rangeAxis.getRange();
+        
+        // plot height is fixed
+        double plotHeight = plotWidth / x.getLength()*y.getLength();
+	    return calcSizeForPlotSize(myChart, plotWidth, plotHeight, iterations);
+	}
+
+	/**
+     * caculates the size of a chart for a given fixed plot width and height
+     * @param chart
+     * @param width
+     * @return
+     */
+	public static Dimension calcSizeForPlotSize(ChartPanel myChart, double plotWidth, double plotHeight) {
+		return calcSizeForPlotSize(myChart, plotWidth, plotHeight, 4);
+	}
+	/**
+     * caculates the size of a chart for a given fixed plot width and height
+     * @param chart
+     * @param width
+     * @return
+     */
+	public static Dimension calcSizeForPlotSize(ChartPanel myChart, double plotWidth, double plotHeight, int iterations) {
+        // ranges
+    	XYPlot plot = (XYPlot) myChart.getChart().getPlot();
+    	
+        // estimate plotwidth / height
+        double estimatedChartWidth = plotWidth+200;
+        double estimatedChartHeight = plotHeight+200;
+    	
+        // paint and get closer
+    	try {
+    	for(int i=0; i<iterations; i++) {
+    		// paint on ghost panel with estimated height (if copy panel==true)
+        	myChart.setSize((int)estimatedChartWidth, (int)estimatedChartHeight);
+        	myChart.paintImmediately(myChart.getBounds());
+
+        	// rendering info
+            ChartRenderingInfo info = myChart.getChartRenderingInfo();
+            Rectangle2D dataArea = info.getPlotInfo().getDataArea();
+            Rectangle2D chartArea = info.getChartArea(); 
+            
+//            // calc title space: will be added later to the right plot size
+//            double titleWidth = chartArea.getWidth()-dataArea.getWidth();
+//            double titleHeight = chartArea.getHeight()-dataArea.getHeight(); 
+            
+            // calc width and height
+            estimatedChartWidth = estimatedChartWidth/dataArea.getWidth()*plotWidth;
+            estimatedChartHeight = estimatedChartHeight/dataArea.getHeight()*plotHeight;
+            ImageEditorWindow.log("Estimated (i="+i+") size: "+(int)estimatedChartWidth+"x"+(int)estimatedChartHeight, LOG.DEBUG);
+    	}
+    	}catch(Exception ex) {
+    		ex.printStackTrace();
+    	}
+    	
+    	return new Dimension((int)estimatedChartWidth, (int)estimatedChartHeight);
+	}
+	
     /**
      * calls this method twice (2 iterations) with an estimated chartHeight of 3*chartWidth
      * @param myChart

@@ -24,10 +24,15 @@ public class SettingsExportGraphics extends Settings {
     		return super.toString().toLowerCase();
     	};
     }
+    
+    public enum FIXED_SIZE {
+    	PLOT, CHART
+    }
 	//
 	private String fileName = "";
 	private File path;
 	private FORMAT format; 
+	private FIXED_SIZE fixedSize = FIXED_SIZE.CHART;
 	
 	// resolution
 	private SettingsImageResolution resolution;
@@ -60,6 +65,7 @@ public class SettingsExportGraphics extends Settings {
 		toXML(elParent, doc, "format", format); 
 		toXML(elParent, doc, "useOnlyWidth", useOnlyWidth); 
 		toXML(elParent, doc, "colorBackground", colorBackground); 
+		toXML(elParent, doc, "fixedSize", fixedSize);
 		resolution.appendSettingsToXML(elParent, doc);
 	}
 
@@ -75,6 +81,7 @@ public class SettingsExportGraphics extends Settings {
 				else if(paramName.equals("format"))format = FORMAT.valueOf(nextElement.getTextContent());  
 				else if(paramName.equals("useOnlyWidth"))useOnlyWidth = booleanFromXML(nextElement);  
 				else if(paramName.equals("colorBackground"))colorBackground = colorFromXML(nextElement);  
+				else if(paramName.equals("fixedSize")) fixedSize = FIXED_SIZE.valueOf(nextElement.getTextContent());
 				else if(isSettingsNode(nextElement, resolution.getSuperClass()))
 					resolution.loadValuesFromXML(nextElement, doc);
 			}
@@ -166,6 +173,12 @@ public class SettingsExportGraphics extends Settings {
 	}
 	public void setUseOnlyWidth(boolean useOnlyWidth) {
 		this.useOnlyWidth = useOnlyWidth;
+	}
+	public FIXED_SIZE getFixedSize() {
+		return fixedSize;
+	}
+	public void setFixedSize(FIXED_SIZE fixedSize) {
+		this.fixedSize = fixedSize;
 	}
 	
 }
