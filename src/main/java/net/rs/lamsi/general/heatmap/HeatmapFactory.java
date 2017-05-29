@@ -392,10 +392,15 @@ public class HeatmapFactory {
 		legend.setStripOutlineVisible(false);
 		legend.setAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);
 		legend.setAxisOffset(0);
-		RectangleInsets rec = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(5, 0, 10, 5);
+		RectangleInsets rec = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(5, 5, 5, 5);
+		
+		RectangleInsets rec2 = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(2, 2, 2, 2);
+		
 		legend.setMargin(rec);
-		RectangleInsets rec2 = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(4, 0, 22, 2);
-		legend.setPadding(rec2);
+//		legend.setPadding(rec2);
+//		legend.setMargin(RectangleInsets.ZERO_INSETS);
+//		legend.setPadding(RectangleInsets.ZERO_INSETS);
+		
 		legend.setStripWidth(10);
 		legend.setPosition(RectangleEdge.RIGHT); 
 		return legend;
