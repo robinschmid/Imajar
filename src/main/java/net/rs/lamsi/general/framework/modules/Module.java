@@ -164,21 +164,21 @@ public class Module extends JPanel {
 	
 	public static double doubleFromTxt(JTextField txt) {
 		try {
-			return Double.valueOf(txt.getText());
+			return Double.parseDouble(txt.getText());
 		} catch(Exception ex) {
 			return 0;
 		}
 	}
 	public static float floatFromTxt(JTextField txt) {
 		try {
-			return Float.valueOf(txt.getText());
+			return Float.parseFloat(txt.getText());
 		} catch(Exception ex) {
 			return 0;
 		}
 	}
 	public static int intFromTxt(JTextField txt) {
 		try {
-			return Integer.valueOf(txt.getText());
+			return Integer.parseInt(txt.getText());
 		} catch(Exception ex) {
 			return 0;
 		}

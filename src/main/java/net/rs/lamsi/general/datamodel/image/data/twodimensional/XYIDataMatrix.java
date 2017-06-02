@@ -74,4 +74,29 @@ public class XYIDataMatrix {
 		}
 		return 0;
 	}
+
+
+	public double getMinI() {
+		double min = Double.MAX_VALUE;
+		for(Double[] d : i) {
+		for(int f=0; f<d.length; f++) {
+			if(!Double.isNaN(d[f]) && d[f]<min)
+				return min = d[f];
+		}
+		}
+		
+		return min;
+	}
+
+	public double getMaxI() {
+		double max = Double.NEGATIVE_INFINITY;
+		for(Double[] d : i) {
+		for(int f=0; f<d.length; f++) {
+			if(!Double.isNaN(d[f]) && d[f]>max)
+				return max = d[f];
+		}
+		}
+		
+		return max;
+	}
 }

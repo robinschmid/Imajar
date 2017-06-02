@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.rs.lamsi</groupId>
 	<artifactId>MassImager</artifactId>
-	<version>3.21b</version>
+	<version>3.2b</version>
 	<build>
 		<resources>
 			<resource>
@@ -14,6 +14,15 @@
 			</resource>
 		</resources>
 		<plugins>
+		<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.10</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>true</downloadJavadocs>
+        </configuration>
+      </plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>

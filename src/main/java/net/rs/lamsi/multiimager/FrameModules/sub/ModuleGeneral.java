@@ -69,6 +69,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	private JTextField txtYPosTitle;
 	private JFontSpecs fontShortTitle;
 	private JColorPickerButton colorBGShortTitle;
+	private JTextField txtInterpolate;
+	private JCheckBox cbInterpolate;
 
 	/**
 	 * Create the panel.
@@ -83,7 +85,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		
 		JPanel pnTitleANdLaser = new JPanel();
 		pnNorth.add(pnTitleANdLaser, BorderLayout.NORTH);
-		pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][]"));
+		pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][]"));
 		
 		JLabel lblTitle = new JLabel("title");
 		pnTitleANdLaser.add(lblTitle, "cell 0 0,alignx trailing");
@@ -123,19 +125,29 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		txtSpotsize.setAlignmentY(Component.TOP_ALIGNMENT);
 		txtSpotsize.setColumns(10);
 		
+		cbInterpolate = new JCheckBox("interpolate");
+		cbInterpolate.setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
+		pnTitleANdLaser.add(cbInterpolate, "cell 0 5");
+		
+		txtInterpolate = new JTextField();
+		txtInterpolate.setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
+		txtInterpolate.setText("1");
+		pnTitleANdLaser.add(txtInterpolate, "cell 1 5,alignx left");
+		txtInterpolate.setColumns(10);
+		
 		JButton btnCommentary = new JButton("Commentary");
-		pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 5");
+		pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 6");
 		btnCommentary.setToolTipText("Commentary with dates");
 		
 		JButton btnMetadata = new JButton("Metadata");
-		pnTitleANdLaser.add(btnMetadata, "cell 1 5");
+		pnTitleANdLaser.add(btnMetadata, "cell 1 6");
 		btnMetadata.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		btnMetadata.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		btnMetadata.setToolTipText("Metadata such as used instruments and methods");
 		
 		cbBiaryData = new JCheckBox("Binary data");
 		cbBiaryData.setToolTipText("Is data binary? Like binary map export from multi view window.");
-		pnTitleANdLaser.add(cbBiaryData, "cell 0 6 2 1");
+		pnTitleANdLaser.add(cbBiaryData, "cell 0 7 2 1");
 		
 		txtXPosTitle = new JTextField();
 		txtXPosTitle.setToolTipText("X position in percent");
@@ -155,7 +167,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		pnTitleANdLaser.add(fontShortTitle, "flowx,cell 0 2 2 1,alignx left");
 
 		colorBGShortTitle = new JColorPickerButton(this);
-		pnTitleANdLaser.add(colorBGShortTitle, "cell 0 2");
+		pnTitleANdLaser.add(colorBGShortTitle, "cell 0 2 2 1");
 		colorBGShortTitle.setColor(Color.BLACK);
 		
 		//########################################################
@@ -322,6 +334,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		// imaging mode
 		getBtnImagingOneWay().addActionListener(al);
 		getBtnImagingTwoWays().addActionListener(al);
+		
+		getCbInterpolate().addItemListener(il);
+		getTxtInterpolate().getDocument().addDocumentListener(dl);
 	}
 
 	@Override
@@ -347,6 +362,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 			si = new SettingsGeneralImage();
 			si.resetAll();
 		} 
+		// interpolation
+		getTxtInterpolate().setText(String.valueOf(si.getInterpolation()));
+		getCbInterpolate().setSelected(si.isUseInterpolation());
 		//
 		this.getTxtTitle().setText(si.getTitle());
 		this.getTxtSpotsize().setText(String.valueOf(si.getSpotsize()));
@@ -395,7 +413,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 				
 				settings.setAll(getTxtTitle().getText(), getTxtShortTitle().getText(), cbShortTitle.isSelected(),
 						floatFromTxt(txtXPosTitle), floatFromTxt(txtYPosTitle), floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), 
-						imagingMode, getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation, getCbBiaryData().isSelected());
+						imagingMode, getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation, getCbBiaryData().isSelected(),
+						getCbInterpolate().isSelected(), doubleFromTxt(getTxtInterpolate()));
 			
 				SettingsThemes s = currentImage.getSettTheme();
 				s.getTheme().setcShortTitle(fontShortTitle.getColor());
@@ -471,5 +490,11 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
 	public void setColorBGShortTitle(JColorPickerButton colorBGShortTitle) {
 		this.colorBGShortTitle = colorBGShortTitle;
+	}
+	public JTextField getTxtInterpolate() {
+		return txtInterpolate;
+	}
+	public JCheckBox getCbInterpolate() {
+		return cbInterpolate;
 	}
 }

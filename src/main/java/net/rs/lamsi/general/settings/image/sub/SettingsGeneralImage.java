@@ -56,6 +56,10 @@ public class SettingsGeneralImage extends Settings {
 	protected boolean allFiles, isBinaryData = false;
 	// Metadata
 	protected String metadata = "";
+	
+	// interpolation and data reduction
+	protected boolean useInterpolation;
+	protected double interpolation;
 
 	public SettingsGeneralImage(String path, String fileEnding) {
 		super("SettingsGeneralImage", path, fileEnding); 
@@ -83,10 +87,12 @@ public class SettingsGeneralImage extends Settings {
 		isBinaryData = false;
 		xPosTitle = 0.9f; 
 		yPosTitle = 0.9f;
+		interpolation = 1;
+		useInterpolation = false;
 	}
 
 
-	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData) { 
+	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData, boolean useInterpolation, double interpolation) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
 		this.isBinaryData = isBinaryData; 
@@ -96,6 +102,8 @@ public class SettingsGeneralImage extends Settings {
 		this.xPosTitle = xPos;
 		this.yPosTitle = yPos;
 		rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
+		this.interpolation = interpolation;
+		this.useInterpolation = useInterpolation;
 		// imaging path? TODO
 	}
 
@@ -140,6 +148,8 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "showShortTitle", showShortTitle); 
 		toXML(elParent, doc, "xPosTitle", xPosTitle); 
 		toXML(elParent, doc, "yPosTitle", yPosTitle); 
+		toXML(elParent, doc, "interpolation", interpolation); 
+		toXML(elParent, doc, "useInterpolation", useInterpolation); 
 		
 		rotation.appendSettingsToXML(elParent, doc);
 	}
@@ -162,6 +172,8 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("timePerLine"))timePerLine = doubleFromXML(nextElement);  
 				else if(paramName.equals("isBinaryData"))isBinaryData = booleanFromXML(nextElement);  
 				else if(paramName.equals("showShortTitle"))showShortTitle = booleanFromXML(nextElement);  
+				else if(paramName.equals("interpolation"))interpolation= doubleFromXML(nextElement);  
+				else if(paramName.equals("useInterpolation"))useInterpolation = booleanFromXML(nextElement);  
 				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
 				else if(isSettingsNode(nextElement, rotation.getSuperClass()))
 					rotation.loadValuesFromXML(nextElement, doc);
@@ -366,6 +378,22 @@ public class SettingsGeneralImage extends Settings {
 
 	public void setYPosTitle(float yPosTitle) {
 		this.yPosTitle = yPosTitle;
+	}
+
+	public boolean isUseInterpolation() {
+		return useInterpolation;
+	}
+
+	public double getInterpolation() {
+		return interpolation;
+	}
+
+	public void setUseInterpolation(boolean useInterpolation) {
+		this.useInterpolation = useInterpolation;
+	}
+
+	public void setInterpolation(double interpolation) {
+		this.interpolation = interpolation;
 	}
 	
 }

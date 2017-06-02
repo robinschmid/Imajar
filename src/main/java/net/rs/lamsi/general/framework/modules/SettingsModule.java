@@ -54,15 +54,18 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 			try {
 				if(path.exists()) {
 					List<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
-					// load each file as settings and add to menu as preset
-					for(File f : files.get(0)) {
-						// load
-						try {
-							Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
-							if(load !=null)
-								addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
-						} catch(Exception ex) {
-							ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath(), LOG.WARNING);
+					
+					if(files!=null) {
+						// load each file as settings and add to menu as preset
+						for(File f : files.get(0)) {
+							// load
+							try {
+								Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
+								if(load !=null)
+									addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
+							} catch(Exception ex) {
+								ImageEditorWindow.log("Preset is broken remove from settings directory: \n"+f.getAbsolutePath(), LOG.WARNING);
+							}
 						}
 					}
 				}

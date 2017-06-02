@@ -16,6 +16,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -181,6 +182,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) { 
+		// In the beginning, set the default locale to English, to avoid
+		// problems with conversion of numbers etc. (e.g. decimal separator may
+		// be . or , depending on the locale)
+		Locale.setDefault(new Locale("en", "US"));
+		
+		
 		WindowStyleUtil.changeWindowStyle(null, WindowStyleUtil.STYLE_SYSTEM);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
