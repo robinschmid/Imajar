@@ -81,7 +81,7 @@ public class XYIDataMatrix {
 		for(Double[] d : i) {
 		for(int f=0; f<d.length; f++) {
 			if(!Double.isNaN(d[f]) && d[f]<min)
-				return min = d[f];
+				min = d[f];
 		}
 		}
 		
@@ -93,7 +93,7 @@ public class XYIDataMatrix {
 		for(Double[] d : i) {
 		for(int f=0; f<d.length; f++) {
 			if(!Double.isNaN(d[f]) && d[f]>max)
-				return max = d[f];
+				max = d[f];
 		}
 		}
 		

@@ -16,6 +16,7 @@ import net.rs.lamsi.general.myfreechart.Plot.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
+import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
@@ -98,91 +99,10 @@ public class HeatmapFactory {
 		double[][] dat = null;
 		double f = image.getSettings().getSettImage().getInterpolation();
 		if(image.getSettings().getSettImage().isUseInterpolation() && f!=1 && f!=0 && ((int)f>1 || (int)(1/f)>1)) {
+			// get matrices
 			XYIDataMatrix data = image.toXYIDataMatrix(false, true);
-			Float[][] x = data.getX();
-			Float[][] y = data.getY();
-			Double[][] z = data.getI();
-			// get data and interpolate/reduce
-			ArrayList<Double> zz = new ArrayList<Double>();
-			ArrayList<Double> xx = new ArrayList<Double>();
-			ArrayList<Double> yy = new ArrayList<Double>();
-
-			if(f<1) {
-				// invert
-				int red = (int)(1/f);
-				double vx = 0, vy = 0, vz = 0;
-				// reduce
-				for(int l=0; l<z.length; l++) {
-					int counter = 0;
-					for(int d=0; d<z[l].length; d++) {
-						if(!Double.isNaN(z[l][d])) {
-							// 
-							vz += z[l][d];
-							vx += (double)x[l][d];
-							vy += (double)y[l][d];
-							if(counter%red==red-1) {
-								// add
-								zz.add(vz/red);
-								xx.add(vx/red);
-								yy.add(vy/red);
-
-								vx = 0; 
-								vy = 0; 
-								vz = 0;
-							}
-							counter++;
-						}
-					}
-					// reset
-					vx = 0; 
-					vy = 0; 
-					vz = 0;
-				}
-			}
-			else {
-				// interpolate
-				int interpolationFactor = (int)f;
-
-				BicubicInterpolator bicubicInterpolator = new BicubicInterpolator();
-
-				double minDataValue = data.getMinI();
-				double maxDataValue = data.getMaxI();
-
-				int correction = interpolationFactor - 1;
-
-				for (int i = 0; i < z.length * interpolationFactor -correction; i++) {
-					double idx = i * (1.0 / interpolationFactor);
-					ArrayList<Double> row = new ArrayList<>();
-					for (int j = 0; j < data.lineLength(i) * interpolationFactor -correction; j++) {
-						double jdy = j * (1.0 / interpolationFactor);
-						
-						double value = bicubicInterpolator.getValue(z, idx, jdy);
-						
-						if(Double.isNaN(value)) {
-							
-							if (value < minDataValue) {
-								value = minDataValue;
-							} else if (value > maxDataValue) {
-								value = maxDataValue;
-							}
-	
-							zz.add(value);
-							double xw = jdy+1<data.lineLength((int)idx)? x[(int)idx][(int)jdy+1]-x[(int)idx][(int)jdy] : x[(int)idx][(int)jdy]-x[(int)idx][(int)jdy-1];
-							xw /= interpolationFactor;
-							double yw = 1.0/interpolationFactor;
-							xx.add(x[(int)idx][(int)jdy] + xw*(i%interpolationFactor));
-							yy.add(y[(int)idx][(int)jdy] + yw*(i%interpolationFactor));
-						}
-					}
-				}
-			}
-			// convert
-			dat = new double[3][xx.size()];
-			for(int i=0; i<xx.size(); i++) {
-				dat[0][i] = xx.get(i);
-				dat[1][i] = yy.get(i);
-				dat[2][i] = zz.get(i);
-			}
+			// interpolate to array [3][n]
+			dat = DataInterpolator.interpolateToArray(data, f);
 		}
 		else {
 			// get rotated and reflected dataset
@@ -382,7 +302,7 @@ public class HeatmapFactory {
 			renderer.setAutoPopulateSeriesFillPaint(true);
 			renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 			// TODO change to dynamic block width
-			double f = settImage.getInterpolation();
+			double f = settImage.isUseInterpolation()? settImage.getInterpolation() : 1;
 			renderer.setBlockWidth(img.getMaxBlockWidth(settImage.getRotationOfData()) /f); 
 			renderer.setBlockHeight(img.getMaxBlockHeight(settImage.getRotationOfData())/f); 
 			
