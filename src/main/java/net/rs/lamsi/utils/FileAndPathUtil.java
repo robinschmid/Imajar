@@ -166,9 +166,17 @@ public class FileAndPathUtil {
 		String realPath = file;
 		int lastDot = realPath.lastIndexOf(".");
 		int lastPath = realPath.lastIndexOf("/");
+		int lastDash = realPath.lastIndexOf("_");
+		int lastDash2 = realPath.lastIndexOf("-");
 		
-		if(lastDot!=-1 && lastDot>lastPath) {
-			return false; // file
+		if(lastDot!=-1 && lastDot>lastPath && lastDot>lastDash && lastDot>lastDash2) {
+			// file format needs at least one non digit character
+			for (int i = lastDot+1; i<file.length(); i++) {
+		        char c = file.charAt(i);
+		        if (!Character.isDigit(c))
+		            return false; // file
+		    }
+			return true; // folder
 		}
 		else return true; // folder 
 	}

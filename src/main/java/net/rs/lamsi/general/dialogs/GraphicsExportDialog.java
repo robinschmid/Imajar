@@ -209,7 +209,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();  
 			// only a folder? or also a file name > then split
-			if(FileAndPathUtil.isOnlyAFolder(file)) {
+			if(file.isDirectory()) {
 				// only a folder
 				getTxtPath().setText(file.getAbsolutePath()); 
 			}
@@ -250,8 +250,10 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		if(canExport) {
 			final SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
 			try {
-				if(selected==null)
+				if(selected==null) {
+					ImageEditorWindow.log("Writing image to file: "+sett.getFullFilePath(), LOG.MESSAGE);
 					ChartExportUtil.writeChartToImage(chartPanel, sett);
+				}
 				else {
 
 					ProgressDialog.startTask(new ProgressUpdateTask(1) {
@@ -306,6 +308,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 									}
 									break;
 								case IMAGE:
+									ImageEditorWindow.log("Writing image to file: "+sett.getFullFilePath(), LOG.MESSAGE);
 									ChartExportUtil.writeChartToImage(chartPanel, sett);
 									addProgressStep(1.0);
 									break;
@@ -342,16 +345,18 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			addChartToPanel(heat.getChartPanel(), false);
 			// set the name and path 
 			// replace
-			title = title.replace("|"	, "_");
-			title = title.replace("."	, "_");
+			title = title.replaceAll("[:*?\"<>|]", "_"); 
+			title = title.replace("."	, ",");
 			// title as filename
 			sett.setFileName(fileName+title);
 			// export
+			ImageEditorWindow.log("Writing image to file: "+sett.getFullFilePath(), LOG.MESSAGE);
 			ChartExportUtil.writeChartToImage(heat.getChartPanel(), sett);
 
 			// reset
 			sett.setFileName(fileName);
 		} catch(Exception ex) {
+			ex.printStackTrace();
 			ImageEditorWindow.log("FIle: "+sett.getFileName()+" is not saveable. \n"+ex.getMessage(), LOG.ERROR);
 		}
 	}
