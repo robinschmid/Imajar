@@ -70,7 +70,7 @@ public abstract class ImageDataset  implements Serializable {
 	public abstract int getMaxDP();
 
 	/**
-	 * The maximum datapoints of the longest line
+	 * The minimum data points of the shortest line
 	 * @return
 	 */
 	public abstract int getMinDP();

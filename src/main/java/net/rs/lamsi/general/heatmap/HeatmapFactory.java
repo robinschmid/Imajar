@@ -8,7 +8,8 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.heatmap.interpolation.BicubicInterpolator;
+import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
+import net.rs.lamsi.general.heatmap.dataoperations.interpolation.BicubicInterpolator;
 import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageRenderer;
@@ -56,10 +57,32 @@ public class HeatmapFactory {
 	public static Heatmap generateHeatmap(Image2D img,  String title, double[][] data)  throws Exception  {
 		return createChart(img, createDataset(title, data));
 	}
+	
 	public static Heatmap generateHeatmap(Image2D img,  String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
 		return generateHeatmap(img, title, new double[][]{xvalues, yvalues, zvalues});
 	}
 
+	/**
+	 * generates a heatmap from raw data
+	 * @param title
+	 * @param data
+	 * @return
+	 * @throws Exception
+	 */
+	public static Heatmap generateHeatmap(String title, double[][] data)  throws Exception  {
+		return createRawChart(createDataset(title, data), "x", "y");
+	}
+	/**
+	 * generates a heatmap from raw data
+	 * @param title
+	 * @param data
+	 * @return
+	 * @throws Exception
+	 */
+	public static Heatmap generateHeatmap(String title, double[] xvalues, double[] yvalues, double[] zvalues)  throws Exception  {
+		return generateHeatmap(title, new double[][]{xvalues, yvalues, zvalues});
+	}
+	
 	// Image2D to Heatmap Image
 	public static Heatmap generateHeatmap(Collectable2D image)  throws Exception { 
 		if(Image2D.class.isInstance(image)) {
@@ -92,13 +115,20 @@ public class HeatmapFactory {
 
 	/**
 	 * creates a dataset with or without interpolation/reduction
+	 * and with an option for blurring
 	 * @param image
 	 * @return
 	 */
 	private static IXYZDataset createDataset(Image2D image) {
+		SettingsGeneralImage sett = image.getSettings().getSettImage();
 		double[][] dat = null;
-		double f = image.getSettings().getSettImage().getInterpolation();
-		if(image.getSettings().getSettImage().isUseInterpolation() && f!=1 && f!=0 && ((int)f>1 || (int)(1/f)>1)) {
+		// interpolation
+		int f = (int)sett.getInterpolation();
+		// reduction
+		int red = (int)(1/sett.getInterpolation());
+		
+		// applies cropping filter if needed
+		if(sett.isUseInterpolation() && (f>1 || red>1)) {
 			// get matrices
 			XYIDataMatrix data = image.toXYIDataMatrix(false, true);
 			// interpolate to array [3][n]
@@ -107,6 +137,20 @@ public class HeatmapFactory {
 		else {
 			// get rotated and reflected dataset
 			dat = image.toXYIArray(false, true); 
+		}
+		// blur?
+		if(sett.isUseBlur()) {
+			double[] z = dat[2];
+			double target[] = new double[z.length];
+			int w = image.getMinLineLength();
+			if(sett.isUseInterpolation()) {
+				if(f>1) w *= f;
+				else if(red>1) w /= red;
+			}
+			int h = z.length/w;
+			FastGaussianBlur.applyBlur(z, target, w, h, sett.getBlurRadius());
+			// set data
+			dat[2] = target;
 		}
 		// return dataset
 		return createDataset(image.getSettings().getSettImage().getTitle(), dat);
@@ -418,8 +462,11 @@ public class HeatmapFactory {
 	} 
 
 	// Eine PaintScaleLegend generieren
+	private static PaintScaleLegend createScaleLegend(PaintScale scale, NumberAxis scaleAxis, int stepCount) { 
+		return createScaleLegend(null, scale, scaleAxis, stepCount);
+	}	
 	private static PaintScaleLegend createScaleLegend(Image2D img, PaintScale scale, NumberAxis scaleAxis, int stepCount) { 
-		SettingsThemes setTheme = img.getSettTheme();
+		SettingsThemes setTheme = img!=null? img.getSettTheme() : null;
 		// create legend
 		PaintScaleLegend legend = new PaintScaleLegend(scale, scaleAxis);
 		legend.setBackgroundPaint(new Color(0,0,0,0));
@@ -427,9 +474,9 @@ public class HeatmapFactory {
 		legend.setStripOutlineVisible(false);
 		legend.setAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);
 		legend.setAxisOffset(0);
-		RectangleInsets rec = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(5, 5, 5, 5);
+		RectangleInsets rec = setTheme!=null && setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(5, 5, 5, 5);
 
-		RectangleInsets rec2 = setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(2, 2, 2, 2);
+		RectangleInsets rec2 = setTheme!=null && setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(2, 2, 2, 2);
 
 		legend.setMargin(rec);
 		//		legend.setPadding(rec2);
@@ -442,14 +489,105 @@ public class HeatmapFactory {
 	}	
 
 	// ScaleAxis
+	private static NumberAxis createScaleAxis(SettingsPaintScale settings, IXYZDataset dataset) {
+		return createScaleAxis(settings, null, dataset);
+	}
 	private static NumberAxis createScaleAxis(SettingsPaintScale settings, SettingsThemes theme, IXYZDataset dataset) {
-		NumberAxis scaleAxis = new NumberAxis(theme.getTheme().isUsePaintScaleTitle()? theme.getTheme().getPaintScaleTitle() : null);
-		scaleAxis.setNumberFormatOverride(theme.getTheme().getIntensitiesNumberFormat());
+		NumberAxis scaleAxis = new NumberAxis(theme!=null && theme.getTheme().isUsePaintScaleTitle()? theme.getTheme().getPaintScaleTitle() : null);
+		if(theme!=null)
+			scaleAxis.setNumberFormatOverride(theme.getTheme().getIntensitiesNumberFormat());
 		scaleAxis.setLabelLocation(AxisLabelLocation.HIGH_END);
 		scaleAxis.setLabelAngle(Math.toRadians(-180));
 		return scaleAxis;
 	}
 
+	
+
+	
+	/**
+	 * creates a heatmap from raw data without any image2d or settings
+	 * @param dataset
+	 * @param xTitle
+	 * @param yTitle
+	 * @return
+	 * @throws Exception
+	 */
+	private static Heatmap createRawChart(IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
+		SettingsPaintScale settings = new SettingsPaintScale();
+		settings.setLODMonochrome(false);
+		
+		// this min max values in array
+		double zmin = dataset.getZMin();
+		double zmax = dataset.getZMax();
+		// no data!
+		if(zmin == zmax || zmax == 0) {
+			throw new Exception("Every data point has the same intensity of "+zmin);
+		}
+		else { 
+			// XAchse
+			NumberAxis xAxis = new NumberAxis(xTitle);
+			xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+			xAxis.setLowerMargin(0.0);
+			xAxis.setUpperMargin(0.0);
+			// Y Achse
+			NumberAxis yAxis = new NumberAxis(yTitle);
+			yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+			yAxis.setLowerMargin(0.0);
+			yAxis.setUpperMargin(0.0);
+			// XYBlockRenderer
+			ImageRenderer renderer = new ImageRenderer();
+
+			// creation of scale
+			// binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
+			PaintScale scale = null;
+			scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, settings); 
+			renderer.setPaintScale(scale);
+			renderer.setAutoPopulateSeriesFillPaint(true);
+			renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+			// TODO change to dynamic block width
+			renderer.setBlockWidth(1); 
+			renderer.setBlockHeight(1); 
+			
+			
+			// Plot erstellen mit daten
+			XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
+			plot.setBackgroundPaint(Color.lightGray);
+			plot.setDomainGridlinesVisible(false);
+			plot.setRangeGridlinePaint(Color.white);
+
+			// create chart
+			JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
+			// remove lower legend - wie farbskala rein? TODO
+			chart.removeLegend();
+			chart.setBackgroundPaint(Color.white);
+
+			// Legend Generieren
+			PaintScale scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings); 
+			PaintScaleLegend legend = createScaleLegend(scaleBar, createScaleAxis(settings, dataset), settings.getLevels());   
+			// adding legend
+			chart.addSubtitle(legend);
+			//
+			chart.setBorderVisible(true); 
+
+
+			// ChartPanel
+			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, null); 
+
+
+			//ChartUtilities.applyCurrentTheme(chart);
+			//defaultChartTheme.apply(chart);
+			//chart.fireChartChanged();
+
+			chart.setBorderVisible(false);
+
+			// Heatmap
+			Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot, legend, null, renderer, null, null);
+
+			// return Heatmap
+			return heat;
+		}
+	} 
+	
 	/*
 	//###############################################################################
 	// Heatmap EXAMPLES

@@ -60,6 +60,11 @@ public class SettingsGeneralImage extends Settings {
 	// interpolation and data reduction
 	protected boolean useInterpolation;
 	protected double interpolation;
+	
+	protected boolean useBlur;
+	protected double blurRadius;
+	
+	protected boolean isCropDataToMin;
 
 	public SettingsGeneralImage(String path, String fileEnding) {
 		super("SettingsGeneralImage", path, fileEnding); 
@@ -89,10 +94,15 @@ public class SettingsGeneralImage extends Settings {
 		yPosTitle = 0.9f;
 		interpolation = 1;
 		useInterpolation = false;
+		useBlur = false;
+		blurRadius = 2;
+		isCropDataToMin = true;
 	}
 
 
-	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData, boolean useInterpolation, double interpolation) { 
+	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize, 
+			IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData, 
+			boolean useInterpolation, double interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
 		this.isBinaryData = isBinaryData; 
@@ -104,6 +114,9 @@ public class SettingsGeneralImage extends Settings {
 		rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
 		this.interpolation = interpolation;
 		this.useInterpolation = useInterpolation;
+		this.blurRadius = blurRadius;
+		this.useBlur = useBlur;
+		this.isCropDataToMin = isCropDataToMin;
 		// imaging path? TODO
 	}
 
@@ -150,6 +163,9 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "yPosTitle", yPosTitle); 
 		toXML(elParent, doc, "interpolation", interpolation); 
 		toXML(elParent, doc, "useInterpolation", useInterpolation); 
+		toXML(elParent, doc, "useBlur", useBlur); 
+		toXML(elParent, doc, "blurRadius", blurRadius); 
+		toXML(elParent, doc, "isCropDataToMin", isCropDataToMin); 
 		
 		rotation.appendSettingsToXML(elParent, doc);
 	}
@@ -174,7 +190,10 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("showShortTitle"))showShortTitle = booleanFromXML(nextElement);  
 				else if(paramName.equals("interpolation"))interpolation= doubleFromXML(nextElement);  
 				else if(paramName.equals("useInterpolation"))useInterpolation = booleanFromXML(nextElement);  
+				else if(paramName.equals("blurRadius"))blurRadius= doubleFromXML(nextElement);  
+				else if(paramName.equals("useBlur"))useBlur = booleanFromXML(nextElement);  
 				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
+				else if(paramName.equals("isCropDataToMin"))isCropDataToMin = booleanFromXML(nextElement);  
 				else if(isSettingsNode(nextElement, rotation.getSuperClass()))
 					rotation.loadValuesFromXML(nextElement, doc);
 			}
@@ -394,6 +413,34 @@ public class SettingsGeneralImage extends Settings {
 
 	public void setInterpolation(double interpolation) {
 		this.interpolation = interpolation;
+	}
+
+	public boolean isUseBlur() {
+		return useBlur;
+	}
+
+	public double getBlurRadius() {
+		return blurRadius;
+	}
+
+	public void setUseBlur(boolean useBlur) {
+		this.useBlur = useBlur;
+	}
+
+	public void setBlurRadius(double blurRadius) {
+		this.blurRadius = blurRadius;
+	}
+
+	public boolean isCropDataToMin() {
+		return isCropDataToMin || isUseBlur();
+	}
+
+
+	public boolean isCropDataToMinGetRealValue() {
+		return isCropDataToMin;
+	}
+	public void setCropDataToMin(boolean isCropDataToMin) {
+		this.isCropDataToMin = isCropDataToMin;
 	}
 	
 }

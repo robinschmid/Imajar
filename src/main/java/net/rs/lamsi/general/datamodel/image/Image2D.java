@@ -477,6 +477,40 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	}
 
 
+	/**
+	 * minimum line length in regards to rotation
+	 * columns of the image
+	 * @return
+	 */
+	public int getMinLineLength() {
+		if(isRotated()) {
+			return data.getLinesCount();
+		} else {
+			return data.getMinDP();
+		}
+	} 
+
+	/**
+	 * minimum lines count in regards to rotation
+	 * rows of the image
+	 * @return
+	 */
+	public int getMinLinesCount() {
+		if(isRotated()) {
+			return data.getMinDP();
+		} else {
+			return data.getLinesCount();
+		}
+	}
+
+	/**
+	 * rotation == 0 | 180 | 360
+	 * @return
+	 */
+	public boolean isRotated() {
+		int rot = settings.getSettImage().getRotationOfData();
+		return !(rot==0 || rot==180 || rot==360);
+	}
 
 	/**
 	 * the length of lines in respect to reflection and rotation
@@ -485,6 +519,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public int getLineLength(int l) {
 		return getLineLength(l, settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal());
 	}
+
 	/**
 	 * the length of lines in respect to reflection and rotation
 	 * @param l
@@ -551,8 +586,16 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public double[][] toXYIArray(boolean raw, boolean useSettings) {
 		if(useSettings) {
 			SettingsGeneralImage s = settings.getSettImage();
-			return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), 
-					s.isReflectHorizontal(), s.isReflectVertical() );
+			int diff = data.getMaxDP()-data.getMinDP();
+			// crop?
+			if(s.isCropDataToMin() && diff!=0){
+				return toXYIDataMatrix(raw, useSettings).toLinearArray();
+			}
+			else {
+				// no crop
+				return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), 
+						s.isReflectHorizontal(), s.isReflectVertical() );
+			}
 		}
 		else return toXYIArrayNoRot();
 	}
@@ -754,25 +797,118 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 */
 	public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
 		if(useSettings) {
-			int cols = getMaxLineCount();
-			int rows = getMaxDP();
+			SettingsGeneralImage sett = settings.getSettImage();
+			int diff = data.getMaxDP()-data.getMinDP();
+			// apply crop?
+			if(sett.isCropDataToMin() && diff!=0) {
+				int rot = sett.getRotationOfData();
+				boolean reflectH = sett.isReflectHorizontal();
+				// exclude last line? if shorter than 0.8 of avg
+				boolean excludeLastLine = data.getLineLength(data.getLinesCount()-1)/data.getAvgDP()<0.8;
 
-			Double[][] z = new Double[cols][rows];
-			Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+				// start line and last line if exclude
+				final int sl = excludeLastLine && ((reflectH && rot==0) || (!reflectH && rot == 180))? 1 : 0;
+				final int ll = excludeLastLine && ((!reflectH && rot==0) || (reflectH && rot == 180))? 1 : 0;
+				// start/last dp if exclude last line
+				final int sdp = excludeLastLine && ((reflectH && rot==90) || (!reflectH && (rot == -90 || rot==270)))? 1:0;
+				final int ldp = excludeLastLine && ((!reflectH && rot==90) || (reflectH && (rot == -90 || rot==270)))? 1:0;
 
-			// c for lines
-			for(int c=0; c<cols; c++) {
-				// increment l
-				for(int r = 0; r<rows; r++) {
-					// only if not null: write Intensity
-					double tmp = getI(raw,c,r);
-					z[c][r] = tmp;
-					// NaN?
-					x[c][r] = !Double.isNaN(tmp)? getX(raw,c,r) : Float.NaN;
-					y[c][r] = !Double.isNaN(tmp)? getY(raw,c,r) : Float.NaN;
-				} 
+				
+				
+				// get full matrix
+				final int cols = getMaxLineCount()-sl-ll;
+				final int rows = getMaxDP()-sdp-ldp;
+
+				Double[][] z = new Double[cols][rows];
+				Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+
+				// track first dp / first line / last dp/line index
+				int firstDP = 0, lastDP = rows;
+				
+				// c for lines
+				for(int c=0; c<cols; c++) {
+					int l = c+sl;
+					// increment l
+					for(int r = 0; r<rows; r++) {
+						int dp = r+sdp;
+						// only if not null: write Intensity
+						double tmp = getI(raw,l,dp);
+						z[c][r] = tmp;
+						// NaN?
+						if(!Double.isNaN(tmp)) {
+							x[c][r] = getX(raw,l,dp);
+							y[c][r] = getY(raw,l,dp);
+						}
+						else {
+							x[c][r] = Float.NaN;
+							y[c][r] = Float.NaN;
+							
+							// set last and first dp
+							if(r==firstDP) 
+								firstDP++;
+							else if(r>firstDP && r<lastDP) 
+								lastDP = r;
+						}
+					} 
+				}
+
+				int firstLine = 0; 
+				int lastLine = z.length;
+				// find first and last line
+				for(int l = 0; l<z.length && lastLine==z.length; l++) {
+					for(int dp=firstDP; dp<lastDP; dp++) {
+						// one NaN in line?
+						if(Double.isNaN(z[l][dp])) {
+							if(l==firstLine) firstLine++;
+							else if(l>firstLine && l<lastLine) lastLine = l;
+							// end line
+							break;
+						}
+					}
+				}
+				
+				// new size: between first and last dp/line
+				int w = lastDP-firstDP;
+				int h = lastLine-firstLine;
+
+				// shift by start x and y
+				float startx = x[firstLine][firstDP], starty = y[firstLine][firstDP];
+				
+				Double[][] newz = new Double[h][w];
+				Float[][] newx = new Float[h][w], newy = new Float[h][w];
+				
+				for(int l = 0; l<h; l++) {
+					for(int dp=0; dp<w; dp++) {
+						newz[l][dp] = z[l+firstLine][dp+firstDP];
+						newx[l][dp] = x[l+firstLine][dp+firstDP]-startx;
+						newy[l][dp] = y[l+firstLine][dp+firstDP]-starty;
+					}
+				}
+				// return data
+				return new XYIDataMatrix(newx,newy,newz);
 			}
-			return new XYIDataMatrix(x,y,z);
+			else {
+				// no cropping
+				int cols = getMaxLineCount();
+				int rows = getMaxDP();
+
+				Double[][] z = new Double[cols][rows];
+				Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+
+				// c for lines
+				for(int c=0; c<cols; c++) {
+					// increment l
+					for(int r = 0; r<rows; r++) {
+						// only if not null: write Intensity
+						double tmp = getI(raw,c,r);
+						z[c][r] = tmp;
+						// NaN?
+						x[c][r] = !Double.isNaN(tmp)? getX(raw,c,r) : Float.NaN;
+						y[c][r] = !Double.isNaN(tmp)? getY(raw,c,r) : Float.NaN;
+					} 
+				}
+				return new XYIDataMatrix(x,y,z);
+			}
 		}
 		else {
 			int cols = data.getLinesCount();
@@ -1175,10 +1311,10 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 
 		// dataset settings
 		if(DatasetSettings.class.isInstance(settings)) {
-				getData().setSettings(settings);
+			getData().setSettings(settings);
 		}
 		else super.setSettings(settings);
-		
+
 		// fire changes
 		if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
 			((SettingsImage2D) settings).setCurrentImage(this);
@@ -1254,7 +1390,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		if(onlySelected) {
 			if(Double.isNaN(minZSelected)) {
 				minZSelected =  Double.POSITIVE_INFINITY;
-	
+
 				int[] length = getLineLenghts();
 				int rotation = settings.getSettImage().getRotationOfData();
 				if((rotation==90 || rotation==270 || rotation == -90)) {
@@ -1334,33 +1470,33 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		checkForUpdateInParentIProcessing();
 		if(onlySelected) { 
 			if(Double.isNaN(maxZSelected)) {
-			maxZSelected =  Double.NEGATIVE_INFINITY;
+				maxZSelected =  Double.NEGATIVE_INFINITY;
 
-			int[] length = getLineLenghts();
-			int rotation = settings.getSettImage().getRotationOfData();
-			if((rotation==90 || rotation==270 || rotation == -90)) {
-				// for lines (that are actually datapoints)
-				for(int dp=0; dp<data.getLinesCount(); dp++) {
-					for(int l=0; l<length[dp]; l++) {
-						double tmp;
-						if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
-							maxZSelected = tmp;
+				int[] length = getLineLenghts();
+				int rotation = settings.getSettImage().getRotationOfData();
+				if((rotation==90 || rotation==270 || rotation == -90)) {
+					// for lines (that are actually datapoints)
+					for(int dp=0; dp<data.getLinesCount(); dp++) {
+						for(int l=0; l<length[dp]; l++) {
+							double tmp;
+							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
+								maxZSelected = tmp;
+							}
 						}
 					}
 				}
-			}
-			else {
-				// for lines
-				for(int l=0; l<data.getLinesCount(); l++) {
-					// for dp
-					for(int dp=0; dp<length[l]; dp++) {
-						double tmp;
-						if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
-							maxZSelected = tmp;
+				else {
+					// for lines
+					for(int l=0; l<data.getLinesCount(); l++) {
+						// for dp
+						for(int dp=0; dp<length[l]; dp++) {
+							double tmp;
+							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
+								maxZSelected = tmp;
+							}
 						}
 					}
 				}
-			}
 			}
 
 			if(maxZSelected == Double.NEGATIVE_INFINITY) {
@@ -1400,7 +1536,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			}
 			if(maxZ == Double.NEGATIVE_INFINITY) {
 				maxZ = Double.NaN;
-			 	return 0;
+				return 0;
 			}
 			return maxZ;
 		}
@@ -1750,7 +1886,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		maxZ = Double.NaN;
 		minZSelected = Double.NaN;
 		maxZSelected = Double.NaN;
-		
+
 		// applyCutFilter?
 		lastAppliedMaxFilter = -1;
 		lastAppliedMinFilter = -1;
@@ -2146,5 +2282,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	// a name for lists
 	public String toListName() { 
 		return settings.getSettImage().toListName();
-	} 
+	}
+
 }

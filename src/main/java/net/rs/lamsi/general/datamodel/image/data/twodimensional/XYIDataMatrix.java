@@ -99,4 +99,28 @@ public class XYIDataMatrix {
 		
 		return max;
 	}
+
+
+	/**
+	 * Creates a one dimensional array for [x,y,z][dp]
+	 * @return
+	 */
+	public double[][] toLinearArray() {
+		int size = 0;
+		for (Double[] d : i) {
+			size += d.length;
+		}
+		
+		int c = 0;
+		double[][] data = new double[3][size];
+		for(int l=0; l<i.length; l++) {
+			for(int dp=0; dp<i[l].length; dp++) {
+				data[0][c] = x[l][dp];
+				data[1][c] = y[l][dp];
+				data[2][c] = i[l][dp];
+				c++;
+			}
+		}
+		return data;
+	}
 }

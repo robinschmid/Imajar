@@ -71,6 +71,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	private JColorPickerButton colorBGShortTitle;
 	private JTextField txtInterpolate;
 	private JCheckBox cbInterpolate;
+	private JCheckBox cbBlurRadius;
+	private JTextField txtBlurRadius;
+	private JCheckBox cbCropDataToMin;
 
 	/**
 	 * Create the panel.
@@ -85,7 +88,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		
 		JPanel pnTitleANdLaser = new JPanel();
 		pnNorth.add(pnTitleANdLaser, BorderLayout.NORTH);
-		pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][]"));
+		pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][][][]"));
 		
 		JLabel lblTitle = new JLabel("title");
 		pnTitleANdLaser.add(lblTitle, "cell 0 0,alignx trailing");
@@ -125,29 +128,44 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		txtSpotsize.setAlignmentY(Component.TOP_ALIGNMENT);
 		txtSpotsize.setColumns(10);
 		
+		cbCropDataToMin = new JCheckBox("crop data to minimum");
+		cbCropDataToMin.setToolTipText("Crops all lines to the length of the shortest line.");
+		pnTitleANdLaser.add(cbCropDataToMin, "cell 0 5 2 1");
+		
 		cbInterpolate = new JCheckBox("interpolate");
 		cbInterpolate.setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
-		pnTitleANdLaser.add(cbInterpolate, "cell 0 5");
+		pnTitleANdLaser.add(cbInterpolate, "cell 0 6");
 		
 		txtInterpolate = new JTextField();
 		txtInterpolate.setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
 		txtInterpolate.setText("1");
-		pnTitleANdLaser.add(txtInterpolate, "cell 1 5,alignx left");
+		pnTitleANdLaser.add(txtInterpolate, "cell 1 6,alignx left");
 		txtInterpolate.setColumns(10);
 		
+		cbBlurRadius = new JCheckBox("use blur radius");
+		cbBlurRadius.setToolTipText("Approximation of the Gaussian blur by applying a box blur three times. Always performs \"crop data to minimum\".");
+		pnTitleANdLaser.add(cbBlurRadius, "cell 0 7");
+		
+		txtBlurRadius = new JTextField();
+		txtBlurRadius.setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
+		txtBlurRadius.setText("1");
+		txtBlurRadius.setColumns(10);
+		pnTitleANdLaser.add(txtBlurRadius, "cell 1 7,alignx left");
+		
 		JButton btnCommentary = new JButton("Commentary");
-		pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 6");
+		pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 8");
 		btnCommentary.setToolTipText("Commentary with dates");
 		
 		JButton btnMetadata = new JButton("Metadata");
-		pnTitleANdLaser.add(btnMetadata, "cell 1 6");
+		pnTitleANdLaser.add(btnMetadata, "cell 1 8");
 		btnMetadata.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		btnMetadata.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		btnMetadata.setToolTipText("Metadata such as used instruments and methods");
 		
-		cbBiaryData = new JCheckBox("Binary data");
+		cbBiaryData = new JCheckBox("binary data");
+		cbBiaryData.setSelected(true);
 		cbBiaryData.setToolTipText("Is data binary? Like binary map export from multi view window.");
-		pnTitleANdLaser.add(cbBiaryData, "cell 0 7 2 1");
+		pnTitleANdLaser.add(cbBiaryData, "cell 0 9 2 1");
 		
 		txtXPosTitle = new JTextField();
 		txtXPosTitle.setToolTipText("X position in percent");
@@ -337,6 +355,11 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		
 		getCbInterpolate().addItemListener(il);
 		getTxtInterpolate().getDocument().addDocumentListener(dl);
+		
+		getCbBlurRadius().addItemListener(il);
+		getTxtBlurRadius().getDocument().addDocumentListener(dl);
+		
+		cbCropDataToMin.addItemListener(il);
 	}
 
 	@Override
@@ -362,9 +385,15 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 			si = new SettingsGeneralImage();
 			si.resetAll();
 		} 
+		// crop to min
+		cbCropDataToMin.setSelected(si.isCropDataToMinGetRealValue());
 		// interpolation
 		getTxtInterpolate().setText(String.valueOf(si.getInterpolation()));
 		getCbInterpolate().setSelected(si.isUseInterpolation());
+		// blur
+		getTxtInterpolate().setText(String.valueOf(si.getBlurRadius()));
+		getCbInterpolate().setSelected(si.isUseBlur());
+		
 		//
 		this.getTxtTitle().setText(si.getTitle());
 		this.getTxtSpotsize().setText(String.valueOf(si.getSpotsize()));
@@ -411,10 +440,13 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 				if(getRbRotation90().isSelected()) rotation = 90;
 				if(getRbRotation180().isSelected()) rotation = 180;
 				
+				
+				
 				settings.setAll(getTxtTitle().getText(), getTxtShortTitle().getText(), cbShortTitle.isSelected(),
 						floatFromTxt(txtXPosTitle), floatFromTxt(txtYPosTitle), floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), 
 						imagingMode, getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation, getCbBiaryData().isSelected(),
-						getCbInterpolate().isSelected(), doubleFromTxt(getTxtInterpolate()));
+						getCbInterpolate().isSelected(), doubleFromTxt(getTxtInterpolate()), getCbBlurRadius().isSelected(), doubleFromTxt(getTxtBlurRadius()),
+						getCbCropDataToMin().isSelected());
 			
 				SettingsThemes s = currentImage.getSettTheme();
 				s.getTheme().setcShortTitle(fontShortTitle.getColor());
@@ -496,5 +528,14 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	}
 	public JCheckBox getCbInterpolate() {
 		return cbInterpolate;
+	}
+	public JCheckBox getCbBlurRadius() {
+		return cbBlurRadius;
+	}
+	public JTextField getTxtBlurRadius() {
+		return txtBlurRadius;
+	}
+	public JCheckBox getCbCropDataToMin() {
+		return cbCropDataToMin;
 	}
 }

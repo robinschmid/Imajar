@@ -66,7 +66,8 @@ public class Heatmap {
 		this.scaleInPlot = scaleInPlot;
 		this.shortTitle = shortTitle;
 		// 
-		showBlankMinMax(image.getSettings().getOperations().getBlankQuantifier().isShowInChart());
+		if(image!=null)
+			showBlankMinMax(image.getSettings().getOperations().getBlankQuantifier().isShowInChart());
 	}
 	
 	public Heatmap(IXYZDataset dataset, PlotChartPanel chartPanel,

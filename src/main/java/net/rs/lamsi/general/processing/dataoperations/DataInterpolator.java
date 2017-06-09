@@ -3,7 +3,7 @@ package net.rs.lamsi.general.processing.dataoperations;
 import java.util.ArrayList;
 
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
-import net.rs.lamsi.general.heatmap.interpolation.BicubicInterpolator;
+import net.rs.lamsi.general.heatmap.dataoperations.interpolation.BicubicInterpolator;
 
 public class DataInterpolator {
 

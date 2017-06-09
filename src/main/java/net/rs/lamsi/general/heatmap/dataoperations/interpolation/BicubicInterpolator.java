@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.heatmap.interpolation;
+package net.rs.lamsi.general.heatmap.dataoperations.interpolation;
 
 /**
  * Created by Piotr Dzwiniel on 2016-03-21.
