@@ -48,6 +48,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+import net.rs.lamsi.general.framework.basics.multislider.JMultiRangeSlider;
 
 public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
 	//################################################################################################
@@ -133,7 +134,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, "cell 0 0,grow");
-		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][][][25.00][][][][][][][][]"));
+		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][][][25.00][grow][][][][][][][][]"));
 
 		JLabel lblLevels = new JLabel("levels");
 		panel.add(lblLevels, "cell 0 0,alignx trailing");
@@ -145,13 +146,16 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		cbMonochrom = new JCheckBox("monochrome");
 		panel.add(cbMonochrom, "flowx,cell 0 1 2 1,alignx left");
-		cbMonochrom.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+		cbMonochrom.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
 				JCheckBox cb = (JCheckBox)e.getSource();
 				// monochrom panel off/on
 				getBtnMaxColor().setVisible(!cb.isSelected());
 				getLblEndColor().setVisible(!cb.isSelected());
 				getCbGreyScale().setEnabled(cb.isSelected());
+				
+				getHueSlider().setVisible(!cb.isSelected());
 			}
 		});
 
@@ -179,14 +183,17 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		cbInvert = new JCheckBox("invert");
 		panel.add(cbInvert, "flowx,cell 0 3 2 1");
+		
+		hueSlider = new JMultiRangeSlider(false);
+		panel.add(hueSlider, "cell 0 5 2 1,grow");
 
 		verticalStrut = Box.createVerticalStrut(20);
 		verticalStrut.setPreferredSize(new Dimension(0, 5));
 		verticalStrut.setMinimumSize(new Dimension(0, 5));
-		panel.add(verticalStrut, "cell 0 5");
+		panel.add(verticalStrut, "cell 0 6");
 
 		lblBrightness = new JLabel("brightness");
-		panel.add(lblBrightness, "cell 0 7");
+		panel.add(lblBrightness, "cell 0 8");
 
 		btnReset = new JButton("reset");
 		btnReset.addActionListener(new ActionListener() {
@@ -194,7 +201,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 				getSliderBrightness().setValue(400);
 			}
 		});
-		panel.add(btnReset, "flowx,cell 0 8");
+		panel.add(btnReset, "flowx,cell 0 9");
 
 		sliderBrightness = new JSlider();
 		sliderBrightness.addChangeListener(new ChangeListener() {
@@ -208,28 +215,28 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		sliderBrightness.setValue(400);
 		sliderBrightness.setMaximum(1800);
 		sliderBrightness.setMinimum(200);
-		panel.add(sliderBrightness, "cell 1 8,growx");
+		panel.add(sliderBrightness, "cell 1 9,growx");
 
 		verticalStrut_1 = Box.createVerticalStrut(20);
 		verticalStrut_1.setPreferredSize(new Dimension(0, 5));
 		verticalStrut_1.setMinimumSize(new Dimension(0, 5));
-		panel.add(verticalStrut_1, "cell 0 9");
+		panel.add(verticalStrut_1, "cell 0 10");
 
 		cbOnlyUseSelectedMinMax = new JCheckBox("only use selected values (min/max)");
 		cbOnlyUseSelectedMinMax.setToolTipText("Uses minimum and maximum value from selected minus excluded rects ");
 		cbOnlyUseSelectedMinMax.setSelected(true);
-		panel.add(cbOnlyUseSelectedMinMax, "cell 0 11 2 1");
+		panel.add(cbOnlyUseSelectedMinMax, "cell 0 12 2 1");
 
 		cbUseMinMax = new JCheckBox("use min & max values");
 		cbUseMinMax.setToolTipText("Set a minimum (limit of detection) and a maximum value. All values beneath or above will be set to minimum or maximum color, respectively.");
-		panel.add(cbUseMinMax, "cell 0 12 2 1");
+		panel.add(cbUseMinMax, "cell 0 13 2 1");
 
 		txtBrightness = new JTextField();
 		txtBrightness.setHorizontalAlignment(SwingConstants.CENTER);
 		txtBrightness.setPreferredSize(new Dimension(24, 20));
 		txtBrightness.setMinimumSize(new Dimension(24, 20));
 		txtBrightness.setText("2.0");
-		panel.add(txtBrightness, "cell 0 8");
+		panel.add(txtBrightness, "cell 0 9");
 		txtBrightness.setColumns(10);
 
 		cbGreyScale = new JCheckBox("grey scale");
@@ -461,7 +468,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		// add standard paintscales to menu
 		// TODO comment out for window build
-		addStandardPaintScalesToMenu();
+		//addStandardPaintScalesToMenu();
 	}
 
 	/**
@@ -541,6 +548,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	// last values
 	private double lastMaxPercentage = 0, lastMinPercentage = 0, lastMin = 0, lastMax = 0;
 	private JCheckBox CbMaximumTransparent;
+	private JMultiRangeSlider hueSlider;
 	protected void setMinimumValuePercentage(double f, boolean force) {
 		if(((!(lastMinPercentage+0.001>f && lastMinPercentage-0.001<f)) || force)  && currentImage!=null) {
 			ImageEditorWindow.log("Setting Min % "+f, LOG.DEBUG);
@@ -614,14 +622,31 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	//################################################################################################
 	// Autoupdate  TODO
 	@Override
-	public void addAutoupdater(final ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	public void addAutoupdater(final ActionListener al, ChangeListener cl, DocumentListener dl, final ColorChangedListener ccl, 
+			final ItemListener il) {
 		getTxtLevels().getDocument().addDocumentListener(dl);
 
 		getTxtLOD().getDocument().addDocumentListener(dl);
 
 		getCbBlackAsMax().addActionListener(al);
 		getCbWhiteAsMin().addActionListener(al);
-		getCbInvert().addActionListener(al);
+		
+		ItemListener il2 = new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// reset hue positions
+				if(!getCbInvert().isSelected())
+					hueSlider.setColors(getBtnMinColor().getColor(), getBtnMaxColor().getColor());
+				else hueSlider.setColors(getBtnMaxColor().getColor(), getBtnMinColor().getColor());
+				
+				// fire change
+				il.itemStateChanged(e);
+			}
+		};
+		getCbInvert().addItemListener(il2);
+		
+		
 		getCbMinimumTransparent().addActionListener(al);
 		getCbMaximumTransparent().addActionListener(al);
 		getCbMonochrom().addActionListener(al);
@@ -632,13 +657,37 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		getBtnApplyMinFilter().addActionListener(al);
 		getBtnApplyMaxFilter().addActionListener(al);
-
 		getSliderBrightness().addChangeListener(cl);
 
-		getBtnMinColor().addColorChangedListener(ccl);
-		getBtnMaxColor().addColorChangedListener(ccl);
+		
+		ColorChangedListener ccl2 = new ColorChangedListener() {
+			@Override
+			public void colorChanged(Color color) {
+				// reset hue positions
+				if(!getCbInvert().isSelected())
+					hueSlider.setColors(getBtnMinColor().getColor(), getBtnMaxColor().getColor());
+				else hueSlider.setColors(getBtnMaxColor().getColor(), getBtnMinColor().getColor());
+				
+				// fire change event
+				ccl.colorChanged(color);
+			}
+		};
+		
+		getBtnMinColor().addColorChangedListener(ccl2);
+		getBtnMaxColor().addColorChangedListener(ccl2);
 		// LOD 
-		getCbLODMonochrome().addActionListener(al);
+		getCbLODMonochrome().addItemListener(il);
+		
+
+		
+		// hue ranges
+		hueSlider.addDocumentListener(new DelayedDocumentListener() {
+			@Override
+			public void documentChanged(DocumentEvent e) {
+				al.actionPerformed(null);
+			}
+		});
+		
 
 		// min max
 		//getComboMaxValType().addItemListener(il);
@@ -697,7 +746,6 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		getTxtMaxFilter().getDocument().addDocumentListener(listenerMaxFilter);
 		getTxtMinFilter().getDocument().addDocumentListener(listenerMinFilter);
 
-		// TODO add to list
 		delayedDListener = new DelayedDocumentListener[] {listenerMinAbs, listenerMaxAbs, listenerMaxFilter, listenerMaxPerc, listenerMinFilter, listenerMinPerc};
 	}
 
@@ -773,6 +821,8 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	public void stopDelayedListener() {
 		for(DelayedDocumentListener dl : delayedDListener)
 			dl.stop();
+		
+		hueSlider.stopDelayedListener();
 	}
 	/**
 	 * sets the active state for all delayed listeners
@@ -781,6 +831,8 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	public void setDelayedListenerActive(boolean state) {
 		for(DelayedDocumentListener dl : delayedDListener)
 			dl.setActive(state);
+		
+		hueSlider.setDelayedListenerActive(state);
 	}
 
 	//################################################################################################
@@ -798,6 +850,17 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		// stop auto updating
 		stopDelayedListener();
 		setDelayedListenerActive(false);
+		
+		// hue ranges and positions
+		if(ps.getPosition()!=null) {
+			if(!ps.isInverted())
+				hueSlider.setup(ps.getMinColor(), ps.getMaxColor(), ps.getHue(), ps.getPosition());
+			else hueSlider.setup(ps.getMaxColor() ,ps.getMinColor(), ps.getHue(), ps.getPosition());
+		} else {
+			if(!ps.isInverted())
+				hueSlider.setColors(ps.getMinColor(), ps.getMaxColor());
+			else hueSlider.setColors(ps.getMaxColor() ,ps.getMinColor());
+		}
 
 		//rb
 
@@ -902,7 +965,9 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 						floatFromTxt(getTxtMaxFilter()), 
 						getCbGreyScale().isSelected(),
 						getCbOnlyUseSelectedMinMax().isSelected(), 
-						getCbLODMonochrome().isSelected(), doubleFromTxt(getTxtLOD()));
+						getCbLODMonochrome().isSelected(), doubleFromTxt(getTxtLOD()),
+						hueSlider.getHue(), hueSlider.getPositions()
+						);
 				/// renew histo
 				getPnHistogram().updateHisto(ps);
 			} catch(Exception ex) {
@@ -1014,5 +1079,8 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	}
 	public JCheckBox getCbMaximumTransparent() {
 		return CbMaximumTransparent;
+	}
+	public JMultiRangeSlider getHueSlider() {
+		return hueSlider;
 	}
 }

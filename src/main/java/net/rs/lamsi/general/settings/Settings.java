@@ -275,6 +275,39 @@ public abstract class Settings implements Serializable {
 		}
 	}
 
+	public static void toXMLArray(Element elParent, Document doc, String name, Object[] o) {
+		if(o!=null) {
+			//Element paramElement = doc.createElement(parameterElement);
+			//paramElement.setAttribute(nameAttribute, name);
+			Element paramElement = doc.createElement(name);
+			elParent.appendChild(paramElement); 
+			StringBuilder res = new StringBuilder();
+			for(int i=0; i<o.length; i++) {
+					res.append(String.valueOf(o[i]));
+					if(i<o.length-1)
+						res.append(";");
+			}
+
+			paramElement.setTextContent(res.toString());
+		}
+	}
+	public static void toXMLArray(Element elParent, Document doc, String name, float[] o) {
+		if(o!=null) {
+			//Element paramElement = doc.createElement(parameterElement);
+			//paramElement.setAttribute(nameAttribute, name);
+			Element paramElement = doc.createElement(name);
+			elParent.appendChild(paramElement); 
+			StringBuilder res = new StringBuilder();
+			for(int i=0; i<o.length; i++) {
+					res.append(String.valueOf(o[i]));
+					if(i<o.length-1)
+						res.append(";");
+			}
+
+			paramElement.setTextContent(res.toString());
+		}
+	}
+
 
 	//'''''''''''''''''''''''''''''''''
 	// load
@@ -426,6 +459,22 @@ public abstract class Settings implements Serializable {
 		final String numString = el.getTextContent();
 		if (numString.length() > 0) {
 			return Float.parseFloat(numString);
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static float[] floatArrayFromXML(final Element el) {
+		final String numString = el.getTextContent();
+		if (numString.length() > 0) {
+			String[] split = numString.split(";");
+			float[] f = new float[split.length];
+			for(int i=0; i<split.length; i++)
+				f[i] = Float.valueOf(split[i]);
+			return f;
 		}
 		return null;
 	}

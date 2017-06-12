@@ -144,6 +144,8 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 	}
 	@Override
 	public int getLineLength(int i) {
+		if(i<0 || i>=getLinesCount())
+			return -1;
 		return lines[i].getDPCount();
 	}
 

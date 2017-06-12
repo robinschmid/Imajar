@@ -493,8 +493,8 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 
 		ImageDataset data = first.getData();
 		
-		int maxlines = first.getMaxLineCount();
-		int maxdp = first.getMaxDP();
+		int maxlines = first.getMaxLinesCount();
+		int maxdp = first.getMaxLineLength();
 		
 		boolean different = map==null || maxlines!=map.length || maxdp!=map[0].length;
 		if(different) {

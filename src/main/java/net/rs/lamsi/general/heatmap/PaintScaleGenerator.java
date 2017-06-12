@@ -203,6 +203,67 @@ public class PaintScaleGenerator {
 		return scale;
 	}
 
+
+	/**
+	 * interpolate with weights for specified hue values
+	 * @param start
+	 * @param end
+	 * @param p
+	 * @param hue
+	 * @param position
+	 * @return
+	 */
+	public static Color interpolateWeighted(Color start, Color end, float p, float[] hue, float[] position) {
+		float[] startHSB = Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), null);
+		float[] endHSB = Color.RGBtoHSB(end.getRed(), end.getGreen(), end.getBlue(), null);
+
+		float brightness = (startHSB[2] + endHSB[2]) / 2;
+		float saturation = (startHSB[1] + endHSB[1]) / 2;
+
+		float hueMin = startHSB[0];
+		float hueMax = endHSB[0];
+		
+		float p0 = 0.f;
+		float p1 = 1.f;
+		
+		// between which position?
+		// start .... hue[0] .. hue[1] .. hue[n] ... end
+		if(position.length>0) {
+			if(p<position[0]) {
+				hueMax = hue[0];
+				p1 = position[0];
+			}
+			else {
+				int max = position.length;
+				for(int i=1; i<max; i++) {
+					if(p<=position[i]) {
+						i--;
+						hueMin = hue[i];
+						hueMax = hue[i+1];
+						p0 = position[i];
+						p1 = position[i+1];
+						break;
+					}
+				}
+				// end step
+				if(p0==0.f) {
+					p0 = position[position.length-1];
+					hueMin = hue[hue.length-1];
+				}
+			}
+		}
+		
+		float newp = (p-p0)/(p1-p0);
+
+		float H = ((hueMax - hueMin) * newp) + hueMin;
+		
+		// TODO add brightness and saturation modifiers
+		//brightness = 1.f - 0.25f/10.f*pb;
+		//saturation = 1.f - 0.25f/10.f*pb;
+
+		return Color.getHSBColor(H, saturation, brightness);
+	}
+	
 	// without black and white!
 	public static Color interpolate(Color start, Color end, float p) {
 		float[] startHSB = Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), null);

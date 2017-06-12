@@ -210,6 +210,8 @@ public class Image2DImportExportUtil {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		// for all overlays

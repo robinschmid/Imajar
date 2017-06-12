@@ -29,7 +29,7 @@ public abstract class ImageDataset  implements Serializable {
 	/**
 	 * scan points (length) of line i
 	 * @param i
-	 * @return
+	 * @return -1 if line index i is <0 or >= line count
 	 */
 	public abstract int getLineLength(int i);
 

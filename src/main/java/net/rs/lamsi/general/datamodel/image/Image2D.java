@@ -483,10 +483,22 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public int getMinLineLength() {
-		if(isRotated()) {
-			return data.getLinesCount();
-		} else {
+		if(!isRotated()) {
 			return data.getMinDP();
+		} else {
+			return data.getLinesCount();
+		}
+	}
+	/**
+	 * maximum line length in regards to rotation
+	 * columns (dp) of the image
+	 * @return
+	 */
+	public int getMaxLineLength() {
+		if(!isRotated()) {
+			return data.getMaxDP();
+		} else {
+			return data.getLinesCount();
 		}
 	} 
 
@@ -496,10 +508,23 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public int getMinLinesCount() {
-		if(isRotated()) {
-			return data.getMinDP();
-		} else {
+		if(!isRotated()) {
 			return data.getLinesCount();
+		} else {
+			return data.getMinDP();
+		}
+	}
+
+	/**
+	 * maximum lines count in regards to rotation
+	 * rows of the image
+	 * @return
+	 */
+	public int getMaxLinesCount() {
+		if(!isRotated()) {
+			return data.getLinesCount();
+		} else {
+			return data.getMaxDP();
 		}
 	}
 
@@ -634,8 +659,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		double[] y = new double[scanpoints];
 		double[] z = new double[scanpoints];
 		//
-		int lines = getMaxLineCount();
-		int maxdp = getMaxDP();
+		int lines = getMaxLinesCount();
+		int maxdp = getMaxLineLength();
 		int currentdp = 0;
 
 		// uses rotation
@@ -726,9 +751,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		if(useSettings) {
 			// columns in the data sheet are lines / x values here
 			// time only once?
-			int cols = getMaxLineCount();
+			int cols = getMaxLinesCount();
 			// rows in data sheet = data points here
-			int rows = getMaxDP();
+			int rows = getMaxLineLength();
 
 			// more columns for x values?
 			if(mode.equals(ModeData.XYYY)) cols += 1;
@@ -816,8 +841,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 				
 				
 				// get full matrix
-				final int cols = getMaxLineCount()-sl-ll;
-				final int rows = getMaxDP()-sdp-ldp;
+				final int cols = getMaxLinesCount()-sl-ll;
+				final int rows = getMaxLineLength()-sdp-ldp;
 
 				Double[][] z = new Double[cols][rows];
 				Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
@@ -889,8 +914,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			}
 			else {
 				// no cropping
-				int cols = getMaxLineCount();
-				int rows = getMaxDP();
+				int cols = getMaxLinesCount();
+				int rows = getMaxLineLength();
 
 				Double[][] z = new Double[cols][rows];
 				Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
@@ -942,9 +967,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public Object[][] toXMatrix(boolean raw, boolean useSettings) {
 		// export with rotation etc
 		if(useSettings) {
-			int cols = getMaxLineCount();
+			int cols = getMaxLinesCount();
 			// rows in data sheet = data points here
-			int rows = getMaxDP();
+			int rows = getMaxLineLength();
 
 			Object[][] dataExp = new Object[rows][cols]; 
 			for(int c=0; c<cols; c++) {
@@ -1058,9 +1083,11 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			// increment l
 			for(int c=0; c<cols; c++) {
 				// only if not null: write Intensity
-				double tmp = getI(raw,c, r);
-				if(useSettings) builder.append(!Double.isNaN(tmp)? tmp : "");
-				else builder.append(r<data.getLineLength(c)? getIRaw(c, r) : "");
+				if(useSettings) {
+					double tmp = getI(raw,useSettings,c, r);
+					builder.append(!Double.isNaN(tmp)? tmp : "");
+				}
+				else builder.append(r<data.getLineLength(c)? data.getI(index, c, r) : "");
 				if(c<cols-1) builder.append(sep);
 			} 
 			if(r<rows-1) builder.append("\n");
@@ -1092,8 +1119,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		}
 		else {
 			// for lines (that are actually datapoints)
-			int maxlines = getMaxLineCount();
-			int maxdp = getMaxDP();
+			int maxlines = getMaxLinesCount();
+			int maxdp = getMaxLineLength();
 			int c=0;
 			for(int l=0; l<maxlines; l++) {
 				for(int dp=0; dp<maxdp; dp++) {
@@ -1118,8 +1145,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public Object[][] toIMatrix(boolean raw, boolean useSettings) {
 		// time only once?
 		if(useSettings) {
-			int cols = getMaxLineCount();
-			int rows = getMaxDP();
+			int cols = getMaxLinesCount();
+			int rows = getMaxLineLength();
 
 			Object[][] dataExp = new Object[rows][cols]; 
 			// c for lines
@@ -1156,8 +1183,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 */
 	public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
 		// time only once?
-		int cols = getMaxLineCount();
-		int rows = getMaxDP();
+		int cols = getMaxLinesCount();
+		int rows = getMaxLineLength();
 
 		Object[][] dataExp = new Object[rows][cols]; 
 		// c for lines
@@ -1712,24 +1739,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	}
 
 
-
-	/**
-	 * Maximum dp in respect to rotation etc
-	 * @return
-	 */
-	public int getMaxDP() { 
-		int angle = settings.getSettImage().getRotationOfData();
-		return (angle==90 || angle==270 || angle==-90)? data.getLinesCount() : data.getMaxDP();
-	}
-	/**
-	 * Maximum line in respect to rotation etc
-	 * @return
-	 */
-	public int getMaxLineCount() { 
-		int angle = settings.getSettImage().getRotationOfData();
-		return (angle==90 || angle==270 || angle==-90)? data.getMaxDP() : data.getLinesCount();
-	}
-
 	//#############################################################
 	// apply filter to cut off first or last values of intensity
 	// only apply if not already done
@@ -1850,8 +1859,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		checkForUpdateInParentIProcessing();
 		//
 		if(averageIProcessedForLine==null) {
-			averageIProcessedForLine = new double[this.getMaxLineCount()];
-			for(int i=0; i<this.getMaxLineCount(); i++) {
+			averageIProcessedForLine = new double[this.getMaxLinesCount()];
+			for(int i=0; i<this.getMaxLinesCount(); i++) {
 				averageIProcessedForLine[i] = 0;
 				for(int dp=0; dp<getLineLength(i); dp++)  
 					if(i<getLineCount(dp))
@@ -1955,8 +1964,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	public int getSelectedDPCount(boolean excluded) {
 		int counter = 0;
 		//
-		int lines = getMaxLineCount();
-		int maxdp = getMaxDP();
+		int lines = getMaxLinesCount();
+		int maxdp = getMaxLineLength();
 
 		for(int y=0; y<lines; y++) {
 			for(int x=0; x<maxdp; x++) {
@@ -2193,14 +2202,14 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 
 			// scale in x
 			float sx = 1;
-			int w = data.getMinDP();
+			int w = getMaxLineLength();
 			if(w>maxw) {
 				sx = w/(float)maxw;
 				w = maxw;
 			}
 
 			float sy = 1;
-			int lines = data.getLinesCount();
+			int lines = getMaxLinesCount();
 			int h = lines;
 			if(h>maxh) { 
 				sy = h/(float)maxh;
@@ -2213,13 +2222,16 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			for(int x=0; x<w; x++) {
 				for(int y=0; y<h; y++) {
 					// fill rects
-					int dp = data.getLineLength((int)(y*sy));
+					int dp = getLineLength((int)(y*sy));
 					int ix=(int)(x*sx);
 					int iy=(int)(y*sy);
 					if(iy<lines && ix<dp) {
-						Paint c = scale.getPaint(getI(false, iy, ix));
-						g.setPaint(c);
-						g.fillRect(x, maxh-y, 1, 1); 
+						double z = getI(false, iy, ix);
+						if(!Double.isNaN(z)) {
+							Paint c = scale.getPaint(z);
+							g.setPaint(c);
+							g.fillRect(x, maxh-y, 1, 1); 
+						}
 					}
 				}
 			}

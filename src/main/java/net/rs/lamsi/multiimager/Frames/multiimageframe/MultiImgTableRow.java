@@ -64,7 +64,7 @@ public class MultiImgTableRow {
 	 */
 	public void applyToMap(Boolean[][] map) throws Exception {
 		// same dimension`?
-		if(map.length!=img.getMaxLineCount() || map[0].length!=img.getMaxDP())
+		if(map.length!=img.getMaxLinesCount() || map[0].length!=img.getMaxLineLength())
 			throw new Exception("Map has a different dimension than image "+img.getTitle());
 		// apply
 		if(isUseRange() && (max!=upper || min != lower)) {
@@ -91,7 +91,7 @@ public class MultiImgTableRow {
 	 */
 	public void applyToBinaryMap(Integer[][] map, int i) throws Exception {
 		// same dimension`?
-		if(map.length!=img.getMaxLineCount() || map[0].length!=img.getMaxDP())
+		if(map.length!=img.getMaxLinesCount() || map[0].length!=img.getMaxLineLength())
 			throw new Exception("Map has a different dimension than image "+img.getTitle());
 		// apply
 		if(isUseRange() && (max!=upper || min != lower)) {

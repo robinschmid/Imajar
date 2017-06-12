@@ -49,6 +49,9 @@ public class SettingsPaintScale extends Settings {
 	private float brightnessFactor;
 
 	private Color minColor, maxColor;
+	
+	// hue positions:
+	private float[] hue, position;
 
 
 	public SettingsPaintScale() {
@@ -58,7 +61,8 @@ public class SettingsPaintScale extends Settings {
 
 	public void setAll(int levels, boolean isMonochrom, boolean isInverted, boolean usesBAsMax, boolean usesWAsMin,
 			boolean usesMinMax, boolean usesMinAsInvisible, boolean usesMaxAsInvisible, ValueMode modeMin, ValueMode modeMax, double min, double max, Color minColor,
-			Color maxColor, float brightnessFactor, float minFilter, float maxFilter, boolean isGrey, boolean usesMinMaxFromSelection, boolean isLODMonochrome, double LOD) { 
+			Color maxColor, float brightnessFactor, float minFilter, float maxFilter, boolean isGrey, boolean usesMinMaxFromSelection, 
+			boolean isLODMonochrome, double LOD, float[] hue, float[] position) { 
 		this.levels = levels;
 		this.isMonochrom = isMonochrom;
 		this.isInverted = isInverted;
@@ -80,6 +84,8 @@ public class SettingsPaintScale extends Settings {
 		this.usesMinMaxFromSelection = usesMinMaxFromSelection;
 		this.isLODMonochrome = isLODMonochrome;
 		this.LOD = LOD; 
+		this.hue = hue;
+		this.position = position;
 	}
 
 	/**
@@ -326,6 +332,8 @@ public class SettingsPaintScale extends Settings {
 		toXML(elParent, doc, "isLODMonochrome", isLODMonochrome);
 		toXML(elParent, doc, "LOD", LOD);
 		toXML(elParent, doc, "usesMaxAsInvisible", usesMaxAsInvisible);
+		toXMLArray(elParent, doc, "hue", hue);
+		toXMLArray(elParent, doc, "position", position);
 	}
 
 	@Override
@@ -356,6 +364,8 @@ public class SettingsPaintScale extends Settings {
 				else if(paramName.equals("usesMinMaxFromSelection")) usesMinMaxFromSelection= booleanFromXML(nextElement); 
 				else if(paramName.equals("isLODMonochrome")) isLODMonochrome= booleanFromXML(nextElement); 
 				else if(paramName.equals("LOD")) LOD = doubleFromXML(nextElement); 
+				else if(paramName.equals("hue")) hue = floatArrayFromXML(nextElement); 
+				else if(paramName.equals("position")) position = floatArrayFromXML(nextElement); 
 			}
 		}
 	}
@@ -545,5 +555,23 @@ public class SettingsPaintScale extends Settings {
 	public void setLOD(double lOD) {
 		LOD = lOD;
 	}
+
+	public void setHuePositions(float[] position, float[] hue) {
+		this.position = position;
+		this.hue = hue;
+	}
+	public float[] getHue() {
+		return hue;
+	}
+	public float[] getPosition() {
+		return position;
+	}
+	public void setHue(float[] hue) {
+		this.hue = hue;
+	}
+	public void setPosition(float[] position) {
+		this.position = position;
+	}
+	
 
 }

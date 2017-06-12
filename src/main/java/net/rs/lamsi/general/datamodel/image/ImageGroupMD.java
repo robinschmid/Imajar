@@ -179,7 +179,7 @@ public class ImageGroupMD  implements Serializable {
 		Boolean[][] map = sttA.getMap();
 		// create new
 		if(map == null) {
-			map = new Boolean[first.getMaxLineCount()][first.getMaxDP()];
+			map = new Boolean[first.getMaxLinesCount()][first.getMaxLineLength()];
 		}
 		// init as true
 		for(int r = 0; r<map.length; r++) {
@@ -206,7 +206,7 @@ public class ImageGroupMD  implements Serializable {
 	 */
 	public Object[][] createBinaryMap() throws Exception {
 		Image2D first = getFirstImage2D();
-		Integer[][] bmap = new Integer[first.getMaxLineCount()][first.getMaxDP()];
+		Integer[][] bmap = new Integer[first.getMaxLinesCount()][first.getMaxLineLength()];
 
 		// init as 0
 		for(int r = 0; r<bmap.length; r++)
