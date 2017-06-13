@@ -17,7 +17,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 import org.w3c.dom.Document;
@@ -35,8 +35,8 @@ public abstract class SettingsContainerCollectable2D extends SettingsContainerSe
 		super(description, path, fileEnding);
 	}
 	 
-	public SettingsThemes getSettTheme() {
-		return (SettingsThemes) list.get(SettingsThemes.class);
+	public SettingsThemesContainer getSettTheme() {
+		return (SettingsThemesContainer) list.get(SettingsThemesContainer.class);
 	} 
 	public SettingsZoom getSettZoom() {
 		return (SettingsZoom) getSettingsByClass(SettingsZoom.class);

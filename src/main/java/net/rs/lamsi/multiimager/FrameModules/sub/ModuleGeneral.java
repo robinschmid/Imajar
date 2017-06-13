@@ -37,7 +37,7 @@ import net.rs.lamsi.general.framework.modules.menu.ModuleMenuApplyToImage;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
@@ -325,7 +325,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 			@Override
 			public void applyToImage(Settings sett, Image2D img) {
 				// also set short title to theme
-				img.getSettTheme().setShortTitle(fontShortTitle.getColor(), getColorBGShortTitle().getColor(), fontShortTitle.getSelectedFont());
+				img.getSettTheme().getTheme().setShortTitle(fontShortTitle.getColor(), getColorBGShortTitle().getColor(), fontShortTitle.getSelectedFont());
 			}
 		});
 	}
@@ -404,7 +404,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		getTxtXPosTitle().setText(String.valueOf(si.getXPosTitle()));
 		getTxtYPosTitle().setText(String.valueOf(si.getYPosTitle()));
 
-		SettingsThemes s = currentImage.getSettTheme();
+		SettingsThemesContainer s = currentImage.getSettTheme();
 		// font 
 		fontShortTitle.setSelectedFont(s.getTheme().getFontShortTitle());
 		// bg color
@@ -448,7 +448,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 						getCbInterpolate().isSelected(), doubleFromTxt(getTxtInterpolate()), getCbBlurRadius().isSelected(), doubleFromTxt(getTxtBlurRadius()),
 						getCbCropDataToMin().isSelected());
 			
-				SettingsThemes s = currentImage.getSettTheme();
+				SettingsThemesContainer s = currentImage.getSettTheme();
 				s.getTheme().setcShortTitle(fontShortTitle.getColor());
 				s.getTheme().setcBGShortTitle(colorBGShortTitle.getColor());
 				s.getTheme().setFontShortTitle(fontShortTitle.getSelectedFont());

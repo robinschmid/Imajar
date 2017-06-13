@@ -10,7 +10,7 @@ import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
 
@@ -107,7 +107,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		psSettings.clear();
 		active = null;
 		// other
-		addSettings(new SettingsThemes(THEME.DARKNESS));
+		addSettings(new SettingsThemesContainer(THEME.DARKNESS));
 		addSettings(new SettingsZoom());
 	}
 

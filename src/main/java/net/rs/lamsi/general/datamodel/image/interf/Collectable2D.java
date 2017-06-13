@@ -10,7 +10,7 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
 import net.rs.lamsi.general.settings.interf.GroupSettings;
 
@@ -67,8 +67,8 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 
 	public abstract String getShortTitle();
 	
-	public SettingsThemes getSettTheme() {
-		return (SettingsThemes) getSettingsByClass(SettingsThemes.class);
+	public SettingsThemesContainer getSettTheme() {
+		return (SettingsThemesContainer) getSettingsByClass(SettingsThemesContainer.class);
 	}
 	public SettingsZoom getSettZoom() {
 		return (SettingsZoom) getSettingsByClass(SettingsZoom.class);

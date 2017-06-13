@@ -58,7 +58,6 @@ public class ChartThemeFactory {
 	    	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
 	    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
 	    	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
-	    	theme.setFontScaleInPlot(new Font("Arial", Font.PLAIN, 11));
 	    	theme.setFontShortTitle(new Font("Arial", Font.BOLD, 11));
 		}
 		else { // for presentation larger fonts
@@ -68,7 +67,6 @@ public class ChartThemeFactory {
 	    	theme.setRegularFont(new Font("Arial", Font.BOLD, 20));
 	    	theme.setSmallFont(new Font("Arial", Font.PLAIN, 16));
 
-	    	theme.setFontScaleInPlot(new Font("Arial", Font.PLAIN, 16));
 	    	theme.setFontShortTitle(new Font("Arial", Font.BOLD, 20));
 		}
 		return theme;

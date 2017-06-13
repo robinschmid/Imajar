@@ -23,7 +23,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -173,7 +173,7 @@ public class HeatmapFactory {
 	private static Heatmap createChartOverlay(final ImageOverlay img, IXYZDataset dataset, String xTitle, String yTitle) throws Exception {
 		SettingsImageOverlay settings = img.getSettings();
 		int seriesCount = dataset.getSeriesCount();
-		SettingsThemes setTheme = img.getSettTheme();
+		SettingsThemesContainer setTheme = img.getSettTheme();
 
 		// XAchse
 		NumberAxis xAxis = new NumberAxis(xTitle);
@@ -310,7 +310,7 @@ public class HeatmapFactory {
 			throw new Exception("Every data point has the same intensity of "+zmin);
 		}
 		else { 
-			SettingsThemes setTheme = img.getSettTheme();
+			SettingsThemesContainer setTheme = img.getSettTheme();
 			// XAchse
 			NumberAxis xAxis = new NumberAxis(xTitle);
 			xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
@@ -422,13 +422,14 @@ public class HeatmapFactory {
 	 * @param setTheme
 	 * @param plot
 	 */
-	private static ScaleInPlot addScaleInPlot(SettingsThemes setTheme,  ChartPanel chartPanel) {
+	private static ScaleInPlot addScaleInPlot(SettingsThemesContainer setTheme,  ChartPanel chartPanel) {
 		// XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
 
 		ScaleInPlot title = new ScaleInPlot(chartPanel, setTheme);
 		//XYDrawableAnnotation ta2 = new XYDrawableAnnotation(1000, 1000, legend.getWidth(), legend.getHeight(), legend);
 		chartPanel.getChart().getXYPlot().addAnnotation(title.getAnnotation());
-		title.setVisible(setTheme.getTheme().isShowScale());
+		
+		title.setVisible(setTheme.getSettScaleInPlot().isShowScale());
 		return title;
 	}
 
@@ -466,7 +467,7 @@ public class HeatmapFactory {
 		return createScaleLegend(null, scale, scaleAxis, stepCount);
 	}	
 	private static PaintScaleLegend createScaleLegend(Image2D img, PaintScale scale, NumberAxis scaleAxis, int stepCount) { 
-		SettingsThemes setTheme = img!=null? img.getSettTheme() : null;
+		SettingsThemesContainer setTheme = img!=null? img.getSettTheme() : null;
 		// create legend
 		PaintScaleLegend legend = new PaintScaleLegend(scale, scaleAxis);
 		legend.setBackgroundPaint(new Color(0,0,0,0));
@@ -492,7 +493,7 @@ public class HeatmapFactory {
 	private static NumberAxis createScaleAxis(SettingsPaintScale settings, IXYZDataset dataset) {
 		return createScaleAxis(settings, null, dataset);
 	}
-	private static NumberAxis createScaleAxis(SettingsPaintScale settings, SettingsThemes theme, IXYZDataset dataset) {
+	private static NumberAxis createScaleAxis(SettingsPaintScale settings, SettingsThemesContainer theme, IXYZDataset dataset) {
 		NumberAxis scaleAxis = new NumberAxis(theme!=null && theme.getTheme().isUsePaintScaleTitle()? theme.getTheme().getPaintScaleTitle() : null);
 		if(theme!=null)
 			scaleAxis.setNumberFormatOverride(theme.getTheme().getIntensitiesNumberFormat());

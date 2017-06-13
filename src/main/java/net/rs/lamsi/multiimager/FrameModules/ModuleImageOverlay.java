@@ -16,8 +16,8 @@ import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscaleOverlay;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOverlay, ImageOverlay> {

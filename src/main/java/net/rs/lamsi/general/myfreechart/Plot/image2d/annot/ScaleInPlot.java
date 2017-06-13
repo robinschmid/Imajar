@@ -9,7 +9,8 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsScaleInPlot;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
@@ -22,7 +23,7 @@ import org.jfree.ui.RectangleEdge;
 
 public class ScaleInPlot extends Title {
 
-	protected SettingsThemes theme;
+	protected SettingsThemesContainer theme;
 	protected XYTitleAnnotation annotation;
 	protected ChartPanel chartPanel;
 	protected XYPlot plot;
@@ -33,15 +34,18 @@ public class ScaleInPlot extends Title {
 	//
 	protected double width = 0;
 	
-	public ScaleInPlot(ChartPanel chartPanel, SettingsThemes theme){
+	public ScaleInPlot(ChartPanel chartPanel, SettingsThemesContainer theme){
 		this.chartPanel = chartPanel;
 		this.theme = theme;
 		this.plot = chartPanel.getChart().getXYPlot();
-		this.value = theme.getTheme().getScaleValue();
-		this.factor = theme.getTheme().getScaleFactor();
-		this.unit = theme.getTheme().getScaleUnit();
-		this.xp = theme.getTheme().getScaleXPos();
-		this.yp = theme.getTheme().getScaleYPos();
+		
+		SettingsScaleInPlot s = theme.getSettScaleInPlot();
+		
+		this.value = s.getScaleValue();
+		this.factor = s.getScaleFactor();
+		this.unit = s.getScaleUnit();
+		this.xp = s.getScaleXPos();
+		this.yp = s.getScaleYPos();
 		annotation = new XYTitleAnnotation(xp,yp, this,RectangleAnchor.BOTTOM_RIGHT); 
 	}
 
@@ -51,6 +55,8 @@ public class ScaleInPlot extends Title {
 	public Object draw(Graphics2D g, Rectangle2D area, Object params) {
 		if(isVisible()) {
 			MyStandardChartTheme theme = this.theme.getTheme();
+			SettingsScaleInPlot s = this.theme.getSettScaleInPlot();
+			
 			ValueAxis xaxis =  chartPanel.getChart().getXYPlot().getDomainAxis();
 			RectangleEdge edge = chartPanel.getChart().getXYPlot().getDomainAxisEdge();
 			ChartRenderingInfo info = chartPanel.getChartRenderingInfo();
@@ -69,18 +75,18 @@ public class ScaleInPlot extends Title {
 			double y = area.getY();
 			int w = 2;
 			// draw stuff for test 
-		    g.setColor(theme.getScaleFontColor());
+		    g.setColor(s.getScaleFontColor());
 			g.fill(new Rectangle2D.Double(x, y, width, w));  
 			g.fill(new Rectangle2D.Double(x, y-tick/2, w, tick+w));  
 			g.fill(new Rectangle2D.Double(x+width-w, y-tick/2, w, tick+w));  
 			
 			// draw label
 			String label = getValue()+" "+getUnit();
-			g.setFont(theme.getFontScaleInPlot()); 
+			g.setFont(s.getFontScaleInPlot()); 
 		    FontMetrics fm = g.getFontMetrics();
 		    double sx = x+ (width - fm.stringWidth(label)) / 2;
 		    double sy = y + tick/2 + (fm.getAscent());
-		    g.setColor(theme.getScaleFontColor());
+		    g.setColor(s.getScaleFontColor());
 			g.drawString(label, (float) (sx), (float)(sy));
 		}
 		return null;

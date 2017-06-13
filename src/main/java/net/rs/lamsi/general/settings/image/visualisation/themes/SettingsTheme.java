@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.settings.image.visualisation;
+package net.rs.lamsi.general.settings.image.visualisation.themes;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -12,6 +12,9 @@ import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsContainerSettings;
+import net.rs.lamsi.general.settings.image.SettingsContainerCollectable2D;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLabelLocation;
@@ -21,7 +24,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class SettingsThemes extends Settings {
+public class SettingsTheme extends Settings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
@@ -29,8 +32,8 @@ public class SettingsThemes extends Settings {
 	protected MyStandardChartTheme theme; 
 	 
 
-	public SettingsThemes() {
-		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
+	public SettingsTheme() {
+		super("SettingsTheme", "/Settings/Visualization/", "setGeneralPStyle"); 
 		theme = ChartThemeFactory.getStandardTheme();
 		resetAll();
 	} 
@@ -38,7 +41,7 @@ public class SettingsThemes extends Settings {
 	 * example
 	 * @param theme example: ChartThemeFactory.THEME_KARST
 	 */
-	public SettingsThemes(THEME themeid) {
+	public SettingsTheme(THEME themeid) {
 		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
 		resetAll();
 		this.theme = ChartThemeFactory.createChartTheme(themeid);
@@ -46,15 +49,16 @@ public class SettingsThemes extends Settings {
 	
 
 	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
-			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
+			boolean isPaintScaleInPlot,
 			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
-			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale) {
-		theme.setAll(antiAlias, showTitle, noBG, cBG, showXGrid, showYGrid, showXAxis, showYAxis, showScale, scaleUnit, scaleFactor, scaleValue, isPaintScaleInPlot, scaleXPos, scaleYPos, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle, fScale, cScale);
+			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle) {
+		theme.setAll(antiAlias, showTitle, noBG, cBG, showXGrid, showYGrid, showXAxis, showYAxis, 
+				isPaintScaleInPlot, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, 
+				fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle);
 	}
 	@Override
 	public void resetAll() { 
 		theme = ChartThemeFactory.getStandardTheme();
-		
 	}
 
 	public void setShortTitle(Color c, Color bg, Font font) {
@@ -86,14 +90,6 @@ public class SettingsThemes extends Settings {
 		super.applyToHeatMap(heat);
 		applyToChart(heat.getChart());
 		// 
-		ScaleInPlot s = heat.getScaleInPlot();
-		
-		s.setFactor(theme.getScaleFactor());
-		s.setUnit(theme.getScaleUnit());
-		s.setValue(theme.getScaleValue());
-		s.setVisible(theme.isShowScale());
-		s.setPosition(theme.getScaleXPos(),theme.getScaleYPos());
-		
 		
 		heat.getShortTitle().setFont(theme.getFontShortTitle());
 		heat.getShortTitle().setPaint(theme.getcShortTitle());
@@ -116,8 +112,6 @@ public class SettingsThemes extends Settings {
 		theme.apply(chart);
 	}
 	
-	
-	
 	public MyStandardChartTheme getTheme() {
 		return theme;
 	} 
@@ -129,22 +123,6 @@ public class SettingsThemes extends Settings {
 	}
 	public void setID(THEME themeID) {
 		theme.setID(themeID);
-	}
-	
-	public Font getFontScaleInPlot() {
-		return theme.getFontScaleInPlot();
-	}
-
-	public Color getScaleFontColor() {
-		return theme.getScaleFontColor();
-	}
-
-	public void setFontScaleInPlot(Font fontScaleInPlot) {
-		theme.setFontScaleInPlot(fontScaleInPlot);
-	}
-
-	public void setScaleFontColor(Color scaleFontColor) {
-		theme.setScaleFontColor(scaleFontColor);
 	}
 	
 }

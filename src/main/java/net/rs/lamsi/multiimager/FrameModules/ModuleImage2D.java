@@ -20,8 +20,8 @@ import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleQuantifyStrategy;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleThemes;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Image2D> {

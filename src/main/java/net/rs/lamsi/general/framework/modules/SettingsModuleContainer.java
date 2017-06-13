@@ -32,10 +32,12 @@ import net.rs.lamsi.utils.useful.DebugStopWatch;
  * @param <T> Settings
  * @param <S>
  */
-public abstract class SettingsModuleContainer<T extends SettingsContainerSettings, S extends Collectable2D> extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
+public abstract class SettingsModuleContainer<T extends SettingsContainerSettings, S extends Collectable2D> 
+extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 
 	// panel for settings
 	protected JPanel gridsettings;
+	private JScrollPane scrollPane;
 
 	private JPanel pnTitleSettings;
 	private JCheckBox cbAuto;
@@ -53,7 +55,7 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 		flowLayout.setVgap(0);
 		this.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
 
-		JScrollPane scrollPane = new JScrollPane();
+		scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		this.getPnContent().add(scrollPane, BorderLayout.EAST);
@@ -65,6 +67,21 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
 		scrollPane.getVerticalScrollBar().setUnitIncrement(25);
 		gridsettings.setLayout(new BoxLayout(gridsettings, BoxLayout.Y_AXIS));
 	}
+	
+	public void setVScrollBar(boolean state) {
+		if(state) {
+			this.getPnContent().removeAll();
+			this.getPnContent().add(scrollPane, BorderLayout.CENTER);
+			scrollPane.setViewportView(gridsettings);
+		}
+		else {
+			this.getPnContent().removeAll();
+			this.getPnContent().add(gridsettings, BorderLayout.CENTER);
+		}
+		revalidate();
+		repaint();
+	}
+	
 	public SettingsModuleContainer(String title, boolean westside, Class settc, Class objclass, boolean addAutoUpdate) { 
 		this(title, westside, settc, objclass);
 		cbAuto = new JCheckBox("auto");

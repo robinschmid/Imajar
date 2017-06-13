@@ -1,5 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules.sub;
-
+package net.rs.lamsi.multiimager.FrameModules.sub.theme;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,7 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ResourceBundle;
 
-import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -26,28 +25,29 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.jfree.chart.editor.ChartEditor;
+import org.jfree.chart.editor.ChartEditorManager;
+import org.jfree.chart.util.ResourceBundleWrapper;
+
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.basics.JColorPickerButton;
+import net.rs.lamsi.general.framework.basics.JFontSpecs;
+import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsScaleInPlot;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsTheme;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
-import org.jfree.chart.editor.ChartEditor;
-import org.jfree.chart.editor.ChartEditorManager;
-import org.jfree.chart.util.ResourceBundleWrapper;
-
-import net.rs.lamsi.general.framework.basics.JFontSpecs;
-import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
-import net.rs.lamsi.general.framework.basics.JColorPickerButton;
-
-public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Collectable2D> {
+public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsTheme, Collectable2D>  {
 	// mystuff
 	protected boolean isForPrint = true;
 	
@@ -60,13 +60,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	protected static ResourceBundle localizationResources = ResourceBundleWrapper.getBundle("org.jfree.chart.LocalizationBundle");
 	private JCheckBox cbShowXAxis;
 	private JCheckBox cbShowYAxis;
-	private JCheckBox cbShowScale;
-	private JTextField txtScaleUnit;
-	private JTextField txtScaleValue;
-	private JTextField txtScaleFactor;
 	private JCheckBox cbPaintscaleInPlot;
-	private JSlider sliderScaleXPos;
-	private JSlider sliderScaleYPos;
+	
 	private JTextField txtCSignificantDigits;
 	private JCheckBox cbScientificIntensities;
 	private JTextField txtPaintScaleTitle;
@@ -75,22 +70,32 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	private JFontSpecs fontAxesCaption;
 	private JFontSpecs fontAxesLabels;
 	private JFontSpecs fontPlotTitle;
-	private JFontSpecs fontScale;
 	private JColorPickerButton cbtnBGColor;
-	//
+	private JPanel gridsettings;
+	
+	
+	public ModuleGeneralTheme() {
+		super("General", false, SettingsTheme.class, Collectable2D.class);  
+		getLbTitle().setText("General");
+		
 
-	/**
-	 * Create the panel.
-	 */
-	public ModuleThemes() {
-		super("Themes", false, SettingsThemes.class, Collectable2D.class);    
-		
-		JPanel panel = new JPanel();
-		getPnContent().add(panel, BorderLayout.CENTER);
-		panel.setLayout(new BorderLayout(0, 0));
-		
+		gridsettings = new JPanel();
+		getPnContent().add(gridsettings, BorderLayout.CENTER);
+		gridsettings.setAlignmentY(0.0f);
+		gridsettings.setAlignmentX(0.0f);
+		gridsettings.setLayout(new BoxLayout(gridsettings, BoxLayout.Y_AXIS));
+
 		Module general = new Module("General");
-		panel.add(general, BorderLayout.NORTH);  
+		general.setShowTitleAlways(true);
+		addModule(general);
+
+		Module modAxes = new Module("Axes and scale");
+		modAxes.setShowTitleAlways(true);
+		addModule(modAxes); 
+		
+		Module pnFonts = new Module("Fonts and text");
+		pnFonts.setShowTitleAlways(true);
+		addModule(pnFonts);
 		
 		JPanel panel_1 = new JPanel();
 		general.getPnContent().add(panel_1, BorderLayout.NORTH);
@@ -130,8 +135,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		JLabel lblBgColor = new JLabel("bg color");
 		panel_1.add(lblBgColor, "cell 2 2");
 		
-		Module pnFonts = new Module("Fonts and text");
-		panel.add(pnFonts, BorderLayout.SOUTH); 
 		
 		JPanel panel_2 = new JPanel();
 		pnFonts.getPnContent().add(panel_2, BorderLayout.NORTH);
@@ -187,8 +190,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		});
 		panel_2.add(btnForPresentation, "cell 0 0");
 		
-		Module modAxes = new Module("Axes and scale");
-		panel.add(modAxes, BorderLayout.CENTER); 
 		
 		JPanel panel_3 = new JPanel();
 		modAxes.getPnContent().add(panel_3, BorderLayout.CENTER);
@@ -241,72 +242,18 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		lblScale.setFont(new Font("Tahoma", Font.BOLD, 11));
 		panel_3.add(lblScale, "cell 0 6,alignx trailing");
 		
-		cbShowScale = new JCheckBox("show scale");
-		panel_3.add(cbShowScale, "cell 1 6");
-		
-		JPanel panel_4 = new JPanel();
-		panel_3.add(panel_4, "cell 0 7 3 1");
-		panel_4.setLayout(new MigLayout("", "[][85.00][][]", "[][][][][][grow][grow]"));
-		
-		JLabel lblUnit = new JLabel("value");
-		panel_4.add(lblUnit, "cell 0 0,alignx trailing");
-		
-		txtScaleValue = new JTextField();
-		txtScaleValue.setToolTipText("Value for scale width");
-		txtScaleValue.setText("1");
-		txtScaleValue.setHorizontalAlignment(SwingConstants.TRAILING);
-		panel_4.add(txtScaleValue, "flowx,cell 1 0,alignx left");
-		txtScaleValue.setColumns(10);
-		
-		JLabel lblFactor = new JLabel("factor");
-		panel_4.add(lblFactor, "cell 0 1,alignx trailing");
-		
-		txtScaleFactor = new JTextField();
-		txtScaleFactor.setHorizontalAlignment(SwingConstants.TRAILING);
-		txtScaleFactor.setToolTipText("Factor used for scale width calculation");
-		txtScaleFactor.setText("1");
-		panel_4.add(txtScaleFactor, "cell 1 1,alignx left");
-		txtScaleFactor.setColumns(10);
-		
-		Component verticalStrut = Box.createVerticalStrut(20);
-		panel_4.add(verticalStrut, "cell 0 2");
-		
-		JLabel lblXPos = new JLabel("x pos");
-		panel_4.add(lblXPos, "cell 0 3,alignx trailing");
-		
-		sliderScaleXPos = new JSlider();
-		sliderScaleXPos.setPreferredSize(new Dimension(100, 23));
-		sliderScaleXPos.setMinimumSize(new Dimension(100, 23));
-		sliderScaleXPos.setValue(90);
-		panel_4.add(sliderScaleXPos, "cell 1 3 3 1,growx");
-		
-		JLabel lblYPos = new JLabel("y pos");
-		panel_4.add(lblYPos, "cell 0 4,alignx trailing");
-		
-		sliderScaleYPos = new JSlider();
-		sliderScaleYPos.setValue(10);
-		sliderScaleYPos.setPreferredSize(new Dimension(100, 23));
-		sliderScaleYPos.setMinimumSize(new Dimension(100, 23));
-		panel_4.add(sliderScaleYPos, "cell 1 4 3 1,growx");
-		
-		fontScale = new JFontSpecs();
-		panel_4.add(fontScale, "cell 0 5 4 1,alignx left,growy");
-		
-		txtScaleUnit = new JTextField();
-		txtScaleUnit.setToolTipText("Unit for scale width");
-		txtScaleUnit.setPreferredSize(new Dimension(5, 20));
-		panel_4.add(txtScaleUnit, "cell 1 0");
-		txtScaleUnit.setColumns(10);
-		
-		JLabel lblUnit_1 = new JLabel("unit");
-		panel_4.add(lblUnit_1, "cell 1 0");
-		
 		JLabel lblSignificantDifits = new JLabel("significant difits");
 		panel_3.add(lblSignificantDifits, "cell 2 3");
 		// add standard themes to menu
 		addStandardThemesToMenu();
 	}
 	
+	
+	private void addModule(Module pn) {
+		gridsettings.add(pn);
+	}
+
+
 	/**
 	 * applies changes to font sizes via ChartThemeFactory
 	 * @param b
@@ -314,7 +261,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	protected void applyChangeThemeForPrint(boolean state) {
 		if(currentImage!=null) {
 			isForPrint = state;
-			SettingsThemes theme = currentImage.getSettTheme();
+			SettingsTheme theme = currentImage.getSettTheme().getSettTheme();
 			setSettings(theme);
 		} 
 	}
@@ -346,12 +293,12 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					SettingsThemes theme = null;
+					SettingsTheme theme = null;
 					if(themeid==THEME.FOR_PRINT || themeid==THEME.FOR_PRESENTATION) {
 						applyChangeThemeForPrint(themeid==THEME.FOR_PRINT); 
 					}
 					else {
-						theme = new SettingsThemes(themeid);
+						theme = new SettingsTheme(themeid);
 						setSettings(theme); 
 						al.actionPerformed(null);
 					} 
@@ -364,7 +311,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	
 	// apply for print or presentation before changing settings
 	@Override
-	public void setSettings(SettingsThemes settings) {
+	public void setSettings(SettingsTheme settings) {
 		ChartThemeFactory.setStandardTheme(settings.getID());
 		super.setSettings(settings);
 	}
@@ -373,27 +320,18 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	// Autoupdate
 	@Override
 	public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
-		//TODO
 		getCbPaintscaleInPlot().addItemListener(il);
 	}
 	
 	@Override
 	public void addAutoRepainter(final ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 		// axes and scale
-		getCbShowScale().addItemListener(il);
 		getCbShowXAxis().addItemListener(il);
 		getCbShowYAxis().addItemListener(il);
 		// general
 		getCbAntiAlias().addItemListener(il);
 		getCbShowTitle().addItemListener(il);
 		getCbNoBackground().addItemListener(il); 
-
-		getTxtScaleFactor().getDocument().addDocumentListener(dl);
-		getTxtScaleValue().getDocument().addDocumentListener(dl);
-		getTxtScaleUnit().getDocument().addDocumentListener(dl);
-
-		getSliderScaleXPos().addChangeListener(cl);
-		getSliderScaleYPos().addChangeListener(cl);
 		
 		getCbScientificIntensities().addItemListener(il);
 		getTxtCSignificantDigits().getDocument().addDocumentListener(dl);
@@ -404,7 +342,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getFontAxesCaption().addListener(ccl, il, dl);
 		getFontAxesLabels().addListener(ccl, il, dl);
 		getFontPlotTitle().addListener(ccl, il, dl);
-		getFontScale().addListener(ccl, il, dl);
 		
 		// change? TODO
 		getFontMaster().addListener(new ColorChangedListener() {
@@ -462,11 +399,11 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	//################################################################################################
 	// LOGIC
 	@Override
-	public void setAllViaExistingSettings(SettingsThemes st) {  
+	public void setAllViaExistingSettings(SettingsTheme st) throws Exception {  
 		ImageLogicRunner.setIS_UPDATING(false);
 		// new reseted ps
 		if(st == null) {
-			st = new SettingsThemes();
+			st = new SettingsTheme();
 			st.resetAll();
 		} 
 		
@@ -476,22 +413,13 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getCbShowTitle().setSelected(t.isShowTitle());
 		getCbNoBackground().setSelected(t.isNoBackground()); 
 		 
-		getCbShowScale().setSelected(st.getTheme().isShowScale());
 		getCbShowXAxis().setSelected(st.getTheme().isShowXAxis());
 		getCbShowYAxis().setSelected(st.getTheme().isShowYAxis());
 		
 		getCbPaintscaleInPlot().setSelected(st.getTheme().isPaintScaleInPlot());
 		
 		getCbtnBGColor().setColor(t.getChartBackgroundPaint());
-		
-		// set all txt scale
-		getTxtScaleFactor().setText(String.valueOf(st.getTheme().getScaleFactor()));
-		getTxtScaleValue().setText(String.valueOf(st.getTheme().getScaleValue()));
-		getTxtScaleUnit().setText(String.valueOf(st.getTheme().getScaleUnit()));  
-		// scale slider 
-		getSliderScaleXPos().setValue((int)(st.getTheme().getScaleXPos()*100));
-		getSliderScaleYPos().setValue((int)(st.getTheme().getScaleYPos()*100)); 
-		
+
 		// significant scientific notion
 		getCbScientificIntensities().setSelected(t.isUseScientificIntensities());
 		getTxtCSignificantDigits().setText(String.valueOf(t.getSignificantDigits()));
@@ -505,14 +433,12 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getFontAxesLabels().setSelectedFont(t.getSmallFont());
 		getFontMaster().setSelectedFont(t.getMasterFont());
 		getFontPlotTitle().setSelectedFont(t.getExtraLargeFont());
-		getFontScale().setSelectedFont(t.getFontScaleInPlot());
 		
 		// colors
 		getFontAxesCaption().setColor(t.getAxisLabelPaint());
 		getFontAxesLabels().setColor(t.getAxisLabelPaint());
 		getFontMaster().setColor(t.getMasterFontColor());
 		getFontPlotTitle().setColor(t.getTitlePaint());
-		getFontScale().setColor(t.getScaleFontColor());
 		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
@@ -520,21 +446,19 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	} 
 
 	@Override
-	public SettingsThemes writeAllToSettings(SettingsThemes st) {
+	public SettingsTheme writeAllToSettings(SettingsTheme st) {
 		if(st!=null) {
 			try {
 				// setall
 				st.setAll(getCbAntiAlias().isSelected(), getCbShowTitle().isSelected(), getCbNoBackground().isSelected(), getCbtnBGColor().getColor(),
 						false,false,
 						getCbShowXAxis().isSelected(), getCbShowYAxis().isSelected(), 
-						getCbShowScale().isSelected(), getTxtScaleUnit().getText(), floatFromTxt(getTxtScaleFactor()), floatFromTxt(getTxtScaleValue()),
-						getCbPaintscaleInPlot().isSelected(), getSliderScaleXPos().getValue()/100.f, getSliderScaleYPos().getValue()/100.f,
+						getCbPaintscaleInPlot().isSelected(),
 						cbScientificIntensities.isSelected(), intFromTxt(txtCSignificantDigits), txtPaintScaleTitle.getText(), cbUsePaintscaleTitle.isSelected(),
 						getFontMaster().getSelectedFont(), getFontMaster().getColor(),
 						getFontAxesCaption().getSelectedFont(), getFontAxesCaption().getColor(),
 						getFontAxesLabels().getSelectedFont(), getFontAxesLabels().getColor(),
-						getFontPlotTitle().getSelectedFont(), getFontPlotTitle().getColor(),
-						getFontScale().getSelectedFont(), getFontScale().getColor());
+						getFontPlotTitle().getSelectedFont(), getFontPlotTitle().getColor());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -560,26 +484,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	public JCheckBox getCbShowYAxis() {
 		return cbShowYAxis;
 	}
-	public JCheckBox getCbShowScale() {
-		return cbShowScale;
-	}
-	public JTextField getTxtScaleValue() {
-		return txtScaleValue;
-	}
-	public JTextField getTxtScaleUnit() {
-		return txtScaleUnit;
-	}
-	public JTextField getTxtScaleFactor() {
-		return txtScaleFactor;
-	}
 	public JCheckBox getCbPaintscaleInPlot() {
 		return cbPaintscaleInPlot;
-	}
-	public JSlider getSliderScaleXPos() {
-		return sliderScaleXPos;
-	}
-	public JSlider getSliderScaleYPos() {
-		return sliderScaleYPos;
 	}
 	public JCheckBox getCbScientificIntensities() {
 		return cbScientificIntensities;
@@ -605,10 +511,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	public JFontSpecs getFontPlotTitle() {
 		return fontPlotTitle;
 	}
-	public JFontSpecs getFontScale() {
-		return fontScale;
-	}
 	public JColorPickerButton getCbtnBGColor() {
 		return cbtnBGColor;
-	}
+	}	
+
 }

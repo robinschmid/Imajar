@@ -20,7 +20,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
@@ -63,7 +63,7 @@ public class SettingsHolder extends SettingsContainerSettings {
 
 		// visualization only for Toolset
 		addSettings(new SettingsPlotSpectraLabelGenerator());
-		addSettings(new SettingsThemes());
+		addSettings(new SettingsThemesContainer());
 
 		// Export settings
 		addSettings(new SettingsExportGraphics());
@@ -96,7 +96,7 @@ public class SettingsHolder extends SettingsContainerSettings {
 
 		// save all in class list of super classes
 		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
-				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemes.class, SettingsExportGraphics.class,
+				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemesContainer.class, SettingsExportGraphics.class,
 				SettingsImage2DDataExport.class, SettingsImage2DDataSelectionsExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
 				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class, SettingsBackgroundImg.class,
 				SettingsSelections.class};
@@ -270,12 +270,12 @@ public class SettingsHolder extends SettingsContainerSettings {
 	}
 
 
-	public SettingsThemes getSetPlotStyle() {
-		return (SettingsThemes) getSettingsByClass(SettingsThemes.class);
+	public SettingsThemesContainer getSetPlotStyle() {
+		return (SettingsThemesContainer) getSettingsByClass(SettingsThemesContainer.class);
 	}
 
 	// SETTER
-	public void setSetPlotStyle(SettingsThemes setPlotStyle) {
+	public void setSetPlotStyle(SettingsThemesContainer setPlotStyle) {
 		replaceSettings(setPlotStyle);
 	}
 	public void setSetGraphicsExport(SettingsExportGraphics setGraphicsExport) {

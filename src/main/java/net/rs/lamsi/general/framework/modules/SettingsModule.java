@@ -55,7 +55,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 				if(path.exists()) {
 					List<File[]> files = FileAndPathUtil.findFilesInDir(path,  new FileNameExtFilter("", type), false);
 					
-					if(files!=null) {
+					if(files!=null && files.size()>0) {
 						// load each file as settings and add to menu as preset
 						for(File f : files.get(0)) {
 							// load

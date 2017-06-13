@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.settings;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.xml.xpath.XPath;
@@ -168,7 +169,23 @@ public abstract class SettingsContainerSettings extends Settings {
 		if(this.getClass().isAssignableFrom(classsettings))
 			return this;
 		else {
-			return list.get(classsettings);
+			Settings s = list.get(classsettings);
+			if(s!=null)
+				return s;
+			else {
+				// search in other settings container settings
+				for (Iterator iterator = list.values().iterator(); iterator.hasNext();) {
+					Settings sett = (Settings) iterator.next();
+					
+					if(SettingsContainerSettings.class.isInstance(sett)) {
+						s = ((SettingsContainerSettings)sett).getSettingsByClass(classsettings);
+						if(s!=null)
+							return s;
+					}					
+				}
+				// nothing...
+				return null;
+			}
 		}
 	}
 }

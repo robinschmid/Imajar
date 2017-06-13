@@ -9,7 +9,7 @@ import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implements Serializable {	 
 	// do not change the version!
@@ -210,7 +210,7 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 			return super.getSettingsByClass(classsettings);
 		}
 	}
-	public SettingsThemes getSettTheme() {
+	public SettingsThemesContainer getSettTheme() {
 		return settings.getSettTheme();
 	}
 	@Override

@@ -14,7 +14,7 @@ import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
@@ -31,7 +31,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		
 		addSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
 		addSettings(new SettingsGeneralImage());
-		addSettings(new SettingsThemes());
+		addSettings(new SettingsThemesContainer());
 		addSettings(new SettingsImage2DQuantifierLinear());
 		addSettings(new SettingsImage2DOperations());
 		addSettings(new SettingsZoom());
@@ -46,7 +46,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		try { 
 			addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
 			addSettings(new SettingsGeneralImage());
-			addSettings(new SettingsThemes());
+			addSettings(new SettingsThemesContainer());
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
@@ -61,7 +61,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		try {
 			addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
 			addSettings((SettingsGeneralImage) BinaryWriterReader.deepCopy(setImage));
-			addSettings(new SettingsThemes());
+			addSettings(new SettingsThemesContainer());
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
@@ -119,8 +119,8 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 	public SettingsGeneralImage getSettImage() {
 		return (SettingsGeneralImage) list.get(SettingsGeneralImage.class);
 	} 
-	public SettingsThemes getSettTheme() {
-		return (SettingsThemes) list.get(SettingsThemes.class);
+	public SettingsThemesContainer getSettTheme() {
+		return (SettingsThemesContainer) list.get(SettingsThemesContainer.class);
 	}
 
 	// if something changes - change the averageI

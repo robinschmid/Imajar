@@ -7,7 +7,7 @@ import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImageGroup;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsThemes;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 import org.jfree.chart.plot.XYPlot;
 import org.w3c.dom.Document;
