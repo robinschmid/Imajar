@@ -19,10 +19,14 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 
 	// possible color markers
 	// high hue to small hue (0, red)
-	private static final Color[] MARKERS = new Color[]{Color.MAGENTA, Color.BLUE, Color.CYAN, Color.GREEN,Color.YELLOW, Color.ORANGE, Color.RED};
+	public static final Color[] MARKERS = new Color[]{Color.MAGENTA, Color.BLUE, Color.CYAN, Color.GREEN,Color.YELLOW, Color.ORANGE, Color.RED};
+	// with steps in between
+	public static final Color[] MARKERS_HALFSTEPS = new Color[]{Color.MAGENTA, new Color(127,0,255), Color.BLUE, new Color(0,127,255), Color.CYAN, 
+			new Color(0,255,127), Color.GREEN, new Color(127,255,0), Color.YELLOW, Color.ORANGE, Color.RED};
 
 
 	protected boolean showValues = false;
+	protected boolean useHalfSteps = false;
 	protected Color cStart, cEnd;
 	// hue values
 	protected float hStart, hEnd;
@@ -32,7 +36,7 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 	protected float[] position;
 	private int selectedPicker = -1;
 	
-	private int pickerH = 2, pickerW=5;
+	private int pickerH = 2, pickerW=7;
 
 
 	private ArrayList<DelayedDocumentListener> listeners;
@@ -41,11 +45,14 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 	/**
 	 * Create the panel.
 	 */
-	public JMultiRangeSlider(boolean showValues2) {
+	public JMultiRangeSlider(boolean showValues2, boolean useHalfSteps) {
 		this.showValues  = showValues2;
+		this.useHalfSteps = useHalfSteps;
 		setLayout(new BorderLayout(0, 0));
-		setMinimumSize(new Dimension(125, showValues? 24 : 40));
-
+		setMinimumSize(new Dimension(125, showValues? 10 : 40));
+		setPreferredSize(new Dimension(2000, showValues? 10 : 40));
+		setMaximumSize(new Dimension(2000, showValues? 10 : 40));
+		
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 
@@ -55,7 +62,7 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 			public void paint(Graphics g) {
 				if(cStart!=null) {
 					// sizing
-					int w = getWidth();
+					int w = getWidth()-1;
 					int h = getHeight();
 					
 					// clear
@@ -66,7 +73,7 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 					// color gradient fill
 					for(int x=1; x<w-1; x++) {
 						float p = (x-1.f)/(w-2.f);
-						Color c = PaintScaleGenerator.interpolateWeighted(cStart, cEnd, p, hue, position);
+						Color c = PaintScaleGenerator.interpolateWeighted(cStart, cEnd, p, hue, position, false);
 						g.setColor(c);
 						g.fillRect(x, pickerH, 1, barH);
 					}
@@ -90,6 +97,7 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 
 		};
 		add(panel, BorderLayout.CENTER);
+
 	}
 
 	/**
@@ -97,7 +105,7 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 	 * @return
 	 */
 	protected int getBarHeight() {
-		return getHeight()-4- (showValues? 26 : 0);
+		return getHeight()-1-pickerH*2;
 	}
 
 
@@ -172,21 +180,22 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 		int startMarker = -1, endMarker = -1;
 
 		// calculate color markers
-		int size = MARKERS.length;
+		Color[] mark = useHalfSteps? MARKERS_HALFSTEPS : MARKERS;
+		int size = mark.length;
 		for(int i=0; i<size; i++) {
 			if(inverted) {
 				// from small to high hue values
-				if(hStart>=getHue(MARKERS[i]) && startMarker==-1) {
+				if(hStart>=getHue(mark[i]) && startMarker==-1) {
 					startMarker = i;
 				}
-				if(hEnd<=getHue(MARKERS[size-1-i]) && endMarker==-1) {
+				if(hEnd<=getHue(mark[size-1-i]) && endMarker==-1) {
 					endMarker = size-i;
 				}
 			}
 			else {
 				// from high to low (hEnd)
-				if(hStart<=getHue(MARKERS[size-1-i]) && startMarker ==-1) startMarker = size-i;
-				if(hEnd>=getHue(MARKERS[i]) && endMarker==-1) endMarker = i+1;
+				if(hStart<=getHue(mark[size-1-i]) && startMarker ==-1) startMarker = size-i;
+				if(hEnd>=getHue(mark[i]) && endMarker==-1) endMarker = i+1;
 					
 			}
 		}
@@ -198,8 +207,8 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 			hue = new float[Math.abs(startMarker-endMarker)];
 			position = new float[hue.length];
 			for (int i = 0; i < hue.length; i++) {
-				if(inverted) hue[i] = getHue(MARKERS[startMarker-i]);
-				else hue[i] = getHue(MARKERS[startMarker+i]);
+				if(inverted) hue[i] = getHue(mark[startMarker-i]);
+				else hue[i] = getHue(mark[startMarker+i]);
 	
 				position[i] = getPosition(hStart, hEnd, hue[i]);
 				if(!inverted) position[i] = 1.f-position[i];

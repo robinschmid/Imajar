@@ -745,7 +745,7 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 						floatFromTxt(getTxtMaxFilter()), 
 						false,
 						getCbOnlyUseSelectedMinMax().isSelected(), 
-						false, 0);
+						false, 0, null, null);
 				/// renew histo
 				getPnHistogram().updateHisto(ps);
 			} catch(Exception ex) {

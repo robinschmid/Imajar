@@ -3,6 +3,7 @@ package net.rs.lamsi.general.settings.image.visualisation;
 import java.awt.Color;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.framework.basics.multislider.JMultiRangeSlider;
 import net.rs.lamsi.general.settings.Settings;
 
 import org.apache.poi.ss.formula.functions.T;
@@ -17,7 +18,9 @@ public class SettingsPaintScale extends Settings {
 	private static final long serialVersionUID = 1L;
 	//
 	// for creation of standards
-	public static final int S_RAINBOW = 0, S_BLACK_RED_YE_W = 1, S_BLACK_BLUE_GR_W = 2, S_RED = 3, S_GREEN = 4, S_BLUE=5, S_YELLOW=6, S_PURPLE=7, S_GREY=8, S_RAINBOW_BRIGHT=9, S_RAINBOW_INVERSE = 10, S_KARST_RAINBOW_INVERSE = 11;
+	public static final int S_RAINBOW = 0, S_BLACK_RED_YE_W = 1, S_BLACK_BLUE_GR_W = 2, 
+			S_RED = 3, S_GREEN = 4, S_BLUE=5, S_YELLOW=6, S_PURPLE=7, S_GREY=8, S_RAINBOW_BRIGHT=9, S_RAINBOW_INVERSE = 10, 
+			S_KARST_RAINBOW_INVERSE = 11, S_KARST_RAINBOW_INVERSE_NEW = 12;
 
 	/**
 	 * mode for values like minimum and maximum
@@ -220,6 +223,14 @@ public class SettingsPaintScale extends Settings {
 		usesMinMaxFromSelection = false;
 		isLODMonochrome = false;
 	}
+	
+	/**
+	 * S_KARST_RAINBOW_INVERSE_NEW is returned
+	 * @return
+	 */
+	public static SettingsPaintScale createStandardSettings() {
+		return createSettings(S_KARST_RAINBOW_INVERSE_NEW);
+	}
 
 	//##############################################################################################
 	// create standards 
@@ -233,6 +244,23 @@ public class SettingsPaintScale extends Settings {
 			scale.setBrightnessFactor(5);
 			scale.setMinColor(Color.BLUE);
 			scale.setMaxColor(Color.RED);
+			break;
+		case S_KARST_RAINBOW_INVERSE_NEW:
+			scale.setMonochrom(false);
+			scale.setLODMonochrome(true);
+			scale.setBrightnessFactor(25);
+			scale.setMinColor(Color.RED);
+			scale.setMaxColor(new Color(175, 0, 255)); 
+			scale.setUsesBWAsMinMax(false, true);
+			// hue and 
+			Color[] markers = JMultiRangeSlider.MARKERS;
+			float[] hue = new float[markers.length-1];
+			for(int i=1; i<markers.length; i++) {
+				hue[i-1] = JMultiRangeSlider.getHue(markers[i]);
+			}
+			// for blue, cyan, green, yellow, orange, red
+			float[] position = new float[]{0.178f, 0.368f, 0.520f, 0.662f, 0.813f, 0.980f};
+			scale.setHuePositions(position, hue);
 			break;
 		case S_KARST_RAINBOW_INVERSE:
 			scale.setMonochrom(false);

@@ -7,14 +7,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
-
-import net.rs.lamsi.utils.WindowStyleUtil;
 
 public class JColorPickerButton extends JButton { 
 	JDialog   dialog;
@@ -41,8 +40,8 @@ public class JColorPickerButton extends JButton {
 		g.setColor(getBackground());
 		g.fillRect(0, 0, getWidth(), getHeight());
 
-		g.setColor(Color.WHITE);
-		g.drawRect(0, 0, getWidth(), getHeight());
+		g.setColor(Color.BLACK);
+		g.drawRect(0, 0, getWidth()-1, getHeight()-1);
 	}
 
 
@@ -103,5 +102,13 @@ public class JColorPickerButton extends JButton {
 	 */
 	public void setColor(Color c) {
 		colorChanged(c);
+	}
+
+	/**
+	 * same as color changed
+	 * @param c
+	 */
+	public void setColor(Paint c) {
+		setColor((Color)c);
 	}
 }

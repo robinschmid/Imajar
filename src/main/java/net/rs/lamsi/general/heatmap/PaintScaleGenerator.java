@@ -37,7 +37,7 @@ public class PaintScaleGenerator {
 
 	// new version PaintScales
 	/**
-	 * 
+	 * adds the first and last color step
 	 * @param min z value in dataset
 	 * @param max z value in dataset
 	 * @param settings
@@ -134,7 +134,15 @@ public class PaintScaleGenerator {
 			return paintScale; 
 		}
 	}
-	// adding color steps to the middle
+	
+	/**
+	 *  adds color steps to the middle
+	 * @param realmin
+	 * @param realmax
+	 * @param settings
+	 * @param paintScale
+	 * @param i
+	 */
 	private static void addColorsteps(double realmin, double realmax,  SettingsPaintScale settings, LookupPaintScale paintScale, int i) {
 		// step width
 		double step = (realmax-realmin)/(settings.getLevels()-1);
@@ -161,7 +169,8 @@ public class PaintScaleGenerator {
 				// Invert?
 				if(settings.isInverted()) p = (1-p);
 				// only color interpolate without BnW 
-				paintScale.add(value, interpolate(settings.getMinColor(), settings.getMaxColor(), p));
+				paintScale.add(value, interpolateWeighted(settings.getMinColor(), settings.getMaxColor(), p, 
+						settings.getHue(), settings.getPosition(), settings.isInverted()));
 			}
 		}
 		else {
@@ -174,7 +183,7 @@ public class PaintScaleGenerator {
 				double value = realmin+step*i;
 				float p = i/(settings.getLevels()-1.0f);
 				// Invert?
-				if(settings.isInverted()) p = (1-p);
+				if(settings.isInverted()) p = (1.f-p);
 				// Monochrome two sided
 				if(settings.isMonochrom()) { 
 					// brightness and saturation 
@@ -184,11 +193,14 @@ public class PaintScaleGenerator {
 						paintScale.add(value, interpolateMonochrom(settings.getMinColor(), p, 2.f, settings.isGrey()));
 				} 
 				else if(settings.isUsesBAsMax() || settings.isUsesWAsMin()) { 
-					paintScale.add(value, interpolateWithBlackAndWhite(settings.getMinColor(), settings.getMaxColor(), p, settings.getBrightnessFactor(),settings.isUsesWAsMin(), settings.isUsesBAsMax())); 
+					paintScale.add(value, interpolateWithBlackAndWhiteWeighted(settings.getMinColor(), settings.getMaxColor(), p, 
+							settings.getBrightnessFactor(),settings.isUsesWAsMin(), settings.isUsesBAsMax(), 
+							settings.getHue(), settings.getPosition(), settings.isInverted())); 
 				}
 				else {
 					// only color interpolate without BnW 
-					paintScale.add(value, interpolate(settings.getMinColor(), settings.getMaxColor(), p));
+					paintScale.add(value, interpolateWeighted(settings.getMinColor(), settings.getMaxColor(), p, 
+							settings.getHue(), settings.getPosition(), settings.isInverted()));
 				}
 			} 
 		}
@@ -206,14 +218,15 @@ public class PaintScaleGenerator {
 
 	/**
 	 * interpolate with weights for specified hue values
-	 * @param start
-	 * @param end
+	 * @param start (real starting color
+	 * @param end (real ending color)
 	 * @param p
 	 * @param hue
 	 * @param position
 	 * @return
 	 */
-	public static Color interpolateWeighted(Color start, Color end, float p, float[] hue, float[] position) {
+	public static Color interpolateWeighted(Color start, Color end, float p, float[] hue, float[] position, 
+			boolean invertedPos) {
 		float[] startHSB = Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), null);
 		float[] endHSB = Color.RGBtoHSB(end.getRed(), end.getGreen(), end.getBlue(), null);
 
@@ -228,27 +241,53 @@ public class PaintScaleGenerator {
 		
 		// between which position?
 		// start .... hue[0] .. hue[1] .. hue[n] ... end
-		if(position.length>0) {
-			if(p<position[0]) {
-				hueMax = hue[0];
-				p1 = position[0];
-			}
-			else {
-				int max = position.length;
-				for(int i=1; i<max; i++) {
-					if(p<=position[i]) {
-						i--;
-						hueMin = hue[i];
-						hueMax = hue[i+1];
-						p0 = position[i];
-						p1 = position[i+1];
-						break;
+		if(position!=null && position.length>0) {
+			if(invertedPos) {
+				int s = position.length;
+				if(p<1.f-position[s-1]) {
+					hueMax = hue[s-1];
+					p1 = 1.f-position[s-1];
+				}
+				else {
+					for(int i=1; i<s; i++) {
+						float pos = 1.f-position[s-1-i];
+						if(p<=pos) {
+							hueMin = hue[s-1-i];
+							hueMax = hue[s-i];
+							p0 = pos;
+							p1 = 1.f-position[s-i];
+							break;
+						}
+					}
+					// end step
+					if(p0==0.f) {
+						p0 = 1.f-position[0];
+						hueMin = hue[0];
 					}
 				}
-				// end step
-				if(p0==0.f) {
-					p0 = position[position.length-1];
-					hueMin = hue[hue.length-1];
+			}
+			else {
+				if(p<position[0]) {
+					hueMax = hue[0];
+					p1 = position[0];
+				}
+				else {
+					int max = position.length;
+					for(int i=1; i<max; i++) {
+						if(p<=position[i]) {
+							i--;
+							hueMin = hue[i];
+							hueMax = hue[i+1];
+							p0 = position[i];
+							p1 = position[i+1];
+							break;
+						}
+					}
+					// end step
+					if(p0==0.f) {
+						p0 = position[position.length-1];
+						hueMin = hue[hue.length-1];
+					}
 				}
 			}
 		}
@@ -264,7 +303,13 @@ public class PaintScaleGenerator {
 		return Color.getHSBColor(H, saturation, brightness);
 	}
 	
-	// without black and white!
+	/**
+	 * interpolate without black and white as min/max
+	 * @param start
+	 * @param end
+	 * @param p
+	 * @return
+	 */
 	public static Color interpolate(Color start, Color end, float p) {
 		float[] startHSB = Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), null);
 		float[] endHSB = Color.RGBtoHSB(end.getRed(), end.getGreen(), end.getBlue(), null);
@@ -287,6 +332,65 @@ public class PaintScaleGenerator {
 		return Color.getHSBColor(hue, saturation, brightness);
 	}
 
+	/**
+	 * interpolate with option for black and white at the end
+	 * @param start
+	 * @param end
+	 * @param p
+	 * @param pSaturationBrightness
+	 * @param white
+	 * @param black
+	 * @param hue
+	 * @param position
+	 * @return
+	 */
+	private static Color interpolateWithBlackAndWhiteWeighted(Color start, Color end, float p, float pSaturationBrightness, 
+			boolean white, boolean black, float[] hue, float[] position, boolean inverted) {		 
+		// pSaturationBrightness as position = inverse
+		float posBS = 1.f / pSaturationBrightness;
+		
+		// HSB
+		float[] startHSB = Color.RGBtoHSB(start.getRed(), start.getGreen(), start.getBlue(), null);
+		float[] endHSB = Color.RGBtoHSB(end.getRed(), end.getGreen(), end.getBlue(), null);
+		
+		// Saturation rises; Hue between lowHue and highHue; Brightness falls at the end;
+		// white?
+		if(white && p<=posBS) {
+			float B = 1;
+			float H = startHSB[0];
+			// p between 0-posBS
+			float S = p/posBS;
+			if(S>1.f) S = 1.f;
+			
+			return Color.getHSBColor(H, S, B);
+		}
+		
+		// black?
+		else if(black && p>=1.f-posBS) {
+			float S = 1;
+			float H = endHSB[0];
+			// p between 0-posBS
+			float B = (1.f-p)/posBS;
+			if(B>1.f) B = 1.f;
+			
+			return Color.getHSBColor(H, S, B);
+			
+		}
+		
+		// weighted hue scale
+		else {
+			// 
+			float realp = white? p-posBS : p;
+			float width = 1.f;
+			if(white) width -= posBS;
+			if(black) width -= posBS;
+			
+			realp = realp/width;
+			
+			return interpolateWeighted(start, end, realp, hue, position, inverted);
+		}
+	}
+	
 	/*
 	 * Determines what colour a heat map cell should be based upon the cell 
 	 * values.
@@ -321,9 +425,6 @@ public class PaintScaleGenerator {
 		float hue = ((hueMax - hueMin) * p) + hueMin;
 		*/
 		
-		// hue range
-		float hueRange = endHSB[0]-startHSB[0]; 
-		
 		// Test Huerange 
 		int bw = 0;
 		if(white) bw++;
@@ -334,14 +435,15 @@ public class PaintScaleGenerator {
 		float max = 1.f-cut;
 		float realp = p-cut/bw;
 		
-		realp = realp<0? 0 : realp;
-		realp = realp>1? 1 : realp;
+		if(realp<0) realp = 0;
+		if(realp>1) realp=1;
 		
 		realp = (1.f)*realp/max;
 		
-		realp = realp<0? 0 : realp;
-		realp = realp>1? 1 : realp;
+		if(realp<0) realp = 0;
+		if(realp>1) realp=1;
 
+		// old style
 		float hueMax = 0;
 		float hueMin = 0; 
 		hueMin = startHSB[0];

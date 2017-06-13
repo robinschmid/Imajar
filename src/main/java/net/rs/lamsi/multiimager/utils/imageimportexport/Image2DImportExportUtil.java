@@ -1675,7 +1675,7 @@ public class Image2DImportExportUtil {
 	 * @return
 	 */
 	private static Image2D setSettingsImage2D(Image2D img, File file, String title, String metadata) {
-		img.setSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
+		img.setSettings(SettingsPaintScale.createStandardSettings());
 		// Generate Image2D from scanLines
 		SettingsGeneralImage general = img.getSettings().getSettImage();
 		// Metadata 

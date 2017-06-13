@@ -56,15 +56,20 @@ public class ChartThemeFactory {
 	    	// Fonts
 	    	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 16));
 	    	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-	    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
+	    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
 	    	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
+	    	theme.setFontScaleInPlot(new Font("Arial", Font.PLAIN, 11));
+	    	theme.setFontShortTitle(new Font("Arial", Font.BOLD, 11));
 		}
 		else { // for presentation larger fonts
 	    	//Fonts
 	    	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 30));
 	    	theme.setLargeFont(new Font("Arial", Font.BOLD, 24));
-	    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 20));
+	    	theme.setRegularFont(new Font("Arial", Font.BOLD, 20));
 	    	theme.setSmallFont(new Font("Arial", Font.PLAIN, 16));
+
+	    	theme.setFontScaleInPlot(new Font("Arial", Font.PLAIN, 16));
+	    	theme.setFontShortTitle(new Font("Arial", Font.BOLD, 20));
 		}
 		return theme;
 	}
@@ -74,16 +79,13 @@ public class ChartThemeFactory {
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 16));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
+    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
     	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
     	
     	// Paints
         theme.setTitlePaint(Color.black);
         theme.setSubtitlePaint(Color.black);
-        theme.setLegendBackgroundPaint(Color.white);
         theme.setLegendItemPaint(Color.black);
-        theme.setChartBackgroundPaint(Color.white);
-        theme.setPlotBackgroundPaint(Color.white);
         theme.setPlotOutlinePaint(Color.black); 
         theme.setBaselinePaint(Color.black);
         theme.setCrosshairPaint(Color.black);
@@ -92,6 +94,10 @@ public class ChartThemeFactory {
         theme.setAxisLabelPaint(Color.black);
         theme.setShadowPaint(Color.black);
         theme.setItemLabelPaint(Color.black);
+        
+        theme.setLegendBackgroundPaint(Color.white);
+        theme.setChartBackgroundPaint(Color.white);
+        theme.setPlotBackgroundPaint(Color.white);
 
         theme.setDrawingSupplier(new DefaultDrawingSupplier(
                 new Paint[] {Color.decode("0xFFFF00"),
@@ -135,7 +141,7 @@ public class ChartThemeFactory {
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 20));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
+    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
     	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
     	//
         theme.setTitlePaint(Color.white);
@@ -193,7 +199,7 @@ public class ChartThemeFactory {
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 20));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
+    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
     	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
     	//
     	Paint bg = new Color(50,50,202);

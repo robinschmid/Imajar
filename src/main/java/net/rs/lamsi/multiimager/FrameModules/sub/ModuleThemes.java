@@ -2,11 +2,13 @@ package net.rs.lamsi.multiimager.FrameModules.sub;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ResourceBundle;
 
@@ -21,6 +23,7 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
@@ -41,6 +44,8 @@ import org.jfree.chart.editor.ChartEditorManager;
 import org.jfree.chart.util.ResourceBundleWrapper;
 
 import net.rs.lamsi.general.framework.basics.JFontSpecs;
+import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
+import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 
 public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Collectable2D> {
 	// mystuff
@@ -71,6 +76,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	private JFontSpecs fontAxesLabels;
 	private JFontSpecs fontPlotTitle;
 	private JFontSpecs fontScale;
+	private JColorPickerButton cbtnBGColor;
 	//
 
 	/**
@@ -117,6 +123,12 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		
 		cbShowTitle = new JCheckBox("show title");
 		panel_1.add(cbShowTitle, "cell 1 2");
+		
+		cbtnBGColor = new JColorPickerButton((Component) null);
+		panel_1.add(cbtnBGColor, "flowx,cell 2 2");
+		
+		JLabel lblBgColor = new JLabel("bg color");
+		panel_1.add(lblBgColor, "cell 2 2");
 		
 		Module pnFonts = new Module("Fonts and text");
 		panel.add(pnFonts, BorderLayout.SOUTH); 
@@ -353,7 +365,6 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	// apply for print or presentation before changing settings
 	@Override
 	public void setSettings(SettingsThemes settings) {
-		settings.setTheme(ChartThemeFactory.changeChartThemeForPrintOrPresentation(settings.getTheme(), isForPrint)); 
 		ChartThemeFactory.setStandardTheme(settings.getID());
 		super.setSettings(settings);
 	}
@@ -367,7 +378,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	}
 	
 	@Override
-	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	public void addAutoRepainter(final ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 		// axes and scale
 		getCbShowScale().addItemListener(il);
 		getCbShowXAxis().addItemListener(il);
@@ -396,7 +407,54 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getFontScale().addListener(ccl, il, dl);
 		
 		// change? TODO
-		getFontMaster().addListener(ccl, il, dl);
+		getFontMaster().addListener(new ColorChangedListener() {
+			@Override
+			public void colorChanged(Color c) {
+				// set to not register changes for a while
+				ImageLogicRunner.setIS_UPDATING(false);
+				getFontAxesCaption().setColor(c);
+				getFontAxesLabels().setColor(c);
+				getFontPlotTitle().setColor(c);
+
+				ImageLogicRunner.setIS_UPDATING(true);
+				// change last value for update
+				al.actionPerformed(null);
+			}
+		}, new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// set to not register changes for a while
+				ImageLogicRunner.setIS_UPDATING(false);
+				
+				Font f = getFontMaster().getSelectedFont();
+				getFontAxesCaption().setSelectedFont(f);
+				getFontAxesLabels().setSelectedFont(f);
+				getFontPlotTitle().setSelectedFont(f);
+
+				ImageLogicRunner.setIS_UPDATING(true);
+				// change last value for update
+				al.actionPerformed(null);
+			}
+		}, new DelayedDocumentListener() {
+			@Override
+			public void documentChanged(DocumentEvent e) {
+				// set to not register changes for a while
+				ImageLogicRunner.setIS_UPDATING(false);
+				int size = getFontMaster().getFontSize();
+				if(size>1) {
+					getFontAxesCaption().setFontSize(size);
+					getFontAxesLabels().setFontSize(size);
+					getFontPlotTitle().setFontSize(size);
+				}
+
+				ImageLogicRunner.setIS_UPDATING(true);
+				// change last value for update
+				al.actionPerformed(null);
+			}
+		});
+		
+		cbtnBGColor.addColorChangedListener(ccl);
 		
 		this.al = al;
 	}
@@ -423,6 +481,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		getCbShowYAxis().setSelected(st.getTheme().isShowYAxis());
 		
 		getCbPaintscaleInPlot().setSelected(st.getTheme().isPaintScaleInPlot());
+		
+		getCbtnBGColor().setColor(t.getChartBackgroundPaint());
 		
 		// set all txt scale
 		getTxtScaleFactor().setText(String.valueOf(st.getTheme().getScaleFactor()));
@@ -464,7 +524,7 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 		if(st!=null) {
 			try {
 				// setall
-				st.setAll(getCbAntiAlias().isSelected(), getCbShowTitle().isSelected(), getCbNoBackground().isSelected(),
+				st.setAll(getCbAntiAlias().isSelected(), getCbShowTitle().isSelected(), getCbNoBackground().isSelected(), getCbtnBGColor().getColor(),
 						false,false,
 						getCbShowXAxis().isSelected(), getCbShowYAxis().isSelected(), 
 						getCbShowScale().isSelected(), getTxtScaleUnit().getText(), floatFromTxt(getTxtScaleFactor()), floatFromTxt(getTxtScaleValue()),
@@ -547,5 +607,8 @@ public class ModuleThemes extends Collectable2DSettingsModule<SettingsThemes, Co
 	}
 	public JFontSpecs getFontScale() {
 		return fontScale;
+	}
+	public JColorPickerButton getCbtnBGColor() {
+		return cbtnBGColor;
 	}
 }

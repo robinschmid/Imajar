@@ -52,7 +52,7 @@ public class JFontSpecs extends JPanel {
 		txtSize.setText(String.valueOf(font.getSize()));
 	}
 	public Font getSelectedFont() {
-		return new Font((String)fontBox.getSelectedItem(), styleBox.getSelectedStyle(), Integer.valueOf(txtSize.getText()));
+		return new Font(getFontFamily(), getFontStyle(), getFontSize());
 	}
 	
 	public Color getColor() {
@@ -64,6 +64,32 @@ public class JFontSpecs extends JPanel {
 
 	public void setColor(Paint c) {
 		color.setColor((Color)c);
+	}
+	
+	public void setFontSize(int size) {
+		txtSize.setText(String.valueOf(size));
+	}
+	public int getFontSize() {
+		try {
+			return Integer.parseInt(txtSize.getText());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 1;
+		}
+	}
+	/**
+	 * style: plain, italic, bold, ...
+	 * @return
+	 */
+	public int getFontStyle() {
+		return styleBox.getSelectedStyle();
+	}
+	/**
+	 * family like arial ... 
+	 * @return
+	 */
+	public String getFontFamily() {
+		return String.valueOf(fontBox.getSelectedItem());
 	}
 
 	public void addListener(ColorChangedListener ccl, ItemListener il, DocumentListener dl) {

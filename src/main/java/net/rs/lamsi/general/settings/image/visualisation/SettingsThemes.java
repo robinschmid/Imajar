@@ -45,11 +45,11 @@ public class SettingsThemes extends Settings {
 	} 
 	
 
-	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
+	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
 			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
 			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
 			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale) {
-		theme.setAll(antiAlias, showTitle, noBG, showXGrid, showYGrid, showXAxis, showYAxis, showScale, scaleUnit, scaleFactor, scaleValue, isPaintScaleInPlot, scaleXPos, scaleYPos, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle, fScale, cScale);
+		theme.setAll(antiAlias, showTitle, noBG, cBG, showXGrid, showYGrid, showXAxis, showYAxis, showScale, scaleUnit, scaleFactor, scaleValue, isPaintScaleInPlot, scaleXPos, scaleYPos, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle, fScale, cScale);
 	}
 	@Override
 	public void resetAll() { 

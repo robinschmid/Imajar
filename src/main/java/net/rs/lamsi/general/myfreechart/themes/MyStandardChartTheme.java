@@ -97,7 +97,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		masterFontColor = Color.black;
 	}
 	
-	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
+	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
 			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
 			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
 			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale) {
@@ -127,6 +127,10 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		this.setAxisLabelPaint(cAxesT);
 		this.setTickLabelPaint(cAxesL);
 		this.setTitlePaint(cTitle);
+		
+		this.setChartBackgroundPaint(cBG);
+		this.setPlotBackgroundPaint(cBG);
+		this.setLegendBackgroundPaint(cBG);
 		
 		masterFont = fMaster;
 		masterFontColor = cMaster;
@@ -169,13 +173,13 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		}
 		// apply bg 
         chart.setBackgroundPaint(this.getChartBackgroundPaint());
-        chart.getPlot().setBackgroundPaint(this.getPlotBackgroundPaint());
+        chart.getPlot().setBackgroundPaint(this.getChartBackgroundPaint());
         
         for(int i=0; i<chart.getSubtitleCount(); i++) 
         	if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
         		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(this.getPlotBackgroundPaint());
         if(chart.getLegend()!=null)
-        	chart.getLegend().setBackgroundPaint(this.getPlotBackgroundPaint());
+        	chart.getLegend().setBackgroundPaint(this.getChartBackgroundPaint());
         
 		//
 		chart.setAntiAlias(isAntiAliased());
@@ -224,7 +228,8 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		
 		Settings.toXML(el, doc, "paintScaleTitle", paintScaleTitle); 
 		Settings.toXML(el, doc, "usePaintScaleTitle", usePaintScaleTitle); 
-		Settings.toXML(el, doc, "cBackground", getPlotBackgroundPaint());
+		Settings.toXML(el, doc, "cBackground", getChartBackgroundPaint());
+		Settings.toXML(el, doc, "cPlotBackground", getPlotBackgroundPaint());
 	}
 
 	public void loadValuesFromXML(Element el, Document doc) {
@@ -264,8 +269,12 @@ public class MyStandardChartTheme extends StandardChartTheme {
 					else if(paramName.equals("usePaintScaleTitle")) usePaintScaleTitle = Settings.booleanFromXML(nextElement);  
 					else if(paramName.equals("cBackground") && !hasNoBG) {
 						Color c = Settings.colorFromXML(nextElement);
-						setPlotBackgroundPaint(c);  
 						setChartBackgroundPaint(c);  
+						setLegendBackgroundPaint(c);
+					}
+					else if(paramName.equals("cPlotBackground")) {
+						Color c = Settings.colorFromXML(nextElement);
+						setPlotBackgroundPaint(c);  
 					}
 			}
 		}
@@ -288,6 +297,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Color cchart = ((Color)this.getChartBackgroundPaint());
 		this.setPlotBackgroundPaint(new Color(c.getRed(), c.getGreen(), c.getBlue(), state? 0 : 255));
 		this.setChartBackgroundPaint(new Color(cchart.getRed(), cchart.getGreen(), cchart.getBlue(), state? 0 : 255));
+		this.setLegendBackgroundPaint(new Color(cchart.getRed(), cchart.getGreen(), cchart.getBlue(), state? 0 : 255));
 	}
 	
 	// GETTERS AND SETTERS

@@ -134,7 +134,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, "cell 0 0,grow");
-		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][][][25.00][grow][][][][][][][][]"));
+		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][][][25.00][:14px:14px,center][][][][][][][][]"));
 
 		JLabel lblLevels = new JLabel("levels");
 		panel.add(lblLevels, "cell 0 0,alignx trailing");
@@ -184,8 +184,9 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		cbInvert = new JCheckBox("invert");
 		panel.add(cbInvert, "flowx,cell 0 3 2 1");
 		
-		hueSlider = new JMultiRangeSlider(false);
-		panel.add(hueSlider, "cell 0 5 2 1,grow");
+		hueSlider = new JMultiRangeSlider(false, true);
+		panel.add(hueSlider, "cell 0 5 2 1");
+		hueSlider.setMaximumSize(new Dimension(2000, 15));
 
 		verticalStrut = Box.createVerticalStrut(20);
 		verticalStrut.setPreferredSize(new Dimension(0, 5));
@@ -208,13 +209,13 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 			public void stateChanged(ChangeEvent e) {
 				JSlider source = (JSlider)e.getSource(); 
 				if (!source.getValueIsAdjusting() && getTxtBrightness()!=null) { 
-					getTxtBrightness().setText(""+source.getValue()/10/10.f);
+					getTxtBrightness().setText(""+source.getValue()/10.f);
 				}
 			}
 		});
-		sliderBrightness.setValue(400);
-		sliderBrightness.setMaximum(1800);
-		sliderBrightness.setMinimum(200);
+		sliderBrightness.setValue(250);
+		sliderBrightness.setMaximum(1000);
+		sliderBrightness.setMinimum(20);
 		panel.add(sliderBrightness, "cell 1 9,growx");
 
 		verticalStrut_1 = Box.createVerticalStrut(20);
@@ -468,7 +469,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
 		// add standard paintscales to menu
 		// TODO comment out for window build
-		//addStandardPaintScalesToMenu();
+		addStandardPaintScalesToMenu();
 	}
 
 	/**
@@ -524,6 +525,9 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_RAINBOW), "Rainbow");
 		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_RAINBOW_INVERSE), "Rainbow inverse");
 		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE), "KARST:Rainbow inverse");
+
+		// new one
+		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE_NEW), "KARST2.0:Rainbow inverse");
 		setPresetindex(4);
 	}
 
@@ -885,7 +889,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		this.getLblEndColor().setVisible(!ps.isMonochrom()); 
 
 		// 
-		this.getSliderBrightness().setValue((int) (ps.getBrightnessFactor()*100));
+		this.getSliderBrightness().setValue((int) (ps.getBrightnessFactor()*10));
 
 		this.getCbLODMonochrome().setSelected(ps.isLODMonochrome());
 		this.getTxtLOD().setText(formatAbsNumber(ps.getLOD()));
@@ -960,7 +964,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 						(ValueMode)getComboMinValType().getSelectedItem(), (ValueMode)getComboMaxValType().getSelectedItem(), 
 						min, max, 
 						getBtnMinColor().getBackground(), getBtnMaxColor().getBackground(),
-						getSliderBrightness().getValue()/100.f,
+						getSliderBrightness().getValue()/10.f,
 						floatFromTxt(getTxtMinFilter()),
 						floatFromTxt(getTxtMaxFilter()), 
 						getCbGreyScale().isSelected(),
