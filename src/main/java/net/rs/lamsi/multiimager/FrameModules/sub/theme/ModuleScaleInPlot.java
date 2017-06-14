@@ -159,7 +159,7 @@ public class ModuleScaleInPlot extends Collectable2DSettingsModule<SettingsScale
 				s.setAll(getCbShowScale().isSelected(), getTxtScaleUnit().getText(), floatFromTxt(getTxtScaleFactor()), 
 						floatFromTxt(getTxtScaleValue()), 
 						getSliderScaleXPos().getValue()/100.f, getSliderScaleYPos().getValue()/100.f, 
-						getFontScale().getFont(), getFontScale().getColor());
+						getFontScale().getSelectedFont(), getFontScale().getColor());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}

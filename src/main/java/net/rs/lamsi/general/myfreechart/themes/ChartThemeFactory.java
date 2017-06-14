@@ -56,15 +56,15 @@ public class ChartThemeFactory {
 	    	// Fonts
 	    	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 16));
 	    	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-	    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
+	    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
 	    	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
 	    	theme.setFontShortTitle(new Font("Arial", Font.BOLD, 11));
 		}
 		else { // for presentation larger fonts
 	    	//Fonts
 	    	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 30));
-	    	theme.setLargeFont(new Font("Arial", Font.BOLD, 24));
-	    	theme.setRegularFont(new Font("Arial", Font.BOLD, 20));
+	    	theme.setLargeFont(new Font("Arial", Font.BOLD, 20));
+	    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 16));
 	    	theme.setSmallFont(new Font("Arial", Font.PLAIN, 16));
 
 	    	theme.setFontShortTitle(new Font("Arial", Font.BOLD, 20));
@@ -77,7 +77,7 @@ public class ChartThemeFactory {
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 16));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
+    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
     	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
     	
     	// Paints
@@ -139,7 +139,7 @@ public class ChartThemeFactory {
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 20));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
+    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
     	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
     	//
         theme.setTitlePaint(Color.white);
@@ -197,7 +197,7 @@ public class ChartThemeFactory {
     	// Fonts
     	theme.setExtraLargeFont(new Font("Arial", Font.BOLD, 20));
     	theme.setLargeFont(new Font("Arial", Font.BOLD, 11));
-    	theme.setRegularFont(new Font("Arial", Font.BOLD, 11));
+    	theme.setRegularFont(new Font("Arial", Font.PLAIN, 11));
     	theme.setSmallFont(new Font("Arial", Font.PLAIN, 11));
     	//
     	Paint bg = new Color(50,50,202);

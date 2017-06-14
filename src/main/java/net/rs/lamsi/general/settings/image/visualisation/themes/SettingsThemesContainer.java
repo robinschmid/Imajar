@@ -68,34 +68,6 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 		getSettScaleInPlot().setAll(showScale, scaleUnit, scaleFactor, scaleValue, scaleXPos, scaleYPos, fScale, cScale);
 	}
 
-	@Override
-	public void applyToHeatMap(Heatmap heat) {
-		super.applyToHeatMap(heat);
-		applyToChart(heat.getChart());
-		// 
-		ScaleInPlot s = heat.getScaleInPlot();
-		
-		SettingsScaleInPlot sett = getSettScaleInPlot();
-		
-		s.setFactor(sett.getScaleFactor());
-		s.setUnit(sett.getScaleUnit());
-		s.setValue(sett.getScaleValue());
-		s.setVisible(sett.isShowScale());
-		s.setPosition(sett.getScaleXPos(),sett.getScaleYPos());
-		
-		MyStandardChartTheme theme = getTheme();
-		
-		heat.getShortTitle().setFont(theme.getFontShortTitle());
-		heat.getShortTitle().setPaint(theme.getcShortTitle());
-		heat.getShortTitle().setBackgroundPaint(theme.getcBGShortTitle());
-		
-		// set numberformat
-		if(heat.getLegend()!=null) {
-			((NumberAxis)heat.getLegend().getAxis()).setNumberFormatOverride(theme.getIntensitiesNumberFormat());
-			((NumberAxis)heat.getLegend().getAxis()).setLabelLocation(AxisLabelLocation.HIGH_END);
-			((NumberAxis)heat.getLegend().getAxis()).setLabel(theme.isUsePaintScaleTitle()? theme.getPaintScaleTitle() : null);
-		}
-	}
 	
 
 	@Override

@@ -54,7 +54,6 @@ public class ScaleInPlot extends Title {
 	@Override
 	public Object draw(Graphics2D g, Rectangle2D area, Object params) {
 		if(isVisible()) {
-			MyStandardChartTheme theme = this.theme.getTheme();
 			SettingsScaleInPlot s = this.theme.getSettScaleInPlot();
 			
 			ValueAxis xaxis =  chartPanel.getChart().getXYPlot().getDomainAxis();

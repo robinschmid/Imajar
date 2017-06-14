@@ -85,6 +85,7 @@ public class SettingsTheme extends Settings {
 		}
 	}
 	
+	
 	@Override
 	public void applyToHeatMap(Heatmap heat) {
 		super.applyToHeatMap(heat);

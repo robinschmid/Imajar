@@ -13,6 +13,8 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.interf.Image2DSett;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,6 +29,8 @@ import org.w3c.dom.NodeList;
 public abstract class SettingsContainerSettings extends Settings {
 	private static final long serialVersionUID = 1L;
 
+	// true if at least one of the subsettings is an object of SettingsContainerSettings
+	private boolean hasSubContainerSettings = false;
 	/**
 	 * identifier by String is the super class
 	 */
@@ -93,6 +97,7 @@ public abstract class SettingsContainerSettings extends Settings {
 			loadSubSettingsAndValuesFromXML(el, doc);
 		}
 	}
+	
 	public void loadSubSettingsAndValuesFromXML(Element el, Document doc) {
 		NodeList list = el.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {
@@ -143,12 +148,39 @@ public abstract class SettingsContainerSettings extends Settings {
 	 * @return true if replaced false if only added
 	 */
 	public boolean replaceSettings(Settings sett) {
+		// add to this settings container if not present
+		return replaceSettings(sett, true);
+	}
+	
+	/**
+	 * tryis to replace
+	 * @param sett
+	 * @param addIfNotReplaced Adds the settings to this container if none was replaced
+	 * @return
+	 */
+	public boolean replaceSettings(Settings sett, boolean addIfNotReplaced) {
 		if(list.replace(sett.getSuperClass(), sett)!=null) {
 			return true;
 		}
 		else {
-			list.put(sett.getSuperClass(), sett);
-			return false;
+			boolean replaced = false;
+			// try in sub settings
+			if(hasSubContainerSettings) {
+				for (Iterator iterator = list.values().iterator(); iterator.hasNext() && !replaced; ) {
+					Settings s = (Settings) iterator.next();
+					if(SettingsContainerSettings.class.isInstance(s)) {
+						// do not add to sub settings container if not replaced
+						replaced = ((SettingsContainerSettings)s).replaceSettings(sett, false);
+					}		
+				}
+			}
+			// if not replaced in sub - put
+			if(!replaced && addIfNotReplaced) {
+				// add super class and sett
+				list.put(sett.getSuperClass(), sett);
+				hasSubContainerSettings = hasSubContainerSettings || SettingsContainerSettings.class.isInstance(sett);
+			}
+			return replaced;
 		}
 	}
 	/**
@@ -174,16 +206,19 @@ public abstract class SettingsContainerSettings extends Settings {
 				return s;
 			else {
 				// search in other settings container settings
-				for (Iterator iterator = list.values().iterator(); iterator.hasNext();) {
-					Settings sett = (Settings) iterator.next();
-					
-					if(SettingsContainerSettings.class.isInstance(sett)) {
-						s = ((SettingsContainerSettings)sett).getSettingsByClass(classsettings);
-						if(s!=null)
-							return s;
-					}					
+				if(hasSubContainerSettings) {
+					for (Iterator iterator = list.values().iterator(); iterator.hasNext();) {
+						Settings sett = (Settings) iterator.next();
+						
+						if(SettingsContainerSettings.class.isInstance(sett)) {
+							s = ((SettingsContainerSettings)sett).getSettingsByClass(classsettings);
+							if(s!=null)
+								return s;
+						}					
+					}
 				}
 				// nothing...
+				ImageEditorWindow.log("No settings object found for "+classsettings.getName(), LOG.DEBUG);
 				return null;
 			}
 		}

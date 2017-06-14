@@ -55,6 +55,7 @@ public class ModuleThemes extends SettingsModuleContainer<SettingsThemesContaine
 	public ModuleThemes() {
 		super("Themes", false, SettingsThemesContainer.class, Collectable2D.class);    
 		getLbTitle().setText("Themes");
+		setShowTitleAlways(true);
 		
 		setVScrollBar(false);
 		

@@ -61,6 +61,7 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 	private JCheckBox cbShowXAxis;
 	private JCheckBox cbShowYAxis;
 	private JCheckBox cbPaintscaleInPlot;
+	private DelayedDocumentListener ddlMaster;
 	
 	private JTextField txtCSignificantDigits;
 	private JCheckBox cbScientificIntensities;
@@ -347,6 +348,7 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 		getFontMaster().addListener(new ColorChangedListener() {
 			@Override
 			public void colorChanged(Color c) {
+				if(ImageLogicRunner.IS_UPDATING()) {
 				// set to not register changes for a while
 				ImageLogicRunner.setIS_UPDATING(false);
 				getFontAxesCaption().setColor(c);
@@ -356,11 +358,13 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 				ImageLogicRunner.setIS_UPDATING(true);
 				// change last value for update
 				al.actionPerformed(null);
+				}
 			}
 		}, new ItemListener() {
 			
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				if(ImageLogicRunner.IS_UPDATING()) {
 				// set to not register changes for a while
 				ImageLogicRunner.setIS_UPDATING(false);
 				
@@ -372,10 +376,12 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 				ImageLogicRunner.setIS_UPDATING(true);
 				// change last value for update
 				al.actionPerformed(null);
+				}
 			}
-		}, new DelayedDocumentListener() {
+		}, ddlMaster = new DelayedDocumentListener() {
 			@Override
 			public void documentChanged(DocumentEvent e) {
+				if(ImageLogicRunner.IS_UPDATING()) {
 				// set to not register changes for a while
 				ImageLogicRunner.setIS_UPDATING(false);
 				int size = getFontMaster().getFontSize();
@@ -388,6 +394,7 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 				ImageLogicRunner.setIS_UPDATING(true);
 				// change last value for update
 				al.actionPerformed(null);
+				}
 			}
 		});
 		
@@ -401,12 +408,9 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 	@Override
 	public void setAllViaExistingSettings(SettingsTheme st) throws Exception {  
 		ImageLogicRunner.setIS_UPDATING(false);
-		// new reseted ps
-		if(st == null) {
-			st = new SettingsTheme();
-			st.resetAll();
-		} 
+		ddlMaster.setActive(false);
 		
+		if(st != null) {
 		MyStandardChartTheme t = st.getTheme();
 		// set all to txt 
 		getCbAntiAlias().setSelected(t.isAntiAliased());
@@ -429,20 +433,24 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 		getTxtPaintScaleTitle().setText(t.getPaintScaleTitle());
 		
 		// set fonts:
-		getFontAxesCaption().setSelectedFont(t.getRegularFont());
-		getFontAxesLabels().setSelectedFont(t.getSmallFont());
+		getFontAxesCaption().setSelectedFont(t.getLargeFont());
+		getFontAxesLabels().setSelectedFont(t.getRegularFont());
 		getFontMaster().setSelectedFont(t.getMasterFont());
 		getFontPlotTitle().setSelectedFont(t.getExtraLargeFont());
 		
 		// colors
 		getFontAxesCaption().setColor(t.getAxisLabelPaint());
-		getFontAxesLabels().setColor(t.getAxisLabelPaint());
+		getFontAxesLabels().setColor(t.getTickLabelPaint());
 		getFontMaster().setColor(t.getMasterFontColor());
 		getFontPlotTitle().setColor(t.getTitlePaint());
-		
+		}
+		else {
+			System.out.println("null settings");
+		}
 		// finished
+		ddlMaster.setActive(true);
 		ImageLogicRunner.setIS_UPDATING(true);
-		ImageEditorWindow.getEditor().fireUpdateEvent(true);
+//		ImageEditorWindow.getEditor().fireUpdateEvent(true);
 	} 
 
 	@Override

@@ -91,6 +91,8 @@ public abstract class DelayedDocumentListener implements DocumentListener, Runna
 
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
+		if(!isActive)
+			stop();
 	}
 	public void stop() {
 		isStopped = true;

@@ -3,12 +3,17 @@ package net.rs.lamsi.general.settings.image.visualisation.themes;
 import java.awt.Color;
 import java.awt.Font;
 
+import org.jfree.chart.axis.AxisLabelLocation;
+import org.jfree.chart.axis.NumberAxis;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.Settings;
 
@@ -50,10 +55,25 @@ public class SettingsScaleInPlot extends Settings {
 		setScaleFactor(1);
 		setScaleValue(1);
 		setScaleXPos(0.9f);
-		setScaleYPos(0.9f);
+		setScaleYPos(0.15f);
 		setFontScaleInPlot(new Font("Arial", Font.PLAIN, 11));
 		setScaleFontColor(Color.black);
 	}
+	
+
+	@Override
+	public void applyToHeatMap(Heatmap heat) {
+		super.applyToHeatMap(heat);
+		// 
+		ScaleInPlot s = heat.getScaleInPlot();
+		
+		s.setFactor(this.getScaleFactor());
+		s.setUnit(this.getScaleUnit());
+		s.setValue(this.getScaleValue());
+		s.setVisible(this.isShowScale());
+		s.setPosition(this.getScaleXPos(),this.getScaleYPos());
+	}
+	
 
 	//#########################################################################
 	// xml import export
