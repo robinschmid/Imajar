@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.Quantifier;
+import net.rs.lamsi.general.settings.image.operations.quantifier.Quantifier;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -177,7 +177,6 @@ public class XSSFExcelWriterReader {
 		    FileOutputStream out = new FileOutputStream(file);
 		    wb.write(out); 
 		    out.close();
-		    System.out.println("Excel written successfully..");   
 		    return true;
 		} catch (FileNotFoundException e) {
 		    e.printStackTrace();
@@ -341,7 +340,7 @@ public class XSSFExcelWriterReader {
 			writeToCell(sheet, 9+i, 2, q.get(i).getAverageIntensity());
 			writeToCell(sheet, 9+i, 3, q.get(i).getConcentration());
 			writeToCell(sheet, 9+i, 5, "d"+(i+1));
-			writeDataArrayToSheet(sheet, q.get(i).getImg().getSelectedDataAsArray(true), 9+i, 6, true);
+			writeDataArrayToSheet(sheet, q.get(i).getImg().getSelectedDataAsArray(true, true), 9+i, 6, true);
 		}
 	}
 

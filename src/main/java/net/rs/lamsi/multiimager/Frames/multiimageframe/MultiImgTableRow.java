@@ -60,15 +60,24 @@ public class MultiImgTableRow {
 	 * map init as all true
 	 * only change to false
 	 * @param map 
+	 * @throws Exception 
 	 */
-	public void applyToMap(boolean[][] map) {
+	public void applyToMap(Boolean[][] map) throws Exception {
+		// same dimension`?
+		if(map.length!=img.getMaxLinesCount() || map[0].length!=img.getMaxLineLength())
+			throw new Exception("Map has a different dimension than image "+img.getTitle());
+		// apply
 		if(isUseRange() && (max!=upper || min != lower)) {
 			// lines
-			for(int l = 0; l<map.length && l<img.getLineCount(); l++) {
-				for(int d = 0; d<map[l].length && d<img.getLineLength(l); d++) {
-					// check if img.intensity out of range
-					if(!inRange(img.getIProcessed(l, d)))
-						map[l][d] = false;
+			for(int l = 0; l<map.length; l++) {
+				for(int d = 0; d<map[l].length; d++) {
+					// only if Boolean is defined (if not - there is no dp)
+					if(map[l][d]!=null) {
+						// check if img.intensity out of range 
+						double tmp = img.getI(false,l, d);
+						if(!Double.isNaN(tmp) && !inRange(tmp))
+								map[l][d] = false;
+					}
 				}
 			}
 		}
@@ -78,15 +87,26 @@ public class MultiImgTableRow {
 	 * apply settings to binary map.
 	 * i as index to change to 1
 	 * @param map 
+	 * @throws Exception 
 	 */
-	public void applyToBinaryMap(Integer[][] map, int i) {
+	public void applyToBinaryMap(Integer[][] map, int i) throws Exception {
+		// same dimension`?
+		if(map.length!=img.getMaxLinesCount() || map[0].length!=img.getMaxLineLength())
+			throw new Exception("Map has a different dimension than image "+img.getTitle());
+		// apply
 		if(isUseRange() && (max!=upper || min != lower)) {
 			// lines
-			for(int l = 0; l<map.length && l<img.getLineCount(); l++) {
-				for(int d = 0; d<map[l].length && d<img.getLineLength(l); d++) {
-					// check if img.intensity out of range
-					if(inRange(img.getIProcessed(l, d)))
-						map[l][d] += (int)Math.pow(2, i);
+			for(int l = 0; l<map.length; l++) {
+				for(int d = 0; d<map[l].length; d++) {
+					// only if Integer is defined (if not - there is no dp)
+					if(map[l][d]!=null) {
+						// check if img.intensity out of range
+						if(l<img.getLineCount(d)) {
+							double tmp = img.getI(false,l, d);
+							if(!Double.isNaN(tmp) && inRange(tmp))
+								map[l][d] += (int)Math.pow(2, i);
+						}
+					}
 				}
 			}
 		}

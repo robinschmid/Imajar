@@ -9,8 +9,8 @@ import javax.swing.ProgressMonitor;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JButton;
 
-import net.rs.lamsi.massimager.Threads.ProgressUpdateTaskMonitor;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
+import net.rs.lamsi.utils.threads.ProgressUpdateTaskMonitor;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

@@ -6,8 +6,8 @@ import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
@@ -34,11 +34,11 @@ public class TestImagerWithDataImportBenchmark {
 					for(int i=1; i<=20; i++)
 						files2[i-1] = new File("data/UTF8_"+i+".csv");
 					
-					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.PRESETS_THERMO_MP17, true, " ", false);
+					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.PRESETS_THERMO_iCAPQ, true, " ", false);
 					
 					for(int i=0; i<3; i++) { 
 						long timemilli = System.currentTimeMillis();
-						window.getLogicRunner().importTextDataToImage(settingsDataImport, files2);
+						window.getLogicRunner().importTextDataToImage(settingsDataImport, files2, null);
 	 
 						long timemilli2 = System.currentTimeMillis();
 	 

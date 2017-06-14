@@ -43,26 +43,25 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.heatmap.HeatmapFactory;
+import net.rs.lamsi.general.settings.SettingsDataSaver;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Dialogs.ChargeCalculatorSettingsDialog;
-import net.rs.lamsi.massimager.Frames.Dialogs.ColorPickerDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.DataSaverFrame;
-import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.GeneralSettingsFrame;
 import net.rs.lamsi.massimager.Frames.Panels.ImageVsSpecViewPanel;
-import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
-import net.rs.lamsi.massimager.MyException.NoFileSelectedException;
-import net.rs.lamsi.massimager.MyFileChooser.FileTypeFilter;
 import net.rs.lamsi.massimager.MyMZ.MZIon;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMineRawDataListsChangedListener;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
+import net.rs.lamsi.utils.myfilechooser.exceptions.NoFileSelectedException;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.RawDataFile;
 
@@ -78,11 +77,9 @@ public class Window {
 	// DAs Programm
 	private static Window window; 
 	private LogicRunner runner;
-	private OESPanel runnerOES; 
 	// other frames
 	private DataSaverFrame frameDataSaver;
 	private GeneralSettingsFrame frameGeneralSettings;
-	private ColorPickerDialog frameColorPicker; 
 	protected ChargeCalculatorSettingsDialog dialogChargeCalculatorSettings; 
 	// settings schreiben mit BinaryWriter 
 	private XSSFExcelWriterReader excelWriter;
@@ -263,8 +260,6 @@ public class Window {
 		frameGeneralSettings = new GeneralSettingsFrame(this);
 		frameGeneralSettings.setVisible(false);
 		
-		frameColorPicker = new ColorPickerDialog(this);
-		frameColorPicker.setVisible(false);
 		// Progress Dialog
 		ProgressDialog.initDialog(getFrame());
 		// charge calc settings dialog 
@@ -347,9 +342,6 @@ public class Window {
                 			// FilesList from Selected Mode 
         					if(getCurrentMode()==MODE_MS) {
         						runner.getListSpecFiles().remove(sel[i]-i);
-        					}
-        					else if(getCurrentMode()==MODE_OES) {
-        						runnerOES.getListOESFiles().remove(sel[i]-i);
         					}
         				}
         			}
@@ -437,16 +429,11 @@ public class Window {
         CenterContent.add(pnOESCenterContent, BorderLayout.WEST);
         pnOESCenterContent.setLayout(new BorderLayout(0, 0));
         pnOESCenterContent.setVisible(false);
-        
-        runnerOES = new OESPanel(this);
-        pnOESCenterContent.add(runnerOES, BorderLayout.CENTER); 
-        runnerOES.setVisible(true);
 	}
 	
 	protected void setNewFileSelectedInMode(int selectedIndex) {
 		// TODO Auto-generated method stub
 		if(currentMode == MODE_MS)  runner.setNewFileSelectedAndShowAll(selectedIndex);
-		if(currentMode == MODE_OES)  runnerOES.setSelectedOESFile(selectedIndex);
 	}
 
 	// shows and hides the files panel at west
@@ -593,7 +580,6 @@ public class Window {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO wenn er nicht offen dann den Dialog öffnen.
-				frameColorPicker.setVisible(true);
 			}
 		});
     	menu.add(mntmGraphicsSettings);
@@ -618,8 +604,6 @@ public class Window {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO
-				ProgressDialog.getInst().setVisibleDialog(true);
-				ProgressDialog.setProgress(500);
 			}
 		});
     	menu.add(menuItem);  
@@ -756,9 +740,6 @@ public class Window {
     	if(currentMode == MODE_MS) {
     		runner.loadFiles();
     	}
-    	else {
-    		runnerOES.loadFiles();
-    	}
 	}
 
 	// Load and save FC FileChooser
@@ -801,14 +782,6 @@ public class Window {
 	            	((DefaultListModel)listFiles.getModel()).removeAllElements(); 
 	            	// Files wieder rein tun
 			    	runner.setAsCurrentMode(listFiles);
-	            }
-	            else if(!isMS && currentMode!=MODE_OES) {
-	            	center.add(getPnOESCenterContent(), BorderLayout.CENTER); 
-		    		// Beide regeln selbst was alles gemacht werden muss. 
-		    		// Files aus Liste raus  
-	            	((DefaultListModel)listFiles.getModel()).removeAllElements(); 
-	            	// Files wieder rein tun 
-			    	runnerOES.setAsCurrentMode(listFiles);
 	            }
 	    		// Panel an und aus
 	    		getPnOESCenterContent().setVisible(!isMS);
@@ -858,14 +831,14 @@ public class Window {
 		// daten des aktuellen modes speichern mit den einstellungen 
 		if(currentMode == MODE_MS) 
 			return getLogicRunner().saveDataFile(setDataSaver, excelWriter);
-		else  
-			return runnerOES.saveDataFile(setDataSaver, excelWriter);
+		
+		return false;
 	}
     
 	// Send image2d to Imageeditor for further work
 	// will be inserted in ImageList
-	public void sendImage2DToImageEditor(Image2D image, String id) {
-		imageEditorWnd.getLogicRunner().addImage(image, id);
+	public void sendImage2DToImageEditor(Image2D image, String projectID, String gid) {
+		imageEditorWnd.getLogicRunner().addImage(image,projectID, gid);
 	}
     // OBERFLÄCHEN LOGIC ENDE
 	//###############################################################################  

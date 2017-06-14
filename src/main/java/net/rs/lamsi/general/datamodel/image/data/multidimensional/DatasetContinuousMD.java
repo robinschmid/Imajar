@@ -1,22 +1,25 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.interf.DatasetSettings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * basic dataset of multiple scan lines
  * @author Robin Schmid
  *
  */
-public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Serializable  {
+public class DatasetContinuousMD  extends MDDataset implements Serializable  {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
@@ -25,6 +28,9 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	protected ScanLineMD line; 
 	protected int[] lineStart;
 
+	// last x of longest line ( left edge of the datapoint)
+	protected float lastX =-1;
+	
 	protected float maxXWidth = -1;
 	protected int minDP=-1, maxDP=-1, avgDP=-1;
 
@@ -40,6 +46,13 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public void setSplitSettings(SettingsImageContinousSplit sett) {
 		this.sett = sett;
 		reset();
+		
+		if(sett.getSplitMode()==XUNIT.DP && sett.getSplitAfterDP()==0) {
+			
+		}
+		else if(sett.getSplitMode()==XUNIT.s && sett.getSplitAfterX()==0) {
+			
+		}
 		// split data TODO
 		if(sett.getSplitMode()==XUNIT.s) {
 			lineStart = new int[getLinesCount()];
@@ -92,8 +105,31 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		minDP=-1; 
 		maxDP=-1; 
 		avgDP=-1;
+		lastX=-1;
 	}
-
+	
+	/**
+	 * get settings by class
+	 * @param classsettings
+	 * @return
+	 */
+	@Override
+	public Settings getSettingsByClass(Class classsettings) {
+		// split settings
+		if(classsettings.isInstance(sett)) {
+			return sett;
+		}
+		else return null;
+	}
+	/**
+	 * set settings by class
+	 * @param classsettings
+	 */
+	public void setSettingsByClass(Settings sett) {
+		if(SettingsImageContinousSplit.class.isInstance(sett)) {
+			setSplitSettings((SettingsImageContinousSplit)sett);
+		}
+	}
 	//##################################################
 	// Multi dimensional
 	@Override
@@ -101,8 +137,27 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		return line.removeDimension(i);
 	}
 	@Override
-	public int addDimension(Double[] dim) {
-		line.addDimension(dim);
+	public int addDimension(List<Double[]> dim) {
+		if(dim.size()==1) {
+			line.addDimension(dim.get(0));
+		}
+		else {
+			// put all lines together
+			int size = 0;
+			for(Double[] d : dim)
+				size += d.length;
+			
+			Double[] sum = new Double[size];
+
+			int c = 0;
+			for(Double[] d : dim)
+				for(Double val : d) {
+					sum[c] = val;
+					c++;
+				}
+			
+			line.addDimension(sum);
+		}
 		return line.getImageCount()-1;
 	}
 
@@ -117,7 +172,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 				float[] x = new float[dp];
 				for(int l=0; l<img.getData().getLinesCount(); l++) {
 					for(int i=0; i<img.getData().getLineLength(l); i++) {
-						x[c] = img.getXRaw(l, i);
+						x[c] = img.getXRaw(true,l, i);
 						c++;
 					}
 				}
@@ -174,6 +229,26 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 		return this.line.getI(index, getIndex(line, dpi));
 	}
 
+
+	@Override
+	public float getRightEdgeX(int l) {
+		return getLastXLine(l)+line.getWidthDP();
+	} 
+	@Override
+	public float getLastXLine(int line) {
+		return getX(line, getLineLength(line)-1);
+	}
+
+	@Override
+	public float getLastX() {
+		if(lastX==-1) {
+			for(int i=0; i<getLinesCount(); i++)
+				if(getLastXLine(i)>lastX)
+					lastX = getLastXLine(i);
+		}
+		return lastX;
+	}
+	
 	/**
 	 * calculates the data point in the continuous dimension
 	 * @param line
@@ -250,7 +325,7 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	}
 
 	@Override
-	public float getMaxXWidth() {
+	public float getMaxXDPWidth() {
 		if(maxXWidth==-1) {
 			// calc min x
 			maxXWidth = Float.NEGATIVE_INFINITY; 
@@ -268,14 +343,8 @@ public class DatasetContinuousMD  extends ImageDataset implements MDDataset, Ser
 	public boolean hasXData() { 
 		return line!=null && line.hasXData();
 	}	
-
 	@Override
-	public Object[][] toXMatrix(float scale) {
-		int cols = getLinesCount();
-		int rows = getMaxDP();
-		if(hasXData()) {
-			super.toXMatrix(scale);
-		} 
-		return null;
+	public int size() {
+		return line!=null? line.getImageCount() : 0;
 	}
 }

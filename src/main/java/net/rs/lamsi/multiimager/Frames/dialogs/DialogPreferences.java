@@ -12,9 +12,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
+import net.rs.lamsi.general.framework.modules.Module;
+import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 import javax.swing.JLabel;

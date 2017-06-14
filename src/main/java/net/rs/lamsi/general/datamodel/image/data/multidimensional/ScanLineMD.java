@@ -1,10 +1,11 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 
 /**
  * A scan line of multi dimensional data:
@@ -12,19 +13,23 @@ import net.rs.lamsi.general.datamodel.image.interf.MDDataset;
  * @author r_schm33
  *
  */
-public class ScanLineMD  implements Serializable, MDDataset  {
+public class ScanLineMD  implements Serializable  {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 	//
 	protected float[] x = null;
-	protected Vector<Double[]> intensity = null;
+	// end x as right edge of line
+	protected float endX = -1;
+	
+	// all dimensions
+	protected List<Double[]> intensity = null;
 
-	public ScanLineMD(Vector<Float> x, Vector<Double[]> intensity) {
+	public ScanLineMD(List<Float> x, List<Double[]> intensity) {
 		super();
 		setX(x);
 		this.intensity = intensity;
 	}
-	public ScanLineMD(float[] x, Vector<Double[]> intensity) {
+	public ScanLineMD(float[] x, List<Double[]> intensity) {
 		super();
 		this.x = x;
 		this.intensity = intensity;
@@ -32,16 +37,25 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	public ScanLineMD(float[] x, Double[] i) {
 		super();
 		this.x = x;
-		this.intensity = new Vector<Double[]>();
+		this.intensity = new ArrayList<Double[]>();
+		intensity.add(i);
+	}
+	public ScanLineMD(Double[] i) {
+		super();
+		this.intensity = new ArrayList<Double[]>();
 		intensity.add(i);
 	}
 	public ScanLineMD() {
-		this.intensity = new Vector<Double[]>();
+		super();
+		this.intensity = new ArrayList<Double[]>();
 	}
 
+	public ScanLineMD(List<Float> x) {
+		this();
+		setX(x);
+	}
 	//##################################################
 	// Multi dimensional
-	@Override
 	public boolean removeDimension(int i) {
 		if(i>=0 && i<intensity.size()) {
 			intensity.remove(i);
@@ -49,20 +63,11 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 		}
 		return false;
 	}
-	@Override
 	public int addDimension(Double[] dim) {
 		intensity.add(dim);
 		return intensity.size()-1;
 	}  
 	
-	@Override
-	/**
-	 * do not use this method here
-	 * use the one with line instead
-	 */
-	public boolean addDimension(Image2D img) {
-		return false;
-	}
 
 	/**
 	 * adds the dimension of line i
@@ -74,7 +79,7 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 		if(x==null  && (!MDDataset.class.isInstance(img.getData()) || ((MDDataset)img.getData()).hasXData())) {
 			x = new float[dp];
 			for(int i=0; i<dp; i++) {
-				x[dp] = img.getXRaw(line, i);
+				x[dp] = img.getXRaw(true,line, i);
 			}
 		}
 		// add dimension
@@ -86,7 +91,6 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	}
 	
 
-	@Override
 	public boolean hasXData() { 
 		return this.getX()!=null;
 	}
@@ -95,7 +99,7 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	 * adds an intensity dimension (image)
 	 * @param i
 	 */
-	public void addDimension(Vector<Double> i) {
+	public void addDimension(List<Double> i) {
 		addDimension(i.toArray(new Double[i.size()]));
 	}
 
@@ -105,7 +109,7 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	public void setX(float[] x) {
 		this.x = x;
 	}
-	public void setX(Vector<Float> lx) {
+	public void setX(List<Float> lx) {
 		x = new float[lx.size()];
 		for(int i=0; i<x.length; i++)
 			x[i] = lx.get(i);
@@ -136,7 +140,7 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	 * @return
 	 */
 	public int getDPCount() {
-		return intensity.firstElement().length;
+		return intensity.get(0).length;
 	}
 	/**
 	 * raw width of dp by dividing maxX by elements count
@@ -164,5 +168,25 @@ public class ScanLineMD  implements Serializable, MDDataset  {
 	 */
 	public int getImageCount() {
 		return intensity.size();
+	}
+	
+	/**
+	 * right edge of the last data point (x)
+	 * @return
+	 */
+	public float getEndX() {
+		if(endX==-1)
+			endX = getX(getDPCount()-1)+getWidthDP();
+		return endX;
+	}
+
+	/**
+	 * distace percentage of x to the middle of width
+	 * @param width
+	 * @param x
+	 * @return
+	 */
+	private double distPercent(double width, double x) {
+		return (width/2-x)/width*2;
 	}
 }

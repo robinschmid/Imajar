@@ -3,10 +3,10 @@ package net.rs.lamsi.massimager.MyOES;
 import java.io.File;
 import java.util.Vector;
 
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
+import net.rs.lamsi.general.settings.SettingsDataSaver;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -93,7 +93,6 @@ public class OESFileReaderWriter {
     		// For ElementLine
     		for(int i=0; i<oesf.size(); i++) {
     			// Progress:
-    			ProgressDialog.setProgress(1000*(i/(oesf.size()-1)));
     			//
     			OESElementLine el = oesf.get(i);
         		XSSFSheet sheet = writer.getSheet(wb, el.getName());

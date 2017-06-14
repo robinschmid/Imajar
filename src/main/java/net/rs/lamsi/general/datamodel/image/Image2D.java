@@ -5,43 +5,40 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.Vector;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
-import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.Dataset2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIData2D;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
-import net.rs.lamsi.massimager.Heatmap.PaintScaleGenerator;
+import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.SettingsImage2D;
+import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
+import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
+import net.rs.lamsi.general.settings.interf.DatasetSettings;
+import net.rs.lamsi.general.settings.interf.GroupSettings;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
-import net.rs.lamsi.massimager.MyOES.OESElementLine;
-import net.rs.lamsi.massimager.MyOES.OESScan;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.image.SettingsImage2D;
-import net.rs.lamsi.massimager.Settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.massimager.Settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsThemes;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImage2DDataExport;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.DataMinMaxAvg;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.RectSelection;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 import org.jfree.chart.ChartFactory;
@@ -56,59 +53,48 @@ import org.jfree.data.statistics.HistogramDataset;
 
 // XY raw data! 
 // have to be multiplied with velocity and spot size
-public class Image2D implements Serializable, Collectable2D {	 
+public class Image2D extends Collectable2D<SettingsImage2D> implements Serializable {	 
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
-	// image group: Multi dimensional data sets create an ImageGroupMD
-	// this controls image operations
-	protected ImageGroupMD imageGroup = null;
 
 	// Parent image with master settings
 	protected Image2D parent;
 
 	// image has nothing to do with quantifier class! so dont use a listener for data processing changed events TODO
-	//protected Vector<IntensityProcessingChangedListener> listenerProcessingChanged = new Vector<IntensityProcessingChangedListener>();
+	protected ArrayList<IntensityProcessingChangedListener> listenerProcessingChanged = new ArrayList<IntensityProcessingChangedListener>();
 	// intensityProcessingChanged? save lastIProcChangeTime and compare with one from quantifier class
-	protected int lastIProcChangeTime = 0;
+	protected int lastIProcChangeTime = 1;
 
 	//############################################################
 	// Settings
-	protected SettingsImage2D settings;
-
+	//protected SettingsImage2D settings;
 
 	//############################################################
 	// data
 	protected ImageDataset data;
+
 	// index of image in data set: (multidimensional data set)
 	protected int index=0;
-
 
 	// are getting calculated only once or after processing changed
 	// max and min z (intensity)
 	protected double averageIProcessed = -1;
-	protected double minZ=-1, maxZ=-1;
-	protected float maxX = -1;
+	protected double minZ=Double.NaN, maxZ=Double.NaN;
+	protected double minZSelected=Double.NaN, maxZSelected=Double.NaN;
 	protected double minZFiltered = -1;
 	protected double maxZFiltered = -1;
 	// store total dp count 
-	protected int totalDPCount = -1;
-
-	// Selected data stored in rectangles:
-	// for use as external standard
-	protected Vector<RectSelection> selectedData = null;
-	protected Vector<RectSelection> excludedData = null;
-	protected Vector<RectSelection> infoData = null;
 
 	public Image2D() { 
-		settings = new SettingsImage2D();
+		super((new SettingsImage2D()));
 	}
 
 	public Image2D(SettingsImage2D settings) {
-		super();
-		this.settings = settings;
+		super(settings);
+		setSettings(settings);
 	}
-	
+
 	public Image2D(ImageDataset data) {
 		this();
 		this.data = data; 
@@ -153,7 +139,7 @@ public class Image2D implements Serializable, Collectable2D {
 			listLines.add(new ScanLineMD(x,z));
 		}
 		// Image erstellen 
-		return  new Image2D(new DatasetMD(listLines), 0, new SettingsImage2D(settPaintScale, setImage)); 
+		return  new Image2D(new DatasetLinesMD(listLines), 0, new SettingsImage2D(settPaintScale, setImage)); 
 	}
 
 	// Discontinous MS-Image
@@ -176,368 +162,104 @@ public class Image2D implements Serializable, Collectable2D {
 		return new Image2D(new DatasetContinuousMD(line, settSplit), 0, new SettingsImage2D(settPaintScale, setImage));
 	}
 
-	//
-	// OES Generation
-	public static Image2D generateImage2DFromOES(SettingsPaintScale settPaintScale, SettingsGeneralImage setImage, OESElementLine eLine) {
-		// TODO mehrere MZ machen 
-		// Alle Spec
-		// Erst Messpunkteanzahl ausrechnen 
-		// lines listLines
-		OESScan scan;
-		ScanLine2D[] listLines = new ScanLine2D[eLine.getListScan().size()];
-		// Lines durchgehen
-		for(int i=0; i<eLine.getListScan().size(); i++) { 
-			scan = eLine.getListScan().get(i);
-			// Datapoint array
-			DataPoint2D[] dp = new DataPoint2D[scan.getTime().size()];
-			// x, i datapoints
-			for(int d=0; d<dp.length; d++) {
-				float x = (scan.getTime().get(d).floatValue());
-				double intensity = scan.getCenter().get(d).doubleValue();
-				dp[d] = new DataPoint2D(x, intensity);
-			}
-
-			// new line 
-			listLines[i] = new ScanLine2D(dp);
-		}
-		// Image erstellen 
-		return  new Image2D(new Dataset2D(listLines), new SettingsImage2D(settPaintScale, setImage)); 
-	}
-
-
-	//#########################################################################################################
-	// TO ARRAY LISTS   
-	public XYIData2D toXYIArray(SettingsGeneralImage setImg) {
-		return toXYIArray(setImg.getImagingMode(), setImg.getRotationOfData(), setImg.isReflectHorizontal(), setImg.isReflectVertical() );
-	}
-	public XYIData2D toXYIArray(int imgMode, int rotation, boolean reflectH, boolean reflectV) {
-		// easy?
-		if(imgMode==SettingsGeneralImage.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
-			return toXYIArray();
-		}
-		else {
-			// count scan points
-			int scanpoints = 0;
-			for(int i=0; i<data.getLinesCount(); i++) {
-				scanpoints += data.getLineLength(i);
-			}
-			// create data
-			double[] x = new double[scanpoints];
-			double[] y = new double[scanpoints];
-			double[] z = new double[scanpoints];
-			//
-			ScanLine2D line; 
-			int currentdp = 0;
-			double height = getMaxYProcessed();
-			// for all lines
-			for(int iy=0; iy<data.getLinesCount(); iy++) {
-				// width  
-				double width = getMaxXProcessed(iy);
-				// for all datapoints in line
-				for(int ix=0; ix<data.getLineLength(iy); ix++) {
-					// x = time; NOT distance; so calc TODO
-					x[currentdp] = getXProcessed(iy, ix);
-					y[currentdp] = getYProcessed(iy);
-					z[currentdp] = getIProcessed(iy, ix);
-
-					// imagecreation mode: if twoways -> first reflect every 2. line (x values)
-					if(imgMode==SettingsGeneralImage.MODE_IMAGING_TWOWAYS && iy%2 != 0) {
-						// reflect x
-						x[currentdp] += distPercent(width, x[currentdp]) *width; 
-					}
-
-					// flip values of x and y
-					// xor: ^    reflectV and 180° = reflectH
-					if(!(reflectH && reflectV && rotation==180)) {
-						if((reflectH && rotation!=180) ^ (reflectV && rotation==180)) {// y 
-							y[currentdp] += distPercent(height, y[currentdp]) *height; 
-						}
-						if((reflectV && rotation!=180) ^ (reflectH && rotation==180)) {// x
-							x[currentdp] += distPercent(width, x[currentdp]) *width; 
-						}
-						if(rotation==180 && !reflectV && !reflectH) {
-							y[currentdp] += distPercent(height, y[currentdp]) *height; 
-							x[currentdp] += distPercent(width, x[currentdp]) *width; 
-						}
-					}
-					// 90°
-					if(rotation==90) {
-						// x0 -> y0   xn -> yn
-						double savey = y[currentdp];
-						y[currentdp] = x[currentdp];
-						// y0 -> xn   yn -> x0  ==> reflectH and then same as x 
-						savey += distPercent(height, savey) *height; // reflectH
-						x[currentdp] = savey;
-					}
-					// -90° = 270°
-					if(rotation==270 || rotation ==-90) {
-						// y0 -> x0   yn -> xn
-						double savex = x[currentdp];
-						x[currentdp] = y[currentdp];
-						// x0 -> yn   xn -> y0  ==> reflectV and then same as y 
-						savex += distPercent(width, savex) *width; // reflectV
-						y[currentdp] = savex;
-					}
-
-					currentdp++;
-				} 
-			}
-			//
-			return new XYIData2D(x, y, z);
-		}
-	} 
-
-	private double distPercent(double width, double x) {
-		return (width/2-x)/width*2;
-	}
-
-	public XYIData2D toXYIArray() {
-		// Erst Messpunkteanzahl ausrechnen 
-		int scanpoints = data.getTotalDPCount(); 
-		// Datenerstellen
-		double[] x = new double[scanpoints];
-		double[] y = new double[scanpoints];
-		double[] z = new double[scanpoints];
-		//
-		ScanLine2D line; 
-		int currentdp = 0;
-		// for all lines
-		for(int iy=0; iy<data.getLinesCount(); iy++) {
-			// for all data points
-			for(int ix=0; ix<data.getLineLength(iy); ix++) {
-				// x = time; NOT distance; so calc
-				x[currentdp] = Double.valueOf(String.valueOf(getXProcessed(iy, ix)));
-				y[currentdp] = Double.valueOf(String.valueOf(getYProcessed(iy)));
-				z[currentdp] = Double.valueOf(getIProcessed(iy, ix));
-				currentdp++;
-			} 
-		}
-		//
-		return new XYIData2D(x, y, z);
-	}
-	public XYIData2D toXYIArrayRaw() {
-		// Erst Messpunkteanzahl ausrechnen 
-		int scanpoints = data.getTotalDPCount(); 
-		// Datenerstellen
-		double[] x = new double[scanpoints];
-		double[] y = new double[scanpoints];
-		double[] z = new double[scanpoints];
-		//
-		ScanLine2D line; 
-		int currentdp = 0;
-		//
-		for(int iy=0; iy<data.getLinesCount(); iy++) {
-			//
-			for(int ix=0; ix<data.getLineLength(iy); ix++) {
-				// x = time; NOT distance; 
-				x[currentdp] = Double.valueOf(String.valueOf(getXRaw(iy, ix)));
-				y[currentdp] = Double.valueOf(String.valueOf((iy)));
-				z[currentdp] = Double.valueOf(String.valueOf(getIRaw(iy, ix)));
-				currentdp++;
-			} 
-		}
-		//
-		return new XYIData2D(x, y, z);
-	}
-	/**
-	 * all intensities as one array
-	 * @return float intensity Array
-	 */
-	public double[] toIArray() {
-		// calc count of points
-		int scanpoints = data.getTotalDPCount(); 
-		double[] z = new double[scanpoints];
-		//
-		ScanLine2D line; 
-		int currentdp = 0;
-		//
-		for(int iy=0; iy<data.getLinesCount(); iy++) {
-			//
-			for(int ix=0; ix<data.getLineLength(iy); ix++) {
-				// x = time; NOT distance; so calc 
-				z[currentdp] =  getIProcessed(iy, ix);
-				currentdp++;
-			} 
-		}
-		//
-		return z;
-	} 
 
 	/**
-	 * returns [rows][columns] of xyz data processed or not processed
-	 * @param sett
-	 * @return
-	 */
-	public Object[][] toXYIArray(SettingsImage2DDataExport sett) {
-		XYIData2D data = sett.isExportRaw()?  toXYIArrayRaw() : toXYIArray();
-
-		Object[][] real = new Object[data.getI().length][3];
-		for(int i=0; i<real.length; i++) {
-			real[i][0] = data.getX()[i];
-			real[i][1] = data.getY()[i];
-			real[i][2] = data.getI()[i];
-		}
-		return real;
-	}
-
-	//###############################################################################################
-	/**
-	 * Creates an array of x and intensity data (raw or processed)
-	 * @param sett
-	 * @return data [rows][columns]
-	 */
-	public Object[][] toDataArray(ModeData mode, boolean raw) {
-		// columns in the data sheet are lines / x values here
-		// time only once?
-		int cols = mode.equals(ModeData.XYYY)? data.getLinesCount() +1 :  data.getLinesCount()*2;
-		if(mode.equals(ModeData.ONLY_Y)) cols = data.getLinesCount();
-		// rows in data sheet = data points here
-		int rows = data.getMaxDP();
-		Object[][] dataExp = new Object[rows][cols];
-		int l = 0;
-		for(int c=0; c<cols; c++) {
-			if((mode.equals(ModeData.XYYY) && c==0) || (mode.equals(ModeData.XYXY_ALTERN) && c%2==0)) {
-				//write X
-				for(int r = 0; r<rows; r++) {
-					dataExp[r][c] = r<data.getLineLength(l)? getXRaw(l,r) : "";
-				}
-			}
-			else {
-				// write intensity
-				for(int r = 0; r<rows; r++) {
-					// only if not null
-					dataExp[r][c] = r<data.getLineLength(l)? (raw? getIRaw(l,r) : getIProcessed(l,r)) : "";
-				}
-				// increment l line
-				l++;
-			}
-		}
-		return dataExp;
-	}
-
-
-
-	/**
-	 * Returns the processed intensity only
-	 * @param sett
-	 * @return
-	 */
-	public Object[][] toXArray(boolean raw) {
-		return data.toXMatrix(raw? 1 : getSettImage().getVelocity());
-	} 
-
-	/**
-	 * Returns the processed intensity only
-	 * @param sett
-	 * @return
-	 */
-	public Object[][] toIArrayProcessed() {
-		// time only once?
-		int cols = data.getLinesCount();
-		int rows = data.getMaxDP();
-		Object[][] dataExp = new Object[rows][cols]; 
-		for(int c=0; c<cols; c++) {
-			// increment l
-			for(int r = 0; r<rows; r++) {
-				// only if not null: write Intensity
-				dataExp[r][c] = r<data.getLineLength(c)? getIProcessed(c,r) : "";
-			} 
-		}
-		return dataExp;
-	} 
-	/**
-	 * Returns the processed intensity only.
-	 * with boolean map
-	 * @param sett
-	 * @return
-	 */
-	public Object[][] toIArrayProcessed(boolean[][] map) {
-		// time only once?
-		int rows = data.getLinesCount();
-		int cols = data.getMaxDP();
-		Object[][] dataExp = new Object[rows][cols]; 
-		for(int r = 0; r<rows; r++) {
-			for(int c=0; c<cols; c++) {
-				// increment l 
-				// only if not null: write Intensity
-				boolean state = r<map.length && c<map[r].length && map[r][c];
-				dataExp[r][c] = c<data.getLineLength(r) && state? getIProcessed(r,c) : "";
-			} 
-		}
-		return dataExp;
-	}
-	/**
-	 * Returns the processed intensity and xy
-	 * @param sett
-	 * @return
-	 */
-	public Object[][] toDataArrayProcessed(SettingsImage2DDataExport sett, boolean blank, boolean IS, boolean quantifier) {
-		// all lines are full? or is the first/last one only half
-		int startLine = 0;
-		int lcount = data.getLinesCount();
-		if(sett.isCuttingDataToMin()) {
-			int avglength = data.getAvgDP();
-			// have a look at the first and last line
-			if(data.getLineLength(0)<avglength*0.80) {
-				startLine = 1;
-				lcount--;
-			}
-			if(data.getLineLength(data.getLinesCount()-1)<avglength*0.80)
-				lcount--;
-		}
-		// time only once?
-		int cols = sett.getMode().equals(ModeData.XYYY)? data.getLinesCount() +1 :  data.getLinesCount()*2;
-		if(sett.getMode().equals(ModeData.ONLY_Y)) cols = data.getLinesCount();
-		// how many rows? maximum or cutting to minimum
-		int minDP = data.getMinDP();
-		int rows = !sett.isCuttingDataToMin() || minDP<=1? data.getMaxDP() : minDP;
-
-		Object[][] dataRes = new Object[rows][cols];
-		int l = startLine;
-		for(int c=0; c<cols; c++) {
-			if((sett.getMode().equals(ModeData.XYYY) && c==0) || (sett.getMode().equals(ModeData.XYXY_ALTERN) && c%2==0)) {
-				//write X
-				for(int r = 0; r<rows; r++) {
-					dataRes[r][c] = r<data.getLineLength(l)? getXRaw(l,r) : "";
-				}
-			}
-			else {
-				// write intensity
-				for(int r = 0; r<rows; r++) {
-					// only if not null
-					dataRes[r][c] = r<data.getLineLength(l)? getIProcessed(l,r, blank, IS, quantifier) : "";
-				}
-				// increment l line
-				l++;
-			}
-		}
-		return dataRes;
-	}
-
-	/**
-	 * The processed intensity.
-	 * blank reduced, internal standard normalization and quantification
+	 * y values in respect to rotation reflection imaging mode
+	 * @param raw
 	 * @param l
 	 * @param dp
 	 * @return
 	 */
-	public double getIProcessed(int l, int dp) { 
+	public float getY(boolean raw, int l, int dp) { 
+		return getY(raw, l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
+	}
+
+	/**
+	 * the processed/raw y with no respect to rotation
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public float getYRaw(boolean raw, int l) { 
+		return l*yFactor(raw);
+	}
+
+	/**
+	 * intensity values in respect to rotation reflection imaging mode
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getI(boolean raw, int l, int dp) { 
+		return getI(raw, true, l,dp);
+	}
+	/**
+	 * intensity values in respect to rotation reflection imaging mode
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getI(boolean raw, boolean useSettings, int l, int dp) { 
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
-		// TODO prozess intinsity
-		double i = getIRaw(l, dp);
-		// subtract blank and apply IS
-		if(getOperations()!=null) {
-			i = getOperations().calcIntensity(this, l, dp, i);
+
+		// get raw i
+		double i = !useSettings? getIRaw(l, dp) : getI(l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
+
+		// TODO process intensity
+		if(raw || Double.isNaN(i)) return i;
+		else {
+			// TODO dead end / replace!
+			// subtract blank and apply IS
+			if(settings.getOperations()!=null) {
+				i = settings.getOperations().calcIntensity(this, l, dp, i);
+			}
+			// quantify
+			if(settings.getQuantifier()!=null && settings.getQuantifier().isActive())  {
+				i = settings.getQuantifier().calcIntensity(this, l, dp, i); 
+			}
+			return i;
 		}
-		// quantify
-		if(getQuantifier()!=null && getQuantifier().isActive())  {
-			return getQuantifier().calcIntensity(this, l, dp, i); 
-		}
-		else return i;
 	}
+
+	/**
+	 * intensity values in respect to rotation reflection imaging mode
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public double getIRaw(boolean raw, int l, int dp) { 
+		// check for update in parent i processing
+		checkForUpdateInParentIProcessing();
+
+		// get raw i
+		double i = getIRaw(l, dp);
+
+		// TODO process intensity
+		if(raw || Double.isNaN(i)) return i;
+		else {
+			// TODO dead end / replace!
+			// subtract blank and apply IS
+			if(settings.getOperations()!=null) {
+				i = settings.getOperations().calcIntensity(this, l, dp, i);
+			}
+			// quantify
+			if(settings.getQuantifier()!=null && settings.getQuantifier().isActive())  {
+				i = settings.getQuantifier().calcIntensity(this, l, dp, i); 
+			}
+			return i;
+		}
+	}
+
+
 	/** 
-	 * The processed intensity.
+	 * The processed/raw intensity.
 	 * blank reduced, internal standard normalization and quantification
 	 * @param l
 	 * @param dp
@@ -546,82 +268,943 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param quantify
 	 * @return
 	 */
-	public double getIProcessed(int l, int dp, boolean blank, boolean IS, boolean quantify) { 
+	public double getIRaw(int l, int dp, boolean blank, boolean IS, boolean quantify) { 
 		// check for update in parent i processing
-		checkForUpdateInParentIProcessing();
-		// TODO prozess intinsity
-		double i = getIRaw(l, dp);
+		checkForUpdateInParentIProcessing(); 
+		// get raw i
+		double i = getI(l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
+
+		// TODO dead end / replace!
 		// subtract blank and apply IS
-		if(getOperations()!=null) {
-			i = getOperations().calcIntensity(this, l, dp, i, blank, IS);
+		if(settings.getOperations()!=null) {
+			i = settings.getOperations().calcIntensity(this, l, dp, i, blank, IS);
 		}
 		// quantify
-		if(getQuantifier()!=null && quantify)  {
-			boolean tmp = getQuantifier().isActive();
-			getQuantifier().setActive(true);
-			i = getQuantifier().calcIntensity(this, l, dp, i); 
-			getQuantifier().setActive(tmp);
+		if(settings.getQuantifier()!=null && quantify)  {
+			boolean tmp = settings.getQuantifier().isActive();
+			settings.getQuantifier().setActive(true);
+			i = settings.getQuantifier().calcIntensity(this, l, dp, i); 
+			settings.getQuantifier().setActive(tmp);
 		}
 		return i;
 	}
+
 	/**
-	 * The processed x
+	 * The processed/raw intensity. with no respect to rotation
+	 * blank reduced, internal standard normalization and quantification
 	 * @param l
 	 * @param dp
-	 * @return
-	 */
-	public float getXProcessed(int l, int dp) { 
-		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
-		if(dp<data.getLineLength(line))
-			return data.getX(line, dp) * getSettImage().getVelocity();
-		else {
-			// TODO WHAT?! Cant understand this
-			// is the program ending at this poitn? at any time?
-			int overMax = (data.getLineLength(line)-dp+1);
-			ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
-			//return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
-			// tmp change
-			return (((data.getX(line, data.getLineLength(line)-1)) * getSettImage().getVelocity()));
-		}
-	}
-	/**
-	 * The raw x
-	 * @param l
-	 * @param dp
-	 * @return
-	 */
-	public float getXRaw(int l, int dp) { 
-		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
-		if(dp<data.getLineLength(line))
-			return data.getX(line, dp);
-		else {
-			// TODO WHAT?! Cant understand this
-			// is the program ending at this poitn? at any time?
-			int overMax = (data.getLineLength(line)-dp+1);
-			ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
-			//return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
-			// tmp change
-			return (((data.getX(line, data.getLineLength(line)-1))));
-		}
-	}
-	/** 
-	 * The raw intensity.
-	 * @param l
-	 * @param dp
-	 * @return
+	 * @return the intensity or Double.NaN if out of data space
 	 */
 	public double getIRaw(int l, int dp) {  
-		return data.getI(index,l, dp);
+		if(l<0 || dp<0 || l>=data.getLinesCount() || dp>=data.getLineLength(l))
+			return Double.NaN;
+		return data.getI(index, l, dp); 
 	}
+
 	/**
-	 * The processed y
+	 * x values with respect to ration
 	 * @param l
 	 * @param dp
 	 * @return
 	 */
-	public float getYProcessed(int l) { 
-		return l*getSettImage().getSpotsize();
+	public float getX(boolean raw, int l, int dp) { 
+		return getX(raw, l, dp, settings.getSettImage().getImagingMode(), 
+				settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(), settings.getSettImage().isReflectVertical());
+	} 
+
+	/**
+	 * The processed/raw x with no respect to rotation
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public float getXRaw(boolean raw, int l, int dp) { 
+		int line = l<data.getLinesCount()? l:data.getLinesCount()-1;
+		if(dp<data.getLineLength(line))
+			return data.getX(line, dp) * (raw? 1 : settings.getSettImage().getVelocity());
+		// end of data x (right edge of last datapoint)
+		else if(dp==data.getLineLength(line))
+			return data.getRightEdgeX(l) * (raw? 1 : settings.getSettImage().getVelocity());
+		else {
+			// for the maximum processed line length
+			int overMax = (data.getLineLength(line)-dp+1);
+			ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
+			//return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax) * settImage.getVelocity()));
+			// tmp change
+			return (((data.getX(line, data.getLineLength(line)-1)) * (raw? 1 : settings.getSettImage().getVelocity())));
+		}
 	}
+
+	/**
+	 * handles rotation, imaging mode and reflection for intensities
+	 * return Double.NaN for out of specified data
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @param imgMode
+	 * @param rotation
+	 * @param reflectH
+	 * @param reflectV
+	 * @return if there is no value at l, dp then return Double.NaN else return value 
+	 */
+	private double getI(int l, int dp, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
+		// the usual case
+		if(imgMode==IMAGING_MODE.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false) {
+			if(dp>=0 && dp<data.getLineLength(l)) 
+				return getIRaw(l, dp);
+			else return Double.NaN;
+		}
+		else if(rotation==180) {
+			// invert reflection
+			return getI(l, dp, imgMode, 0, !reflectH, !reflectV);
+		}
+		else {
+			// first rotation:
+			// 90°
+			if(rotation==90) {
+				// rotate back to 0
+				// dp -> l
+				// line length(dp) -1 -l -> dp
+				return getI(dp, data.getMaxDP()-1-l, imgMode, 0, reflectH,reflectV);
+			}
+			// -90° = 270°
+			else if(rotation==270 || rotation ==-90) {
+				// l -> dp
+				// data.linescount -1 -dp
+				return getI(data.getLinesCount()-1-dp, l, imgMode, 0, reflectH,reflectV);
+			}
+			else {
+				int cx = dp;
+				int cy = l;
+				// THEN! reflect horizontally
+				if(reflectH)
+					cy = data.getLinesCount()-1-cy;
+				// reflect vertically xor
+				// meander imaging (two ways)
+				if(reflectV ^ (imgMode==IMAGING_MODE.MODE_IMAGING_TWOWAYS && cy%2 != 0)) 
+					cx = data.getMaxDP()-1-cx;
+
+				// return only if x is in range
+				if(cx>=0 && cx<data.getLineLength(cy)) 
+					return getIRaw(cy, cx);
+				else return Double.NaN;
+			}
+		}
+	}
+
+	/**
+	 * handles rotation, imgaging mode reflection for x values
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @param imgMode
+	 * @param rotation
+	 * @param reflectH
+	 * @param reflectV
+	 * @return returns the value or Float.NaN if there is no value
+	 */
+	public float getX(boolean raw, int l, int dp, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
+		// the usual case
+		if(rotation==90 || rotation==270 || rotation==-90) {
+			// return line height of line: dp
+			return getY(raw, dp, l, imgMode, 0, reflectH, reflectV);
+		}
+		else if(rotation==180) {
+			// invert reflection
+			return getX(raw, l, dp, imgMode, 0, !reflectH, !reflectV);
+		}
+		else {
+			int cx = dp;
+			int cy = l;
+			// THEN! reflect horizontally
+			if(reflectH)
+				cy = data.getLinesCount()-1-cy;
+			// reflect vertically xor
+			// meander imaging (two ways)
+			if(reflectV ^ (imgMode==IMAGING_MODE.MODE_IMAGING_TWOWAYS && cy%2 != 0)) 
+				cx = data.getMaxDP()-1-cx;
+
+			// only if cx is in range
+			if(cx>=0 && cx<data.getLineLength(cy)) {
+				float value = getXRaw(raw, cy, cx);
+				// xor ^
+				// imagecreation mode: if twoways -> first reflect every 2. line (x values)
+				if(reflectV ^ (imgMode==IMAGING_MODE.MODE_IMAGING_TWOWAYS && cy%2 != 0)) {
+					// reflect x
+					float width = getMaxXRaw(raw);
+					value += distPercent(width, value) *width; 
+				}
+				return value;
+			}
+			else return Float.NaN;
+		}
+	}
+
+	/**
+	 * handles rotation, imgaging mode reflection for y values
+	 * @param raw
+	 * @param l
+	 * @param dp
+	 * @param imgMode
+	 * @param rotation
+	 * @param reflectH
+	 * @param reflectV
+	 * @return
+	 */
+	public float getY(boolean raw, int l, int dp, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
+		// the usual case
+		if(rotation==0 || rotation==180 || rotation==360) {
+			return getYRaw(raw, l);
+		}
+		else {
+			// 90°
+			if(rotation==90) {
+				// rotate back to 0
+				// dp -> l
+				// line length(dp) -1 -l -> dp
+				//return getX(raw, dp, data.getMaxDP()-1-l, imgMode, 0, reflectH,reflectV);
+				return getX(raw, dp, l, imgMode, 0, reflectH,!reflectV);
+			}
+			// -90° = 270°
+			else {
+				// l -> dp
+				// data.linescount -1 -dp
+				return getX(raw, data.getLinesCount()-1-dp, l, imgMode, 0, reflectH,reflectV);
+			}
+		}
+	}
+
+
+	/**
+	 * minimum line length in regards to rotation
+	 * columns of the image
+	 * @return
+	 */
+	public int getMinLineLength() {
+		if(!isRotated()) {
+			return data.getMinDP();
+		} else {
+			return data.getLinesCount();
+		}
+	}
+	/**
+	 * maximum line length in regards to rotation
+	 * columns (dp) of the image
+	 * @return
+	 */
+	public int getMaxLineLength() {
+		if(!isRotated()) {
+			return data.getMaxDP();
+		} else {
+			return data.getLinesCount();
+		}
+	} 
+
+	/**
+	 * minimum lines count in regards to rotation
+	 * rows of the image
+	 * @return
+	 */
+	public int getMinLinesCount() {
+		if(!isRotated()) {
+			return data.getLinesCount();
+		} else {
+			return data.getMinDP();
+		}
+	}
+
+	/**
+	 * maximum lines count in regards to rotation
+	 * rows of the image
+	 * @return
+	 */
+	public int getMaxLinesCount() {
+		if(!isRotated()) {
+			return data.getLinesCount();
+		} else {
+			return data.getMaxDP();
+		}
+	}
+
+	/**
+	 * rotation == 0 | 180 | 360
+	 * @return
+	 */
+	public boolean isRotated() {
+		int rot = settings.getSettImage().getRotationOfData();
+		return !(rot==0 || rot==180 || rot==360);
+	}
+
+	/**
+	 * the length of lines in respect to reflection and rotation
+	 * @return
+	 */
+	public int getLineLength(int l) {
+		return getLineLength(l, settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal());
+	}
+
+	/**
+	 * the length of lines in respect to reflection and rotation
+	 * @param l
+	 * @param rotation 0-270
+	 * @param reflectH
+	 * @return
+	 */
+	private int getLineLength(int l, int rotation, boolean reflectH) {
+		if((rotation==0 && !reflectH) || (reflectH && rotation==180))
+			return data.getLineLength(l);
+		else if(rotation==90 || rotation==270 || rotation==-90)
+			return data.getLinesCount();
+		// xor
+		else if(rotation==180 ^ reflectH)
+			return data.getLineLength(data.getLinesCount()-1-l);
+		else // should not end here
+			return -1;
+	}
+	/**
+	 * the count of lines in respect to reflection and rotation
+	 * @return
+	 */
+	public int getLineCount(int dp) {
+		return getLineCount(dp, settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal());
+	}
+	/**
+	 * the count of lines in respect to reflection and rotation
+	 * @param dp
+	 * @param rotation 0-270
+	 * @param reflectV reflect lines
+	 * @return
+	 */
+	private int getLineCount(int dp, int rotation, boolean reflectH) {
+		if(rotation==0 || rotation==180)
+			return data.getLinesCount();
+		else if((rotation==90 && !reflectH) || ((rotation==270 || rotation==-90) && reflectH)) 
+			return data.getLineLength(dp);
+		else if((rotation==90 && reflectH) || ((rotation==270 || rotation==-90) && !reflectH)) 
+			return data.getLineLength(data.getLinesCount()-1-dp);
+		else // should not end here
+			return -1;
+	}
+
+
+	//#########################################################################################################
+	// TO ARRAY LISTS 
+
+	/**
+	 * distace percentage of x to the middle of width
+	 * @param width
+	 * @param x
+	 * @return
+	 */
+	private double distPercent(double width, double x) {
+		return (width/2-x)/width*2;
+	}
+
+	/**
+	 * to xyi array in regards to the rotation, reflection and imaging mode
+	 * @param raw
+	 * @param setImg
+	 * @return
+	 */
+	public double[][] toXYIArray(boolean raw, boolean useSettings) {
+		if(useSettings) {
+			SettingsGeneralImage s = settings.getSettImage();
+			int diff = data.getMaxDP()-data.getMinDP();
+			// crop?
+			if(s.isCropDataToMin() && diff!=0){
+				return toXYIDataMatrix(raw, useSettings).toLinearArray();
+			}
+			else {
+				// no crop
+				return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), 
+						s.isReflectHorizontal(), s.isReflectVertical() );
+			}
+		}
+		else return toXYIArrayNoRot();
+	}
+
+	/**
+	 * returns [rows][columns (3 : xyz)] of xyz data processed or not processed
+	 * @param sett
+	 * @return
+	 */
+	public Object[][] toXYIMatrix(boolean raw, boolean useSettings) {
+		double[][] data = toXYIArray(raw, useSettings);
+
+		Object[][] real = new Object[data[2].length][3];
+		for(int i=0; i<real.length; i++) {
+			real[i][0] = data[0][i];
+			real[i][1] = data[1][i];
+			real[i][2] = data[2][i];
+		}
+		return real;
+	}
+
+	/**
+	 * to xyi array in regards to the rotation, reflection and imaging mode
+	 * @param raw
+	 * @param imgMode
+	 * @param rotation
+	 * @param reflectH
+	 * @param reflectV
+	 * @return
+	 */
+	public double[][] toXYIArray(boolean raw, IMAGING_MODE imgMode, int rotation, boolean reflectH, boolean reflectV) {
+		// count scan points
+		int scanpoints = getTotalDPCount();
+		// Datenerstellen
+		double[] x = new double[scanpoints];
+		double[] y = new double[scanpoints];
+		double[] z = new double[scanpoints];
+		//
+		int lines = getMaxLinesCount();
+		int maxdp = getMaxLineLength();
+		int currentdp = 0;
+
+		// uses rotation
+		boolean usesRot = !(imgMode==IMAGING_MODE.MODE_IMAGING_ONEWAY && rotation==0 && reflectH==false && reflectV == false);
+
+		for(int iy=0; iy<lines; iy++) {
+			for(int ix=0; ix<maxdp; ix++) {
+				// x = time; NOT distance;  
+				// iy,ix are out of range? --> x is -1
+				double tmp = getI(raw, usesRot, iy, ix);
+				if(!Double.isNaN(tmp)) {
+					z[currentdp] = tmp;
+					if(usesRot) {
+						y[currentdp] = Double.valueOf(String.valueOf((getY(raw, iy, ix))));
+						x[currentdp] = Double.valueOf(String.valueOf(getX(raw, iy, ix)));
+					}
+					else {
+						y[currentdp] = Double.valueOf(String.valueOf((getYRaw(raw, iy))));
+						x[currentdp] = Double.valueOf(String.valueOf(getXRaw(raw, iy, ix)));
+					}
+					currentdp++;
+				}
+			} 
+		}
+		//
+		return new double[][]{x, y, z};
+	} 
+
+	/**
+	 * returns all line lengths according to rotation etc
+	 * @return
+	 */
+	private int[] getLineLenghts() {
+		int rotation = settings.getSettImage().getRotationOfData();
+		int[] length = new int[data.getLinesCount()];
+		if((rotation==90 || rotation==270 || rotation == -90))
+			// all line length
+			for(int i=0; i<data.getLinesCount(); i++)
+				length[i] = getLineCount(i);
+		else
+			for(int i=0; i<data.getLinesCount(); i++)
+				length[i] = getLineLength(i);
+		return length;
+	}
+
+
+
+	/**
+	 * xyi array without rotation, reflection, imaging mode
+	 * @param raw
+	 * @return
+	 */
+	private double[][] toXYIArrayNoRot() {
+		// Erst Messpunkteanzahl ausrechnen 
+		int scanpoints = data.getTotalDPCount(); 
+		// Datenerstellen
+		double[] x = new double[scanpoints];
+		double[] y = new double[scanpoints];
+		double[] z = new double[scanpoints];
+		//
+		int currentdp = 0;
+		//
+		for(int iy=0; iy<data.getLinesCount(); iy++) {
+			//
+			for(int ix=0; ix<data.getLineLength(iy); ix++) {
+				// x = time; NOT distance; 
+				x[currentdp] = Double.valueOf(String.valueOf(getXRaw(true, iy, ix)));
+				y[currentdp] = Double.valueOf(String.valueOf((getYRaw(true, iy))));
+				z[currentdp] = getIRaw(iy, ix);
+				currentdp++;
+			} 
+		}
+		//
+		return new double[][]{x, y, z};
+	}
+
+	//###############################################################################################
+	/**
+	 * Creates an array of x and intensity data (raw or processed)
+	 * for data export
+	 * @param sett
+	 * @param raw
+	 * @param useSettings rotation, reflection, imaging mode
+	 * @return data [rows][columns]
+	 */
+	public Object[][] toDataArray(ModeData mode, boolean raw, boolean useSettings) {
+		// export with rotation etc
+		if(useSettings) {
+			// columns in the data sheet are lines / x values here
+			// time only once?
+			int cols = getMaxLinesCount();
+			// rows in data sheet = data points here
+			int rows = getMaxLineLength();
+
+			// more columns for x values?
+			if(mode.equals(ModeData.XYYY)) cols += 1;
+			else if(mode.equals(ModeData.XYXY_ALTERN)) cols += 2;
+
+			Object[][] dataExp = new Object[rows][cols];
+			int l = 0;
+			for(int c=0; c<cols; c++) {
+				if((mode.equals(ModeData.XYYY) && c==0) || (mode.equals(ModeData.XYXY_ALTERN) && c%2==0)) {
+					//write X
+					for(int r = 0; r<rows; r++) {
+						dataExp[r][c] = isDP(l,r)? getX(raw, l,r) : "";
+					}
+				}
+				else {
+					// write intensity
+					for(int r = 0; r<rows; r++) {
+						// only if not null
+						double tmp = getI(raw, l,r);
+						dataExp[r][c] = !Double.isNaN(tmp)? tmp : "";
+					}
+					// increment l line
+					l++;
+				}
+			}
+			return dataExp;
+		}
+		// export without rotation etc
+		else {
+			// columns in the data sheet are lines / x values here
+			// time only once?
+			int cols = mode.equals(ModeData.XYYY)? data.getLinesCount() +1 :  data.getLinesCount()*2;
+			if(mode.equals(ModeData.ONLY_Y)) cols = data.getLinesCount();
+			// rows in data sheet = data points here
+			int rows = data.getMaxDP();
+			Object[][] dataExp = new Object[rows][cols];
+			int l = 0;
+			for(int c=0; c<cols; c++) {
+				if((mode.equals(ModeData.XYYY) && c==0) || (mode.equals(ModeData.XYXY_ALTERN) && c%2==0)) {
+					//write X
+					for(int r = 0; r<rows; r++) {
+						dataExp[r][c] = r<data.getLineLength(l)? getXRaw(raw, l,r) : "";
+					}
+				}
+				else {
+					// write intensity
+					for(int r = 0; r<rows; r++) {
+						// only if not null
+						dataExp[r][c] = r<data.getLineLength(l)? getIRaw(l,r) : "";
+					}
+					// increment l line
+					l++;
+				}
+			}
+			return dataExp;
+		}
+	}
+
+
+
+	/**
+	 * generate XYI matrices [line][dp]
+	 * @param raw 
+	 * @param useSettings rotation and imaging mode
+	 * @return
+	 */
+	public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
+		if(useSettings) {
+			SettingsGeneralImage sett = settings.getSettImage();
+			int diff = data.getMaxDP()-data.getMinDP();
+			// apply crop?
+			if(sett.isCropDataToMin() && diff!=0) {
+				int rot = sett.getRotationOfData();
+				boolean reflectH = sett.isReflectHorizontal();
+				// exclude last line? if shorter than 0.8 of avg
+				boolean excludeLastLine = data.getLineLength(data.getLinesCount()-1)/data.getAvgDP()<0.8;
+
+				// start line and last line if exclude
+				final int sl = excludeLastLine && ((reflectH && rot==0) || (!reflectH && rot == 180))? 1 : 0;
+				final int ll = excludeLastLine && ((!reflectH && rot==0) || (reflectH && rot == 180))? 1 : 0;
+				// start/last dp if exclude last line
+				final int sdp = excludeLastLine && ((reflectH && rot==90) || (!reflectH && (rot == -90 || rot==270)))? 1:0;
+				final int ldp = excludeLastLine && ((!reflectH && rot==90) || (reflectH && (rot == -90 || rot==270)))? 1:0;
+
+				
+				
+				// get full matrix
+				final int cols = getMaxLinesCount()-sl-ll;
+				final int rows = getMaxLineLength()-sdp-ldp;
+
+				Double[][] z = new Double[cols][rows];
+				Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+
+				// track first dp / first line / last dp/line index
+				int firstDP = 0, lastDP = rows;
+				
+				// c for lines
+				for(int c=0; c<cols; c++) {
+					int l = c+sl;
+					// increment l
+					for(int r = 0; r<rows; r++) {
+						int dp = r+sdp;
+						// only if not null: write Intensity
+						double tmp = getI(raw,l,dp);
+						z[c][r] = tmp;
+						// NaN?
+						if(!Double.isNaN(tmp)) {
+							x[c][r] = getX(raw,l,dp);
+							y[c][r] = getY(raw,l,dp);
+						}
+						else {
+							x[c][r] = Float.NaN;
+							y[c][r] = Float.NaN;
+							
+							// set last and first dp
+							if(r==firstDP) 
+								firstDP++;
+							else if(r>firstDP && r<lastDP) 
+								lastDP = r;
+						}
+					} 
+				}
+
+				int firstLine = 0; 
+				int lastLine = z.length;
+				// find first and last line
+				for(int l = 0; l<z.length && lastLine==z.length; l++) {
+					for(int dp=firstDP; dp<lastDP; dp++) {
+						// one NaN in line?
+						if(Double.isNaN(z[l][dp])) {
+							if(l==firstLine) firstLine++;
+							else if(l>firstLine && l<lastLine) lastLine = l;
+							// end line
+							break;
+						}
+					}
+				}
+				
+				// new size: between first and last dp/line
+				int w = lastDP-firstDP;
+				int h = lastLine-firstLine;
+
+				// shift by start x and y
+				float startx = x[firstLine][firstDP], starty = y[firstLine][firstDP];
+				
+				Double[][] newz = new Double[h][w];
+				Float[][] newx = new Float[h][w], newy = new Float[h][w];
+				
+				for(int l = 0; l<h; l++) {
+					for(int dp=0; dp<w; dp++) {
+						newz[l][dp] = z[l+firstLine][dp+firstDP];
+						newx[l][dp] = x[l+firstLine][dp+firstDP]-startx;
+						newy[l][dp] = y[l+firstLine][dp+firstDP]-starty;
+					}
+				}
+				// return data
+				return new XYIDataMatrix(newx,newy,newz);
+			}
+			else {
+				// no cropping
+				int cols = getMaxLinesCount();
+				int rows = getMaxLineLength();
+
+				Double[][] z = new Double[cols][rows];
+				Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+
+				// c for lines
+				for(int c=0; c<cols; c++) {
+					// increment l
+					for(int r = 0; r<rows; r++) {
+						// only if not null: write Intensity
+						double tmp = getI(raw,c,r);
+						z[c][r] = tmp;
+						// NaN?
+						x[c][r] = !Double.isNaN(tmp)? getX(raw,c,r) : Float.NaN;
+						y[c][r] = !Double.isNaN(tmp)? getY(raw,c,r) : Float.NaN;
+					} 
+				}
+				return new XYIDataMatrix(x,y,z);
+			}
+		}
+		else {
+			int cols = data.getLinesCount();
+
+			Float[][] x = new Float[cols][], y = new Float[cols][];
+			Double[][] z = new Double[cols][];
+
+			for(int c=0; c<cols; c++) {
+				int length = data.getLineLength(c);
+				x[c] = new Float[length];
+				y[c] = new Float[length];
+				z[c] = new Double[length];
+				// increment l
+				for(int r = 0; r<length; r++) {
+					// only if not null: write Intensity
+					z[c][r] = getIRaw(c,r);
+					// NaN?
+					x[c][r] = getXRaw(raw,c,r);
+					y[c][r] = getYRaw(raw,c);
+				} 
+			}
+			return new XYIDataMatrix(x,y,z);
+		}
+	}
+
+	/**
+	 * 
+	 * @param scale
+	 * @return x matrix raw or processed. null if there are no x values
+	 */
+	public Object[][] toXMatrix(boolean raw, boolean useSettings) {
+		// export with rotation etc
+		if(useSettings) {
+			int cols = getMaxLinesCount();
+			// rows in data sheet = data points here
+			int rows = getMaxLineLength();
+
+			Object[][] dataExp = new Object[rows][cols]; 
+			for(int c=0; c<cols; c++) {
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					dataExp[r][c] = isDP(c,r)? getX(raw, c, r) : "";
+				} 
+			}
+			return dataExp;
+		}
+		else {
+			int cols = data.getLinesCount();
+			int rows = data.getMaxDP();
+			Object[][] dataExp = new Object[rows][cols]; 
+			for(int c=0; c<cols; c++) {
+				int length = data.getLineLength(c);
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					dataExp[r][c] = r<length? getXRaw(raw, c, r) : "";
+				} 
+			}
+			return dataExp;
+		}
+	}
+
+	/**
+	 * always with settings
+	 * @param scale
+	 * @param sep separation chars
+	 * @return xmatrix raw by a factor as CSV string
+	 */
+	public String toXCSV(boolean raw, String sep, boolean useSettings) {
+		// no x data --> null
+		if(MDDataset.class.isInstance(data)) {
+			if(((MDDataset)data).hasXData()) {
+				// has only one x line
+				if(DatasetLinesMD.class.isInstance(data) && ((DatasetLinesMD)data).hasOnlyOneXColumn()) 
+					return toXCSV(raw, sep, 1, useSettings);
+				else return toXCSV(raw, sep, data.getLinesCount(), useSettings);
+			}
+			else return null;
+		}
+		else {
+			return toXCSV(raw, sep, data.getLinesCount(), useSettings);
+		}
+	}
+	/**
+	 * 
+	 * @param scale
+	 * @param sep separation chars
+	 * @return xmatrix raw by a factor as CSV string
+	 */
+	private String toXCSV(boolean raw, String sep, int lines, boolean useSettings) {
+		// no x data --> null
+		StringBuilder builder = new StringBuilder();
+		int cols = lines;
+		int rows = data.getMaxDP();
+
+		// if lines>1 --> otherwise it is x csv
+		if(useSettings) {
+			// rotation
+			int rotation = settings.getSettImage().getRotationOfData();
+			if(rotation==90 || rotation==270 || rotation == -90) {
+				if(cols!=1)
+					cols = rows;
+
+				rows = data.getLinesCount();
+			}
+		}
+		// increment dp
+		for(int r = 0; r<rows; r++) {
+			// increment l
+			for(int c=0; c<cols; c++) {
+				// only if not null: write Intensity
+				if(useSettings) {
+					builder.append(isDP(c, r)? getX(raw,c, r) : "");
+				}
+				else builder.append(r<data.getLineLength(c)? getXRaw(raw,c, r) : "");
+				if(c<cols-1) builder.append(sep);
+			} 
+			if(r<rows-1) builder.append("\n");
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param scale
+	 * @param sep separation chars
+	 * @return ymatrix raw by a factor as CSV string
+	 */
+	public String toICSV(boolean raw, String sep, boolean useSettings) {
+		StringBuilder builder = new StringBuilder();
+
+		int cols = data.getLinesCount();
+		int rows = data.getMaxDP();
+
+
+		// if lines>1 --> otherwise it is x csv
+		if(useSettings) {
+			// rotation
+			int rotation = settings.getSettImage().getRotationOfData();
+			if(rotation==90 || rotation==270 || rotation == -90) {
+				if(cols!=1)
+					cols = rows;
+
+				rows = data.getLinesCount();
+			}
+		}
+		for(int r = 0; r<rows; r++) {
+			// increment l
+			for(int c=0; c<cols; c++) {
+				// only if not null: write Intensity
+				if(useSettings) {
+					double tmp = getI(raw,useSettings,c, r);
+					builder.append(!Double.isNaN(tmp)? tmp : "");
+				}
+				else builder.append(r<data.getLineLength(c)? data.getI(index, c, r) : "");
+				if(c<cols-1) builder.append(sep);
+			} 
+			if(r<rows-1) builder.append("\n");
+		}
+		return builder.toString();
+	}
+
+
+	/**
+	 * all intensities as one array (no reflection/rotation)
+	 * @return float intensity Array
+	 */
+	public double[] toIArray(boolean raw) {
+		// calc count of points
+		int scanpoints = data.getTotalDPCount(); 
+		double[] z = new double[scanpoints];
+		//
+		//
+		if(raw) {
+			int c=0;
+			for(int iy=0; iy<data.getLinesCount(); iy++) {
+				//
+				for(int ix=0; ix<data.getLineLength(iy); ix++) {
+					// x = time; NOT distance; so calc 
+					z[c] = getIRaw(iy, ix);
+					c++;
+				} 
+			}
+		}
+		else {
+			// for lines (that are actually datapoints)
+			int maxlines = getMaxLinesCount();
+			int maxdp = getMaxLineLength();
+			int c=0;
+			for(int l=0; l<maxlines; l++) {
+				for(int dp=0; dp<maxdp; dp++) {
+					// for dp ( that are actually lines)
+					double tmp = getI(raw, l, dp);
+					if(!Double.isNaN(tmp)) {
+						z[c] = tmp;
+						c++;
+					}
+				}
+			}
+		}
+		//
+		return z;
+	} 
+
+	/**
+	 * Returns the intensity matrix
+	 * @param raw
+	 * @return [line][dp]
+	 */
+	public Object[][] toIMatrix(boolean raw, boolean useSettings) {
+		// time only once?
+		if(useSettings) {
+			int cols = getMaxLinesCount();
+			int rows = getMaxLineLength();
+
+			Object[][] dataExp = new Object[rows][cols]; 
+			// c for lines
+			for(int c=0; c<cols; c++) {
+				// increment l
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					double tmp = getI(raw,c,r);
+					dataExp[r][c] = !Double.isNaN(tmp)?  tmp : "";
+				} 
+			}
+			return dataExp;
+		}
+		else {
+			int cols = data.getLinesCount();
+			int rows = data.getMaxDP();
+			Object[][] dataExp = new Object[rows][cols]; 
+			for(int c=0; c<cols; c++) {
+				int length = data.getLineLength(c);
+				// increment l
+				for(int r = 0; r<rows; r++) {
+					// only if not null: write Intensity
+					dataExp[r][c] = r<length? getIRaw(c,r) : "";
+				} 
+			}
+			return dataExp;
+		}
+	} 
+	/**
+	 * Returns the intensity only.
+	 * with boolean map as alpha map
+	 * @param sett
+	 * @return [line][dp]
+	 */
+	public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
+		// time only once?
+		int cols = getMaxLinesCount();
+		int rows = getMaxLineLength();
+
+		Object[][] dataExp = new Object[rows][cols]; 
+		// c for lines
+		for(int c=0; c<cols; c++) {
+			// r for data points
+			for(int r = 0; r<rows; r++) {
+				// only if not null: write Intensity
+				// only if not null: write Intensity
+				boolean state = c<map.length && r<map[c].length && map[c][r];
+				if(state) {
+					double tmp = getI(raw,c,r);
+					dataExp[r][c] = !Double.isNaN(tmp)? tmp : "";
+				}
+				else dataExp[r][c] = "";
+			} 
+		}
+		return dataExp;
+	}
+
+
 	// finished processed data
 	//######################################################################
 	// get index from processed data (x/y)
@@ -630,11 +1213,44 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @param y
 	 * @return
 	 */
-	public int getYAsIndex(double y) {
-		if(y<0) return 0;
-		int l = (int)(y/getSettImage().getSpotsize());
-		return l<data.getLinesCount()? l : data.getLinesCount()-1;
+	public int getYAsIndex(double y, double x) {
+		int rotation = settings.getSettImage().getRotationOfData();
+		boolean reflectH = settings.getSettImage().isReflectHorizontal();
+		return getYAsIndex(y,x, rotation, reflectH);
 	} 
+
+	private int getYAsIndex(double y, double x, int rotation, boolean reflectH) { 
+		// XOR
+		reflectH = rotation==180 ^ reflectH;
+		//
+		if(rotation==90) {
+			// get line 
+			int line = getYAsIndex(x,y, 0, reflectH);
+			// y --> x and invert reflectV
+			return getXAsIndex(line, y, 0, !settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
+		}
+		else if(rotation==-90 || rotation==270) {
+			// get line 
+			int line = getYAsIndex(x,y, 0, !reflectH);
+			// y --> x and invert reflectV
+			return getXAsIndex(line, y, 0, settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
+		}
+		else if(!reflectH) {
+			// standard: 0 or (180 with reflect)
+			if(y<=0) return 0;
+			int l = (int)(y/settings.getSettImage().getSpotsize());
+			return l<data.getLinesCount()? l : data.getLinesCount()-1;
+		}
+		else {
+			// reflect
+			if(y<0) return 0;
+			int l = (int)(y/settings.getSettImage().getSpotsize());
+			l = data.getLinesCount()-l-1;
+			if(l<data.getLinesCount()-1)
+				return l>=0? l: 0;
+				else return data.getLinesCount()-1;
+		} 
+	}  
 	/**
 	 * returns the index of the data point in the given line 
 	 * @param line is an integer index
@@ -642,7 +1258,48 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public int getXAsIndex(int line, double x) {
-		double rx = x/getSettImage().getVelocity();
+		double rx = x/settings.getSettImage().getVelocity();
+		for(int i=1; i<data.getLineLength(line); i++) {
+			if(data.getX(line, i)>=rx)
+				return i-1;
+		}
+		return data.getLineLength(line)-1;
+	}
+
+	private int getXAsIndex(double y, double x, int rotation, boolean reflectV, IMAGING_MODE mode) {
+		// XOR
+		reflectV = rotation==180 ^ reflectV;
+		//
+		if(rotation==90) {
+			// get line 
+			int line = getYAsIndex(x,y, 0, reflectV);
+			// y --> x and invert reflectV
+			return getXAsIndex(line, y, 0, !settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
+		}
+		else if(rotation==-90 || rotation==270) {
+			// get line 
+			int line = getYAsIndex(x,y, 0, !reflectV);
+			// y --> x and invert reflectV
+			return getXAsIndex(line, y, 0, settings.getSettImage().isReflectVertical(), settings.getSettImage().getImagingMode());
+		}
+		else if(!reflectV) {
+			// standard: 0 or (180 with reflect)
+			if(y<=0) return 0;
+			int l = (int)(y/settings.getSettImage().getSpotsize());
+			return l<data.getLinesCount()? l : data.getLinesCount()-1;
+		}
+		else {
+			// reflect
+			if(y<0) return 0;
+			int l = (int)(y/settings.getSettImage().getSpotsize());
+			l = data.getLinesCount()-l-1;
+			if(l<data.getLinesCount()-1)
+				return l>=0? l: 0;
+				else return data.getLinesCount()-1;
+		} 
+	}
+	private int getXAsIndex(int line, double x, int rotation, boolean reflectV, IMAGING_MODE mode) {
+		double rx = x/settings.getSettImage().getVelocity();
 		for(int i=1; i<data.getLineLength(line); i++) {
 			if(data.getX(line, i)>=rx)
 				return i-1;
@@ -656,101 +1313,96 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public int getXAsIndex(double y, double x) {
-		return getXAsIndex(getYAsIndex(y), x);
+		return getXAsIndex(getYAsIndex(y,x), x);
 	}
 
-
-	// a name for lists
-	public String toListName() { 
-		return getSettImage().toListName();
-	} 
-
-	@Override
-	public String toString() {
-		return toListName();
-	}
 
 	public String getTitle() { 
-		return getSettImage().getTitle();
+		return settings.getSettImage().getTitle();
 	} 
 
+	public String getShortTitle() { 
+		String s = settings.getSettImage().getShortTitle();
+		return s.length()>0? s : getTitle();
+	} 
 	//#########################################################################################################
 	// GETTER AND SETTER
 	/**
 	 * 
 	 * @param settings any image settings
 	 */
+	@Override
 	public void setSettings(Settings settings) {
-		try {
-			if(settings== null)
-				return;
-			// TODO --> set all settings in one: 
-			// TODO --> complete!!!
-			if(SettingsPaintScale.class.isAssignableFrom(settings.getClass())) 
-				setSettPaintScale((SettingsPaintScale) settings);
-			else if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
-				setSettingsImage2D((SettingsImage2D) settings);
-				fireIntensityProcessingChanged();
-			}
-			else if(SettingsGeneralImage.class.isAssignableFrom(settings.getClass())) 
-				setSettImage((SettingsGeneralImage) settings);
-			else if(SettingsThemes.class.isAssignableFrom(settings.getClass())) 
-				setSettTheme((SettingsThemes) settings);
-			else if(SettingsImage2DOperations.class.isAssignableFrom(settings.getClass()))  {
-				setOperations((SettingsImage2DOperations) settings);
-				fireIntensityProcessingChanged();
-			}
-			else if(SettingsImage2DQuantifier.class.isAssignableFrom(settings.getClass())) {
-				setQuantifier((SettingsImage2DQuantifier) settings);
-				fireIntensityProcessingChanged();
-			}
-			else if(SettingsImageContinousSplit.class.isAssignableFrom(settings.getClass())) 
-				if(DatasetContinuousMD.class.isInstance(data)) 
-					((DatasetContinuousMD)data).setSplitSettings((SettingsImageContinousSplit)settings);
-		} catch(Exception ex) {
-			ex.printStackTrace();
+		if(settings== null)
+			return;
+
+		// dataset settings
+		if(DatasetSettings.class.isInstance(settings)) {
+			getData().setSettings(settings);
 		}
+		else super.setSettings(settings);
+
+		// fire changes
+		if(SettingsImage2D.class.isAssignableFrom(settings.getClass())) {
+			((SettingsImage2D) settings).setCurrentImage(this);
+			fireIntensityProcessingChanged();
+		} 
+		else if(SettingsImage2DOperations.class.isAssignableFrom(settings.getClass()) ||
+				SettingsImage2DQuantifier.class.isAssignableFrom(settings.getClass()))  {
+			getSettings().replaceSettings(settings);
+			fireIntensityProcessingChanged();
+		}
+		else if(SettingsImageContinousSplit.class.isAssignableFrom(settings.getClass())) 
+			if(DatasetContinuousMD.class.isInstance(data)) 
+				((DatasetContinuousMD)data).setSplitSettings((SettingsImageContinousSplit)settings);
 	} 
 
+	/**
+	 * get settings by class
+	 * @param classsettings
+	 * @return
+	 */
 	public Settings getSettingsByClass(Class classsettings) {
-		// TODO -- add other settings here
-		if(SettingsPaintScale.class.isAssignableFrom(classsettings)) 
-			return getSettPaintScale();
-		else if(SettingsImage2D.class.isAssignableFrom(classsettings))
-			return settings;
-		else if(SettingsGeneralImage.class.isAssignableFrom(classsettings)) 
-			return getSettImage();
-		else if(SettingsThemes.class.isAssignableFrom(classsettings)) 
-			return getSettTheme();
-		else if(SettingsImage2DOperations.class.isAssignableFrom(classsettings)) 
-			return getOperations();
-		else if(SettingsImage2DQuantifier.class.isAssignableFrom(classsettings)) 
-			return getQuantifier();
-		else if(SettingsImageContinousSplit.class.isAssignableFrom(classsettings)) 
-			return DatasetContinuousMD.class.isInstance(data)? ((DatasetContinuousMD)data).getSplitSettings() : null;
-			return null;
+		// return dataset settings
+		if(DatasetSettings.class.isAssignableFrom(classsettings)){
+			return getData().getSettingsByClass(classsettings);
+		}
+		else return super.getSettingsByClass(classsettings);
 	}
 
 	/**
 	 * Given image img will be setup like this image
 	 * @param img will get all settings from master image
 	 */
-	public void applySettingsToOtherImage(Image2D img) {
-		try {
-			// save name and path
-			String name = img.getTitle();
-			String path = img.getSettImage().getRAWFilepath();
-			// copy all TODO
-			img.setSettImage(BinaryWriterReader.deepCopy(this.getSettImage()));
-			img.setSettPaintScale((BinaryWriterReader.deepCopy(this.getSettPaintScale())));
-			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
-			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
-			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
-			// set name and path
-			img.getSettImage().setTitle(name);
-			img.getSettImage().setRAWFilepath(path);
-		} catch (Exception e) { 
-			e.printStackTrace();
+	@Override
+	public void applySettingsToOtherImage(Collectable2D img2) {
+		if(img2.isImage2D()) {
+			Image2D img = (Image2D) img2;
+
+			try {
+				// save name and path
+				String name = img.getTitle();
+				String shortName = img.getShortTitle();
+
+				String path = img.getSettings().getSettImage().getRAWFilepath();
+				// copy all TODO
+				img.setSettings(BinaryWriterReader.deepCopy(this.settings.getSettImage()));
+				// there should be no need for this
+				//			img.setSettPaintScale((BinaryWriterReader.deepCopy(this.getSettPaintScale())));
+				//			img.setSettTheme(BinaryWriterReader.deepCopy(this.getSettTheme()));
+				//			img.setOperations(BinaryWriterReader.deepCopy(this.getOperations()));
+				//			img.setQuantifier(BinaryWriterReader.deepCopy(this.getQuantifier()));
+				//			img.setSettZoom(BinaryWriterReader.deepCopy(this.getdSettZoom()));
+				// set name and path
+				// only reset to old short title if the titles were not the same
+				if(!name.equals(img.getTitle()))
+					img.getSettings().getSettImage().setShortTitle(shortName);
+				// reset to old title
+				img.getSettings().getSettImage().setTitle(name);
+				img.getSettings().getSettImage().setRAWFilepath(path);
+			} catch (Exception e) { 
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -763,33 +1415,79 @@ public class Image2D implements Serializable, Collectable2D {
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
 		if(onlySelected) {
-			double min =  Double.POSITIVE_INFINITY;
+			if(Double.isNaN(minZSelected)) {
+				minZSelected =  Double.POSITIVE_INFINITY;
 
-			for(int l=0; l<data.getLinesCount(); l++) {
-				for(int dp = 0; dp<data.getLineLength(l); dp++) {
-					double tmp;
-					if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getIProcessed(l, dp))<min)) {
-						min = tmp;
+				int[] length = getLineLenghts();
+				int rotation = settings.getSettImage().getRotationOfData();
+				if((rotation==90 || rotation==270 || rotation == -90)) {
+					// for lines (that are actually datapoints)
+					for(int dp=0; dp<data.getLinesCount(); dp++) {
+						for(int l=0; l<length[dp]; l++) {
+							double tmp;
+							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))<minZSelected)) {
+								minZSelected = tmp;
+							}
+						}
+					}
+				}
+				else {
+					// for lines
+					for(int l=0; l<data.getLinesCount(); l++) {
+						// for dp
+						for(int dp=0; dp<length[l]; dp++) {
+							double tmp;
+							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))<minZSelected)) {
+								minZSelected = tmp;
+							}
+						}
 					}
 				}
 			}
-			return min!=Double.POSITIVE_INFINITY? min : -1;
+			if(minZSelected==Double.POSITIVE_INFINITY) {
+				minZSelected = Double.NaN;
+				return 0;
+			}
+			// return
+			return minZSelected!=Double.POSITIVE_INFINITY? minZSelected : -1;
 		}
 		else {
 			//
-			if(minZ==-1) {
+			if(Double.isNaN(minZ)) {
 				// calc min z
 				minZ = Double.POSITIVE_INFINITY;
 				double pi;
-				for(int line=0; line<data.getLinesCount(); line++)
-					for(int dp=0; dp<data.getLineLength(line); dp++)
-						if((pi=getIProcessed(line, dp))<minZ)
-							minZ = pi;
+
+				int[] length = getLineLenghts();
+				int rotation = settings.getSettImage().getRotationOfData();
+				if((rotation==90 || rotation==270 || rotation == -90)) {
+					// for lines (that are actually datapoints)
+					for(int dp=0; dp<data.getLinesCount(); dp++) {
+						for(int l=0; l<length[dp]; l++) {
+							if((pi=getI(false,l, dp))<minZ)
+								minZ = pi;
+						}
+					}
+				}
+				else {
+					// for lines
+					for(int l=0; l<data.getLinesCount(); l++) {
+						// for dp
+						for(int dp=0; dp<length[l]; dp++) {
+							if((pi=getI(false,l, dp))<minZ)
+								minZ = pi;
+						}
+					}
+				}
+			}
+			if(minZ==Double.POSITIVE_INFINITY) {
+				minZ = Double.NaN;
+				return 0;
 			}
 			return minZ!=Double.POSITIVE_INFINITY? minZ : -1;
 		}
 	}
-	
+
 	/**
 	 * maximum intensity processed 
 	 * @return
@@ -798,33 +1496,75 @@ public class Image2D implements Serializable, Collectable2D {
 		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
 		if(onlySelected) { 
-			double max =  Double.NEGATIVE_INFINITY;
+			if(Double.isNaN(maxZSelected)) {
+				maxZSelected =  Double.NEGATIVE_INFINITY;
 
-			for(int l=0; l<data.getLinesCount(); l++) {
-				for(int dp = 0; dp<data.getLineLength(l); dp++) {
-					double tmp;
-					if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getIProcessed(l, dp))>max)) {
-						max = tmp;
+				int[] length = getLineLenghts();
+				int rotation = settings.getSettImage().getRotationOfData();
+				if((rotation==90 || rotation==270 || rotation == -90)) {
+					// for lines (that are actually datapoints)
+					for(int dp=0; dp<data.getLinesCount(); dp++) {
+						for(int l=0; l<length[dp]; l++) {
+							double tmp;
+							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
+								maxZSelected = tmp;
+							}
+						}
+					}
+				}
+				else {
+					// for lines
+					for(int l=0; l<data.getLinesCount(); l++) {
+						// for dp
+						for(int dp=0; dp<length[l]; dp++) {
+							double tmp;
+							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
+								maxZSelected = tmp;
+							}
+						}
 					}
 				}
 			}
-			if(max == Double.NEGATIVE_INFINITY)
-				max = -1;
-			return max;
+
+			if(maxZSelected == Double.NEGATIVE_INFINITY) {
+				maxZSelected = Double.NaN;
+				return 0;
+			}
+			return maxZSelected;
 		}
 		else { 
 			//
-			if(maxZ==-1) {
+			if(Double.isNaN(maxZ)) {
 				// calc min z
 				maxZ = Double.NEGATIVE_INFINITY;
 				double pi;
-				for(int line=0; line<data.getLinesCount(); line++)
-					for(int dp=0; dp<data.getLineLength(line); dp++)
-						if((pi=getIProcessed(line, dp))>maxZ)
-							maxZ = pi; 
+
+				int[] length = getLineLenghts();
+				int rotation = settings.getSettImage().getRotationOfData();
+				if((rotation==90 || rotation==270 || rotation == -90)) {
+					// for lines (that are actually datapoints)
+					for(int dp=0; dp<data.getLinesCount(); dp++) {
+						for(int l=0; l<length[dp]; l++) {
+							if((pi=getI(false, l, dp))>maxZ)
+								maxZ = pi; 
+						}
+					}
+				}
+				else {
+					// for lines
+					for(int l=0; l<data.getLinesCount(); l++) {
+						// for dp
+						for(int dp=0; dp<length[l]; dp++) {
+							if((pi=getI(false, l, dp))>maxZ)
+								maxZ = pi; 
+						}
+					}
+				}
 			}
-			if(maxZ == Double.NEGATIVE_INFINITY)
-				maxZ = -1;
+			if(maxZ == Double.NEGATIVE_INFINITY) {
+				maxZ = Double.NaN;
+				return 0;
+			}
 			return maxZ;
 		}
 	}
@@ -838,7 +1578,7 @@ public class Image2D implements Serializable, Collectable2D {
 	public double getIRange(boolean onlySelected){
 		return this.getMaxIntensity(onlySelected)-this.getMinIntensity(onlySelected);
 	}
-	
+
 	/**
 	 * 
 	 * @return value (set in a paintscale) as a percentage of the maximum value (value==max: result=100)
@@ -856,19 +1596,19 @@ public class Image2D implements Serializable, Collectable2D {
 	public double getIAbs(double value, boolean onlySelected) { 
 		return value/100.0*getIRange(onlySelected);
 	}
-	
+
 	/**
 	 * 
 	 * @param intensity
 	 * @return the percentile of all intensities (if value is equal to max the result is 100)
 	 */
-	public double getIPercentile(double intensity, boolean onlySelected) {
+	public double getIPercentile(boolean raw, double intensity, boolean onlySelected) {
 		//sort all z values
 		double[] z = null;
-		if(!onlySelected) toIArray();
-		else z = getSelectedDataAsArray(true);
+		if(!onlySelected) toIArray(raw);
+		else z = getSelectedDataAsArray(raw, true);
 		Arrays.sort(z);
-		
+
 		for(int i=0; i<z.length; i++) {
 			if(z[i]<=intensity) {
 				return (i/(z.length-1));
@@ -876,42 +1616,111 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 		return 0;
 	}
-	
-	/** 
-	 * max for line
-	 * @param l
-	 * @param b
+
+
+	/**
+	 * The maximum x value of a line (right edge) --> length
+	 * @param raw
+	 * @param line
 	 * @return
 	 */
-	public double getMaxIntensity(int l, boolean onlySelected) {
-		// check for update in parent i processing
-		checkForUpdateInParentIProcessing();
-
-		double maxZ = Double.NEGATIVE_INFINITY;
-		double pi; 
-		for(int dp=0; dp<data.getLineLength(l); dp++)
-			if((pi=getIProcessed(l, dp))>maxZ)
-				maxZ = pi; 
-		return maxZ!=Double.NEGATIVE_INFINITY? maxZ : -1;
-	}
-
-
-	public float getMaxXProcessed(int line) {
-		return getXProcessed(line, data.getLineLength(line));
+	public float getMaxXRaw(boolean raw, int line) {
+		return data.getLastXLine(line) * (xFactor(raw));
 	} 
-	public float getMaxYProcessed() {
-		return getYProcessed(data.getLinesCount());
+
+	/**
+	 * The maximum x value (left edge) --> length
+	 * @param raw
+	 * @param line
+	 * @return
+	 */
+	public float getMaxXRaw(boolean raw) {
+		return data.getLastX() * (xFactor(raw));
+	} 
+
+	/**
+	 * left edge maximum of y (bottom edge)
+	 * @param raw
+	 * @return
+	 */
+	public float getMaxYRaw(boolean raw) {
+		return getYRaw(raw, data.getLinesCount());
 	}
 
+	/**
+	 * width of the image 
+	 * @param raw
+	 * @return
+	 */
+	public float getWidth(boolean raw) {
+		int rot = settings.getSettImage().getRotationOfData();
+		if(rot==0 || rot==180) 
+			return data.getWidthX() * xFactor(raw);
+		else
+			return getYRaw(raw, data.getLinesCount());
+	}
+
+	/**
+	 * height of the image
+	 * @param raw
+	 * @return
+	 */
+	public float getHeight(boolean raw) {
+		int rot = settings.getSettImage().getRotationOfData();
+		if(rot==90 || rot==270) 
+			return data.getWidthX() * xFactor(raw);
+		else
+			return getYRaw(raw, data.getLinesCount());
+	}
+
+	/**
+	 * 1 or velocity
+	 * @param raw
+	 * @return
+	 */
+	private float xFactor(boolean raw) {
+		return raw? 1 : settings.getSettImage().getVelocity();
+	}
+
+	/**
+	 * 1 or velocity
+	 * @param raw
+	 * @return
+	 */
+	private float yFactor(boolean raw) {
+		return raw? 1 : settings.getSettImage().getSpotsize();
+	}
+
+	/**
+	 * according to rotation of data
+	 * @return
+	 */
+	public int getWidthAsMaxDP() {
+		SettingsGeneralImage sg = settings.getSettImage();
+		return (sg.getRotationOfData()==-90 || sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? 
+				data.getLinesCount() : data.getMaxDP();
+	}
+	/**
+	 * according to rotation of data
+	 * @return
+	 */
+	public int getHeightAsMaxDP() {
+		SettingsGeneralImage sg = settings.getSettImage();
+		return (sg.getRotationOfData()==-90 || sg.getRotationOfData()==90 || sg.getRotationOfData()==270)? 
+				data.getMaxDP() : data.getLinesCount();	
+	}
 	/**
 	 * maximum block width for renderer
 	 * = distance between one and next block
 	 * @return
 	 */
+	public double getMaxBlockWidth() {
+		return getMaxBlockWidth(getSettings().getSettImage().getRotationOfData());
+	}
 	public double getMaxBlockWidth(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockHeight(0);
 		else {
-			return data.getMaxXWidth()*getSettImage().getVelocity();
+			return data.getMaxXDPWidth()*settings.getSettImage().getVelocity();
 		}
 	}
 	/**
@@ -919,46 +1728,82 @@ public class Image2D implements Serializable, Collectable2D {
 	 * = distance between one and next block in lines
 	 * @return
 	 */
+	public double getMaxBlockHeight() {
+		return getMaxBlockHeight(getSettings().getSettImage().getRotationOfData());
+	}
 	public double getMaxBlockHeight(int rotation) {
 		if(rotation!=0 && rotation!=180) return getMaxBlockWidth(0);
 		else { 
-			return getSettImage().getSpotsize();
+			return settings.getSettImage().getSpotsize();
 		}
 	}
+
 
 	//#############################################################
 	// apply filter to cut off first or last values of intensity
 	// only apply if not already done
 	private double lastAppliedMinFilter=-1, lastAppliedMaxFilter = -1;
-	public void applyCutFilterMin(double f) {
+	/**
+	 * 
+	 * @param f in percent ( 5 % as 5 not 0.05)
+	 * @return
+	 */
+	public double applyCutFilterMin(double f) {
 		if(f!=lastAppliedMinFilter) {
-			lastAppliedMinFilter = f;
 			// apply filter
 			//sort all z values
 			double[] z = null;
-			if(!getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray();
-			else z = getSelectedDataAsArray(true);
+			if(!settings.getSettPaintScale().isUsesMinMaxFromSelection())  z = toIArray(false);
+			else z = getSelectedDataAsArray(false, true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
 			// save in var
 			minZFiltered =  z[(int)(size*f/100.0)];
+			settings.getSettPaintScale().setMin(minZFiltered);
+			lastAppliedMinFilter = f;
 		}
+		return minZFiltered;
 	}
-	public void applyCutFilterMax(double f) {
+	/**
+	 * 
+	 * @param f in percent ( 5 % as 5 not 0.05)
+	 * @return
+	 */
+	public double applyCutFilterMax(double f) {
 		if(f!=lastAppliedMaxFilter) {
-			lastAppliedMaxFilter = f;
 			// apply filter
 			//sort all z values
 			double[] z = null;
-			if(!getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray();
-			else z = getSelectedDataAsArray(true);
+			if(!settings.getSettPaintScale().isUsesMinMaxFromSelection()) z = toIArray(false);
+			else z = getSelectedDataAsArray(false, true);
 			Arrays.sort(z);
 			// cut off percent f/100.f
 			int size = z.length-1;
 			// save in var --> cut from max 1-p
 			maxZFiltered = z[size-(int)(size*f/100.0)];
+			settings.getSettPaintScale().setMax(maxZFiltered);
+			lastAppliedMaxFilter = f;
 		}
+		return maxZFiltered;
+	}
+
+	/**
+	 * does not apply the cut filter to this image
+	 * @param f in percent ( 5 % as 5 not 0.05)
+	 * @return
+	 */
+	public double getValueCutFilter(double f, boolean useMinMaxFromSelection) {
+		// apply filter
+		//sort all z values
+		double[] z = null;
+		if(!useMinMaxFromSelection) z = toIArray(false);
+		else z = getSelectedDataAsArray(false, true);
+		Arrays.sort(z);
+		// cut off percent f/100.f
+		int size = z.length-1;
+		// save in var --> cut from max 1-p
+		return z[(int)(size*f/100.0)];
 	}
 
 	//##################################################################################### 
@@ -974,24 +1819,6 @@ public class Image2D implements Serializable, Collectable2D {
 	public double getIntensitySpan(boolean onlySelected) {
 		return getMaxIntensity(onlySelected)-getMinIntensity(onlySelected);
 	} 
-	public SettingsPaintScale getSettPaintScale() {
-		return settings.getSettPaintScale();
-	} 
-	public void setSettPaintScale(SettingsPaintScale settPaintScale) {
-		settings.setSettPaintScale(settPaintScale);
-	} 
-	public SettingsGeneralImage getSettImage() {
-		return settings.getSettImage();
-	} 
-	public void setSettImage(SettingsGeneralImage settImgLaser) {
-		settings.setSettImage(settImgLaser);
-	} 
-	public SettingsThemes getSettTheme() {
-		return settings.getSettTheme();
-	}
-	public void setSettTheme(SettingsThemes settTheme) {
-		settings.setSettTheme(settTheme);
-	}
 	public double getMinZFiltered() {
 		return minZFiltered;
 	}
@@ -999,25 +1826,8 @@ public class Image2D implements Serializable, Collectable2D {
 		return maxZFiltered;
 	} 
 
-	// if something changes - change the averageI
-	public SettingsImage2DQuantifier getQuantifier() {
-		return settings.getQuantifier();
-	}
-	public void setQuantifier(SettingsImage2DQuantifier quantifier) {
-		settings.setQuantifier(quantifier);
-	}
-	public SettingsImage2DQuantifierIS getInternalQuantifierIS() {
-		return settings.getInternalQuantifierIS();
-	}
-	public void setInternalQuantifierIS(SettingsImage2DQuantifierIS isQ) {
-		settings.setInternalQuantifierIS(isQ);
-	}
-	public SettingsImage2DOperations getOperations() {
-		return settings.getOperations();
-	}
-	public void setOperations(SettingsImage2DOperations operations) {
-		settings.setOperations(operations, this);
-	}
+
+
 	/**
 	 * Calcs the average I for this img
 	 * @return
@@ -1027,15 +1837,13 @@ public class Image2D implements Serializable, Collectable2D {
 		checkForUpdateInParentIProcessing();
 		//
 		if(averageIProcessed==-1) { 
-			int counter = 0;
 			averageIProcessed = 0;
-			for(int line=0; line<data.getLinesCount(); line++) {
-				for(int dp=0; dp<data.getLineLength(line); dp++) {
-					averageIProcessed += getIProcessed(line, dp);
-					counter++;
-				}
-			}
-			averageIProcessed = averageIProcessed/counter;
+			double[] inten = toIArray(false);
+
+			for(double i : inten)
+				averageIProcessed += i;
+
+			averageIProcessed = averageIProcessed/inten.length;
 		}
 		return averageIProcessed;
 	}
@@ -1051,12 +1859,13 @@ public class Image2D implements Serializable, Collectable2D {
 		checkForUpdateInParentIProcessing();
 		//
 		if(averageIProcessedForLine==null) {
-			averageIProcessedForLine = new double[data.getLinesCount()];
-			for(int i=0; i<data.getLinesCount(); i++) {
+			averageIProcessedForLine = new double[this.getMaxLinesCount()];
+			for(int i=0; i<this.getMaxLinesCount(); i++) {
 				averageIProcessedForLine[i] = 0;
-				for(int dp=0; dp<data.getLineLength(i); dp++)  
-					averageIProcessedForLine[i] += getIProcessed(i, dp);
-				averageIProcessedForLine[i] = averageIProcessedForLine[i]/data.getLineLength(i);
+				for(int dp=0; dp<getLineLength(i); dp++)  
+					if(i<getLineCount(dp))
+						averageIProcessedForLine[i] += getI(false, i, dp);
+				averageIProcessedForLine[i] = averageIProcessedForLine[i]/getLineLength(i);
 			}
 		}
 		return averageIProcessedForLine[line];
@@ -1076,36 +1885,46 @@ public class Image2D implements Serializable, Collectable2D {
 	 * update all quantifiers if it has changed
 	 */
 	public void fireIntensityProcessingChanged() { 
-		//for(IntensityProcessingChangedListener l : listenerProcessingChanged)
-		//	l.fireIntensityProcessingChanged();
-
 		// gives a indirect signal to Quantifier and children to change iProc
 		lastIProcChangeTime++;
 		if(lastIProcChangeTime>=Integer.MAX_VALUE-1)
-			lastIProcChangeTime = 0;
+			lastIProcChangeTime = -1;
 
 		averageIProcessed = -1;
-		minZ = -1;
-		maxZ = -1;
+		minZ = Double.NaN;
+		maxZ = Double.NaN;
+		minZSelected = Double.NaN;
+		maxZSelected = Double.NaN;
+
 		// applyCutFilter?
+		lastAppliedMaxFilter = -1;
+		lastAppliedMinFilter = -1;
+		if(settings.getSettPaintScale().getModeMin().equals(ValueMode.PERCENTILE))
+			applyCutFilterMin(settings.getSettPaintScale().getMinFilter());
+		if(settings.getSettPaintScale().getModeMax().equals(ValueMode.PERCENTILE))
+			applyCutFilterMax(settings.getSettPaintScale().getMaxFilter());
 		// IS
-		SettingsImage2DQuantifierIS internalQ = getInternalQuantifierIS();
+		SettingsImage2DQuantifierIS internalQ = settings.getInternalQuantifierIS();
 		if(internalQ!=null && internalQ.getImgIS()!=null) { 
-			if(internalQ.getImgIS().getOperations()==null)
-				internalQ.getImgIS().setOperations(new SettingsImage2DOperations());
-			internalQ.getImgIS().getOperations().setBlankQuantifier(getOperations().getBlankQuantifier());
+			if(internalQ.getImgIS().getSettings().getOperations()==null)
+				internalQ.getImgIS().getSettings().replaceSettings(new SettingsImage2DOperations());
+			internalQ.getImgIS().getSettings().getOperations().setBlankQuantifier(settings.getOperations().getBlankQuantifier());
 			internalQ.getImgIS().fireIntensityProcessingChanged();
 		}
+
+		// register changes
+		// e.g. for regression SettingsSelection
+		for(IntensityProcessingChangedListener l : listenerProcessingChanged)
+			l.fireIntensityProcessingChanged(this);
+	} 
+	public void addIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
+		listenerProcessingChanged.add(li);
 	}
-	public Vector<RectSelection> getSelectedData() {
-		if(selectedData==null)
-			selectedData = new Vector<RectSelection>();
-		return selectedData;
+	public void removeIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
+		listenerProcessingChanged.remove(li);
 	}
-	public void setSelectedData(Vector<RectSelection> selectedData) {
-		this.selectedData = selectedData;
-		fireIntensityProcessingChanged();
-	}
+
+
 	public Image2D getParent() {
 		return parent;
 	}
@@ -1120,25 +1939,16 @@ public class Image2D implements Serializable, Collectable2D {
 		}
 		else if(parent!=this.parent) {
 			// point at the settings of parent TODO
-			this.setSettImage(parent.getSettImage());
-			this.setSettPaintScale((parent.getSettPaintScale()));
-			this.setSettTheme(parent.getSettTheme());
-			this.setOperations(parent.getOperations());
-			this.setQuantifier(parent.getQuantifier());
+			settings.replaceSettings(parent.getSettings().getSettImage());
+			settings.replaceSettings(parent.getSettings().getSettPaintScale());
+			settings.replaceSettings(parent.getSettings().getSettTheme());
+			settings.replaceSettings(parent.getSettings().getOperations());
+			settings.replaceSettings(parent.getSettings().getQuantifier());
 			fireIntensityProcessingChanged();
 		}
 		// set parent 
 		this.parent = parent;
-	}
-	public Vector<RectSelection> getExcludedData() {
-		if(excludedData==null)
-			excludedData = new Vector<RectSelection>();
-		return excludedData;
-	}
-	public void setExcludedData(Vector<RectSelection> excludedData) {
-		this.excludedData = excludedData;
-		fireIntensityProcessingChanged();
-	}
+	} 
 	/**
 	 * Sums up the total dp count
 	 * @return
@@ -1153,11 +1963,15 @@ public class Image2D implements Serializable, Collectable2D {
 	 */
 	public int getSelectedDPCount(boolean excluded) {
 		int counter = 0;
-		for(int l=0; l<data.getLinesCount(); l++) { 
-			for(int dp = 0; dp<data.getLineLength(l); dp++) {
-				if((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) 
+		//
+		int lines = getMaxLinesCount();
+		int maxdp = getMaxLineLength();
+
+		for(int y=0; y<lines; y++) {
+			for(int x=0; x<maxdp; x++) {
+				if((!excluded || !isExcludedDP(y,x)) && isSelectedDP(y,x))
 					counter++;
-			}
+			} 
 		}
 		return counter;
 	}
@@ -1166,13 +1980,13 @@ public class Image2D implements Serializable, Collectable2D {
 	 * Returns all selected and not excluded data points to an array
 	 * @return
 	 */
-	public double[] getSelectedDataAsArray(boolean excluded) {
+	public double[] getSelectedDataAsArray(boolean raw, boolean excluded) {
 		double[] datasel = new double[getSelectedDPCount(true)];
 		int counter = 0;
 		for(int l=0; l<data.getLinesCount(); l++) {
 			for(int dp = 0; dp<data.getLineLength(l); dp++) {
 				if((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp))  {
-					datasel[counter] = getIProcessed(l, dp);
+					datasel[counter] = getI(raw, l, dp);
 					counter++;
 				} 
 			}
@@ -1181,42 +1995,64 @@ public class Image2D implements Serializable, Collectable2D {
 	}
 
 
-
 	/**
-	 * returns all data points in intensity range (max/min)
+	 * returns all data points in intensity range (max/min) (processed)
+	 * uses the PaintScaleSettings of this image
 	 * @return
 	 */
 	public double[] getIInIRange() {
-		double[] list = new double[countIInIRange()];
-		
+		return getIInIRange(settings.getSettPaintScale());
+	}
+	/**
+	 * returns all data points in intensity range (max/min) (processed)
+	 * @return
+	 */
+	public double[] getIInIRange(SettingsPaintScale ps) {
+		double[] list = new double[countIInIRange(ps)];
+
+		double[] inten = toIArray(false);
 		int counter = 0;
-		for(int l=0; l<data.getLinesCount(); l++) {
-			for(int dp = 0; dp<data.getLineLength(l); dp++) {
-				double intensity =getIProcessed(l, dp);
-				if(getIProcessed(l, dp)>=getSettPaintScale().getMin() && getIProcessed(l, dp)<=getSettPaintScale().getMax()) {
-					list[counter] = intensity;
-					counter++;
-				} 
-			}
+		for(double d : inten) {
+			if(ps.isInIRange(this, d)) {
+				list[counter] = d;
+				counter++;
+			} 
 		}
 		return list;
 	}
 	/**
 	 * returns number of data points in intensity range (max/min)
+	 * uses the PaintScaleSettings of this image
 	 * @return
 	 */
 	public int countIInIRange() {
+		return countIInIRange(settings.getSettPaintScale());
+	}
+	/**
+	 * returns number of data points in intensity range (max/min)
+	 * @return
+	 */
+	public int countIInIRange(SettingsPaintScale ps) {
 		int counter = 0;
-		for(int l=0; l<data.getLinesCount(); l++) {
-			for(int dp = 0; dp<data.getLineLength(l); dp++) {
-				if(getIProcessed(l, dp)>=getSettPaintScale().getMin() && getIProcessed(l, dp)<=getSettPaintScale().getMax()) {
-					counter++;
-				} 
-			}
+		double[] inten = toIArray(false);
+		for(double d : inten) {
+			if(ps.isInIRange(this, d)) {
+				counter++;
+			} 
 		}
 		return counter;
 	}
-	
+
+	/**
+	 * are l and dp in bounds (after rotation, reflection, ...)
+	 * @param l
+	 * @param dp
+	 * @return
+	 */
+	public boolean isInBounds(int l, int dp) {
+		return !(l<0 || l>=getLineCount(dp) || dp<0 || dp>=getLineLength(l));
+	}
+
 	/**
 	 * checks if a dp is excluded by a rect in excluded list
 	 * @param l
@@ -1224,17 +2060,23 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public boolean isExcludedDP(int l, int dp) { 
-		if(getExcludedData()==null || getExcludedData().size()==0)
+		// out of bounds
+		if(!isInBounds(l,dp))
+			return true;
+
+		// no exculsion rects?
+		SettingsSelections sel = settings.getSettSelections();
+		if(!sel.hasExclusions())
 			return false;
-		// check if its in a exclude rect
-		for(RectSelection e : this.getExcludedData()) {
-			// set to isDouble to prevent adding
-			if(e.contains(dp, l)) {
-				return true; 
-			}
-		}
-		return false;
+
+		// coordinates
+		float x = getX(false, l, dp);
+		float y = getY(false, l, dp);
+
+		// check if dp coordinates are in an exclude rect
+		return sel.isExcluded(x,y, (float)getMaxBlockWidth(), (float)getMaxBlockHeight());
 	}
+
 	/**
 	 * checks if a dp is selected (if there are no selected rects - it will always return true
 	 * @param l line
@@ -1242,124 +2084,31 @@ public class Image2D implements Serializable, Collectable2D {
 	 * @return
 	 */
 	public boolean isSelectedDP(int l, int dp) {
-		if(selectedData==null || selectedData.size()==0)
+		// out of bounds
+		if(!isInBounds(l,dp))
+			return false;
+		// no selection rects?
+		SettingsSelections sel = settings.getSettSelections();
+		if(!sel.hasSelections())
 			return true;
-		// check if its in a selected rect
-		for(RectSelection e : this.getSelectedData()) {
-			// set to isDouble to prevent adding
-			if(e.contains(dp, l)) {
-				return true; 
-			}
+		else {
+			// coordinates
+			float x = getX(false, l, dp);
+			float y = getY(false, l, dp);
+
+			// check if dp coordinates are in an sel rect
+			return sel.isSelected(x, y, (float)getMaxBlockWidth(), (float)getMaxBlockHeight(), false);
 		}
-		return false; 
 	}
 
 	/**
-	 * min max avg in this rect
-	 * @param rect
+	 * checks if this is a dp with data  (because of rotation and different line length)
+	 * @param l
+	 * @param dp
 	 * @return
 	 */
-	public DataMinMaxAvg analyzeDataInRect(RectSelection rect) {
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
-		double avg = 0;
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) { 
-				if(rect.getMode()!=MODE.MODE_SELECT || !isExcludedDP(y, x)) {
-					double pi = getIProcessed(y, x);
-					if(pi<min) min = pi;
-					if(pi>max) max = pi;
-					avg += pi;
-				}
-			}
-		}
-		avg = avg/(rect.getWidth()*rect.getHeight());
-		// stdev 
-		double stdev = 0;
-		int n = 0;
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=MODE.MODE_SELECT || !isExcludedDP(y, x)) {
-					double pi = getIProcessed(y, x);
-					stdev += Math.pow(pi-avg, 2);
-					n++;
-				}
-			}
-		}
-		// calc stdev
-		stdev = Math.sqrt(stdev/(n-1));
-		// return 
-		return new DataMinMaxAvg(min, max, avg, stdev);
-	}
-
-	/**
-	 * returns the intensity of the perc data point
-	 * @param rect
-	 * @param perc between 0 and 1.0
-	 * @return
-	 */
-	public double analyzePercentile(RectSelection rect, double perc) { 
-		double[] i = getIProcessedRect(rect);
-		if(i!=null && i.length>0) {
-			Arrays.sort(i);
-
-			return i[(int)((i.length-1)*perc)];
-		}
-		else return -1;
-	}
-	
-	
-	/**
-	 * returns the intensity array for this rect
-	 * @param rect 
-	 * @return
-	 */
-	public double[] getIProcessedRect(RectSelection rect) {
-		int size = rect.getWidth()*rect.getHeight();
-
-		if(rect.getMode()==MODE.MODE_SELECT)
-			size = countSelectedNonExcludedDPInRect(rect);
-
-		double[] i = new double[size];
-		//TODO sort in ar right way
-		int counter = 0;
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=MODE.MODE_SELECT || !isExcludedDP(y, x)) {
-					i[counter] = getIProcessed(y, x);
-					counter++;
-				}
-			}
-		}
-		return i;
-	}
-
-	public int countSelectedNonExcludedDPInRect(RectSelection rect) {
-		int size = 0; 
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) { 
-				if(!isExcludedDP(y, x))
-					size++;
-			}
-		}
-		return size;
-	}
-
-	/**
-	 * returns the 2d intensity array for this rect
-	 * @param rect 
-	 * @return data[row][column]
-	 */
-	public double[][] getIProcessedRect2D(RectSelection rect) {
-		double[][] i = new double[rect.getHeight()][rect.getWidth()];
-		//TODO sort in ar right way        
-		for(int y=rect.getMinY(); y<=rect.getMaxY(); y++) {
-			for(int x=rect.getMinX(); x<=rect.getMaxX(); x++) {
-				if(rect.getMode()!=MODE.MODE_SELECT || !isExcludedDP(y, x))
-					i[y-rect.getMinY()][x-rect.getMinX()] = getIProcessed(y, x);
-			}
-		}
-		return i;
+	public boolean isDP(int l, int dp) {
+		return !Double.isNaN(getI(true,l,dp));
 	}
 
 	//
@@ -1392,16 +2141,10 @@ public class Image2D implements Serializable, Collectable2D {
 
 		return true;
 	}
-	public Vector<RectSelection> getInfoData() {
-		if(infoData==null)
-			infoData = new Vector<RectSelection>();
-		return infoData;
-	}
-	public void setInfoData(Vector<RectSelection> infoData) {
-		this.infoData = infoData;
-	}
-	
 
+
+	//###########################################################################
+	// Info graphics> histogram / icons
 	/**
 	 * creates a histogram
 	 * @return
@@ -1409,79 +2152,86 @@ public class Image2D implements Serializable, Collectable2D {
 	public ChartPanel createHistogram(double[] data, int bin) {
 		if(data!=null && data.length>0) {
 			HistogramDataset dataset = new HistogramDataset();
-		    dataset.addSeries("histo", data, bin);
-		    
-		    JFreeChart chart = ChartFactory.createHistogram(
-		              "", 
-		              null, 
-		              null, 
-		              dataset, 
-		              PlotOrientation.VERTICAL, 
-		              true, 
-		              false, 
-		              false
-		          );
-	
-		    chart.setBackgroundPaint(new Color(230,230,230));
-		    chart.getLegend().setVisible(false);
-		    XYPlot xyplot = (XYPlot)chart.getPlot();
-		    xyplot.setForegroundAlpha(0.7F);
-		    xyplot.setBackgroundPaint(Color.WHITE);
-		    xyplot.setDomainGridlinePaint(new Color(150,150,150));
-		    xyplot.setRangeGridlinePaint(new Color(150,150,150));
-		    xyplot.getDomainAxis().setVisible(true);
-		    xyplot.getRangeAxis().setVisible(false);
-		    XYBarRenderer xybarrenderer = (XYBarRenderer)xyplot.getRenderer();
-		    xybarrenderer.setShadowVisible(false);
-		    xybarrenderer.setBarPainter(new StandardXYBarPainter()); 
-	//	    xybarrenderer.setDrawBarOutline(false);
-		    return new ChartPanel(chart);
+			dataset.addSeries("histo", data, bin);
+
+			JFreeChart chart = ChartFactory.createHistogram(
+					"", 
+					null, 
+					null, 
+					dataset, 
+					PlotOrientation.VERTICAL, 
+					true, 
+					false, 
+					false
+					);
+
+			chart.setBackgroundPaint(new Color(230,230,230));
+			chart.getLegend().setVisible(false);
+			XYPlot xyplot = (XYPlot)chart.getPlot();
+			xyplot.setForegroundAlpha(0.7F);
+			xyplot.setBackgroundPaint(Color.WHITE);
+			xyplot.setDomainGridlinePaint(new Color(150,150,150));
+			xyplot.setRangeGridlinePaint(new Color(150,150,150));
+			xyplot.getDomainAxis().setVisible(true);
+			xyplot.getRangeAxis().setVisible(false);
+			XYBarRenderer xybarrenderer = (XYBarRenderer)xyplot.getRenderer();
+			xybarrenderer.setShadowVisible(false);
+			xybarrenderer.setBarPainter(new StandardXYBarPainter()); 
+			//	    xybarrenderer.setDrawBarOutline(false);
+			return new ChartPanel(chart);
 		}
 		else return null;
 	}
 	public ChartPanel createHistogram(double[] data) {
-	    int bin = (int) Math.sqrt(data.length);
-	    return createHistogram(data, bin);
+		int bin = (int) Math.sqrt(data.length);
+		return createHistogram(data, bin);
 	}
-	
+
 	/**
 	 * returns an easy icon
 	 * @param maxw
 	 * @param maxh
 	 * @return
 	 */
+	@Override
 	public Icon getIcon(int maxw, int maxh) {
 		try {
-			applyCutFilterMin(2.5);
-			applyCutFilterMax(0.2);
-			PaintScale scale = PaintScaleGenerator.generateStepPaintScale(minZFiltered, maxZFiltered, getSettPaintScale()); 
-			BufferedImage img = new BufferedImage(maxw, maxh, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = img.createGraphics();
+			double min = getValueCutFilter(2.5, false);
+			double max = getValueCutFilter(100.0-0.2, false);
+			PaintScale scale = PaintScaleGenerator.generateStepPaintScale(min, max, settings.getSettPaintScale()); 
 
 			// scale in x
 			float sx = 1;
-			int w = data.getMinDP();
+			int w = getMaxLineLength();
 			if(w>maxw) {
-				sx = w/maxw;
+				sx = w/(float)maxw;
 				w = maxw;
 			}
 
 			float sy = 1;
-			int lines = data.getLinesCount();
+			int lines = getMaxLinesCount();
 			int h = lines;
 			if(h>maxh) { 
-				sy = h/maxh;
+				sy = h/(float)maxh;
 				h = maxh;
 			}	
+
+			BufferedImage img = new BufferedImage(Math.min(maxw, w), maxh = Math.min(maxh, h),BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = img.createGraphics();
 
 			for(int x=0; x<w; x++) {
 				for(int y=0; y<h; y++) {
 					// fill rects
-					int dp = data.getLineLength((int)(y*sy));
-					if((int)(y*sy)<lines && (int)(x*sx)<dp) {
-						Paint c = scale.getPaint(getIProcessed((int)(y*sy), (int)(x*sx)));
-						g.setPaint(c);
-						g.fillRect(x, maxh-y, 1, 1); 
+					int dp = getLineLength((int)(y*sy));
+					int ix=(int)(x*sx);
+					int iy=(int)(y*sy);
+					if(iy<lines && ix<dp) {
+						double z = getI(false, iy, ix);
+						if(!Double.isNaN(z)) {
+							Paint c = scale.getPaint(z);
+							g.setPaint(c);
+							g.fillRect(x, maxh-y, 1, 1); 
+						}
 					}
 				}
 			}
@@ -1492,45 +2242,19 @@ public class Image2D implements Serializable, Collectable2D {
 			return null;
 		}
 	}
-	public int getLineCount() {
-		return data.getLinesCount();
-	}
-	public int getLineLength(int i) {
-		return data.getLineLength(i);
-	}
-
-	/**
-	 * test images
-	 * @return
-	 */
-	public static Image2D createTestStandard() {
-		Random rand = new Random(System.currentTimeMillis());
-		ScanLine2D[] lines = new ScanLine2D[24];
-		for(int l=0; l<lines.length; l++) { 
-			DataPoint2D[] dp = new DataPoint2D[240];
-			for(int d=0; d<dp.length; d++) {
-				// middle the highest
-				double in = (int)(l/4)*200.0;
-				in += Math.abs(rand.nextInt(6000)/100.0);
-				// create dp
-				dp[d] = new DataPoint2D(d*0.1, in);
-			}
-			lines[l] = new ScanLine2D(dp);
-		}
-		Dataset2D data = new Dataset2D(lines);
-		return new Image2D(data);
-	}
-
+	// end of visual extras
+	//###########################################################################
 
 
 	public ImageDataset getData() {
 		return data;
 	}
 	public void setData(ImageDataset data) {
+		boolean changed = !data.equals(this.data);
 		this.data = data;
+		if(changed)
+			fireIntensityProcessingChanged();
 	}
-
-
 	public void shiftIndex(int i) {
 		index += i;
 	}
@@ -1539,27 +2263,6 @@ public class Image2D implements Serializable, Collectable2D {
 	}
 	public int getIndex() {
 		return index;
-	}
-
-	/**
-	 * image is marked as a group member in an image group. 
-	 * This group handles  multi dimensional data sets (not only)
-	 * @param imageGroupMD
-	 */
-	public void setImageGroup(ImageGroupMD imageGroup) {
-		this.imageGroup = imageGroup;
-	}
-
-
-	public ImageGroupMD getImageGroup() {
-		return this.imageGroup;
-	} 
-
-	public void setSettingsImage2D(SettingsImage2D settings) {
-		this.settings = settings;
-	}
-	public SettingsImage2D getSettingsImage2D() {
-		return settings;
 	}
 	//############################################################
 	// listener
@@ -1576,6 +2279,21 @@ public class Image2D implements Serializable, Collectable2D {
 	}
 	public void cleatRawDataChangedListeners() {
 		data.cleatRawDataChangedListeners();
+	}
+
+	/**
+	 * checks whether these two images have the same data space
+	 * @param i
+	 * @return
+	 */
+	public boolean hasSameData(Image2D i) {
+		return data.equals(i.getData()) || (data.getMaxDP()==i.getData().getMaxDP() || data.getMaxDP()==i.getData().getLinesCount()) 
+				&& data.getTotalDPCount()==i.getData().getTotalDPCount();
+	}
+
+	// a name for lists
+	public String toListName() { 
+		return settings.getSettImage().toListName();
 	}
 
 }

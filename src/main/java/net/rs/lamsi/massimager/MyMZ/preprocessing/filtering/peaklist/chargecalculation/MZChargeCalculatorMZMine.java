@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import net.rs.lamsi.massimager.Settings.SettingsChargeCalculator;
+import net.rs.lamsi.general.settings.SettingsChargeCalculator;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.MZmineProject;

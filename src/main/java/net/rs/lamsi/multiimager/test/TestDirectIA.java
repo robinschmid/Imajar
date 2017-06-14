@@ -6,8 +6,8 @@ import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt.IMPORT;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
@@ -36,7 +36,7 @@ public class TestDirectIA {
 					window.getMenuRbDirectImagingAnalysis().setSelected(true); 
 					
 					SettingsImageDataImportTxt settingsDataImport = new SettingsImageDataImportTxt(IMPORT.MULTIPLE_FILES_LINES_TXT_CSV, true, ",", true);
-					window.getLogicRunner().startDirectImagingAnalysis(settingsDataImport, files);
+					window.getLogicRunner().startDirectImagingAnalysis(settingsDataImport, files, null);
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}

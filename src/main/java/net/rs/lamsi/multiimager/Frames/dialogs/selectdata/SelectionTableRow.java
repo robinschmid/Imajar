@@ -1,88 +1,86 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
-import java.awt.Color;
+import java.awt.Shape;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog.MODE;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.StandardXYBarPainter;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.data.statistics.HistogramDataset;
 
-public class SelectionTableRow {
-	
-	private ChartPanel histo;
-	private Image2D img;
-	private RectSelection rect; 
-	
-	public SelectionTableRow(Image2D img, RectSelection rect) {
+public class SelectionTableRow implements Serializable{
+	// do not change the version!
+	private static final long serialVersionUID = 1L;
+
+	private transient ChartPanel histo;
+
+	// only used for stats calculation 
+	// use finalise to free this list
+	private ArrayList<Double> data = null;
+
+	// statistics
+	private double max, min, median, p99, avg, sdev, sum;
+	private int n;
+
+
+
+	public SelectionTableRow() {
 		super();
-		this.img = img;
-		this.rect = rect; 
-		//
-		double[] data = img.getIProcessedRect(rect);
-		histo = img.createHistogram(data);
 	}
 
-	/**
-	 * called for table
-	 * @return
-	 */
-	public Object[] getRowData() {
-		String y0 = String.valueOf(rect.getY())+"; "+String.valueOf(img.getYProcessed(rect.getY()));
-		String x0 = String.valueOf(rect.getX())+"; "+String.valueOf(img.getXProcessed(rect.getY(), rect.getX()));
-		String y1 =String.valueOf(rect.getMaxY())+"; "+String.valueOf(img.getYProcessed(rect.getMaxY()));
-		String x1 = String.valueOf(rect.getMaxX())+"; "+String.valueOf(img.getXProcessed(rect.getMaxY(), rect.getMaxX()));
-		
-		DataMinMaxAvg data = img.analyzeDataInRect(rect);
-		double max99 = img.analyzePercentile(rect, 0.99);
-		double median = img.analyzePercentile(rect, 0.5);
-		
-		return new Object[]{rect.getMode().toString(), x0,y0,x1,y1,data.getMin(),data.getMax(), data.getAvg(), median, max99, data.getStdev(), histo};
-	}
-	
-	/**
-	 * called for data export
-	 * @return
-	 */
-	public Object[] getRowDataExport() {
-		String y0 = String.valueOf(rect.getY())+"; "+String.valueOf(img.getYProcessed(rect.getY()));
-		String x0 = String.valueOf(rect.getX())+"; "+String.valueOf(img.getXProcessed(rect.getY(), rect.getX()));
-		String y1 =String.valueOf(rect.getMaxY())+"; "+String.valueOf(img.getYProcessed(rect.getMaxY()));
-		String x1 = String.valueOf(rect.getMaxX())+"; "+String.valueOf(img.getXProcessed(rect.getMaxY(), rect.getMaxX()));
-		
-		DataMinMaxAvg data = img.analyzeDataInRect(rect);
-		double max99 = img.analyzePercentile(rect, 0.99);
-		double median = img.analyzePercentile(rect, 0.5);
-		
-		return new Object[]{rect.getMode().toString(), x0,y0,x1,y1,data.getMin(),data.getMax(), data.getAvg(), median, max99, data.getStdev()};
-	}
 
-	
+	// statistics calculation
+	public void addValue(double i) {
+		// init?
+		if(data==null) {
+			data = new ArrayList<Double>();
+			max = Double.NEGATIVE_INFINITY;
+			min = Double.POSITIVE_INFINITY;
+			sum = 0;
+		}
+		data.add(i);
+		if(i<min) min = i;
+		if(i>max) max = i;
+		// first sum
+		sum += i;
+	}
 	/**
-	 * array for title line export
-	 * without histo
+	 * final stats calculation after all data points were added via check
 	 */
-	public static Object[] getTitleArrayExport() {
-		return new Object[]{"Mode", "x0", "y0", "x1", "y1", "I min", "I max", "I avg", "I median", "I 99%","Stdev"};
-	}
-	
-	public Image2D getImg() {
-		return img;
-	}
-	public void setImg(Image2D img) {
-		this.img = img;
-	}
-	public RectSelection getRect() {
-		return rect;
-	}
-	public void setRect(RectSelection rect) {
-		this.rect = rect;
+	public void calculateStatistics(Image2D img) {
+		if(img==null || data==null || data.size()==0)
+			return;
+		// create histo
+		// copy to double array
+		double[] array = new double[data.size()];
+		for(int i=0; i<data.size(); i++) {
+			array[i] = data.get(i);
+		}
+		histo = img.createHistogram(array);
+
+		// for percentiles and median
+		Collections.sort(data);
+
+		median = data.get(Math.max(0, data.size()/2-1));
+		p99 = data.get(Math.max(0, (int)Math.round(data.size()*0.99-1)));
+
+		n = data.size();
+		// average and sdev
+		avg = sum / (double)n;
+		// stdev 
+		sdev = 0;
+
+		for(double d : data) {
+			sdev += Math.pow(d-avg, 2);
+		}
+		// calc stdev
+		sdev = Math.sqrt(sdev/(double)(data.size()-1));
+
+		
+		// erase data
+		data = null;
 	}
 
 	public ChartPanel getHisto() {
@@ -92,5 +90,30 @@ public class SelectionTableRow {
 	public void setHisto(ChartPanel histo) {
 		this.histo = histo;
 	}
-	
+
+
+	public double getMax() {
+		return max;
+	}
+	public double getMin() {
+		return min;
+	}
+	public double getMedian() {
+		return median;
+	}
+	public double getP99() {
+		return p99;
+	}
+	public double getAvg() {
+		return avg;
+	}
+	public double getSdev() {
+		return sdev;
+	}
+	public int getN() {
+		return n;
+	}
+	public double getSum() {
+		return sum;
+	}
 }

@@ -45,24 +45,24 @@ import javax.swing.event.ListSelectionEvent;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.framework.modules.Module;
+import net.rs.lamsi.general.framework.modules.ModuleListWithOptions;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.Plot.spectra.PlotSpectraLineAndShapeRenderer;
+import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.SelectMZDirectDialog;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleListWithOptions;
 import net.rs.lamsi.massimager.Frames.Menu.MenuChartActions;
 import net.rs.lamsi.massimager.Frames.Menu.MenuTableActions;
 import net.rs.lamsi.massimager.Frames.Panels.peaktable.PnTableMZPick;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
-import net.rs.lamsi.massimager.MyFreeChart.Plot.spectra.PlotSpectraLineAndShapeRenderer;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
 import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation.MZChargeCalculatorMZMine;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.sf.mzmine.datamodel.Feature;
@@ -691,7 +691,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																																// send image to imageeditor // TODO
 																																if(currentHeat!=null && currentHeat.getImage()!=null) {
 																																	// TODO txtID.getText()
-																																	window.sendImage2DToImageEditor(currentHeat.getImage(), getTxtImgGroupID().getText());
+																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(),"MS project", getTxtImgGroupID().getText());
 																																}
 																															}
 																														});

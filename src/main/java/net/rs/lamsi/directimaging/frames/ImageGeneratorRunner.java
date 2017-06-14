@@ -6,9 +6,6 @@ import java.util.Random;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.DataPoint2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.Dataset2D;
-import net.rs.lamsi.general.datamodel.image.data.twodimensional.ScanLine2D;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
@@ -45,16 +42,16 @@ public class ImageGeneratorRunner implements Runnable {
 		while(isRunning) {
 			Image2D[] image = taskList.get(task);
 			//write next element
-			String line = ""+image[0].getXRaw(cl,cdp);
+			String line = ""+image[0].getX(true,cl,cdp);
 			for(int i=0; i<image.length; i++) {
-				line += ","+image[i].getIRaw(cl, cdp);
+				line += ","+image[i].getI(true,cl, cdp);
 			}
 			writer.writeLine(line);
 			cdp++;
 			if(cdp>=image[0].getLineLength(cl)) {
 				cdp=0;
 				cl++;
-				if(cl>=image[0].getLineCount()) {
+				if(cl>=image[0].getData().getLinesCount()) {
 					// next task or stop?
 					cl = 0;
 					id = (rand.nextInt(1000));
@@ -103,6 +100,7 @@ public class ImageGeneratorRunner implements Runnable {
 	 * create images
 	 * @return
 	 */
+	/*
 	public Image2D createImage() {
 		ScanLine2D[] lines = new ScanLine2D[100];
 		for(int l=0; l<lines.length; l++) {
@@ -125,6 +123,7 @@ public class ImageGeneratorRunner implements Runnable {
 	 * creating standards
 	 * 0 - 800
 	 */
+	/*
 	public Image2D createStandards() {
 		ScanLine2D[] lines = new ScanLine2D[24];
 		for(int l=0; l<lines.length; l++) { 
@@ -140,14 +139,14 @@ public class ImageGeneratorRunner implements Runnable {
 		}
 		return new Image2D(new Dataset2D(lines));
 	}
-
+	*/
 	public void stopImage() {
 		isRunning = false;
 	}
 	public Image2D[] startImage(boolean inFolder) {
 		this.inFolder = inFolder;
 		taskList = new Vector<Image2D[]>();
-		
+		/*
 		Image2D[] std = new Image2D[10];
 		for(int i=0; i<std.length; i++)
 			std[i] = createStandards();
@@ -163,11 +162,12 @@ public class ImageGeneratorRunner implements Runnable {
 		taskList.add(image);
 
 		taskList.add(std);
-		
+		*/
 		isRunning = true;
 		Thread t = new Thread(this);
 		t.start();
-		return image;
+		//return image;
+		return null;
 	}
 	public void setSleep(long sl) {
 		sleep = sl;

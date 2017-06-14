@@ -14,10 +14,12 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -36,13 +38,13 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -50,31 +52,46 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.Dialogs.GraphicsExportDialog;
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
-import net.rs.lamsi.massimager.Frames.FrameWork.ColorChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ImageSettingsModule;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.Module;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.ModuleTreeWithOptions;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.listeners.HideShowChangedListener;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNodeRenderer;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
-import net.rs.lamsi.massimager.MyFreeChart.Plot.image2d.listener.AspectRatioListener;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralPreferences;
-import net.rs.lamsi.multiimager.FrameModules.ModuleGeneral;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.modules.ModuleTreeWithOptions;
+import net.rs.lamsi.general.framework.modules.SettingsModuleContainer;
+import net.rs.lamsi.general.framework.modules.listeners.HideShowChangedListener;
+import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AspectRatioListener;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AspectRatioListener.RATIO;
+import net.rs.lamsi.general.myfreechart.Plot.image2d.listener.AxesRangeChangedListener;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
+import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
-import net.rs.lamsi.multiimager.FrameModules.ModuleOperations;
-import net.rs.lamsi.multiimager.FrameModules.ModulePaintscale;
-import net.rs.lamsi.multiimager.FrameModules.ModuleThemes;
+import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
+import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
+import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.WindowStyleUtil;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
+
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.data.Range;
 
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
 public class ImageEditorWindow extends JFrame implements Runnable {
@@ -94,10 +111,16 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 	// save all frames for updating style etc
 	private Vector<Component> listFrames = new Vector<Component>();
-	// list of all Modules
-	private Vector<ImageModule> listImageSettingsModules = new Vector<ImageModule>();
-	
 
+	// MODULES
+	private ModuleImage2D modImage2D;
+	private ModuleImageOverlay modImageOverlay;
+	/**
+	 * the module container that is active (imageoverlay or image2d)
+	 * first set the image or imageoverlay and this will be set
+	 */
+	private SettingsModuleContainer activeModuleContainer;
+	
 	// Autoupdate after a given time
 	private final long AUTO_UPDATE_TIME = 1500;
 	private long lastAutoUpdateTime = -1;
@@ -109,18 +132,31 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private DocumentListener autoDocumentL;
 	private ColorChangedListener autoColorChangedL;
 	private ItemListener autoItemL;
+	
+	// auto repainter (no new creation of heatmaps
+	private ActionListener autoRepActionL;
+	private ChangeListener autoRepChangeL;
+	private DocumentListener autoRepDocumentL;
+	private ColorChangedListener autoRepColorChangedL;
+	private ItemListener autoRepItemL;
+	
+	// only repaint and not create new heatmaps
+	private boolean autoRepaintOnly = true;
 
 	private int currentView = VIEW_IMAGING_ANALYSIS;
 
+	// Image2d history for import/export
+	private JMenuItem[] menuItemHistoryImg2D = null; 
+	
+	private AspectRatioListener aspectRatioListener;
+	
 	// AUTOGEN 
 	//
-	private JCheckBox cbAuto;
-	private ModuleImage2D modImage2D;
-	private ModuleGeneral moduleGeneral;
-	private ModulePaintscale modulePaintscale;
-	private ModuleThemes moduleThemes;
+	private ModuleTreeWithOptions<Collectable2D> moduleTreeImages;
+	
+	
 	private JPanel pnCenterImageView;	
-	private ModuleTreeWithOptions<Image2D> moduleTreeImages;
+	private JPanel east;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JRadioButtonMenuItem menuRbImagingAnalysis;
 	private JRadioButtonMenuItem menuRbDirectImagingAnalysis;
@@ -134,7 +170,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private JTextField txtDirectTime;
 	private JTextField txtDirectFileFilter;
 	private JTextField txtDirectStartsWith;
-	private ModuleOperations moduleOperations;
 	private JCheckBox cbSumTasks;
 	private JCheckBoxMenuItem cbDebug;
 	private JCheckBoxMenuItem cbKeepAspectRatio;
@@ -147,6 +182,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) { 
+		// In the beginning, set the default locale to English, to avoid
+		// problems with conversion of numbers etc. (e.g. decimal separator may
+		// be . or , depending on the locale)
+		Locale.setDefault(new Locale("en", "US"));
+		
+		
 		WindowStyleUtil.changeWindowStyle(null, WindowStyleUtil.STYLE_SYSTEM);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -198,9 +239,31 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		JMenu mnFile = new JMenu("File");
+		final JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
 
+		// open save project
+		JMenuItem mntmOpenProject = new JMenuItem("Open project");
+		mntmOpenProject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// load in logicRunner
+				logicRunner.loadProjectFromFile();
+			}
+		});
+		mntmOpenProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		mnFile.add(mntmOpenProject);
+
+		JMenuItem mntmSaveProject = new JMenuItem("Save project file");
+		mntmSaveProject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// save in logicRunner  
+				logicRunner.saveProjectToFile();
+			}
+		});
+		mntmSaveProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		mnFile.add(mntmSaveProject);
+		
+		// open save image2d
 		JMenuItem mntmOpenImage = new JMenuItem("Open image");
 		mntmOpenImage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -208,7 +271,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				logicRunner.loadImage2DFromFile();
 			}
 		});
-		mntmOpenImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		mntmOpenImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK+ InputEvent.SHIFT_MASK));
 		mnFile.add(mntmOpenImage);
 
 		JMenuItem mntmSaveImage = new JMenuItem("Save image file");
@@ -218,7 +281,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				logicRunner.saveImage2DToFile();
 			}
 		});
-		mntmSaveImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		mntmSaveImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK+InputEvent.SHIFT_MASK));
 		mnFile.add(mntmSaveImage);
 
 		JSeparator separator = new JSeparator();
@@ -228,7 +291,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		mntmSaveDataAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// open data export dialog
-				DialogDataSaver.startDialogWith(logicRunner.getListImages(), logicRunner.getSelectedImage());
+				Collectable2D img = logicRunner.getSelectedImage();
+				if(img.isImage2D())
+					DialogDataSaver.startDialogWith(logicRunner.getListImage2DOnly(),(Image2D)img);
+				else log("Select a standard image for data export (e.g. image overlay currently selected)", LOG.ERROR);
 			}
 		});
 		mntmSaveDataAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK));
@@ -255,7 +321,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JSeparator separator_1 = new JSeparator();
 		mnFile.add(separator_1);
 
-		JMenu mnImportData = new JMenu("Import data");
+		JMenuItem mnImportData = new JMenuItem("Import data");
 		mnImportData.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// opens the import data frame 
@@ -264,14 +330,43 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		});
 		mnFile.add(mnImportData);
 
-		JMenuItem mntmOpenDialog = new JMenuItem("Open dialog");
-		mntmOpenDialog.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				// opens the import data frame 
-				importDataDialog.setVisible(true);
+		// ######################################################################
+		// add image2D history TODO
+		SettingsGeneralPreferences pref = SettingsHolder.getSettings().getSetGeneralPreferences();
+		pref.addChangeListener(new SettingsChangedListener() {
+			@Override
+			public void settingsChanged(Settings settings) {
+				// remove old menu items
+				if(menuItemHistoryImg2D!=null)
+					for(JMenuItem mi : menuItemHistoryImg2D)
+						mnFile.remove(mi);
+				// create new
+				Vector<File> files = SettingsHolder.getSettings().getSetGeneralPreferences().getImg2DHistory();
+				menuItemHistoryImg2D = new JMenuItem[files.size()];
+				
+				// add new
+				if(menuItemHistoryImg2D!=null) {
+					for(int i=0; i<files.size(); i++){
+						final File f = files.get(i);
+						JMenuItem mnImportData = new JMenuItem(FileAndPathUtil.eraseFormat(f.getName())+"; "+f.getParentFile().getAbsolutePath());
+						mnImportData.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								// choose project dialog
+								ImagingProject project = DialogChooseProject.choose(getModuleTreeImages().getSelectedProject(), getModuleTreeImages());
+
+								// import file as image2d
+								logicRunner.loadImage2DAndProjectFromFile(f, project);
+							}
+						});
+						mnImportData.setPreferredSize(new Dimension(280, (int)mnImportData.getPreferredSize().getHeight()));
+						mnFile.add(mnImportData);
+						menuItemHistoryImg2D[i] = mnImportData;
+					}
+				}
 			}
 		});
-		mnImportData.add(mntmOpenDialog);
+		pref.fireChangeEvent();
+		//		
 		
 		JMenu mnAction = new JMenu("Action");
 		menuBar.add(mnAction);
@@ -281,7 +376,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Open Dialog
-				
+				Collectable2D img = getLogicRunner().getSelectedImage();
+				if(img!=null && Image2D.class.isInstance(img) && img.getImageGroup()!=null) {
+					CroppingDialog d = new CroppingDialog();
+					d.startDialog(img.getImageGroup(), (Image2D)img);
+				}
 			}
 		});
 		mnAction.add(btnCrop);
@@ -292,6 +391,42 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JMenuItem mntmSplitImages = new JMenuItem("Split images");
 		mnAction.add(mntmSplitImages);
 
+
+		JMenuItem btnCreateOverlay = new JMenuItem("Create overlay");
+		btnCreateOverlay.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				logicRunner.createOverlay();
+			}
+		});
+		mnAction.add(btnCreateOverlay);
+		
+		JMenuItem btnImportMicroscopic = new JMenuItem("Add down sampled microscopic image");
+		btnImportMicroscopic.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				logicRunner.importMicroscopicImageDownSampled();
+			}
+		});
+		mnAction.add(btnImportMicroscopic);
+
+		JMenuItem btnImportMicroscopic2 = new JMenuItem("Add microscopic image to background");
+		btnImportMicroscopic2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				if(activeModuleContainer!=null) {
+					ModuleBackgroundImg mod = (ModuleBackgroundImg)activeModuleContainer.getModuleByClass(ModuleBackgroundImg.class);
+					if(mod!=null) {
+						mod.getBtnAddImage().doClick();
+					}
+				}
+			}
+		});
+		mnAction.add(btnImportMicroscopic2);
+		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
 
@@ -326,7 +461,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 				TreePath path = DialogLoggerUtil.showTreeDialogAndChoose(thisFrame, getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION, getModuleTreeImages().getTree().getSelectionPaths())[0];
 				// show dialog with mutliple image view
 				if(path!=null) { 
-					Image2D[] img = getModuleTreeImages().getImageCollection(path);
+					// TODO correct?
+					ImageGroupMD img = getModuleTreeImages().getImageGroup(path);
 					if(img!=null) {
 						MultiImageFrame frame = new MultiImageFrame();
 						frame.init(img); 
@@ -335,6 +471,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			}
 		});
 		mnView.add(mntmMultiImageExplorer);
+		
+		JMenuItem mntmSelectData = new JMenuItem("Select data");
+		mntmSelectData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(activeModuleContainer!=null) { 
+					// TODO correct?
+					ModuleSelectExcludeData mod = (ModuleSelectExcludeData)activeModuleContainer.getModuleByClass(ModuleSelectExcludeData.class);
+					if(mod!=null) {
+						mod.getBtnOpenSelectData().doClick();
+					}
+				}
+			}
+		});
+		mnView.add(mntmSelectData);
 
 		JMenu mnWindow = new JMenu("Window");
 		menuBar.add(mnWindow);
@@ -388,6 +538,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbKeepAspectRatio.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) { 
 				logicRunner.renewImage2DView();
+				aspectRatioListener.setKeepRatio(cbKeepAspectRatio.isSelected());
 			}
 		});
 		cbKeepAspectRatio.setSelected(true);
@@ -396,6 +547,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbDebug = new JCheckBoxMenuItem("Debug");
 		cbDebug.setSelected(true);
 		mnWindow.add(cbDebug);
+		 
 		// #####################################################
 		// set visible for correct sizes
 		this.setVisible(true); 
@@ -406,6 +558,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {  
+		// init progres sdialog
+		ProgressDialog.initDialog(this);
 		// init
 		this.setBounds(100, 100, 934, 619);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -420,73 +574,17 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JPanel pnNorthContent = new JPanel(); 
 		pnNorthContent.setLayout(new BorderLayout(0, 0));
 
-		JPanel east = new JPanel();
+		east = new JPanel();
 		pnNorthContent.add(east, BorderLayout.EAST);
 		east.setLayout(new BorderLayout(0, 0));
 
-		modImage2D = new ModuleImage2D(this);
-		east.add(modImage2D, BorderLayout.CENTER);
-
-		JPanel pnTitleSettings = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
-		flowLayout.setHgap(4);
-		flowLayout.setVgap(0);
-		modImage2D.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
-
-		JButton btnApplySettingsToAll = new JButton("apply to all");
-		btnApplySettingsToAll.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				logicRunner.applySettingsToAllImagesInList();
-			}
-		});
-		pnTitleSettings.add(btnApplySettingsToAll);
-
-		JButton btnUpdate = new JButton("update");
-		btnUpdate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				writeAllSettingsFromModules();
-			}
-		});
-		pnTitleSettings.add(btnUpdate);
-
-		cbAuto = new JCheckBox("auto");
-		cbAuto.setSelected(true);
-		pnTitleSettings.add(cbAuto);
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		modImage2D.getPnContent().add(scrollPane, BorderLayout.EAST);
-
-		JPanel gridsettings = new JPanel();
-		gridsettings.setAlignmentY(0.0f);
-		gridsettings.setAlignmentX(0.0f);
-		scrollPane.setViewportView(gridsettings);
-		gridsettings.setLayout(new BoxLayout(gridsettings, BoxLayout.Y_AXIS));
-
-		moduleGeneral = new ModuleGeneral(this);
-		moduleGeneral.setAlignmentY(Component.TOP_ALIGNMENT);
-		gridsettings.add(moduleGeneral);
-
-		modulePaintscale = new ModulePaintscale();
-		gridsettings.add(modulePaintscale);
-
-		moduleThemes = new ModuleThemes();
-		gridsettings.add(moduleThemes);
-
-		moduleOperations = new ModuleOperations(this);
-		gridsettings.add(moduleOperations);
-
-		// add all modules for Image settings TODO add all mods
-		listImageSettingsModules.addElement(modImage2D);
-		listImageSettingsModules.addElement(moduleGeneral);
-		listImageSettingsModules.addElement(moduleGeneral.getModSplitConImg());
-		listImageSettingsModules.addElement(modulePaintscale);
-		listImageSettingsModules.addElement(moduleThemes);
-		listImageSettingsModules.addElement(moduleOperations);
-		listImageSettingsModules.addElement(moduleOperations.getModQuantifier());
-		listImageSettingsModules.addElement(moduleOperations.getModSelectExcludeData());
-
+		modImage2D = new ModuleImage2D(this); 
+		modImage2D.setVisible(false);
+		
+		modImageOverlay = new ModuleImageOverlay(this);
+		modImageOverlay.setVisible(false);
+		
+		// split pane
 		splitPane = new JSplitPane(); 
 		pnNorthContent.add(splitPane, BorderLayout.CENTER);
 		splitPane.setOneTouchExpandable(true);
@@ -497,7 +595,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		west.setLayout(new BorderLayout(0, 0));
 
 		// TODO richtig so?  
-		moduleTreeImages = new ModuleTreeWithOptions<Image2D>("", true);
+		moduleTreeImages = new ModuleTreeWithOptions<Collectable2D>("", true);
 		moduleTreeImages.getTree().setCellRenderer(new IconNodeRenderer());
 		moduleTreeImages.getTree().setRowHeight(0);
 		moduleTreeImages.getLbTitle().setText("Tree of images");
@@ -541,12 +639,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		center.setLayout(new BorderLayout(5, 5));
 
 		pnCenterImageView = new JPanel();
-		pnCenterImageView.addComponentListener(new AspectRatioListener() { 
+		pnCenterImageView.addComponentListener(aspectRatioListener = new AspectRatioListener(pnCenterImageView, true,  RATIO.LIMIT_TO_PARENT_SIZE) { 
 			@Override
 			public void componentResized(ComponentEvent e) {
 				// resize chart
-				if(getCbKeepAspectRatio().isSelected() && pnChartAspectRatio !=null && (logicRunner).getCurrentHeat()!=null) { 
-					resize(getLogicRunner().getCurrentHeat().getChartPanel(), getPnCenterImageView(), RATIO.LIMIT_TO_PARENT_SIZE);
+				if(pnChartAspectRatio !=null && (logicRunner).getCurrentHeat()!=null) { 
+					resize(getLogicRunner().getCurrentHeat().getChartPanel());
 				}
 			}
 		});
@@ -584,6 +682,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 		txtLog = new JTextPane();
 		scrollPane_1.setViewportView(txtLog);
+		DefaultCaret caret = (DefaultCaret) txtLog.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 		JLabel lblLog = new JLabel("Log");
 		pnLog.add(lblLog, BorderLayout.NORTH);
@@ -700,6 +800,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
 		pnDirectIANorthDisplay.add(horizontalStrut_1);
 		pnDirectIANorthDisplay.setVisible(false);
+		
+		
+		
 	}
 	// END OF CONSTRUCTOR
 	//###############################################################################################
@@ -708,71 +811,122 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	// AUTO UPDATER
 	// INIT, start, run
 	private void initAutoUpdater() {
+		// init auto updater to create new heatmaps
 		autoActionL = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules();
-			}
-		};
-		autoChangeL = new ChangeListener() { 
-			@Override
-			public void stateChanged(ChangeEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(); 
-			}
-		};
-		autoDocumentL = new DocumentListener() { 
-			@Override
-			public void removeUpdate(DocumentEvent arg0) {  
-				if(getCbAuto().isSelected()) startAutoUpdater(); 
-			} 
-			@Override
-			public void insertUpdate(DocumentEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(); 
-			} 
-			@Override
-			public void changedUpdate(DocumentEvent arg0) {
-				if(getCbAuto().isSelected()) startAutoUpdater(); 
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(false);
 			}
 		};
 		autoColorChangedL = new ColorChangedListener() { 
 			@Override
 			public void colorChanged(Color color) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules(); 
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(false); 
 			}
 		};
 		autoItemL = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				if(getCbAuto().isSelected()) writeAllSettingsFromModules();
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(false);
+			}
+		};
+		autoChangeL = new ChangeListener() { 
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
+			}
+		};
+		autoDocumentL = new DocumentListener() { 
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {  
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
+			} 
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
+			} 
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(false); 
+			}
+		};
+		
+		
+		// ##################################################################
+		// init auto repainter
+		autoRepActionL = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(true);
+			}
+		};
+		autoRepColorChangedL = new ColorChangedListener() { 
+			@Override
+			public void colorChanged(Color color) {
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(true); 
+			}
+		};
+		autoRepItemL = new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if(isCbAutoUpdatingSelected()) writeAllSettingsFromModules(true);
+			}
+		};
+		autoRepChangeL = new ChangeListener() { 
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
+			}
+		};
+		autoRepDocumentL = new DocumentListener() { 
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {  
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
+			} 
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
+			} 
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				if(isCbAutoUpdatingSelected()) startAutoUpdater(true); 
 			}
 		};
 		// add to MODULES TODO 
-		for(ImageModule m : listImageSettingsModules) {
-			m.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
-		}  
+		modImage2D.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
+		modImage2D.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);	
+		
+
+		modImageOverlay.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL, autoItemL);
+		modImageOverlay.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL, autoRepColorChangedL, autoRepItemL);
 	} 
 	
 	/**
 	 * starts the auto update function
 	 */
-	public void startAutoUpdater() {
+	public void startAutoUpdater(boolean repaintOnly) {
 		lastAutoUpdateTime = System.currentTimeMillis();
-		if(!isAutoUpdateStarted &&  ImageLogicRunner.IS_UPDATING()) { 
-			ImageEditorWindow.log("Auto update started", LOG.DEBUG);
-			isAutoUpdateStarted = true;
-			Thread t = new Thread(this);
-			t.start();
+		if(ImageLogicRunner.IS_UPDATING()) {
+			if(!repaintOnly) 
+				autoRepaintOnly = false;
+			
+			if(!isAutoUpdateStarted) { 
+				ImageEditorWindow.log("Auto update started", LOG.DEBUG);
+				isAutoUpdateStarted = true;
+				Thread t = new Thread(this);
+				t.start();
+			}
 		}
-		else  
-			ImageEditorWindow.log("no auto update this time", LOG.DEBUG);
 	}
+
 	@Override
 	public void run() {
 		while(true) {
 			if(lastAutoUpdateTime+AUTO_UPDATE_TIME<=System.currentTimeMillis()) {
-				writeAllSettingsFromModules();
+				writeAllSettingsFromModules(autoRepaintOnly);
 				lastAutoUpdateTime=-1;
 				isAutoUpdateStarted = false;
+				autoRepaintOnly = true;
 				break;
 			}
 			try {
@@ -801,45 +955,102 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * @param checks whether to check for autoupdate or just do it (when false) 
 	 */ 
 	public void fireUpdateEvent(boolean checks) {
-		if(!checks || getCbAuto().isSelected()) {
-			writeAllSettingsFromModules();
+		if(!checks || isCbAutoUpdatingSelected()) {
+			writeAllSettingsFromModules(false);
 		}
 	}
 	/**
 	 * reads all settings from all modules
 	 * renews the heatmap that is shown --> update in modules
 	 */ 
-	private void writeAllSettingsFromModules() {
+	public void writeAllSettingsFromModules(boolean repaintOnly) {
 		// 
-		ImageEditorWindow.log("Write all Settings from all Modules", LOG.DEBUG);
-		// TODO Write all to Settings 
-		for(ImageModule m : listImageSettingsModules) {
-			if(m instanceof ImageSettingsModule)
-				((ImageSettingsModule)m).writeAllToSettings();
-		}  
-		// show Image 
-		if(ImageLogicRunner.IS_UPDATING()) {
-			Heatmap heat = logicRunner.renewImage2DView();
+		if(activeModuleContainer!=null) {
+			ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
+			
+			// show Image 
+			if(ImageLogicRunner.IS_UPDATING()) {
+				// TODO Write all to Settings 
+				activeModuleContainer.writeAllToSettings();
+				
+				if(repaintOnly) {
+					ImageEditorWindow.log("Write all Settings from all Modules --> REPAINT ONLY", LOG.DEBUG);
+					Heatmap heat = logicRunner.getCurrentHeat();
+					Collectable2D img = logicRunner.getSelectedImage();
+					if(heat!=null && img!=null) {
+						img.getSettings().applyToHeatMap(heat);
+	
+						heat.getChartPanel().revalidate();
+						heat.getChartPanel().repaint();
+					}
+				}
+				else {
+					ImageEditorWindow.log("Write all Settings from all Modules --> CREATE NEW", LOG.DEBUG);
+					Heatmap heat = logicRunner.renewImage2DView();
+				}
+			}
 		}
 	} 
+	
 	
 	/**
 	 * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
 	 * @param img
 	 */
 	public void setImage2D(Image2D img) { 
-		boolean isauto = cbAuto.isSelected();
-		cbAuto.setSelected(false); 
+		boolean isauto = modImage2D.isAutoUpdating();
+		modImage2D.setAutoUpdating(false); 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(false);
+		// show all modules for images
+		if(activeModuleContainer!=null)
+			activeModuleContainer.setVisible(false);
+		
+		activeModuleContainer = modImage2D;
+		activeModuleContainer.setVisible(true);
+		east.add(activeModuleContainer, BorderLayout.CENTER);
+		
 		// set
-		for(ImageModule m : listImageSettingsModules) {
-			m.setCurrentImage(img); 
-		} 
+		DebugStopWatch debug = new DebugStopWatch();
+		modImage2D.setCurrentImage(img); 
+		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all modules ", LOG.DEBUG);
+		
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
-		cbAuto.setSelected(isauto);
+		modImage2D.setAutoUpdating(isauto);
+		
+		this.revalidate();
 	} 
+	/**
+	 * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
+	 * @param img
+	 */
+	public void setImageOverlay(ImageOverlay img) { 
+		boolean isauto = modImageOverlay.isAutoUpdating();
+		modImageOverlay.setAutoUpdating(false); 
+		// finished
+		ImageLogicRunner.setIS_UPDATING(false);
+		// show all modules for ImageOverlays
+		if(activeModuleContainer!=null)
+			activeModuleContainer.setVisible(false);
+		
+		activeModuleContainer = modImageOverlay;
+		activeModuleContainer.setVisible(true);
+		east.add(activeModuleContainer, BorderLayout.CENTER);
+		
+		// set
+		DebugStopWatch debug = new DebugStopWatch();
+		modImageOverlay.setCurrentImage(img); 
+		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all OVERLAY modules "+debug.stop(), LOG.DEBUG);
+		
+		// finished
+		ImageLogicRunner.setIS_UPDATING(true);
+		modImageOverlay.setAutoUpdating(isauto);
+		
+		this.revalidate();
+	} 
+	
+	
 	
 	/**
 	 * Visualization:
@@ -847,8 +1058,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * Adds a heatmap to all imagemodules
 	 * called from {@link ImageLogicRunner#renewImage2DView()}.
 	 * @param heat 
+	 * @throws Exception 
 	 */
-	public void addHeatmapToPanel(Heatmap heat) { 
+	public void addHeatmapToPanel(final Heatmap heat) throws Exception { 
+
+		ImageEditorWindow.log("Add Heatmap to panel", LOG.DEBUG); 
+		
 		getPnCenterImageView().removeAll(); 
 		if(getCbKeepAspectRatio().isSelected()) {
 			if(pnChartAspectRatio==null) {
@@ -859,6 +1074,29 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 			getPnCenterImageView().add(pnChartAspectRatio,BorderLayout.CENTER);  
 			pnChartAspectRatio.removeAll();
 			pnChartAspectRatio.add(heat.getChartPanel());
+			// add aspect ratio listener
+			heat.getChartPanel().setAspectRatioListener(aspectRatioListener);
+			// resize listener
+			heat.getChartPanel().addAxesRangeChangedListener(new AxesRangeChangedListener() {
+				@Override
+				public void axesRangeChanged(PlotChartPanel chart, ValueAxis axis,
+						boolean isDomainAxis, Range lastR, Range newR) {
+					// save to zoom settings
+					logicRunner.setIS_UPDATING(false);
+					if(isDomainAxis)
+						heat.getImage().getSettZoom().setXrange(newR);
+					else 
+						heat.getImage().getSettZoom().setYrange(newR);
+					
+					// set to module
+					ModuleZoom moduleZoom = getModuleZoom();
+					if(moduleZoom!=null) {
+						moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+					}
+					logicRunner.setIS_UPDATING(true);
+				}
+			});
+			
 			// set width and height
 			Dimension dim = ChartLogics.calcMaxSize(heat.getChartPanel(), getPnCenterImageView().getWidth(), getPnCenterImageView().getHeight());
 			heat.getChartPanel().setPreferredSize(dim);
@@ -874,9 +1112,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		ChartLogics.setZoomDomainAxis(heat.getChartPanel(), ChartLogics.getZoomDomainAxis(heat.getChartPanel()), false); 
 		// set heatmap for all modules 
-		for(ImageModule m : listImageSettingsModules) {
-			m.setCurrentHeatmap(heat);
-		}  
+		if(activeModuleContainer!=null)
+			activeModuleContainer.setCurrentHeatmap(heat);
+		else  {
+			throw new Exception("No module container is active. First set the Image or overlay - then the heatmap");
+		}
 	}
 
 	//##########################################################################################
@@ -913,13 +1153,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	
 	//##########################################################################################
 	// LOGGER
+/**
+ * if debugging is activated
+ * @return
+ */
+	public static boolean isDebugging() { 
+		return (getEditor()!=null && getEditor().getCbDebug()!=null && getEditor().getCbDebug().isSelected());
+	}
 	/**
 	 * prints a message to the log 
 	 * @param s
 	 * @param mode LOG is in this class
 	 */
 	public static void log(String s, LOG mode) {
-		if(txtLog!=null && isLogging() && getEditor()!=null && !(mode==LOG.DEBUG && !getEditor().getCbDebug().isSelected())) {
+		if(txtLog!=null && isLogging() && getEditor()!=null && !(mode==LOG.DEBUG && !isDebugging())) {
 			try {
 				StyledDocument doc = txtLog.getStyledDocument();
 				if(styleWarning==null) {
@@ -980,14 +1227,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 	//##########################################################################################
 	// GETTERS AND SETTERS
-	public JCheckBox getCbAuto() {
-		return cbAuto;
-	}
-	public ModuleGeneral getModuleGeneral() {
-		return moduleGeneral;
-	}
-	public ModulePaintscale getModulePaintscale() {
-		return modulePaintscale;
+	public boolean isCbAutoUpdatingSelected() {
+		return activeModuleContainer.isAutoUpdating();
 	}
 	public ImageLogicRunner getLogicRunner() {
 		return logicRunner;
@@ -1039,15 +1280,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public JTextField getTxtDirectFileFilter() {
 		return txtDirectFileFilter;
 	}
-	public ModuleOperations getModuleOperations() {
-		return moduleOperations;
+
+	public ModuleZoom getModuleZoom() {
+		return (ModuleZoom) (activeModuleContainer==null? null : activeModuleContainer.getModuleByClass(ModuleZoom.class));
+	}
+	
+	public ModuleThemes getModuleThemes() {
+		return (ModuleThemes) (activeModuleContainer==null? null : activeModuleContainer.getModuleByClass(ModuleThemes.class));
 	}
 
 	/**
 	 * the list of images or null if the editor is not initialized
 	 * @return
 	 */
-	public static Vector<Image2D> getImages() { 
+	public static List<Collectable2D> getImages() { 
 		if(getEditor()==null)
 			return null;
 		else {
@@ -1075,4 +1321,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public boolean isCreatingImageIcons() {
 		return cbCreateImageIcons.isSelected();
 	}
+
+	public AspectRatioListener getAspectRatioListener() {
+		return aspectRatioListener;
+	}
+
 }

@@ -1,6 +1,6 @@
 package net.rs.lamsi.general.datamodel.image.listener;
 
-import net.rs.lamsi.general.datamodel.image.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 
 /**
  * changes in raw data for example by direct imaging analysis

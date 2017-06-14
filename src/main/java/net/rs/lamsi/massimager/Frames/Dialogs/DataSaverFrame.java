@@ -18,11 +18,12 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.rs.lamsi.general.settings.SettingsDataSaver;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Window;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 
 public class DataSaverFrame extends JFrame {
@@ -180,8 +181,6 @@ public class DataSaverFrame extends JFrame {
 				// Save Data to file at path
 				try {
 					// Setup Progressbar
-					ProgressDialog.getInst().setVisibleDialog(true);
-					ProgressDialog.setProgress(0); 
 					// erfolgreich oder nicht gespeichert
 					if(window.saveDataFile(settings.getSetDataSaver(), excelWriter, currentMode))
 						JOptionPane.showMessageDialog(window.getFrame(), "Save of xlsx succeed", "SUCCEED!", JOptionPane.CANCEL_OPTION);
@@ -191,9 +190,7 @@ public class DataSaverFrame extends JFrame {
 					e1.printStackTrace();
 					// TODO open Message popup
 					JOptionPane.showMessageDialog(window.getFrame(), e1.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-				} finally {
-					ProgressDialog.getInst().setVisibleDialog(false);
-				}
+				} 
 			}
 		});
 		

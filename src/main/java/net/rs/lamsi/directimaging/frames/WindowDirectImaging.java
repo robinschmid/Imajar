@@ -14,8 +14,8 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Heatmap.Heatmap;
-import net.rs.lamsi.massimager.Heatmap.HeatmapFactory;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.heatmap.HeatmapFactory;
 
 import javax.swing.JCheckBox;
 

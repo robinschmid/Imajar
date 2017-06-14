@@ -6,7 +6,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import net.rs.lamsi.massimager.MyFreeChart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.sf.mzmine.util.Range;
 

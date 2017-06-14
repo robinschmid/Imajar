@@ -4,9 +4,10 @@ import java.io.File;
 import java.util.Vector;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.FrameWork.modules.tree.IconNode;
-import net.rs.lamsi.massimager.Settings.image.visualisation.SettingsPaintScale.ValueMode;
-import net.rs.lamsi.massimager.Settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.framework.modules.tree.IconNode;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.directimaging.DIATask;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
@@ -406,17 +407,18 @@ public class DirectImageLogicRunner implements Runnable {
 	 * @throws Exception
 	 */
 	private DIATask createTask(File[] i, IconNode parent, int index) throws Exception {
-		// load them as image set
-		Image2D[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
-		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
-		if(imgs.length>0) {
-			// add img to list
-			IconNode nodes[] = runner.addCollection2D(imgs, parent, settings); 
-			// get all filedimensions like lines/length... for later comparison 
-			FileDim[] dim = writer.getFileDim(i);
-			// create task
-			return new DIATask(imgs, dim, nodes, index); 
-		}
+//		// load them as image set
+//		ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(i,settings, true); 
+//		ImageEditorWindow.log("Imported image "+i[0].getName(), LOG.DEBUG);
+//		for(ImageGroupMD g : imgs)
+//		if(g.getImages().size()>0) {
+//			// add img to list
+//			IconNode nodes[] = runner.addGroup(g, parent); 
+//			// get all filedimensions like lines/length... for later comparison 
+//			FileDim[] dim = writer.getFileDim(i);
+//			// create task 
+//			return new DIATask(g, dim, nodes, index); 
+//		}
 		return null;
 	}
 
@@ -533,18 +535,18 @@ public class DirectImageLogicRunner implements Runnable {
 		if(!autoScale) {
 			// reset to img max (reverse effect of autoscale)
 			for(DIATask task : tasks) {
-				for(Image2D img : task.getImg()) { 
-					img.getSettPaintScale().setUsesMinMax(true);
-					img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
-					img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
-					img.getSettPaintScale().setMax(img.getMaxIntensity(false));
+				for(Image2D img : task.getImg().getImagesOnly()) { 
+					img.getSettings().getSettPaintScale().setUsesMinMax(true);
+					img.getSettings().getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
+					img.getSettings().getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
+					img.getSettings().getSettPaintScale().setMax(img.getMaxIntensity(false));
 				}
 			}
 			for(Image2D img : sumimages) {
-				img.getSettPaintScale().setUsesMinMax(true);
-				img.getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
-				img.getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
-				img.getSettPaintScale().setMax(img.getMaxIntensity(false));
+				img.getSettings().getSettPaintScale().setUsesMinMax(true);
+				img.getSettings().getSettPaintScale().setModeMin(ValueMode.PERCENTILE);
+				img.getSettings().getSettPaintScale().setModeMax(ValueMode.PERCENTILE);
+				img.getSettings().getSettPaintScale().setMax(img.getMaxIntensity(false));
 			}
 		}
 	}

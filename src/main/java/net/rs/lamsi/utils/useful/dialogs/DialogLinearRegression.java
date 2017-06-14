@@ -11,12 +11,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
-import net.rs.lamsi.massimager.MyFreeChart.themes.ChartThemeFactory;
-import net.rs.lamsi.massimager.MyFreeChart.themes.MyStandardChartTheme;
+import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.data.xy.XYSeries;
@@ -46,7 +46,7 @@ public class DialogLinearRegression extends JFrame {
 						data[i+2][1] = i*10+rand.nextInt(10000)/1000.0;
 					}
 					regression.addData(data);
-					DialogLinearRegression frame = new DialogLinearRegression(regression, data);
+					DialogLinearRegression frame = DialogLinearRegression.createInstance(regression, data);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -55,23 +55,31 @@ public class DialogLinearRegression extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
-	public DialogLinearRegression(SimpleRegression r, double[][] data) {
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 603, 470);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
+
+	private DialogLinearRegression() {
+	}
+	
+	public static DialogLinearRegression createInstance(double[][] data, boolean useintercept) {
+		SimpleRegression regression = new SimpleRegression(useintercept);
+		regression.addData(data);
+		return createInstance(regression, data);
+	}
+	
+	public static DialogLinearRegression createInstance(SimpleRegression r, double[][] data) {
+		DialogLinearRegression d = new DialogLinearRegression();
+		d.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		d.setBounds(100, 100, 603, 470);
+		d.contentPane = new JPanel();
+		d.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		d.contentPane.setLayout(new BorderLayout(0, 0));
+		d.setContentPane(d.contentPane);
 		
-		pnChartView = new JPanel();
-		contentPane.add(pnChartView, BorderLayout.CENTER);
-		pnChartView.setLayout(new BorderLayout(0, 0));
+		d.pnChartView = new JPanel();
+		d.contentPane.add(d.pnChartView, BorderLayout.CENTER);
+		d.pnChartView.setLayout(new BorderLayout(0, 0));
 		
 		JScrollPane scrollPane = new JScrollPane();
-		contentPane.add(scrollPane, BorderLayout.SOUTH);
+		d.contentPane.add(scrollPane, BorderLayout.SOUTH);
 		
 		JTextPane txtpnStats = new JTextPane();
 		txtpnStats.setText("Stats:\n"+ 
@@ -85,8 +93,11 @@ public class DialogLinearRegression extends JFrame {
 		// add data points
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		XYSeries series = new XYSeries(""); 
+		double max = Double.NEGATIVE_INFINITY, min = Double.POSITIVE_INFINITY;
 		for(int i=0; i<data.length; i++) {
 			series.add(data[i][0], data[i][1]);
+			if(data[i][0]<min) min = data[i][0];
+			if(data[i][0]>max) max = data[i][0];
 		}  
 		dataset.addSeries(series);
 		// add regression line
@@ -95,7 +106,7 @@ public class DialogLinearRegression extends JFrame {
 		if(x0>0) 
 			series.add(0, r.predict(0));
 		else series.add(x0, 0);
-		series.add(data[data.length-1][0], r.predict(data[data.length-1][0]));
+		series.add(max, r.predict(max));
 		dataset.addSeries(series);
 		
 		JFreeChart chart = ChartFactory.createXYLineChart("", "c", "I", dataset);
@@ -114,10 +125,11 @@ public class DialogLinearRegression extends JFrame {
 		renderer.setDrawYError(true);
 		renderer.setDrawXError(false);
 		
-		ChartPanel pn = new ChartPanel(chart, true);
-		getPnChartView().add(pn, BorderLayout.CENTER);
+		PlotChartPanel pn = new PlotChartPanel(chart);
+		d.getPnChartView().add(pn, BorderLayout.CENTER);
+		return d;
 	}
-
+	
 	public JPanel getPnChartView() {
 		return pnChartView;
 	}

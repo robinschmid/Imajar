@@ -1,7 +1,7 @@
 package net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces;
  
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsHolder;
 
 public interface SettingsPanel {
 

@@ -3,13 +3,13 @@ package net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.panels;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsConverterRAW;
+import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.preferences.SettingsGeneralValueFormatting;
+import net.rs.lamsi.general.settings.visualization.SettingsPlotSpectraLabelGenerator;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
-import net.rs.lamsi.massimager.Settings.Settings;
-import net.rs.lamsi.massimager.Settings.SettingsConverterRAW;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.preferences.SettingsGeneralValueFormatting;
-import net.rs.lamsi.massimager.Settings.visualization.SettingsPlotSpectraLabelGenerator;
 
 import java.awt.BorderLayout;
 

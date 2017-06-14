@@ -10,8 +10,11 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.massimager.Frames.Dialogs.ProgressDialog;
-import net.rs.lamsi.massimager.MyException.NoFileSelectedException;
+import net.rs.lamsi.general.settings.SettingsDataSaver;
+import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
 import net.rs.lamsi.massimager.MyMZ.ChromGenType;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
@@ -19,14 +22,11 @@ import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.oldmzjavasave.MZXMLReaderList;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.exceptions.FilteringFailedException;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra.MZSpectrumCombineFilter;
-import net.rs.lamsi.massimager.Settings.SettingsDataSaver;
-import net.rs.lamsi.massimager.Settings.SettingsHolder;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsGeneralImage;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.massimager.Settings.image.sub.SettingsMSImage;
-import net.rs.lamsi.massimager.Threads.ProgressUpdateTask;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
+import net.rs.lamsi.utils.myfilechooser.exceptions.NoFileSelectedException;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
@@ -245,7 +245,7 @@ public class LogicRunner {
 	    	listWB = new XSSFWorkbook[wbcount];
 	    	listWBFiles = new File[wbcount];
 	    	// Listen für files und 
-	    	ProgressUpdateTask task = ProgressDialog.getInst().startTask(new ProgressUpdateTask(ProgressDialog.getInst(), listWB.length) {
+	    	ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(listWB.length) {
 				// Load all Files
 				@Override
 				protected Boolean doInBackground() throws Exception {
