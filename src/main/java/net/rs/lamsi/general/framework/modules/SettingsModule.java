@@ -12,7 +12,7 @@ import javax.swing.JMenuItem;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
-import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;

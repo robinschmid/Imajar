@@ -12,6 +12,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentListener;
 
+import net.rs.lamsi.general.framework.listener.ColorChangedListener;
+
 public class JFontSpecs extends JPanel {
 
 	private JFontBox fontBox;

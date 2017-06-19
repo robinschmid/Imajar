@@ -332,10 +332,10 @@ public class ImageLogicRunner {
 			// current settings as image 
 
 			// get List of images
-			ProgressDialog.startTask(new ProgressUpdateTask(1) {
+			new ProgressUpdateTask(1) {
 
 				@Override
-				protected Boolean doInBackground() throws Exception {
+				protected Boolean doInBackground2() throws Exception {
 					Settings sett = current.getSettings();
 					List<Collectable2D> list = getListImages();
 					for(Collectable2D img : list) { 
@@ -347,7 +347,7 @@ public class ImageLogicRunner {
 					}
 					return true;
 				}
-			});
+			}.execute();
 
 		}
 	} 
@@ -439,10 +439,10 @@ public class ImageLogicRunner {
 			final File[] files = preferences.getFcOpen().getSelectedFiles(); 
 
 			// Up	dateTask
-			final ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(files.length) {
+			new ProgressUpdateTask(files.length) {
 				// Load all Files
 				@Override
-				protected Boolean doInBackground() throws Exception {
+				protected Boolean doInBackground2() throws Exception {
 					//
 					// load file  
 					if(files.length>0) { 
@@ -488,7 +488,7 @@ public class ImageLogicRunner {
 					//
 					return true; 
 				}
-			});
+			}.execute();
 		}
 	}
 
@@ -509,10 +509,10 @@ public class ImageLogicRunner {
 	public void loadProjectFromFile(final File f) { 
 		// image
 		if(preferences.getFileTFProject().accept(f)) {
-			final ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(1) {
+			new ProgressUpdateTask(1) {
 				// Load all Files
 				@Override
-				protected Boolean doInBackground() throws Exception {
+				protected Boolean doInBackground2() throws Exception {
 					try {
 						// load image group from file 
 						ImagingProject project = Image2DImportExportUtil.readProjectFromStandardZip(f, this);
@@ -529,7 +529,7 @@ public class ImageLogicRunner {
 					}
 					return true;
 				}
-			});
+			}.execute();;
 
 		} 
 	} 
@@ -542,10 +542,10 @@ public class ImageLogicRunner {
 	public void loadImage2DFromFile(final File f, final ImagingProject project) { 
 		// image
 		if(preferences.getFileTFImage2D().accept(f)) {
-			final ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(1) {
+			new ProgressUpdateTask(1) {
 				// Load all Files
 				@Override
-				protected Boolean doInBackground() throws Exception {
+				protected Boolean doInBackground2() throws Exception {
 					try {
 						// load image group from file 
 						ImageGroupMD img = Image2DImportExportUtil.readFromStandardZip(f, this);
@@ -564,7 +564,7 @@ public class ImageLogicRunner {
 					}
 					return true;
 				}
-			});
+			}.execute();
 		} 
 	} 
 
@@ -620,10 +620,10 @@ public class ImageLogicRunner {
 		// load image
 		try { 
 			if(files.length>0) {
-				ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(files.length) {
+				new ProgressUpdateTask(files.length) {
 					// Load all Files
 					@Override
-					protected Boolean doInBackground() throws Exception {
+					protected Boolean doInBackground2() throws Exception {
 						boolean state = true;
 						// folder or files?
 						if(files[0].isDirectory()) {
@@ -677,7 +677,7 @@ public class ImageLogicRunner {
 
 						return state;
 					}
-				});
+				}.execute();
 			}
 
 		} catch (Exception e) { 

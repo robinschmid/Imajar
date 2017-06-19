@@ -26,8 +26,8 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.general.framework.basics.ColorChangedListener;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
+import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;

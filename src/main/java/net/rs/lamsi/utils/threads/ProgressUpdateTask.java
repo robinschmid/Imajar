@@ -11,8 +11,18 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 	ProgressDialog progressDialog;
 	private double stepwidth=0;
 	private double progress = 0;
+	// pop up after 1 second
+	private long millisDelayToPopUp = 1000;
+	private long startTime = -1;
+	
+	protected boolean isStarted = false;
 
 	public ProgressUpdateTask(int steps) {
+		this(steps, 1000);
+	}
+	
+	public ProgressUpdateTask(int steps, long millisToPopUp) {
+		this.millisDelayToPopUp = millisToPopUp;
 		this.setStepWidth(steps);
 		addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
@@ -20,26 +30,43 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 				//progressDialog.getProgressBar().setValue(getProgress());
 				if ("progress".equalsIgnoreCase(evt.getPropertyName())) {
 					int progress = (Integer) (evt.getNewValue())*10;
-					progressDialog.getProgressBar().setValue(progress);
+					
+					if(progressDialog!=null)
+						progressDialog.getProgressBar().setValue(progress);
 				}
 			} 
 		});
 	}
+	
+	
 
 	@Override
 	protected void done() {
-		progressDialog.setVisible(false);
+		isStarted = false;
+		if(progressDialog!=null)
+			progressDialog.setVisible(false);
 	}
-
-	// Hier alle wichtigen Prozesse wie laden von daten
-	protected abstract Boolean doInBackground() throws Exception;
 	
-    
-	@Override
-	protected void process(java.util.List<Void> chunks) { 
-		super.process(chunks);
+
+	protected Boolean doInBackground() throws Exception {
+		wasStarted();
+		return doInBackground2();
 	}
 
+	// process everything here
+	protected abstract Boolean doInBackground2() throws Exception;
+	
+
+	
+	private void wasStarted() {
+		isStarted = true;
+		startTime = System.currentTimeMillis();
+		// open dialog?
+		if(millisDelayToPopUp==0 && progressDialog == null) {
+			progressDialog = ProgressDialog.openTask(this);
+		}
+	}
+    
 	// Steps 
 	public void addProgressStep(double a) {
 		setProgress(progress+getStepwidth()*a);
@@ -51,8 +78,20 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 		this.progress = p;
 		super.setProgress((int)p);
 		
-		progressDialog.getProgressBar().setValue((int)(p*10));
-		progressDialog.validate();
+		// open dialog?
+		if(startTime!=-1 && System.currentTimeMillis()-startTime>=millisDelayToPopUp) {
+			progressDialog = ProgressDialog.openTask(this);
+		}
+		
+		// set progress to dialog
+		if(progressDialog!=null) {
+			progressDialog.getProgressBar().setValue((int)(p*10));
+			progressDialog.validate();
+		}
+	}
+	
+	public double getProgressDouble() {
+		return progress;
 	}
 	
 	public void setProgressSteps(int steps) {
@@ -74,4 +113,20 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 	public void setProgressDialog(ProgressDialog progressDialog) {
 		this.progressDialog = progressDialog;
 	}
+	
+	public long getMillisDelayToPopUp() {
+		return millisDelayToPopUp;
+	}
+
+	public void setMillisDelayToPopUp(long millisDelayToPopUp) {
+		this.millisDelayToPopUp = millisDelayToPopUp;
+	}
+
+	public boolean isStarted() {
+		return isStarted;
+	}
+
+	public void setStarted(boolean isStarted) {
+		this.isStarted = isStarted;
+	} 
 }

@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.framework.basics;
+package net.rs.lamsi.general.framework.listener;
 
 import java.awt.Color;
 

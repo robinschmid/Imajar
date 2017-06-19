@@ -81,10 +81,10 @@ public class SettingsCropAndShift extends Settings implements Image2DSett {
 	 * @param group
 	 */
 	public void applyToGroup(final ImageGroupMD group) {
-		ProgressDialog.startTask(new ProgressUpdateTask(4) {
+		new ProgressUpdateTask(4) {
 			
 			@Override
-			protected Boolean doInBackground() throws Exception {
+			protected Boolean doInBackground2() throws Exception {
 				try {
 					MDDataset data = group.getData();
 					int min = Integer.MAX_VALUE;
@@ -172,7 +172,7 @@ public class SettingsCropAndShift extends Settings implements Image2DSett {
 					return false;
 				}
 			}
-		});
+		}.execute();
 	}
 
 	/**

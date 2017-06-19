@@ -35,8 +35,8 @@ import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.framework.basics.ColorChangedListener;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
+import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
@@ -972,7 +972,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 						hueSlider.getHue(), hueSlider.getPositions()
 						);
 				/// renew histo
-				getPnHistogram().updateHisto(ps);
+				// getPnHistogram().updateHisto(ps);
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}

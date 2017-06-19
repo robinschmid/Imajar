@@ -8,7 +8,7 @@ import javax.swing.event.DocumentListener;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;

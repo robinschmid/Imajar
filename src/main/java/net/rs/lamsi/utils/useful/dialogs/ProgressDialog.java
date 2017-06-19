@@ -57,14 +57,12 @@ public class ProgressDialog extends JDialog {
 	}
 
 	// Allways a new Task
-	public static ProgressUpdateTask startTask(ProgressUpdateTask task) {
+	public static ProgressDialog openTask(ProgressUpdateTask task) {
 		ProgressDialog d = getNextAvailableDialog();
 		task.setProgressDialog(d);
+		d.setProgress(((int)task.getProgressDouble()*10));
 		d.setVisibleDialog(true);
-		
-	    // UpdatingTask  
-		task.execute(); 
-		return task;
+		return d;
 	}
  
 	private static ProgressDialog getNextAvailableDialog() {
@@ -111,5 +109,6 @@ public class ProgressDialog extends JDialog {
 	} 
 	public int getStepwidth() {
 		return stepwidth;
-	} 
+	}
+
 }

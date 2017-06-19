@@ -68,10 +68,10 @@ public class Image2DImportExportUtil {
 	 * @throws IOException
 	 */
 	public static void writeProjectToStandardZip(final ImagingProject project, final File file) throws IOException {
-		ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(3) {
+		new ProgressUpdateTask(3) {
 			// Load all Files
 			@Override
-			protected Boolean doInBackground() throws Exception {
+			protected Boolean doInBackground2() throws Exception {
 				boolean state = true;
 				// parameters
 				ZipParameters parameters = new ZipParameters();
@@ -130,7 +130,7 @@ public class Image2DImportExportUtil {
 				addProgressStep(1);
 				return state;
 			}
-		});
+		}.execute();
 	}
 
 
@@ -257,10 +257,10 @@ public class Image2DImportExportUtil {
 	 * @throws IOException
 	 */
 	public static void writeToStandardZip(final ImageGroupMD group, final File file) throws IOException {
-		ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(3) {
+		new ProgressUpdateTask(3) {
 			// Load all Files
 			@Override
-			protected Boolean doInBackground() throws Exception {
+			protected Boolean doInBackground2() throws Exception {
 				boolean state = true;
 				// parameters
 				ZipParameters parameters = new ZipParameters();
@@ -295,7 +295,7 @@ public class Image2DImportExportUtil {
 
 				return state;
 			}
-		});
+		}.execute();
 
 		//	        // copy existing files directly
 		//			try {

@@ -245,10 +245,10 @@ public class LogicRunner {
 	    	listWB = new XSSFWorkbook[wbcount];
 	    	listWBFiles = new File[wbcount];
 	    	// Listen für files und 
-	    	ProgressUpdateTask task = ProgressDialog.startTask(new ProgressUpdateTask(listWB.length) {
+	    	ProgressUpdateTask task = new ProgressUpdateTask(listWB.length) {
 				// Load all Files
 				@Override
-				protected Boolean doInBackground() throws Exception {
+				protected Boolean doInBackground2() throws Exception {
 					boolean retVal = true;
 					//
 					// jedes WB nacheinander füllen
@@ -321,7 +321,8 @@ public class LogicRunner {
 					//
 					return retVal; 
 				} 
-			});  
+			};
+			task.execute();
 	    	
 	    	while(!task.isDone()) {
 	    		try {

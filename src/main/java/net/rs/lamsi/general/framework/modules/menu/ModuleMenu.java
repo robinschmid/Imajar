@@ -125,9 +125,9 @@ public class ModuleMenu extends JButton {
 
 					final TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(ImageEditorWindow.getEditor(), ImageEditorWindow.getEditor().getModuleTreeImages().getRoot(), TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, ImageEditorWindow.getEditor().getModuleTreeImages().getTree().getSelectionPaths());
 					if(paths==null) return;
-					ProgressDialog.startTask(new ProgressUpdateTask(paths.length) {
+					new ProgressUpdateTask(paths.length) {
 						@Override
-						protected Boolean doInBackground() throws Exception {
+						protected Boolean doInBackground2() throws Exception {
 							// apply settings to all images
 							for(TreePath p : paths) { 
 								try {
@@ -174,7 +174,7 @@ public class ModuleMenu extends JButton {
 							
 							addProgressStep(1.0);
 						}
-					});
+					}.execute();
 					
 				} catch (Exception e1) { 
 					e1.printStackTrace();

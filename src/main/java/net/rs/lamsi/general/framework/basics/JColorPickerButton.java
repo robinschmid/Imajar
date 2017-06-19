@@ -15,6 +15,8 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 
+import net.rs.lamsi.general.framework.listener.ColorChangedListener;
+
 public class JColorPickerButton extends JButton { 
 	JDialog   dialog;
 	JColorChooser chooser = new JColorChooser(); 

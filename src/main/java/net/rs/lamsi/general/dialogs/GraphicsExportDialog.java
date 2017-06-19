@@ -256,10 +256,10 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 				}
 				else {
 
-					ProgressDialog.startTask(new ProgressUpdateTask(1) {
+					new ProgressUpdateTask(1) {
 
 						@Override
-						protected Boolean doInBackground() throws Exception {
+						protected Boolean doInBackground2() throws Exception {
 							try {
 								EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE)getComboExportStruc().getSelectedItem();
 
@@ -323,7 +323,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 							}
 							return true;
 						}
-					});
+					}.execute();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
