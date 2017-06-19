@@ -31,7 +31,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		
 		addSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
 		addSettings(new SettingsGeneralImage());
-		addSettings(new SettingsThemesContainer());
+		addSettings(new SettingsThemesContainer(true));
 		addSettings(new SettingsImage2DQuantifierLinear());
 		addSettings(new SettingsImage2DOperations());
 		addSettings(new SettingsZoom());
@@ -46,7 +46,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		try { 
 			addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
 			addSettings(new SettingsGeneralImage());
-			addSettings(new SettingsThemesContainer());
+			addSettings(new SettingsThemesContainer(true));
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());
@@ -61,7 +61,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		try {
 			addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
 			addSettings((SettingsGeneralImage) BinaryWriterReader.deepCopy(setImage));
-			addSettings(new SettingsThemesContainer());
+			addSettings(new SettingsThemesContainer(true));
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
 			addSettings(new SettingsZoom());

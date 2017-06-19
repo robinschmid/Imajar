@@ -11,7 +11,7 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
  */
 public interface SettingsModuleObject<S> {
 	
-	public void setCurrentImage(S img);
+	public void setCurrentImage(S img, boolean setAllToPanel);
 	
 	public S getCurrentImage();
 }

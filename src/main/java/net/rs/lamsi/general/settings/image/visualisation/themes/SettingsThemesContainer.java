@@ -2,72 +2,65 @@ package net.rs.lamsi.general.settings.image.visualisation.themes;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Vector;
-
-import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
-import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.SettingsContainerSettings;
-import net.rs.lamsi.general.settings.image.SettingsContainerCollectable2D;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLabelLocation;
-import org.jfree.chart.axis.NumberAxis;
+import org.jfree.ui.RectangleInsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.SettingsContainerSettings;
 
 public class SettingsThemesContainer extends SettingsContainerSettings {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
 
-	public SettingsThemesContainer() {
-		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
-		
-		
-		
-		// scale in plot
-		SettingsScaleInPlot scaleInPlot = new SettingsScaleInPlot();
-		addSettings(scaleInPlot);
-
-		SettingsTheme th = new SettingsTheme();
-		addSettings(th);
-		
-		resetAll();
+	public SettingsThemesContainer(boolean createPaintscaleThemeSettings) {
+		this(null, createPaintscaleThemeSettings);
 	} 
 	/**
 	 * example
 	 * @param theme example: ChartThemeFactory.THEME_KARST
 	 */
-	public SettingsThemesContainer(THEME themeid) {
-		super("SettingsThemes", "/Settings/Visualization/", "setThemeContainer"); 
+	public SettingsThemesContainer(THEME themeid, boolean createPaintscaleThemeSettings) {
+		super("SettingsThemesContainer", "/Settings/Visualization/", "setThemeContainer"); 
 		// scale in plot
 		SettingsScaleInPlot scaleInPlot = new SettingsScaleInPlot();
 		addSettings(scaleInPlot);
 		
 		SettingsTheme th = new SettingsTheme(themeid);
 		addSettings(th);
+
+		if(createPaintscaleThemeSettings)
+			addSettings(new SettingsPaintscaleTheme());
 		
 		resetAll();
 	} 
 	
-	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
+	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, Color cPlotBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
 			boolean showScale, String scaleUnit, float scaleFactor, float scaleValue, boolean isPaintScaleInPlot, float scaleXPos, float scaleYPos,
 			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
-			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale) {
-		getSettTheme().setAll(antiAlias, showTitle, noBG, cBG, showXGrid, showYGrid, showXAxis, showYAxis, 
-				isPaintScaleInPlot, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle);
+			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale,
+			String chartTitle, RectangleInsets psMargin, int psWidth, double psTickUnit, boolean psAutoSelectTickUnit) {
+		getSettTheme().setAll(antiAlias, showTitle, noBG, cBG, cPlotBG, showXGrid, showYGrid, showXAxis, showYAxis, 
+				fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle, chartTitle);
 		getSettScaleInPlot().setAll(showScale, scaleUnit, scaleFactor, scaleValue, scaleXPos, scaleYPos, fScale, cScale);
+		
+		// can be null
+		SettingsPaintscaleTheme pst = getSettPaintscaleTheme();
+		if(pst!=null)
+			pst.setAll(isPaintScaleInPlot, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, psMargin, psWidth, psTickUnit, psAutoSelectTickUnit);
 	}
-
+	
+	
+	@Override
+	public boolean replaceSettings(Settings sett, boolean addIfNotReplaced) {
+		return super.replaceSettings(sett, addIfNotReplaced);
+	}
 	
 
 	@Override
@@ -77,6 +70,11 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 	public void loadValuesFromXML(Element el, Document doc) {
 	}
 	
+	
+	@Override
+	public void applyToImage(Image2D img) throws Exception {
+		super.applyToImage(img);
+	}
 	/**
 	 * applies theme to chart
 	 * @param chart
@@ -92,6 +90,9 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 	}
 	public SettingsTheme getSettTheme() {
 		return (SettingsTheme) getSettingsByClass(SettingsTheme.class);
+	}
+	public SettingsPaintscaleTheme getSettPaintscaleTheme() {
+		return (SettingsPaintscaleTheme) getSettingsByClass(SettingsPaintscaleTheme.class);
 	}
 	
 	public MyStandardChartTheme getTheme() {

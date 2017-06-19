@@ -1,11 +1,16 @@
 package net.rs.lamsi.utils.myfilechooser;
 import java.io.File;
+import java.io.Serializable;
 
 import javax.swing.filechooser.FileFilter;
  
  
-public class FileTypeFilter extends FileFilter {
- 
+public class FileTypeFilter extends FileFilter implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String[] extensions;
     private String extension=null;
     private String description;

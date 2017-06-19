@@ -44,7 +44,6 @@ public class ModuleScaleInPlot extends Collectable2DSettingsModule<SettingsScale
 	
 	public ModuleScaleInPlot() {
 		super("Scale in plot", false, SettingsScaleInPlot.class, Collectable2D.class);  
-		getLbTitle().setText("Scale in plot");
 		
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, BorderLayout.CENTER);

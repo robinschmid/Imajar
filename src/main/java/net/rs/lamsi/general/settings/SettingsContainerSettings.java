@@ -149,7 +149,7 @@ public abstract class SettingsContainerSettings extends Settings {
 	 */
 	public boolean replaceSettings(Settings sett) {
 		// add to this settings container if not present
-		return replaceSettings(sett, true);
+			return replaceSettings(sett, true);
 	}
 	
 	/**
@@ -158,7 +158,10 @@ public abstract class SettingsContainerSettings extends Settings {
 	 * @param addIfNotReplaced Adds the settings to this container if none was replaced
 	 * @return
 	 */
-	public boolean replaceSettings(Settings sett, boolean addIfNotReplaced) {
+	public boolean replaceSettings(Settings sett2, boolean addIfNotReplaced) {
+		Settings sett;
+		try {
+			sett = sett2.copy();
 		if(list.replace(sett.getSuperClass(), sett)!=null) {
 			return true;
 		}
@@ -181,6 +184,10 @@ public abstract class SettingsContainerSettings extends Settings {
 				hasSubContainerSettings = hasSubContainerSettings || SettingsContainerSettings.class.isInstance(sett);
 			}
 			return replaced;
+		}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 	/**

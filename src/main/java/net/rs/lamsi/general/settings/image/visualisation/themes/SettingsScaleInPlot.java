@@ -51,9 +51,9 @@ public class SettingsScaleInPlot extends Settings {
 	@Override
 	public void resetAll() {
 		setShowScale(false);
-		setScaleUnit("");
+		setScaleUnit("µm");
 		setScaleFactor(1);
-		setScaleValue(1);
+		setScaleValue(500);
 		setScaleXPos(0.9f);
 		setScaleYPos(0.15f);
 		setFontScaleInPlot(new Font("Arial", Font.PLAIN, 11));

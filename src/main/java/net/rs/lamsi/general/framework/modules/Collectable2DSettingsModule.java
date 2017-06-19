@@ -37,15 +37,15 @@ public abstract class Collectable2DSettingsModule<T extends Settings, S extends 
 	 * @param img
 	 */
 	@Override
-	public void setCurrentImage(S img) {
+	public void setCurrentImage(S img, boolean setAllToPanel) {
 		currentImage = img;
-		setSettings((T) img.getSettingsByClass(classsettings));
+		setSettings((T) img.getSettingsByClass(classsettings), setAllToPanel);
 	}
 	
 	@Override
-	public void setSettings(T settings) {
-		super.setSettings(settings);
-		if(currentImage!=null) currentImage.setSettings((Settings)settings); 
+	public void setSettings(T settings, boolean setAllToPanel) {
+		super.setSettings(settings, setAllToPanel);
+//		if(currentImage!=null) currentImage.setSettings((Settings)settings); 
 	} 
 	
 	/**

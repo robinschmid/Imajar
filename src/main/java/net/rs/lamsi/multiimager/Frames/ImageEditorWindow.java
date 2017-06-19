@@ -51,6 +51,9 @@ import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.data.Range;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
@@ -58,8 +61,8 @@ import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.framework.basics.ColorChangedListener;
+import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.framework.modules.ModuleTreeWithOptions;
-import net.rs.lamsi.general.framework.modules.SettingsModuleContainer;
 import net.rs.lamsi.general.framework.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.general.heatmap.Heatmap;
@@ -90,9 +93,6 @@ import net.rs.lamsi.utils.WindowStyleUtil;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.data.Range;
-
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
 public class ImageEditorWindow extends JFrame implements Runnable {
 	// LOG
@@ -119,7 +119,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * the module container that is active (imageoverlay or image2d)
 	 * first set the image or imageoverlay and this will be set
 	 */
-	private SettingsModuleContainer activeModuleContainer;
+	private MainSettingsModuleContainer activeModuleContainer;
 	
 	// Autoupdate after a given time
 	private final long AUTO_UPDATE_TIME = 1500;
@@ -1012,7 +1012,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		// set
 		DebugStopWatch debug = new DebugStopWatch();
-		modImage2D.setCurrentImage(img); 
+		modImage2D.setCurrentImage(img, true); 
 		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all modules ", LOG.DEBUG);
 		
 		// finished
@@ -1040,7 +1040,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 		// set
 		DebugStopWatch debug = new DebugStopWatch();
-		modImageOverlay.setCurrentImage(img); 
+		modImageOverlay.setCurrentImage(img, true); 
 		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all OVERLAY modules "+debug.stop(), LOG.DEBUG);
 		
 		// finished

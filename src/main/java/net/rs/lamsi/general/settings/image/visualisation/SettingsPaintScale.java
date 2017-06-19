@@ -54,7 +54,7 @@ public class SettingsPaintScale extends Settings {
 	private Color minColor, maxColor;
 	
 	// hue positions:
-	private float[] hue, position;
+	private float[] hue = null, position = null;
 
 
 	public SettingsPaintScale() {

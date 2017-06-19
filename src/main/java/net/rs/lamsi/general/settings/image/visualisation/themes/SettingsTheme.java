@@ -19,6 +19,8 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLabelLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.title.PaintScaleLegend;
+import org.jfree.ui.RectangleInsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,35 +32,39 @@ public class SettingsTheme extends Settings {
     //
 	
 	protected MyStandardChartTheme theme; 
-	 
+	
+	// chart title
+	private String chartTitle = "";
 
 	public SettingsTheme() {
-		super("SettingsTheme", "/Settings/Visualization/", "setGeneralPStyle"); 
-		theme = ChartThemeFactory.getStandardTheme();
-		resetAll();
+		this(null);
 	} 
 	/**
 	 * example
 	 * @param theme example: ChartThemeFactory.THEME_KARST
 	 */
 	public SettingsTheme(THEME themeid) {
-		super("SettingsThemes", "/Settings/Visualization/", "setPStyle"); 
+		super("SettingsThemes", "/Settings/Visualization/", "setGeneralPStyle"); 
 		resetAll();
-		this.theme = ChartThemeFactory.createChartTheme(themeid);
+		if(themeid!=null)
+			this.theme = ChartThemeFactory.createChartTheme(themeid);
 	} 
 	
 
-	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
-			boolean isPaintScaleInPlot,
-			boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
-			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle) {
-		theme.setAll(antiAlias, showTitle, noBG, cBG, showXGrid, showYGrid, showXAxis, showYAxis, 
-				isPaintScaleInPlot, useScientificIntensities, significantDigits, paintScaleTitle, usePaintScaleTitle, 
+	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, Color cPlotBG,
+			boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
+			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle,
+			String chartTitle) {
+		theme.setAll(antiAlias, showTitle, noBG, cBG, cPlotBG, showXGrid, showYGrid, showXAxis, showYAxis, 
 				fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle);
+		
+		this.chartTitle = chartTitle;
+		
 	}
 	@Override
 	public void resetAll() { 
 		theme = ChartThemeFactory.getStandardTheme();
+		chartTitle = "";
 	}
 
 	public void setShortTitle(Color c, Color bg, Font font) {
@@ -70,6 +76,7 @@ public class SettingsTheme extends Settings {
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		theme.appendThemeSettingsToXML(elParent, doc);
+		toXML(elParent, doc, "chartTitle", chartTitle);
 	}
 
 	@Override
@@ -81,27 +88,20 @@ public class SettingsTheme extends Settings {
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals(MyStandardChartTheme.XML_DESC))
 					theme.loadValuesFromXML(nextElement, doc);
+				else if(paramName.equals("chartTitle")) chartTitle = nextElement.getTextContent();
 			}
 		}
 	}
-	
 	
 	@Override
 	public void applyToHeatMap(Heatmap heat) {
 		super.applyToHeatMap(heat);
 		applyToChart(heat.getChart());
-		// 
 		
+		// font short title
 		heat.getShortTitle().setFont(theme.getFontShortTitle());
 		heat.getShortTitle().setPaint(theme.getcShortTitle());
 		heat.getShortTitle().setBackgroundPaint(theme.getcBGShortTitle());
-		
-		// set numberformat
-		if(heat.getLegend()!=null) {
-			((NumberAxis)heat.getLegend().getAxis()).setNumberFormatOverride(theme.getIntensitiesNumberFormat());
-			((NumberAxis)heat.getLegend().getAxis()).setLabelLocation(AxisLabelLocation.HIGH_END);
-			((NumberAxis)heat.getLegend().getAxis()).setLabel(theme.isUsePaintScaleTitle()? theme.getPaintScaleTitle() : null);
-		}
 	}
 	
 	/**
@@ -111,6 +111,8 @@ public class SettingsTheme extends Settings {
 	public void applyToChart(JFreeChart chart) {
 		// apply Chart Theme
 		theme.apply(chart);
+		
+		chart.setTitle(chartTitle);
 	}
 	
 	public MyStandardChartTheme getTheme() {
@@ -125,5 +127,10 @@ public class SettingsTheme extends Settings {
 	public void setID(THEME themeID) {
 		theme.setID(themeID);
 	}
-	
+	public String getChartTitle() {
+		return chartTitle;
+	}
+	public void setChartTitle(String chartTitle) {
+		this.chartTitle = chartTitle;
+	}
 }

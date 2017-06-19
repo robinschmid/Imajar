@@ -353,7 +353,7 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	}
 	
 	@Override
-	public void setCurrentImage(Image2D img) {
+	public void setCurrentImage(Image2D img, boolean setAllToPanel) {
 		// do not set the settings by image2d
 		// the settings have to set by the imageoverlay object
 		currentImage = img;
@@ -758,12 +758,13 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	
 	
 	@Override
-	public void setSettings(SettingsPaintScale settings) {
+	public void setSettings(SettingsPaintScale settings, boolean setAllToPanel) {
 		// does not change the setting sof the image (super does)
 		this.settings = settings;
 		if(settings!=null) {
 			try {
-				setAllViaExistingSettings(settings);
+				if(setAllToPanel)
+					setAllViaExistingSettings(settings);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

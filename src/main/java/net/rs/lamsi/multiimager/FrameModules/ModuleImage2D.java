@@ -1,22 +1,17 @@
 package net.rs.lamsi.multiimager.FrameModules;
 
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.framework.modules.SettingsModuleContainer;
+import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleOperations;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleQuantifyStrategy;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
@@ -24,7 +19,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
-public class ModuleImage2D extends SettingsModuleContainer<SettingsImage2D, Image2D> {
+public class ModuleImage2D extends MainSettingsModuleContainer<SettingsImage2D, Image2D> {
 	private ImageEditorWindow window;
 	
 	private ModuleGeneral moduleGeneral;

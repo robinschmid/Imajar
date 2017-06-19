@@ -54,13 +54,16 @@ public class ModuleThemes extends SettingsModuleContainer<SettingsThemesContaine
 	 */
 	public ModuleThemes() {
 		super("Themes", false, SettingsThemesContainer.class, Collectable2D.class);    
-		getLbTitle().setText("Themes");
 		setShowTitleAlways(true);
 		
 		setVScrollBar(false);
 		
 		ModuleGeneralTheme modTheme = new ModuleGeneralTheme();
 		addModule(modTheme);
+		
+
+		ModulePaintscaleTheme modPSTheme = new ModulePaintscaleTheme();
+		addModule(modPSTheme);
 		
 		ModuleScaleInPlot modScaleInPlot = new ModuleScaleInPlot();
 		addModule(modScaleInPlot);
@@ -77,12 +80,6 @@ public class ModuleThemes extends SettingsModuleContainer<SettingsThemesContaine
 		// update via chart not via editor
 	}
 
-	// apply for print or presentation before changing settings
-	@Override
-	public void setSettings(SettingsThemesContainer settings) {
-		ChartThemeFactory.setStandardTheme(settings.getID());
-		super.setSettings(settings);
-	}
 	//################################################################################################
 	// GETTERS AND SETTERS 
 }

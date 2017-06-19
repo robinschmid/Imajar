@@ -532,8 +532,8 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 	}
 
 	@Override
-	public void setCurrentImage(Image2D img) {
-		super.setCurrentImage(img);
+	public void setCurrentImage(Image2D img, boolean setAllToPanel) {
+		super.setCurrentImage(img, setAllToPanel);
 		getPnHistogram().setImg(img);
 	}
 
@@ -639,13 +639,15 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 			
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				// reset hue positions
-				if(!getCbInvert().isSelected())
-					hueSlider.setColors(getBtnMinColor().getColor(), getBtnMaxColor().getColor());
-				else hueSlider.setColors(getBtnMaxColor().getColor(), getBtnMinColor().getColor());
-				
-				// fire change
-				il.itemStateChanged(e);
+				if(ImageLogicRunner.IS_UPDATING()) {
+					// reset hue positions
+					if(!getCbInvert().isSelected())
+						hueSlider.setColors(getBtnMinColor().getColor(), getBtnMaxColor().getColor());
+					else hueSlider.setColors(getBtnMaxColor().getColor(), getBtnMinColor().getColor());
+					
+					// fire change
+					il.itemStateChanged(e);
+				}
 			}
 		};
 		getCbInvert().addItemListener(il2);
@@ -847,16 +849,13 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		ImageLogicRunner.setIS_UPDATING(false);
 
 		// new reseted ps
-		if(ps == null) {
-			ps = new SettingsPaintScale();
-			ps.resetAll();
-		}
+		if(ps != null) {
 		// stop auto updating
 		stopDelayedListener();
 		setDelayedListenerActive(false);
 		
 		// hue ranges and positions
-		if(ps.getPosition()!=null) {
+		if(ps.getPosition()!=null && ps.getHue()!=null) {
 			if(!ps.isInverted())
 				hueSlider.setup(ps.getMinColor(), ps.getMaxColor(), ps.getHue(), ps.getPosition());
 			else hueSlider.setup(ps.getMaxColor() ,ps.getMinColor(), ps.getHue(), ps.getPosition());
@@ -944,7 +943,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 		stopDelayedListener();
 		// start autoupdating
 		setDelayedListenerActive(true);
-
+		}
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		ImageEditorWindow.getEditor().fireUpdateEvent(true);

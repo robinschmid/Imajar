@@ -381,10 +381,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 	public void setAllViaExistingSettings(SettingsGeneralImage si) {  
 		ImageLogicRunner.setIS_UPDATING(false);
 		// new reseted ps
-		if(si == null) {
-			si = new SettingsGeneralImage();
-			si.resetAll();
-		} 
+		if(si != null) {
 		// crop to min
 		cbCropDataToMin.setSelected(si.isCropDataToMinGetRealValue());
 		// interpolation
@@ -424,6 +421,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 		case 90: getRbRotation90().setSelected(true); break;
 		case 180: getRbRotation180().setSelected(true); break;
 		case 270: getRbRotation270().setSelected(true); break;
+		} 
 		} 
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);

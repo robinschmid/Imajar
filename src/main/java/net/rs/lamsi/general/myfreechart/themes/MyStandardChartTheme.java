@@ -6,12 +6,14 @@ import java.awt.Paint;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsScaleInPlot;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
+import org.jfree.chart.axis.AxisLabelLocation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.title.PaintScaleLegend;
 import org.w3c.dom.Document;
@@ -30,15 +32,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	protected Font fontShortTitle;
 	protected Color cShortTitle, cBGShortTitle;
 	
-	// scientific intensities
-	protected boolean useScientificIntensities = true;
-	protected int significantDigits = 2;
-	protected NumberFormat intensitiesNumberFormat;
-	
-	// paintscale title
-	protected String paintScaleTitle = "I";
-	protected boolean usePaintScaleTitle = true;
-	
 	// Chart appearance 
 	protected boolean isAntiAliased = true;
 	// orientation : 0 - 2 (90° CW)
@@ -54,8 +47,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
 	protected boolean showXGrid = false, showYGrid = false;
 	protected boolean showXAxis= true, showYAxis = true;
-	// paintscale
-	protected boolean isPaintScaleInPlot= false;
 	
 
 	public MyStandardChartTheme(THEME themeID, String name) {
@@ -75,23 +66,11 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		isAntiAliased = true;
 		chartOrientation = 0;
 		
-		// significant intensities
-		useScientificIntensities = true;
-		significantDigits = 2;
-		intensitiesNumberFormat = new DecimalFormat("0.0E0");
-		intensitiesNumberFormat.setMaximumFractionDigits(significantDigits);
-		intensitiesNumberFormat.setMinimumFractionDigits(significantDigits);
-		
-		// paintscale title
-		paintScaleTitle = "I";
-		usePaintScaleTitle = true;
-		
 		masterFont = new Font("Arial", Font.PLAIN, 11);
 		masterFontColor = Color.black;
 	}
 	
-	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
-			boolean isPaintScaleInPlot,	boolean useScientificIntensities, int significantDigits, String paintScaleTitle, boolean usePaintScaleTitle, 
+	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, Color cPlotBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
 			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle) {
 		this.setAntiAliased(antiAlias);
 		this.setShowTitle(showTitle);
@@ -100,7 +79,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		this.setShowYGrid(showYGrid);
 		this.setShowXAxis(showXAxis);
 		this.setShowYAxis(showYAxis);
-		this.setPaintScaleInPlot(isPaintScaleInPlot);
 		//
 		
 		this.setExtraLargeFont(fTitle);
@@ -111,23 +89,11 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		this.setTitlePaint(cTitle);
 		
 		this.setChartBackgroundPaint(cBG);
-		this.setPlotBackgroundPaint(cBG);
+		this.setPlotBackgroundPaint(cPlotBG);
 		this.setLegendBackgroundPaint(cBG);
 		
 		masterFont = fMaster;
 		masterFontColor = cMaster;
-		
-		// significant intensities
-		this.useScientificIntensities = useScientificIntensities;
-		this.significantDigits = significantDigits;
-		intensitiesNumberFormat = new DecimalFormat(useScientificIntensities? "0.0E0" : "#.0");
-		int digits = useScientificIntensities? significantDigits-1 : significantDigits;
-		intensitiesNumberFormat.setMaximumFractionDigits(digits);
-		intensitiesNumberFormat.setMinimumFractionDigits(digits);
-		
-		// paintscale title
-		this.paintScaleTitle = paintScaleTitle;
-		this.usePaintScaleTitle = usePaintScaleTitle;
 	}
 	
 
@@ -155,11 +121,11 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		}
 		// apply bg 
         chart.setBackgroundPaint(this.getChartBackgroundPaint());
-        chart.getPlot().setBackgroundPaint(this.getChartBackgroundPaint());
+        chart.getPlot().setBackgroundPaint(this.getPlotBackgroundPaint());
         
         for(int i=0; i<chart.getSubtitleCount(); i++) 
         	if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
-        		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(this.getPlotBackgroundPaint());
+        		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(this.getChartBackgroundPaint());
         if(chart.getLegend()!=null)
         	chart.getLegend().setBackgroundPaint(this.getChartBackgroundPaint());
         
@@ -188,7 +154,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Settings.toXML(el, doc, "showYGrid",showYGrid); 
 		Settings.toXML(el, doc, "showXAxis", showXAxis ); 
 		Settings.toXML(el, doc, "showYAxis", showYAxis); 
-		Settings.toXML(el, doc, "isPaintScaleInPlot", isPaintScaleInPlot); 
 		Settings.toXML(el, doc, "isAntiAliased", isAntiAliased); 
 		Settings.toXML(el, doc, "showTitle", isShowTitle); 
 		Settings.toXML(el, doc, "noBackground", isNoBackground()); 
@@ -196,12 +161,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Settings.toXML(el, doc, "fontShortTitle", fontShortTitle); 
 		Settings.toXML(el, doc, "cShortTitle", cShortTitle); 
 		Settings.toXML(el, doc, "cBGShortTitle", cBGShortTitle); 
-		
-		Settings.toXML(el, doc, "significantDigits", significantDigits); 
-		Settings.toXML(el, doc, "useScientificIntensities", useScientificIntensities); 
-		
-		Settings.toXML(el, doc, "paintScaleTitle", paintScaleTitle); 
-		Settings.toXML(el, doc, "usePaintScaleTitle", usePaintScaleTitle); 
 		Settings.toXML(el, doc, "cBackground", getChartBackgroundPaint());
 		Settings.toXML(el, doc, "cPlotBackground", getPlotBackgroundPaint());
 	}
@@ -219,7 +178,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 				else if(paramName.equals("showYGrid"))showYGrid = Settings.booleanFromXML(nextElement);  
 				else if(paramName.equals("showXAxis"))showXAxis = Settings.booleanFromXML(nextElement);  
 				else if(paramName.equals("showYAxis"))showYAxis = Settings.booleanFromXML(nextElement);  
-				else if(paramName.equals("isPaintScaleInPlot"))isPaintScaleInPlot = Settings.booleanFromXML(nextElement);  
 				else  if(paramName.equals("isAntiAliased")) isAntiAliased = Settings.booleanFromXML(nextElement); 
 					else if(paramName.equals("showTitle"))isShowTitle = Settings.booleanFromXML(nextElement);  
 					else if(paramName.equals("noBackground")){
@@ -228,11 +186,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
 					}
 					else if(paramName.equals("fontShortTitle"))fontShortTitle = Settings.fontFromXML(nextElement);  
 					else if(paramName.equals("cShortTitle")) cShortTitle = Settings.colorFromXML(nextElement);  
-					else if(paramName.equals("cBGShortTitle")) cBGShortTitle = Settings.colorFromXML(nextElement);  
-					else if(paramName.equals("significantDigits")) significantDigits = Settings.intFromXML(nextElement);  
-					else if(paramName.equals("useScientificIntensities")) useScientificIntensities = Settings.booleanFromXML(nextElement);
-					else if(paramName.equals("paintScaleTitle")) paintScaleTitle = (nextElement.getTextContent());  
-					else if(paramName.equals("usePaintScaleTitle")) usePaintScaleTitle = Settings.booleanFromXML(nextElement);  
+					else if(paramName.equals("cBGShortTitle")) cBGShortTitle = Settings.colorFromXML(nextElement);    
 					else if(paramName.equals("cBackground") && !hasNoBG) {
 						Color c = Settings.colorFromXML(nextElement);
 						setChartBackgroundPaint(c);  
@@ -244,15 +198,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 					}
 			}
 		}
-
-		// 
-		if(paintScaleTitle.equals("null"))
-			paintScaleTitle = null;
-		// create numberformats
-		intensitiesNumberFormat = new DecimalFormat(useScientificIntensities? "0.0E0" : "#.0");
-		int digits = significantDigits - (useScientificIntensities? 1 : 0);
-		intensitiesNumberFormat.setMaximumFractionDigits(digits);
-		intensitiesNumberFormat.setMinimumFractionDigits(digits);
 	}
 
 	public boolean isNoBackground() { 
@@ -307,33 +252,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	public void setcBGShortTitle(Color cBGShortTitle) {
 		this.cBGShortTitle = cBGShortTitle;
 	}
-	public boolean isUseScientificIntensities() {
-		return useScientificIntensities;
-	}
-	public int getSignificantDigits() {
-		return significantDigits;
-	}
-	public void setUseScientificIntensities(boolean useScientificIntensities) {
-		this.useScientificIntensities = useScientificIntensities;
-	}
-	public void setSignificantDigits(int significantDigits) {
-		this.significantDigits = significantDigits;
-	}
-	public NumberFormat getIntensitiesNumberFormat() {
-		return intensitiesNumberFormat;
-	}
-	public String getPaintScaleTitle() {
-		return paintScaleTitle;
-	}
-	public boolean isUsePaintScaleTitle() {
-		return usePaintScaleTitle;
-	}
-	public void setPaintScaleTitle(String paintScaleTitle) {
-		this.paintScaleTitle = paintScaleTitle;
-	}
-	public void setUsePaintScaleTitle(boolean usePaintScaleTitle) {
-		this.usePaintScaleTitle = usePaintScaleTitle;
-	}
 
 	public void setShowTitle(boolean showTitle) {
 		isShowTitle = showTitle;
@@ -376,13 +294,6 @@ public class MyStandardChartTheme extends StandardChartTheme {
 	public void setShowYAxis(boolean showYAxis) {
 		this.showYAxis = showYAxis;
 	} 
-	public boolean isPaintScaleInPlot() {
-		return isPaintScaleInPlot;
-	}
-
-	public void setPaintScaleInPlot(boolean isPaintScaleInPlot) {
-		this.isPaintScaleInPlot = isPaintScaleInPlot;
-	}
 	public Font getMasterFont() {
 		return masterFont;
 	}

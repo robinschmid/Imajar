@@ -1,18 +1,13 @@
 package net.rs.lamsi.multiimager.FrameModules;
 
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
 
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.general.framework.modules.SettingsModuleContainer;
-import net.rs.lamsi.general.settings.image.SettingsImage2D;
+import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscaleOverlay;
@@ -20,7 +15,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
-public class ModuleImageOverlay extends SettingsModuleContainer<SettingsImageOverlay, ImageOverlay> {
+public class ModuleImageOverlay extends MainSettingsModuleContainer<SettingsImageOverlay, ImageOverlay> {
 	private ImageEditorWindow window;
 
 	private ModuleZoom moduleZoom;

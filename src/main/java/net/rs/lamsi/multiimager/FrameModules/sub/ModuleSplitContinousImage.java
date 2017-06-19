@@ -130,12 +130,6 @@ public class ModuleSplitContinousImage extends Collectable2DSettingsModule<Setti
 		panel.add(btnPlus, "cell 1 2");
 	}
 	
-	// apply for print or presentation before changing settings
-	@Override
-	public void setSettings(SettingsImageContinousSplit settings) {
-		super.setSettings(settings);
-	}
-	
 	//################################################################################################
 	// Autoupdate
 	@Override
@@ -215,8 +209,8 @@ public class ModuleSplitContinousImage extends Collectable2DSettingsModule<Setti
 	}
 	
 	@Override
-	public void setCurrentImage(Image2D img) { 
-		super.setCurrentImage(img);
+	public void setCurrentImage(Image2D img, boolean setAllToPanel) { 
+		super.setCurrentImage(img, setAllToPanel);
 		this.setVisible(isContinuousData(img));
 	}
 	

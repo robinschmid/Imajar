@@ -458,15 +458,15 @@ public class ModuleOperations extends Collectable2DSettingsModule<SettingsImage2
 	
 
 	@Override
-	public void setSettings(SettingsImage2DOperations settings) {
+	public void setSettings(SettingsImage2DOperations settings, boolean setAllToPanel) {
 		if(settings==null)
 			settings = new SettingsImage2DOperations();
-		super.setSettings(settings);
+		super.setSettings(settings, setAllToPanel);
 	}
 	
 	@Override
-	public void setCurrentImage(Image2D img) { 
-		super.setCurrentImage(img);
+	public void setCurrentImage(Image2D img, boolean setAllToPanel) { 
+		super.setCurrentImage(img, setAllToPanel);
 		// apply to sliders
 		int max = img.getData().getMaxDP();
 		getSliderBlankLowerB().setMaximum(max);

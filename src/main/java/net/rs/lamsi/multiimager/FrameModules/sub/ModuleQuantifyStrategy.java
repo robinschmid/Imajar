@@ -299,7 +299,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 						SettingsImage2DQuantifierLinear sett2 = new SettingsImage2DQuantifierLinear();
 						sett2.setActive(sett.isActive());
 						sett = sett2;
-						setSettings(sett);
+						setSettings(sett, true);
 						update = sett.isActive();
 					}
 					// set all settings in 
@@ -314,7 +314,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 						SettingsImage2DQuantifierOnePoint sett2 = new SettingsImage2DQuantifierOnePoint(imgEx);
 						sett2.setActive(sett.isActive());
 						sett = sett2;
-						setSettings(sett);
+						setSettings(sett, true);
 						update = sett.isActive();
 					}
 					SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) sett;
@@ -335,10 +335,10 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 
 
 	@Override
-	public void setSettings(SettingsImage2DQuantifier settings) {
+	public void setSettings(SettingsImage2DQuantifier settings, boolean setAllToPanel) {
 		if(settings==null)
 			settings = new SettingsImage2DQuantifierLinear();
-		super.setSettings(settings);
+		super.setSettings(settings, setAllToPanel);
 	}
 
 	//################################################################################################

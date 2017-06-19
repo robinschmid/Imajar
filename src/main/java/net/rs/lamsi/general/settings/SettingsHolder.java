@@ -63,7 +63,7 @@ public class SettingsHolder extends SettingsContainerSettings {
 
 		// visualization only for Toolset
 		addSettings(new SettingsPlotSpectraLabelGenerator());
-		addSettings(new SettingsThemesContainer());
+		addSettings(new SettingsThemesContainer(true));
 
 		// Export settings
 		addSettings(new SettingsExportGraphics());
@@ -272,6 +272,11 @@ public class SettingsHolder extends SettingsContainerSettings {
 
 	public SettingsThemesContainer getSetPlotStyle() {
 		return (SettingsThemesContainer) getSettingsByClass(SettingsThemesContainer.class);
+	}
+	
+	@Override
+	public Settings getSettingsByClass(Class classsettings) {
+		return super.getSettingsByClass(classsettings);
 	}
 
 	// SETTER

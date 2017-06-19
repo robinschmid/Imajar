@@ -39,21 +39,11 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 	protected JPanel gridsettings;
 	private JScrollPane scrollPane;
 
-	private JPanel pnTitleSettings;
-	private JCheckBox cbAuto;
-	
 	// list of all Modules
 	protected ArrayList<Module> listSettingsModules = new ArrayList<Module>();
 
 	public SettingsModuleContainer(String title, boolean westside, Class settc, Class objclass) { 
 		super(title, westside, settc, objclass);
-
-		// add buttons to this module
-		pnTitleSettings = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
-		flowLayout.setHgap(4);
-		flowLayout.setVgap(0);
-		this.getPnTitle().add(pnTitleSettings, BorderLayout.CENTER);
 
 		scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -82,12 +72,6 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 		repaint();
 	}
 	
-	public SettingsModuleContainer(String title, boolean westside, Class settc, Class objclass, boolean addAutoUpdate) { 
-		this(title, westside, settc, objclass);
-		cbAuto = new JCheckBox("auto");
-		cbAuto.setSelected(true);
-		pnTitleSettings.add(cbAuto);
-	}	
 	/**
 	 * add the module to the current layout of the panel and to the list of modules
 	 * @param mod
@@ -200,33 +184,22 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 			super.setCurrentHeatmap(heat);
 		}
 		
+		/**
+		 * setAllToPanel specifies that first: all images are set without showing settings on panel
+		 * then the current image is set for this container and only then all settings are flushed onto the panels
+		 */
 		@Override 
-		public void setCurrentImage(S img) {
+		public void setCurrentImage(S img, boolean setAllToPanel) {
 			DebugStopWatch debug = new DebugStopWatch();
 			for(Module m : listSettingsModules) {
 				if(Collectable2DSettingsModule.class.isInstance(m)) {
 					Collectable2DSettingsModule sm = ((Collectable2DSettingsModule)m);
 					debug.setNewStartTime();
-					sm.setCurrentImage(img);
+					sm.setCurrentImage(img, false);
 					ImageEditorWindow.log("TIME: "+debug.stop()+"   FOR setCurrentImage in "+sm.getClass(), LOG.DEBUG);
 				}
 			}
-			super.setCurrentImage(img);
+			super.setCurrentImage(img, setAllToPanel);
 		}
 		
-		
-
-		public JCheckBox getcbAutoUpdating() {
-			return cbAuto;
-		}
-		public boolean isAutoUpdating() {
-			return cbAuto.isSelected();
-		}
-		public void setAutoUpdating(boolean state) {
-			cbAuto.setSelected(state);
-		}
-
-		public JPanel getPnTitleCenter() {
-			return pnTitleSettings;
-		}
 }

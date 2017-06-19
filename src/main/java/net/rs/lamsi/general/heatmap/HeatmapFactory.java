@@ -23,6 +23,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 import org.jfree.chart.ChartPanel;
@@ -311,6 +312,7 @@ public class HeatmapFactory {
 		}
 		else { 
 			SettingsThemesContainer setTheme = img.getSettTheme();
+			SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
 			// XAchse
 			NumberAxis xAxis = new NumberAxis(xTitle);
 			xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
@@ -378,7 +380,7 @@ public class HeatmapFactory {
 			PaintScale scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings); 
 			PaintScaleLegend legend = createScaleLegend(img, scaleBar, createScaleAxis(settings, setTheme, dataset), settings.getLevels());   
 			// adding legend in plot or outside
-			if(setTheme.getTheme().isPaintScaleInPlot()) { // inplot
+			if(psTheme.isPaintScaleInPlot()) { // inplot
 				XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend,RectangleAnchor.BOTTOM_RIGHT);  
 				ta.setMaxWidth(1);
 				plot.addAnnotation(ta);
@@ -475,16 +477,20 @@ public class HeatmapFactory {
 		legend.setStripOutlineVisible(false);
 		legend.setAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);
 		legend.setAxisOffset(0);
-		RectangleInsets rec = setTheme!=null && setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(5, 5, 5, 5);
+		legend.setStripWidth(10);
+		
+		RectangleInsets rec = new RectangleInsets(5, 5, 5, 5);
 
-		RectangleInsets rec2 = setTheme!=null && setTheme.getTheme().isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : new RectangleInsets(2, 2, 2, 2);
+		if(setTheme!=null) {
+			SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
+			rec = psTheme.isPaintScaleInPlot()? RectangleInsets.ZERO_INSETS : psTheme.getPsMargin();
+			
+			legend.setStripWidth(psTheme.getPsWidth());
+		}
 
 		legend.setMargin(rec);
 		//		legend.setPadding(rec2);
-		//		legend.setMargin(RectangleInsets.ZERO_INSETS);
-		//		legend.setPadding(RectangleInsets.ZERO_INSETS);
 
-		legend.setStripWidth(10);
 		legend.setPosition(RectangleEdge.RIGHT); 
 		return legend;
 	}	
@@ -494,9 +500,9 @@ public class HeatmapFactory {
 		return createScaleAxis(settings, null, dataset);
 	}
 	private static NumberAxis createScaleAxis(SettingsPaintScale settings, SettingsThemesContainer theme, IXYZDataset dataset) {
-		NumberAxis scaleAxis = new NumberAxis(theme!=null && theme.getTheme().isUsePaintScaleTitle()? theme.getTheme().getPaintScaleTitle() : null);
+		NumberAxis scaleAxis = new NumberAxis(theme!=null && theme.getSettPaintscaleTheme().isUsePaintScaleTitle()? theme.getSettPaintscaleTheme().getPaintScaleTitle() : null);
 		if(theme!=null)
-			scaleAxis.setNumberFormatOverride(theme.getTheme().getIntensitiesNumberFormat());
+			scaleAxis.setNumberFormatOverride(theme.getSettPaintscaleTheme().getIntensitiesNumberFormat());
 		scaleAxis.setLabelLocation(AxisLabelLocation.HIGH_END);
 		scaleAxis.setLabelAngle(Math.toRadians(-180));
 		return scaleAxis;

@@ -37,6 +37,7 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
+import org.jfree.ui.RectangleInsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -229,6 +230,13 @@ public abstract class Settings implements Serializable {
 				paramElement.setTextContent(f.getName());
 				paramElement.setAttribute("style", ""+f.getStyle());
 				paramElement.setAttribute("size", ""+f.getSize());
+			}
+			else if(RectangleInsets.class.isInstance(o)) {
+				RectangleInsets r = (RectangleInsets)o;
+				paramElement.setAttribute("top", ""+r.getTop());
+				paramElement.setAttribute("left", ""+r.getLeft());
+				paramElement.setAttribute("bottom", ""+r.getBottom());
+				paramElement.setAttribute("right", ""+r.getRight());
 			}
 			else if(Collectable2D.class.isInstance(o)) {
 				Collectable2D c = (Collectable2D)o;
@@ -506,6 +514,19 @@ public abstract class Settings implements Serializable {
 			return new Color(c.getRed(),c.getGreen(),c.getBlue(),alpha);
 		}
 		return null;
+	}
+
+	/**
+	 * rectangle insets from xml (top, left, bottom, right)
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static RectangleInsets insetsFromXML(final Element el) {
+		double t = Double.valueOf(el.getAttribute("top"));
+		double l = Double.valueOf(el.getAttribute("left"));
+		double b = Double.valueOf(el.getAttribute("bottom"));
+		double r = Double.valueOf(el.getAttribute("right"));
+		return new RectangleInsets(t, l, b, r);
 	}
 	/**
 	 * 

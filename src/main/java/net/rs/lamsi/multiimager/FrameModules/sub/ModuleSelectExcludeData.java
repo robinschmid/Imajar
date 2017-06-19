@@ -115,12 +115,6 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 		panel.add(btnOpenSelectData, "cell 1 4");
 	}
 	
-	@Override
-	public void setCurrentImage(Image2D img) {
-		// TODO Auto-generated method stub
-		super.setCurrentImage(img);
-	}
-	
 	/**
 	 * show data selection
 	 */

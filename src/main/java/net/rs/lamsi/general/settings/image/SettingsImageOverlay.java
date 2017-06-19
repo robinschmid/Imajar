@@ -107,7 +107,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		psSettings.clear();
 		active = null;
 		// other
-		addSettings(new SettingsThemesContainer(THEME.DARKNESS));
+		addSettings(new SettingsThemesContainer(THEME.DARKNESS, false));
 		addSettings(new SettingsZoom());
 	}
 

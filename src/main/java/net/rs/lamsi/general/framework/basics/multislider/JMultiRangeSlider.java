@@ -83,14 +83,16 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 					g.drawRect(0, pickerH, w, barH);
 
 					// picker
-					for(int i=0; i<hue.length; i++) {
-						// center position
-						int x = 1 + Math.round((w-2)*position[i]) - pickerW/2;
-						// fill color
-						g.setColor(Color.getHSBColor(hue[i], 1, 1));
-						g.fillRect(x, 0, pickerW, barH+2*pickerH);
-						g.setColor(i==selectedPicker? Color.white : Color.black);
-						g.drawRect(x, 0, pickerW, barH+2*pickerH);
+					if(hue!=null) {
+						for(int i=0; i<hue.length; i++) {
+							// center position
+							int x = 1 + Math.round((w-2)*position[i]) - pickerW/2;
+							// fill color
+							g.setColor(Color.getHSBColor(hue[i], 1, 1));
+							g.fillRect(x, 0, pickerW, barH+2*pickerH);
+							g.setColor(i==selectedPicker? Color.white : Color.black);
+							g.drawRect(x, 0, pickerW, barH+2*pickerH);
+						}
 					}
 				}
 			}
@@ -222,6 +224,8 @@ public class JMultiRangeSlider extends JPanel implements MouseMotionListener, Mo
 	
 
 	public void setup(Color cStart, Color cEnd, float[] hue, float[] position) {
+		if(hue==null || position==null)
+			setColors(cStart, cEnd);
 		this.hue = hue;
 		this.position = position;
 		this.cStart = cStart;

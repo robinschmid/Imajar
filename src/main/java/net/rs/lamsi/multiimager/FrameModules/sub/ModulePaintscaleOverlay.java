@@ -161,10 +161,11 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	
 	// TODO distribution
 	@Override
-	public void setCurrentImage(ImageOverlay img) {
-		super.setCurrentImage(img);
+	public void setCurrentImage(ImageOverlay img, boolean setAllToPanel) {
+		super.setCurrentImage(img, setAllToPanel);
 		// set all images to all paintscale modules
 		// TODO
+		if(setAllToPanel) {
 		// create new
 		if(modPSList==null || modPSList.length!=img.size()) {
 
@@ -175,18 +176,19 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 				modPSList[i] = new ModulePaintscaleOverlaySub();
 				modPSList[i].addAutoupdater(al, cl, dl, ccl, il);
 				
-				modPSList[i].setCurrentImage(img.get(i));
-				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i));
+				modPSList[i].setCurrentImage(img.get(i), setAllToPanel);
+				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i), setAllToPanel);
 				
 				tabbedPaintScales.add(img.get(i).getTitle(), modPSList[i]);
 			}
 		}
 		else {
 			for(int i=0; i<img.size(); i++) {
-				modPSList[i].setCurrentImage(img.get(i));
-				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i));
+				modPSList[i].setCurrentImage(img.get(i), setAllToPanel);
+				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i), setAllToPanel);
 				tabbedPaintScales.setTitleAt(i, img.get(i).getTitle());
 			}
+		}
 		}
 	}
 	

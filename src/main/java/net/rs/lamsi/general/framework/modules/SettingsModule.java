@@ -150,7 +150,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 			@Override
 			public void actionPerformed(ActionEvent e) { 
 				try {
-					setSettings((T) BinaryWriterReader.deepCopy(settings));
+					setSettings((T) BinaryWriterReader.deepCopy(settings), true);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -183,7 +183,7 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 	// settings changed via load --> menu
 	@Override
 	public void settingsChanged(Settings settings) {
-		this.setSettings((T)settings);
+		this.setSettings((T)settings, true);
 	}
 
 
@@ -217,11 +217,12 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 	 * gets called by window? like every other method
 	 * @param settings
 	 */
-	public void setSettings(T settings) {
+	public void setSettings(T settings, boolean setAllToPanel) {
 		this.settings = settings;
 		if(settings!=null) {
 			try {
-				setAllViaExistingSettings(settings);
+				if(setAllToPanel)
+					setAllViaExistingSettings(settings);
 				// transfer to Settingsholder
 				SettingsHolder.getSettings().replaceSettings((Settings)settings);
 			} catch (Exception e) {
