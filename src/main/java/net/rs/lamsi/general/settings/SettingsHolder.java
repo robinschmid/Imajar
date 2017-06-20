@@ -47,23 +47,17 @@ public class SettingsHolder extends SettingsContainerSettings {
 	// Settings writer  
 	private BinaryWriterReader settingsWriter = new BinaryWriterReader();
 	//
-	// save of super classes
-	private Class[] classList;
-	
 
 
 	public SettingsHolder() {
 		super("SettingsHolder", "/Settings/", "setall");
 		//  settings 
 		addSettings(new SettingsDataSaver("/Settings/Export/", "setds"));
-		addSettings(new SettingsGeneralImage());
-		addSettings(new SettingsPaintScale());
-		addSettings(new SettingsChargeCalculator());
+		//addSettings(new SettingsChargeCalculator());
 		addSettings(new SettingsGeneralValueFormatting());
 
 		// visualization only for Toolset
 		addSettings(new SettingsPlotSpectraLabelGenerator());
-		addSettings(new SettingsThemesContainer(true));
 
 		// Export settings
 		addSettings(new SettingsExportGraphics());
@@ -73,36 +67,9 @@ public class SettingsHolder extends SettingsContainerSettings {
 
 		addSettings(new SettingsImage2DDataSelectionsExport());
 		
-		// operations
-		addSettings(new SettingsImage2DQuantifierLinear());
-
-		addSettings(new SettingsImage2DOperations());
-
-		// image2dContinous
-		addSettings(new SettingsImageContinousSplit());
-		
 		// general preferences 
-		addSettings(new SettingsZoom());
-		
 		addSettings(new SettingsGeneralPreferences());
-		
-		addSettings(new SettingsImageOverlay());
-		
-		addSettings(new SettingsImage2D());
-		
-		addSettings(new SettingsBackgroundImg());
-
-		addSettings(new SettingsSelections());
-
-		// save all in class list of super classes
-		Class[] cl = {SettingsDataSaver.class, SettingsGeneralImage.class, SettingsPaintScale.class, SettingsChargeCalculator.class,
-				SettingsGeneralValueFormatting.class, SettingsPlotSpectraLabelGenerator.class, SettingsThemesContainer.class, SettingsExportGraphics.class,
-				SettingsImage2DDataExport.class, SettingsImage2DDataSelectionsExport.class, SettingsImage2DOperations.class, SettingsImage2DQuantifier.class, SettingsImageContinousSplit.class,
-				SettingsZoom.class, SettingsGeneralPreferences.class, SettingsImageOverlay.class, SettingsImage2D.class, SettingsBackgroundImg.class,
-				SettingsSelections.class};
-		classList = cl;
 	}
-
 
 
 	public File saveSettingsToFile(Component parentFrame, Class settingsClass)  throws Exception { 
@@ -157,8 +124,6 @@ public class SettingsHolder extends SettingsContainerSettings {
 			// alle laden und setzen
 			SettingsHolder sett = (SettingsHolder)(cs.loadFromFile(settingsWriter, file));
 			// Alle settings aus geladenen holder kopieren
-			classList = sett.getClassList();
-			// 
 			return this;
 		} 
 		else { 
@@ -226,8 +191,6 @@ public class SettingsHolder extends SettingsContainerSettings {
 			// alle laden und setzen
 			SettingsHolder sett = (SettingsHolder)(cs.loadFromFile(settingsWriter, file));
 			// Alle settings aus geladenen holder kopieren
-			classList = sett.getClassList();
-			// 
 			return this;
 		} 
 		else { 
@@ -237,9 +200,6 @@ public class SettingsHolder extends SettingsContainerSettings {
 		}
 	}
 
-	public Class[] getClassList() {
-		return classList;
-	}
 	// GETTERS
 	public SettingsDataSaver getSetDataSaver() {
 		return (SettingsDataSaver) getSettingsByClass(SettingsDataSaver.class);
