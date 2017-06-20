@@ -14,6 +14,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -562,7 +565,19 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		ProgressDialog.initDialog(this);
 		// init
 		this.setBounds(100, 100, 934, 619);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter() {
+		    @Override
+		    public void windowClosing(WindowEvent we)
+		    { 
+		        String ObjButtons[] = {"Yes","No"};
+		        int PromptResult = JOptionPane.showOptionDialog(null,"Let's call it a day. Did you save your work?","Great work mate!",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,ObjButtons,ObjButtons[1]);
+		        if(PromptResult==JOptionPane.YES_OPTION) {
+		            System.exit(0);
+		        }
+		    }
+		});
 
 		splitNorthSouth = new JSplitPane();
 		splitNorthSouth.setResizeWeight(0.9);
