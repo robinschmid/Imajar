@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class ProgressDialog extends JDialog {
@@ -62,6 +64,7 @@ public class ProgressDialog extends JDialog {
 		task.setProgressDialog(d);
 		d.setProgress(((int)task.getProgressDouble()*10));
 		d.setVisibleDialog(true);
+		ImageEditorWindow.log("starting task dialog with percent: "+(int)task.getProgressDouble(), LOG.DEBUG);
 		return d;
 	}
  

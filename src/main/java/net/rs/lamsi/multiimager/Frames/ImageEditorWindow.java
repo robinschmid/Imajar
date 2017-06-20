@@ -998,6 +998,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	 * @param img
 	 */
 	public void setImage2D(Image2D img) { 
+		DebugStopWatch debug = new DebugStopWatch();
 		boolean isauto = modImage2D.isAutoUpdating();
 		modImage2D.setAutoUpdating(false); 
 		// finished
@@ -1009,9 +1010,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		activeModuleContainer = modImage2D;
 		activeModuleContainer.setVisible(true);
 		east.add(activeModuleContainer, BorderLayout.CENTER);
-		
+		debug.stopAndLOG("for showing all modules of img2d");
 		// set
-		DebugStopWatch debug = new DebugStopWatch();
+		debug.setNewStartTime();
 		modImage2D.setCurrentImage(img, true); 
 		ImageEditorWindow.log("TIME: " +debug.stop()+"   FOR setting the current image for all modules ", LOG.DEBUG);
 		

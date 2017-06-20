@@ -47,6 +47,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.general.framework.basics.multislider.JMultiRangeSlider;
 

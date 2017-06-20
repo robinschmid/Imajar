@@ -5,6 +5,7 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.interf.SettingsModuleObject;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 /**
  * 
@@ -39,7 +40,10 @@ public abstract class Collectable2DSettingsModule<T extends Settings, S extends 
 	@Override
 	public void setCurrentImage(S img, boolean setAllToPanel) {
 		currentImage = img;
-		setSettings((T) img.getSettingsByClass(classsettings), setAllToPanel);
+		DebugStopWatch d = new DebugStopWatch();
+		T sett = (T) img.getSettingsByClass(classsettings);
+		d.stopAndLOG(" retrieving the current settings "+sett+" of class "+classsettings);
+		setSettings(sett, setAllToPanel);
 	}
 	
 	@Override

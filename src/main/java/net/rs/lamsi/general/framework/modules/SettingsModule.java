@@ -22,6 +22,7 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 
@@ -224,7 +225,8 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 				if(setAllToPanel)
 					setAllViaExistingSettings(settings);
 				// transfer to Settingsholder
-				SettingsHolder.getSettings().replaceSettings((Settings)settings);
+				// too slow!
+				// SettingsHolder.getSettings().replaceSettings((Settings)settings);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

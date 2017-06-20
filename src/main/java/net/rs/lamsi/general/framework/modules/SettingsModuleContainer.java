@@ -122,9 +122,11 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 		public void setAllViaExistingSettings(T st) throws Exception {  
 			if(st!=null) {
 				ImageLogicRunner.setIS_UPDATING(false);
+				DebugStopWatch debug = new DebugStopWatch();
 				// new reseted ps 
 				for(Module m : listSettingsModules) {
 					if(SettingsModule.class.isInstance(m)) {
+						debug.setNewStartTime();
 						SettingsModule sm = ((SettingsModule)m);
 						// try to find settings in collection2d
 						Settings sett = getCurrentImage().getSettingsByClass(sm.getSettingsClass());
@@ -141,6 +143,7 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 							sm.setVisible(false);
 							ImageEditorWindow.log("No Settings for "+sm.getSettingsClass(), LOG.DEBUG);
 						}
+						ImageEditorWindow.log("TIME: "+debug.stop()+"   FOR setAllViaExistingSettings in "+sm.getClass().getName(), LOG.DEBUG);
 					}
 				}
 				// finished
@@ -167,7 +170,7 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 					}	
 				} catch(Exception ex) {
 					ex.printStackTrace();
-				}
+				} 
 			}
 			return st;
 		}
@@ -190,13 +193,10 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 		 */
 		@Override 
 		public void setCurrentImage(S img, boolean setAllToPanel) {
-			DebugStopWatch debug = new DebugStopWatch();
 			for(Module m : listSettingsModules) {
 				if(Collectable2DSettingsModule.class.isInstance(m)) {
 					Collectable2DSettingsModule sm = ((Collectable2DSettingsModule)m);
-					debug.setNewStartTime();
 					sm.setCurrentImage(img, false);
-					ImageEditorWindow.log("TIME: "+debug.stop()+"   FOR setCurrentImage in "+sm.getClass(), LOG.DEBUG);
 				}
 			}
 			super.setCurrentImage(img, setAllToPanel);

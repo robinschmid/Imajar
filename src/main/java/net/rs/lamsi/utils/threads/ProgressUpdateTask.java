@@ -79,7 +79,7 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 		super.setProgress((int)p);
 		
 		// open dialog?
-		if(startTime!=-1 && System.currentTimeMillis()-startTime>=millisDelayToPopUp) {
+		if(progressDialog==null && startTime!=-1 && System.currentTimeMillis()-startTime>=millisDelayToPopUp) {
 			progressDialog = ProgressDialog.openTask(this);
 		}
 		

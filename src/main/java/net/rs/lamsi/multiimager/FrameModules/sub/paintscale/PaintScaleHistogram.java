@@ -75,6 +75,7 @@ public class PaintScaleHistogram extends JPanel {
 	}
 	
 	public void startUpdateTask() {
+		ImageEditorWindow.log("HISTOGRAM task was started", LOG.DEBUG);
 		// task gets started after 1 second delay (if not stopped before)
 				task = new DelayedProgressUpdateTask(1, 1000) {
 					@Override
@@ -82,6 +83,7 @@ public class PaintScaleHistogram extends JPanel {
 						Image2D img = lastImg;
 						if(img!=null) {
 							try {
+								ImageEditorWindow.log("HISTOGRAM is updating now", LOG.DEBUG);
 								SettingsPaintScale ps = lastPS;
 								double min = ps.getMinIAbs(img);
 								double max = ps.getMaxIAbs(img);
