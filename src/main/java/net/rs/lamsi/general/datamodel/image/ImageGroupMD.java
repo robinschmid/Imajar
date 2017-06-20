@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.SettingsImageGroup;
@@ -119,6 +120,20 @@ public class ImageGroupMD implements Serializable {
 	}
 
 
+	
+	/**
+	 * replace all collectable2d place holders in settings
+	 * @param tree
+	 */
+	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
+		getSettings().replacePlaceHoldersInSettings(tree);
+		
+		for(Collectable2D g : images)
+			g.replacePlaceHoldersInSettings(tree);
+	}
+	
+	
+	
 
 	public void setBackgroundImage(Image image, File pathBGImage) {
 		this.bgImage = image;
@@ -360,6 +375,17 @@ public class ImageGroupMD implements Serializable {
 					return images.get(i);
 				c++;
 			}
+		return null;
+	}
+	/**
+	 * get image by unique title
+	 * @param title
+	 * @return
+	 */
+	public Collectable2D getImageByTitle(String title) {
+		for(Collectable2D c : images) 
+			if(c.getTitle().equals(title))
+				return c;
 		return null;
 	}
 }

@@ -11,6 +11,8 @@ import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.SettingsImagingProject;
@@ -94,6 +96,19 @@ public class ImagingProject  implements Serializable {
 		}
 		else return null;
 	}
+	
+
+	/**
+	 * replace all collectable2d place holders in settings
+	 * @param tree
+	 */
+	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
+		getSettings().replacePlaceHoldersInSettings(tree);
+		
+		for(ImageGroupMD g : groups)
+			g.replacePlaceHoldersInSettings(tree);
+	}
+	
 
 	// #######################################################################################
 	// GETTERS AND SETTERS
@@ -148,5 +163,16 @@ public class ImagingProject  implements Serializable {
 	@Override
 	public String toString() {
 		return getName();
+	}
+	/**
+	 * get group by unique name
+	 * @param group
+	 * @return
+	 */
+	public ImageGroupMD getGroupByName(String group) {
+		for(ImageGroupMD g : groups)
+			if(g.getName().equals(group))
+				return g;
+		return null;
 	}
 }

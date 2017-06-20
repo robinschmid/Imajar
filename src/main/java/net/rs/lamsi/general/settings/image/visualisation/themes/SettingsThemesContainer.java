@@ -28,6 +28,7 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 	 */
 	public SettingsThemesContainer(THEME themeid, boolean createPaintscaleThemeSettings) {
 		super("SettingsThemesContainer", "/Settings/Visualization/", "setThemeContainer"); 
+		resetAll();
 		// scale in plot
 		SettingsScaleInPlot scaleInPlot = new SettingsScaleInPlot();
 		addSettings(scaleInPlot);
@@ -37,8 +38,6 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 
 		if(createPaintscaleThemeSettings)
 			addSettings(new SettingsPaintscaleTheme());
-		
-		resetAll();
 	} 
 	
 	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, Color cPlotBG, boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 

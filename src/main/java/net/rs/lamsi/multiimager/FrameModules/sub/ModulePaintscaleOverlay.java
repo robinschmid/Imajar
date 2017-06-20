@@ -42,17 +42,9 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	// MY STUFF
 	
 	private static int ICON_WIDTH = 100;
-
-	//################################################################################################
-	// GENERATED
-	private JTextField txtLevels;
-	private JColorPickerButton btnMinColor;
-	private JCheckBox cbWhiteAsMin;
-	private JCheckBox cbInvert;
 	private JTabbedPane tabbedPaintScales;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
-	private JCheckBox cbBlackAsMax;
 	private JPanel panel_1;
 	
 	private DecimalFormat formatAbs = new DecimalFormat("#.###");
@@ -86,45 +78,22 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, "cell 1 0,grow");
-		panel.setLayout(new MigLayout("", "[][]", "[][][][][]"));
-		
-		JLabel lblLevels = new JLabel("levels");
-		panel.add(lblLevels, "cell 0 0,alignx trailing");
-		
-		txtLevels = new JTextField();
-		txtLevels.setText("256");
-		panel.add(txtLevels, "cell 1 0,alignx left");
-		txtLevels.setColumns(10);
-		
-		cbWhiteAsMin = new JCheckBox("White");
-		cbWhiteAsMin.setToolTipText("Use white in paintscale");
-		panel.add(cbWhiteAsMin, "cell 0 2");
-		
-		cbBlackAsMax = new JCheckBox("Black");
-		cbBlackAsMax.setToolTipText("Use black in paintscale");
-		panel.add(cbBlackAsMax, "cell 1 2");
-		
-		cbInvert = new JCheckBox("invert");
-		panel.add(cbInvert, "flowx,cell 0 3 2 1");
-		
-		btnMinColor = new JColorPickerButton(this); 
-		btnMinColor.setToolTipText("Minimum color");
-		panel.add(btnMinColor, "cell 1 3,growy");
+		panel.setLayout(new MigLayout("", "[][]", "[]"));
 		
 		comboBox = new JComboBox();
 		comboBox.setModel(new DefaultComboBoxModel(new BlendingMode[] {BlendingMode.ADD, BlendingMode.NORMAL}));
 		comboBox.setToolTipText("Blending mode");
-		panel.add(comboBox, "cell 0 4,growx");
+		panel.add(comboBox, "cell 0 0,growx");
 		
 		txtAlphaBlending = new JTextField();
 		txtAlphaBlending.setToolTipText("Alpha (transparency) for the chosen blending mode.");
 		txtAlphaBlending.setHorizontalAlignment(SwingConstants.RIGHT);
 		txtAlphaBlending.setText("1");
-		panel.add(txtAlphaBlending, "flowx,cell 1 4,alignx left");
+		panel.add(txtAlphaBlending, "flowx,cell 1 0,alignx left");
 		txtAlphaBlending.setColumns(5);
 		
 		lblAlpha = new JLabel("alpha (0-1)");
-		panel.add(lblAlpha, "cell 1 4");
+		panel.add(lblAlpha, "cell 1 0");
 		
 		panel_1 = new JPanel();
 		getPnContent().add(panel_1, "cell 1 1,grow");
@@ -165,7 +134,6 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		super.setCurrentImage(img, setAllToPanel);
 		// set all images to all paintscale modules
 		// TODO
-		if(setAllToPanel) {
 		// create new
 		if(modPSList==null || modPSList.length!=img.size()) {
 
@@ -189,7 +157,6 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 				tabbedPaintScales.setTitleAt(i, img.get(i).getTitle());
 			}
 		}
-		}
 	}
 	
 	@Override
@@ -206,14 +173,6 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	// Autoupdate  TODO
 	@Override
 	public void addAutoupdater(final ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
-		getTxtLevels().getDocument().addDocumentListener(dl);
-
-		getCbBlackAsMax().addActionListener(al);
-		getCbWhiteAsMin().addActionListener(al);
-		getCbInvert().addActionListener(al);
-
-		getBtnMinColor().addColorChangedListener(ccl);
-		
 		getComboBlend().addItemListener(il);
 		getTxtAlphaBlending().getDocument().addDocumentListener(dl);
 		
@@ -244,17 +203,6 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		//rb
 		SettingsPaintScale ps = sett.getSettPaintScale(0);
 		if(ps!=null) {
-			this.getCbWhiteAsMin().setSelected(ps.isUsesWAsMin()); 
-			this.getCbBlackAsMax().setSelected(ps.isUsesBAsMax()); 
-			this.getCbInvert().setSelected(ps.isInverted()); 
-	
-			// for all paintscales set active, color, name
-			this.getBtnMinColor().setBackground(ps.getMinColor());
-			this.getBtnMinColor().setForeground(ps.getMinColor());
-	
-			// 
-			this.getTxtLevels().setText(String.valueOf(ps.getLevels()));
-			
 
 			for(int i=0; i<modPSList.length; i++) {
 				SettingsPaintScale ps2 = sett.getSettPaintScale(i);
@@ -274,10 +222,10 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 				BlendComposite blend = BlendComposite.getInstance((BlendingMode) getComboBlend().getSelectedItem(), floatFromTxt(getTxtAlphaBlending())) ;
 				sett.setBlend(blend);
 				
-				boolean inverted = getCbInvert().isSelected();
-				boolean black = getCbBlackAsMax().isSelected();
-				boolean white = getCbWhiteAsMin().isSelected();
-				int levels = intFromTxt(getTxtLevels());
+				boolean inverted = true;
+				boolean black = true;
+				boolean white = false;
+				int levels = 255;
 				
 				// paint scales
 				for(int i=0; i<modPSList.length; i++) {
@@ -309,21 +257,6 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	}
 	//################################################################################################
 	// GETTERS AND SETTERS 
-	public JTextField getTxtLevels() {
-		return txtLevels;
-	}
-	public JColorPickerButton getBtnMinColor() {
-		return btnMinColor;
-	}
-	public JCheckBox getCbWhiteAsMin() {
-		return cbWhiteAsMin;
-	}
-	public JCheckBox getCbInvert() {
-		return cbInvert;
-	}
-	public JCheckBox getCbBlackAsMax() {
-		return cbBlackAsMax;
-	}
 	public JTextField getTxtAlphaBlending() {
 		return txtAlphaBlending;
 	}

@@ -9,6 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import net.rs.lamsi.general.datamodel.image.Collectable2DPlaceHolderLink;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -301,6 +302,29 @@ public class ModuleTree <T> extends Module {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * finds the suiting collectable2d for the placeholder 
+	 * (or null if the project, group or collectable2d title was not found)
+	 * @param pl
+	 * @return
+	 */
+	public Collectable2D getCollectable2DFromPlaceHolder(Collectable2DPlaceHolderLink pl) {
+		ImageGroupMD g  = null;
+		String pst = pl.getSettings().getProject();
+		if(pst.isEmpty()) {
+			g = getGroup(root, pl.getSettings().getGroup());
+		}
+		else {
+			ImagingProject p = getProject(pst);
+			if(p!=null || pst.length()==0)
+				g = p.getGroupByName(pl.getSettings().getGroup());
+		}
+		
+		if(g!=null)
+			return g.getImageByTitle(pl.getSettings().getTitle());
+		else return null;
 	}
 
 }

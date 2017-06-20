@@ -36,7 +36,7 @@ public abstract class SettingsContainerCollectable2D extends SettingsContainerSe
 	}
 	 
 	public SettingsThemesContainer getSettTheme() {
-		return (SettingsThemesContainer) list.get(SettingsThemesContainer.class);
+		return (SettingsThemesContainer) getSettingsByClass(SettingsThemesContainer.class);
 	} 
 	public SettingsZoom getSettZoom() {
 		return (SettingsZoom) getSettingsByClass(SettingsZoom.class);

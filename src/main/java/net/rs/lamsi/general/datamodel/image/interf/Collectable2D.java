@@ -7,6 +7,7 @@ import javax.swing.Icon;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
@@ -121,6 +122,15 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 			// find settings in this collectable2d settings
 			return settings.getSettingsByClass(classsettings);
 		}
+	}
+	
+	
+	/**
+	 * replace all collectable2d place holders in settings
+	 * @param tree
+	 */
+	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
+		getSettings().replacePlaceHoldersInSettings(tree);
 	}
 	
 	/**

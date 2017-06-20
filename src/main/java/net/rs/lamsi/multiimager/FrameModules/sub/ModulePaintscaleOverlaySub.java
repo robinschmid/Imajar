@@ -62,8 +62,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	private JTextField txtMinimum;
 	private JTextField txtMaximum;
 	private JColorPickerButton btnMinColor;
-	private JCheckBox cbWhiteAsMin;
-	private JCheckBox cbInvert;
 	private JCheckBox cbUseMinMax;
 	private JCheckBox cbMinimumTransparent;
 	private JSlider sliderMinimum;
@@ -82,7 +80,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	private Component verticalStrut_3;
 	private Component verticalStrut_4;
 	private JCheckBox cbOnlyUseSelectedMinMax;
-	private JCheckBox cbBlackAsMax;
 	private PaintScaleHistogram pnHistogram;
 	private JComboBox comboMinValType;
 	private JComboBox comboMaxValType;
@@ -119,39 +116,28 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, "cell 0 0,grow");
-		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][][][][][25.00][][17.00][][][][][][]"));
+		panel.setLayout(new MigLayout("", "[grow][grow]", "[][][]"));
 		
 		JLabel lblLevels = new JLabel("levels");
-		panel.add(lblLevels, "cell 0 0,alignx trailing");
-		
-		txtLevels = new JTextField();
-		txtLevels.setText("256");
-		panel.add(txtLevels, "cell 1 0,alignx left");
-		txtLevels.setColumns(10);
-		
-		cbWhiteAsMin = new JCheckBox("White");
-		cbWhiteAsMin.setToolTipText("Use white in paintscale");
-		panel.add(cbWhiteAsMin, "cell 0 2");
-		
-		cbBlackAsMax = new JCheckBox("Black");
-		cbBlackAsMax.setToolTipText("Use black in paintscale");
-		panel.add(cbBlackAsMax, "cell 1 2");
-		
-		cbInvert = new JCheckBox("invert");
-		panel.add(cbInvert, "flowx,cell 0 3 2 1");
+		panel.add(lblLevels, "flowx,cell 0 0,alignx left");
 		
 		cbOnlyUseSelectedMinMax = new JCheckBox("only use selected values (min/max)");
 		cbOnlyUseSelectedMinMax.setToolTipText("Uses minimum and maximum value from selected minus excluded rects ");
 		cbOnlyUseSelectedMinMax.setSelected(true);
-		panel.add(cbOnlyUseSelectedMinMax, "cell 0 4");
+		panel.add(cbOnlyUseSelectedMinMax, "cell 0 1");
+		
+		txtLevels = new JTextField();
+		txtLevels.setText("256");
+		panel.add(txtLevels, "cell 0 0,alignx left");
+		txtLevels.setColumns(10);
 		
 		btnMinColor = new JColorPickerButton(this); 
 		btnMinColor.setToolTipText("Minimum color");
-		panel.add(btnMinColor, "cell 1 3,growy");
+		panel.add(btnMinColor, "cell 0 0,growy");
 		
 		cbUseMinMax = new JCheckBox("use min & max values");
 		cbUseMinMax.setToolTipText("Set a minimum (limit of detection) and a maximum value. All values beneath or above will be set to minimum or maximum color, respectively.");
-		panel.add(cbUseMinMax, "cell 0 5");
+		panel.add(cbUseMinMax, "cell 0 2");
 		cbUseMinMax.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				JCheckBox cb = (JCheckBox)e.getSource();  
@@ -478,19 +464,13 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	public void addAutoupdater(final ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
 		getTxtLevels().getDocument().addDocumentListener(dl);
 
-		
-		getCbBlackAsMax().addActionListener(al);
-		getCbWhiteAsMin().addActionListener(al);
-		getCbInvert().addActionListener(al);
 		getCbMinimumTransparent().addActionListener(al);
 		getCbMaximumTransparent().addActionListener(al);
 		getCbUseMinMax().addActionListener(al);
 		getCbOnlyUseSelectedMinMax().addActionListener(al);
 
-		
 		getBtnApplyMinFilter().addActionListener(al);
 		getBtnApplyMaxFilter().addActionListener(al);
-		
 
 		getBtnMinColor().addColorChangedListener(ccl);
 		// LOD 
@@ -655,9 +635,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		setDelayedListenerActive(false);
 		
 		//rb
-		this.getCbWhiteAsMin().setSelected(ps.isUsesWAsMin()); 
-		this.getCbBlackAsMax().setSelected(ps.isUsesBAsMax()); 
-		this.getCbInvert().setSelected(ps.isInverted()); 
 		this.getCbUseMinMax().setSelected(ps.isUsesMinMax()); 
 		this.getCbMinimumTransparent().setSelected(ps.isUsesMinAsInvisible()); 
 		this.getCbMaximumTransparent().setSelected(ps.isUsesMaxAsInvisible()); 
@@ -734,8 +711,8 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 				double min = ps.getModeMin().equals(ValueMode.RELATIVE)? doubleFromTxt(getTxtMinPerc()) : doubleFromTxt(getTxtMinimum());
 				double max = ps.getModeMax().equals(ValueMode.RELATIVE)? doubleFromTxt(getTxtMaxPerc()) : doubleFromTxt(getTxtMaximum());
 				ps.setAll(intFromTxt(getTxtLevels()), 
-						true, getCbInvert().isSelected(), 
-						getCbBlackAsMax().isSelected(), getCbWhiteAsMin().isSelected(), getCbUseMinMax().isSelected(), 
+						true, true, 
+						true, false, getCbUseMinMax().isSelected(), 
 						getCbMinimumTransparent().isSelected(),getCbMaximumTransparent().isSelected(),
 						(ValueMode)getComboMinValType().getSelectedItem(), (ValueMode)getComboMaxValType().getSelectedItem(), 
 						min, max, 
@@ -747,7 +724,7 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 						getCbOnlyUseSelectedMinMax().isSelected(), 
 						false, 0, null, null);
 				/// renew histo
-				getPnHistogram().updateHisto(ps);
+				// getPnHistogram().updateHisto(ps);
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -789,12 +766,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	public JColorPickerButton getBtnMinColor() {
 		return btnMinColor;
 	}
-	public JCheckBox getCbWhiteAsMin() {
-		return cbWhiteAsMin;
-	}
-	public JCheckBox getCbInvert() {
-		return cbInvert;
-	}
 	public JCheckBox getCbUseMinMax() {
 		return cbUseMinMax;
 	}
@@ -827,9 +798,6 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 	}
 	public JCheckBox getCbOnlyUseSelectedMinMax() {
 		return cbOnlyUseSelectedMinMax;
-	}
-	public JCheckBox getCbBlackAsMax() {
-		return cbBlackAsMax;
 	}
 	public JTextField getTxtMinPerc() {
 		return txtMinPerc;

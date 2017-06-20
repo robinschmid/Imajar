@@ -10,6 +10,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.interf.Image2DSett;
@@ -221,6 +223,20 @@ public abstract class SettingsContainerSettings extends Settings {
 				ImageEditorWindow.log("No settings object found for "+classsettings.getName(), LOG.DEBUG);
 				return null;
 			}
+		}
+	}
+	
+	
+	
+	/**
+	 * replace all collectable2d place holders in settings
+	 * @param tree
+	 */
+	@Override
+	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
+		for (Iterator iterator = list.values().iterator(); iterator.hasNext();) {
+			Settings sett = (Settings) iterator.next();
+			sett.replacePlaceHoldersInSettings(tree);
 		}
 	}
 }

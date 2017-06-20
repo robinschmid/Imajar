@@ -403,6 +403,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				map = new HashMap<SettingsShapeSelection, XYShapeAnnotation>();
 				
 				settSel = img.getSettings().getSettSelections();
+				settSel.setCurrentImage(img, false);
 				
 				// set table model
 				tableModel = new ShapeSelectionsTableModel(settSel);

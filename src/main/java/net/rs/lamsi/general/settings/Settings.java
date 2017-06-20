@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -29,18 +30,21 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
-import net.rs.lamsi.utils.FileAndPathUtil;
-import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
-import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
-
 import org.jfree.ui.RectangleInsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import net.rs.lamsi.general.datamodel.image.Collectable2DPlaceHolderLink;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.framework.modules.ModuleTree;
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.settings.image.SettingsCollectable2DPlaceHolder;
+import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
+import net.rs.lamsi.utils.FileAndPathUtil;
+import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
+import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 public abstract class Settings implements Serializable {  
 	// do not change the version!
@@ -102,6 +106,14 @@ public abstract class Settings implements Serializable {
 		if(changeListener!=null)
 			for(SettingsChangedListener l : changeListener)
 				l.settingsChanged(this);
+	}
+	
+	/**
+	 * replace all collectable2d place holders in settings
+	 * @param tree
+	 */
+	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
+		
 	}
 
 	//##################################################################
@@ -178,7 +190,7 @@ public abstract class Settings implements Serializable {
 			throw new IOException(e);
 		}
 	}
-	
+
 
 	/**
 	 * saves settings and calls abstract appendSettingsValuesToXML
@@ -205,7 +217,7 @@ public abstract class Settings implements Serializable {
 
 	//'''''''''''''''''''''''''''''''''
 	// save specific values
-	public static void toXML(Element elParent, Document doc, String name, Object o) {
+	public static Element toXML(Element elParent, Document doc, String name, Object o) {
 		if(o!=null) {
 			//Element paramElement = doc.createElement(parameterElement);
 			//paramElement.setAttribute(nameAttribute, name);
@@ -242,25 +254,54 @@ public abstract class Settings implements Serializable {
 				Collectable2D c = (Collectable2D)o;
 				// save name, group, project
 				paramElement.setTextContent(c.getTitle());
-				paramElement.setAttribute("group", c.getImageGroup().getName());
-				if(c.getImageGroup().getProject()!=null)
-					paramElement.setAttribute("project", c.getImageGroup().getProject().getName());
+				if(Collectable2DPlaceHolderLink.class.isInstance(c)) {
+					// save placeholder again
+					Collectable2DPlaceHolderLink pl = (Collectable2DPlaceHolderLink) c;
+					paramElement.setAttribute("group", pl.getSettings().getGroup());
+					paramElement.setAttribute("project", pl.getSettings().getProject());
+				}
+				else {
+					paramElement.setAttribute("group", c.getImageGroup().getName());
+					if(c.getImageGroup().getProject()!=null)
+						paramElement.setAttribute("project", c.getImageGroup().getProject().getName());
+				}
 			}
 			else paramElement.setTextContent(String.valueOf(o));
+
+			// return to give an option for more attributes
+			return paramElement;
 		}
+		return null;
 	}
-	public static void toXML(Element elParent, Document doc, String name, Object o, String[] attributes, Object[] attValues) {
+	/**
+	 * with attributes
+	 * @param elParent
+	 * @param doc
+	 * @param name
+	 * @param o
+	 * @param attributes
+	 * @param attValues
+	 * @return
+	 */
+	public static Element toXML(Element elParent, Document doc, String name, Object o, String[] attributes, Object[] attValues) {
 		if(o!=null) {
 			//Element paramElement = doc.createElement(parameterElement);
 			//paramElement.setAttribute(nameAttribute, name);
-			Element paramElement = doc.createElement(name);
-			elParent.appendChild(paramElement); 
+			Element paramElement = toXML(elParent, doc, name, o);
 
-			paramElement.setTextContent(String.valueOf(o));
+			if(paramElement==null) {
+				paramElement = doc.createElement(name);
+				elParent.appendChild(paramElement); 
+				if(o!=null)
+					paramElement.setTextContent(String.valueOf(o));
+			}
+
 			for(int i=0; i<attributes.length; i++) {
 				paramElement.setAttribute(attributes[i], String.valueOf(attValues[i]));
 			}
+			return paramElement;
 		}
+		return null;
 	}
 	public static void toXMLArray(Element elParent, Document doc, String name, Object[][] o) {
 		if(o!=null) {
@@ -291,9 +332,9 @@ public abstract class Settings implements Serializable {
 			elParent.appendChild(paramElement); 
 			StringBuilder res = new StringBuilder();
 			for(int i=0; i<o.length; i++) {
-					res.append(String.valueOf(o[i]));
-					if(i<o.length-1)
-						res.append(";");
+				res.append(String.valueOf(o[i]));
+				if(i<o.length-1)
+					res.append(";");
 			}
 
 			paramElement.setTextContent(res.toString());
@@ -307,9 +348,9 @@ public abstract class Settings implements Serializable {
 			elParent.appendChild(paramElement); 
 			StringBuilder res = new StringBuilder();
 			for(int i=0; i<o.length; i++) {
-					res.append(String.valueOf(o[i]));
-					if(i<o.length-1)
-						res.append(";");
+				res.append(String.valueOf(o[i]));
+				if(i<o.length-1)
+					res.append(";");
 			}
 
 			paramElement.setTextContent(res.toString());
@@ -499,6 +540,18 @@ public abstract class Settings implements Serializable {
 			return new Font(family, style, size);
 		}
 		return null;
+	}
+
+	/**
+	 * place holder
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static Collectable2DPlaceHolderLink c2dFromXML(final Element el) {
+		String title = el.getTextContent();
+			String group = el.getAttribute("group");
+			String project = el.getAttribute("project");
+			return new Collectable2DPlaceHolderLink(new SettingsCollectable2DPlaceHolder(title, group, project));
 	}
 	/**
 	 * 

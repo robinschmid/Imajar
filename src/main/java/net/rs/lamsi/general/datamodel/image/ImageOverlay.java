@@ -7,6 +7,7 @@ import javax.swing.Icon;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.needy.SettingsGroupItemSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
@@ -236,8 +237,9 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 	
 	public int countActive() {
 		int c = 0;
+		SettingsGroupItemSelections s = settings.getSettGroupItemSelections();
 		for(int i=0; i<group.image2dCount(); i++) {
-			if(settings.isActive(i)) {
+			if(s.isActive(group.get(i))) {
 				c++;
 			}
 		}

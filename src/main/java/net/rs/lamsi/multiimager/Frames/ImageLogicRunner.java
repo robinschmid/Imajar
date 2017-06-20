@@ -519,6 +519,9 @@ public class ImageLogicRunner {
 						if(project!=null) {
 							addProject(project);
 							preferences.addImage2DImportExportPath(f, false);
+							
+							// replace place holders in settings
+							project.replacePlaceHoldersInSettings(getTree());
 						}
 
 					}catch(Exception ex) {
@@ -554,6 +557,9 @@ public class ImageLogicRunner {
 								project.add(img);
 							addGroup(img, project);
 							preferences.addImage2DImportExportPath(f, false);
+
+							// replace place holders in settings
+							img.replacePlaceHoldersInSettings(getTree());
 						}
 
 					}catch(Exception ex) {

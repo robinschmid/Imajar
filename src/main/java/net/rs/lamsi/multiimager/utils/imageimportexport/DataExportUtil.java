@@ -23,6 +23,7 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.threads.ProgressUpdateTaskMonitor;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -316,67 +317,93 @@ LOOKUP_TABLE default
 	 * @param setImage2DDataExport
 	 * @throws Exception 
 	 */
-	public static void exportDataImage2DInRects(Image2D img, SettingsSelections selections, SettingsImage2DDataSelectionsExport sett) throws Exception  { 
-		// copy selections
-		boolean update = false;
-		if(!img.equals(selections.getCurrentImage())) {
-			selections = (SettingsSelections)selections.copy();
-			selections.setCurrentImage(img, false);
-			// update later
-			update = true;
-		}
+	public static void exportDataImage2DInRects(final Image2D img, final SettingsSelections sel, 
+			final SettingsImage2DDataSelectionsExport sett) throws Exception  { 
 		
-		double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
-		// export the data
-		//writer it to txt or xlsx	
-		if(sett.isWritingToClipboard()) { 
-			// update?
-			if(update)
-				selections.updateStatistics();
+		new ProgressUpdateTask(4) {
 			
-			// save
-			ArrayList<SettingsShapeSelection> tableRows = selections.getSelections();
-			// write table rows
-			Object[][] erows = new Object[tableRows.size()+1][];
-			// write title line
-			erows[0] =  SettingsShapeSelection.getTitleArrayExport();
-			for(int r=0; r<tableRows.size(); r++) {
-				// write all tablerows
-				erows[r+1] = tableRows.get(r).getRowDataExport();
+			@Override
+			protected Boolean doInBackground2() throws Exception {
+				SettingsSelections selections = sel;
+				// copy selections
+				boolean update = false;
+				if(!img.equals(sel.getCurrentImage())) {
+					selections = (SettingsSelections)sel.copy();
+					selections.setCurrentImage(img, false);
+					// update later
+					update = true;
+				}
+				
+				addProgressStep(1.0);
+				
+				double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
+				// export the data
+				//writer it to txt or xlsx	
+				if(sett.isWritingToClipboard()) { 
+					// update?
+					if(update)
+						selections.updateStatistics();
+					
+					addProgressStep(1.0);
+					
+					// save
+					ArrayList<SettingsShapeSelection> tableRows = selections.getSelections();
+					// write table rows
+					Object[][] erows = new Object[tableRows.size()+1][];
+					// write title line
+					erows[0] =  SettingsShapeSelection.getTitleArrayExport();
+					for(int r=0; r<tableRows.size(); r++) {
+						// write all tablerows
+						erows[r+1] = tableRows.get(r).getRowDataExport();
+
+						addProgressStep(1.0/tableRows.size());
+					}
+					
+					String s = ClipboardWriter.dataToTabSepString(erows);
+					s = s+"\n\nOnly selected, not excluded data points\n"+ClipboardWriter.dataToTabSepString(dataSelected);
+
+					ClipboardWriter.writeToClipBoard(s);
+					DialogLoggerUtil.showMessageDialogForTime(null, "Succeed", "Data copied to clipboard use paste function to retrieve data", 2000);
+
+					addProgressStep(1.0);
+				}
+				else if(sett.getFileFormat()==FileType.XLSX){
+					// export to excel
+					File file = new File(sett.getPath(), FileAndPathUtil.eraseFormat((sett.getFilename()))+".xlsx");
+					XSSFWorkbook wb = new XSSFWorkbook();
+
+					addProgressStep(1.0);
+					// save data and selections to excel
+					selections.saveToExcel(sett, xwriter, wb);
+
+					addProgressStep(1.0);
+					// final
+					xwriter.saveWbToFile(file, wb);
+					xwriter.closeAllWorkbooks(); 
+
+					addProgressStep(1.0);
+					DialogLoggerUtil.showMessageDialog(null, "Succeed", "File(s) saved successfully");
+				} 
+				else {
+					// only write selected data to txt
+					String filename = (FileAndPathUtil.getFormat(sett.getFilename()).length()>0 && sett.getFilename().length()>3)? 
+							sett.getFilename() : FileAndPathUtil.eraseFormat((sett.getFilename()))+"."+sett.getFileFormat().toString();
+							String file = new File(sett.getPath(), filename).getAbsolutePath();
+							writer.openNewFileOutput(file); 
+
+							addProgressStep(1.0);
+							// content
+							writer.writeDataColumnToCurrentFile(dataSelected);
+
+							addProgressStep(1.0);
+							// end file
+							writer.closeDatOutput(); 
+
+							addProgressStep(1.0);
+				}
+				return true;
 			}
-			
-			String s = ClipboardWriter.dataToTabSepString(erows);
-			s = s+"\n\nOnly selected, not excluded data points\n"+ClipboardWriter.dataToTabSepString(dataSelected);
-
-			ClipboardWriter.writeToClipBoard(s);
-			DialogLoggerUtil.showMessageDialogForTime(null, "Succeed", "Data copied to clipboard use paste function to retrieve data", 2000);
-		}
-		else if(sett.getFileFormat()==FileType.XLSX){
-			// export to excel
-			File file = new File(sett.getPath(), FileAndPathUtil.eraseFormat((sett.getFilename()))+".xlsx");
-			XSSFWorkbook wb = new XSSFWorkbook();
-
-			// save data and selections to excel
-			selections.saveToExcel(sett, xwriter, wb);
-
-			// final
-			xwriter.saveWbToFile(file, wb);
-			xwriter.closeAllWorkbooks(); 
-
-			DialogLoggerUtil.showMessageDialog(null, "Succeed", "File(s) saved successfully");
-		} 
-		else {
-			// only write selected data to txt
-			String filename = (FileAndPathUtil.getFormat(sett.getFilename()).length()>0 && sett.getFilename().length()>3)? 
-					sett.getFilename() : FileAndPathUtil.eraseFormat((sett.getFilename()))+"."+sett.getFileFormat().toString();
-					String file = new File(sett.getPath(), filename).getAbsolutePath();
-					writer.openNewFileOutput(file); 
-					// content
-					writer.writeDataColumnToCurrentFile(dataSelected);
-					// end file
-					writer.closeDatOutput(); 
-		}
-		
+		}.execute();
 	}
 
 	/**

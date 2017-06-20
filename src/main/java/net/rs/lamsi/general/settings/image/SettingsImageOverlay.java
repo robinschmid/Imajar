@@ -1,28 +1,32 @@
 package net.rs.lamsi.general.settings.image;
 
 import java.awt.Color;
-import java.util.Vector;
-
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
-import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
-import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.needy.SettingsGroupItemSelections;
+import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
+
 public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
-    private static Vector<Color> STANDARD_COLORS;
+    private static ArrayList<Color> STANDARD_COLORS;
     //
 	
 	// the currently edited paintscale
@@ -30,11 +34,10 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	// overlay settings
 	protected String title = "";
 	// colors for paintscales
-	protected Vector<Color> colors;
-	protected Vector<SettingsPaintScale> psSettings = new Vector<SettingsPaintScale>();
-	// holds which image2d / paintscale is active
-	protected Vector<Boolean> active;
-
+	protected List<Color> colors;
+	protected List<SettingsPaintScale> psSettings = new ArrayList<SettingsPaintScale>();
+	// holds which image2d / paintscale is active --> SettingsGroupItemSelections
+	
 	// blending mode with alpha
 	protected BlendComposite blend = BlendComposite.Add; 
 
@@ -43,6 +46,10 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		super("SettingsImageOverlay", "/Settings/ImageOv/", "setImgOv"); 
 		// standard theme
 		resetAll();
+		// other
+		addSettings(new SettingsThemesContainer(THEME.DARKNESS, false));
+		addSettings(new SettingsZoom());
+		addSettings(new SettingsGroupItemSelections());
 	} 
 
 	/**
@@ -67,9 +74,12 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		}
 		
 		// create active array
-		active = new Vector<Boolean>(group.size());
-		for(int i=0; i<group.size(); i++)
-			active.add(new Boolean(true));
+		Image2D[] img = group.getImagesOnly();
+		Map<Collectable2D, Boolean> active = new HashMap<Collectable2D, Boolean>(img.length);
+		for(Image2D i : img)
+			active.put(i, new Boolean(img.length<=4));
+		
+		getSettGroupItemSelections().setActive(active);
 	}
 	
 	public boolean isInitialised() {
@@ -83,12 +93,13 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	public void addImage(Image2D i) throws Exception { 
 		SettingsPaintScale ps =( SettingsPaintScale) i.getSettings().getSettPaintScale().copy();
 		psSettings.add(ps);
+		Map<Collectable2D, Boolean> active = getActive();
 		// monochrome and color
 		ps.setMonochrom(true);
 		ps.setMinColor(colors.get(active.size()%colors.size()));
 		ps.setMaxColor(colors.get(active.size()%colors.size()));
 		//
-		active.add(new Boolean(false));
+		active.put(i, new Boolean(false));
 	}
 	/**
 	 * add image2d 
@@ -96,7 +107,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	 */
 	public void removeImage(int i) throws Exception { 
 		psSettings.remove(i);
-		active.remove(i);
+		getActive().remove(i);
 	}
 
 	@Override
@@ -105,10 +116,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		title = "";
 		setToStandardColors();
 		psSettings.clear();
-		active = null;
-		// other
-		addSettings(new SettingsThemesContainer(THEME.DARKNESS, false));
-		addSettings(new SettingsZoom());
+		getSettGroupItemSelections().resetAll();
 	}
 
 	@Override
@@ -119,10 +127,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		for(int i=0; i<colors.size(); i++)
 			toXML(elParent, doc, "colorXX"+i, colors.get(i)); 
 
-		if(active!=null)
-			for(int i=0; i<active.size(); i++)
-				toXML(elParent, doc, "activeXX"+i, active.get(i)); 
-
 		for(int i=0; i<psSettings.size(); i++)
 			psSettings.get(i).appendSettingsToXML(elParent, doc);
 	}
@@ -131,9 +135,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	public void loadValuesFromXML(Element el, Document doc) {
 		SettingsPaintScale ps = new SettingsPaintScale();
 		colors.clear();
-		if(active==null)
-			active = new Vector<Boolean>();
-		else active.clear();
 		
 		NodeList list = el.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {
@@ -142,14 +143,13 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("title")) title = nextElement.getTextContent();
 				else if(paramName.startsWith("colorXX")) colors.add(colorFromXML(nextElement));
-				else if(paramName.startsWith("activeXX")) active.add(booleanFromXML(nextElement));
 				else if(paramName.startsWith("blend")) {
 					blend = BlendComposite.getInstance(BlendingMode.valueOf(nextElement.getTextContent()), Float.valueOf(nextElement.getAttribute("alpha")));
 				}
 				else if(isSettingsNode(nextElement, ps.getSuperClass())) {
 					SettingsPaintScale ps2 = new SettingsPaintScale();
 					ps2.loadValuesFromXML(nextElement, doc);
-					psSettings.addElement(ps2);
+					psSettings.add(ps2);
 				}
 			}
 		}
@@ -175,9 +175,9 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	 * red, blue, green, orange, lila
 	 * @return
 	 */
-	public Vector<Color> setToStandardColors() {
+	public List<Color> setToStandardColors() {
 		if(STANDARD_COLORS==null) {
-			STANDARD_COLORS = new Vector<Color>();
+			STANDARD_COLORS = new ArrayList<Color>();
 			STANDARD_COLORS.add(Color.RED);
 			STANDARD_COLORS.add(Color.BLUE);
 			STANDARD_COLORS.add(Color.GREEN);
@@ -195,11 +195,11 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		this.title = title;
 	}
 
-	public Vector<Color> getColors() {
+	public List<Color> getColors() {
 		return colors;
 	}
 
-	public void setColors(Vector<Color> colors) {
+	public void setColors(ArrayList<Color> colors) {
 		this.colors = colors;
 	}
 	public void setColors(Color[] color) {
@@ -208,11 +208,8 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 			colors.add(c);
 	}
 
-	public Vector<Boolean> getActive() {
-		return active;
-	}
-	public void setActive(Vector<Boolean> active) {
-		this.active = active;
+	public Map<Collectable2D, Boolean> getActive() {
+		return getSettGroupItemSelections().getActive();
 	}
 	/**
 	 * is constructed by setImages
@@ -220,18 +217,19 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	 * @param image
 	 * @return
 	 */
-	public boolean isActive(int image) {
-		return active!=null && active.get(image);
+	public Boolean isActive(Collectable2D img) {
+		Map<Collectable2D, Boolean> active = getActive();
+		return active!=null && active.containsKey(img)? active.get(img) : false;
 	}
 
 	public SettingsPaintScale getSettPaintScale(int i) {
 		return psSettings==null? null : psSettings.get(i);
 	}
-	public Vector<SettingsPaintScale> getSettPaintScale() {
+	public List<SettingsPaintScale> getSettPaintScale() {
 		return psSettings;
 	}
 
-	public void setSettPaintScale(Vector<SettingsPaintScale> psSettings) {
+	public void setSettPaintScale(ArrayList<SettingsPaintScale> psSettings) {
 		this.psSettings = psSettings;
 	}
 
@@ -250,6 +248,10 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 
 	public int getCurrentPaintScale() {
 		return currentPaintScale;
+	}
+	
+	public SettingsGroupItemSelections getSettGroupItemSelections() {
+		return (SettingsGroupItemSelections) getSettingsByClass(SettingsGroupItemSelections.class);
 	}
 
 	public void setCurrentPaintScale(int currentPaintScale) {
