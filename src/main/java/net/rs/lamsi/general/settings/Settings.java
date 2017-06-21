@@ -41,7 +41,10 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.image.SettingsCollectable2DPlaceHolder;
+import net.rs.lamsi.general.settings.image.needy.SettingsCollectable2DLink;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -119,6 +122,50 @@ public abstract class Settings implements Serializable {
 	//##################################################################
 	// xml write and read
 
+	public File saveSettingsToFile(Component parentFrame)  throws Exception { 
+		// Open new FC
+		// create Path 
+		File path = new File(FileAndPathUtil.getPathOfJar(), this.getPathSettingsFile());
+		FileAndPathUtil.createDirectory(path);
+		JFileChooser fc = new JFileChooser(path); 
+		FileTypeFilter ffilter = new FileTypeFilter(this.getFileEnding(), "Save settings to");
+		fc.addChoosableFileFilter(ffilter);  
+		fc.setFileFilter(ffilter);
+		// getting the file
+		if (fc.showSaveDialog(parentFrame) == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();  
+			// extention anbringen
+			file = ffilter.addExtensionToFileName(file);
+			//
+			this.saveToXML(file);
+			return file;
+		}
+		else {
+			return null;
+		}
+	}
+	
+// was in settingsholder before
+//	public Settings loadSettingsFromFile(File file, Settings cs) {
+//		// Welches wurde geladen? 
+//		if(cs instanceof SettingsHolder) {
+//			// alle laden und setzen
+//			SettingsHolder sett = (SettingsHolder)(cs.loadFromFile(settingsWriter, file));
+//			// Alle settings aus geladenen holder kopieren
+//			return this;
+//		} 
+//		else { 
+//			try {
+//				cs.loadFromXML(file);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//				ImageEditorWindow.log("Cannot load settings", LOG.ERROR);
+//			}
+//			return cs;
+//		}
+//	}
+	
+	
 	/**
 	 * opens a JFileChooser and saves the setting sto the selected file
 	 * @param parent
@@ -360,8 +407,7 @@ public abstract class Settings implements Serializable {
 
 	//'''''''''''''''''''''''''''''''''
 	// load
-
-	public void loadSettingsFromFile(Component parentFrame)  throws Exception {
+	public Settings loadSettingsFromFile(Component parentFrame)  throws Exception {
 		// TODO Auto-generated method stub 
 		// Open new FC
 		File path = new File(FileAndPathUtil.getPathOfJar(), this.getPathSettingsFile());
@@ -374,7 +420,9 @@ public abstract class Settings implements Serializable {
 		if (fc.showOpenDialog(parentFrame) == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();   
 			loadFromXML(file);
+			return this;
 		}
+		return null;
 	} 
 	/**
 	 * load xml settings from a file
@@ -641,12 +689,12 @@ public abstract class Settings implements Serializable {
 	 */
 	public static Class getRealClassFromXML(Element nextElement) {
 		try {
-			// get super class name (hashed class name which was inserted to list) 
-			String hashedClassName = nextElement.getAttribute(XMLATT_CLASS);
-			if(hashedClassName.length()==0)
+			// get real class name (or super (hashed) class name which was inserted to list) 
+			String realClassName = nextElement.getAttribute(XMLATT_CLASS);
+			if(realClassName.length()==0)
 				return getHashedClassFromXML(nextElement);
 			else {
-				Class hashedClass = Class.forName(hashedClassName);
+				Class hashedClass = Class.forName(realClassName);
 				return hashedClass;
 			}
 		} catch (Exception e) {

@@ -3,6 +3,7 @@ package net.rs.lamsi.general.settings.image;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.needy.SettingsCollectable2DLink;
 import net.rs.lamsi.general.settings.image.needy.SettingsGroupItemSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
@@ -75,9 +77,9 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		
 		// create active array
 		Image2D[] img = group.getImagesOnly();
-		Map<Collectable2D, Boolean> active = new HashMap<Collectable2D, Boolean>(img.length);
+		LinkedHashMap<SettingsCollectable2DLink, Boolean> active = new LinkedHashMap<SettingsCollectable2DLink, Boolean>(img.length);
 		for(Image2D i : img)
-			active.put(i, new Boolean(img.length<=4));
+			active.put(new SettingsCollectable2DLink(i.getTitle()), new Boolean(img.length<=4));
 		
 		getSettGroupItemSelections().setActive(active);
 	}
@@ -93,13 +95,16 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	public void addImage(Image2D i) throws Exception { 
 		SettingsPaintScale ps =( SettingsPaintScale) i.getSettings().getSettPaintScale().copy();
 		psSettings.add(ps);
-		Map<Collectable2D, Boolean> active = getActive();
+		Map<SettingsCollectable2DLink, Boolean> active = getActive();
 		// monochrome and color
 		ps.setMonochrom(true);
 		ps.setMinColor(colors.get(active.size()%colors.size()));
 		ps.setMaxColor(colors.get(active.size()%colors.size()));
+		// create sett
+		// TODO how to handle different groups and projects
+		SettingsCollectable2DLink sett = new SettingsCollectable2DLink(i.getTitle());
 		//
-		active.put(i, new Boolean(false));
+		active.put(sett, new Boolean(false));
 	}
 	/**
 	 * add image2d 
@@ -116,7 +121,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 		title = "";
 		setToStandardColors();
 		psSettings.clear();
-		getSettGroupItemSelections().resetAll();
 	}
 
 	@Override
@@ -208,7 +212,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 			colors.add(c);
 	}
 
-	public Map<Collectable2D, Boolean> getActive() {
+	public Map<SettingsCollectable2DLink, Boolean> getActive() {
 		return getSettGroupItemSelections().getActive();
 	}
 	/**
@@ -218,7 +222,7 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	 * @return
 	 */
 	public Boolean isActive(Collectable2D img) {
-		Map<Collectable2D, Boolean> active = getActive();
+		Map<SettingsCollectable2DLink, Boolean> active = getActive();
 		return active!=null && active.containsKey(img)? active.get(img) : false;
 	}
 

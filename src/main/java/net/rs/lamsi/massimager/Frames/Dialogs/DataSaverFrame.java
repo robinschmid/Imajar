@@ -141,7 +141,7 @@ public class DataSaverFrame extends JFrame {
 		btnLoadSettings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					settings.loadSettingsFromFile(thisFrame, settings.getSetDataSaver());
+					settings.getSetDataSaver().loadSettingsFromFile(thisFrame);
 				} catch (Exception e1) { 
 					e1.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Error while loading ", e1);
@@ -156,7 +156,7 @@ public class DataSaverFrame extends JFrame {
 		btnSaveSettings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					settings.saveSettingsToFile(thisFrame, settings.getSetDataSaver());
+					settings.getSetDataSaver().saveSettingsToFile(thisFrame);
 				} catch (Exception e) { 
 					e.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Error while saving", e);

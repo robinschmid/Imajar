@@ -226,7 +226,7 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 		double[][][] dat = new double[countActive()][][];
 		int c = 0;
 		for(int i=0; i<group.image2dCount(); i++) {
-			if(settings.isActive(i)) {
+			if(settings.isActive(group.get(i))) {
 				dat[c] = ((Image2D)group.get(i)).toXYIArray(false, true); 
 				c++;
 			}
@@ -237,9 +237,8 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 	
 	public int countActive() {
 		int c = 0;
-		SettingsGroupItemSelections s = settings.getSettGroupItemSelections();
 		for(int i=0; i<group.image2dCount(); i++) {
-			if(s.isActive(group.get(i))) {
+			if(settings.isActive(group.get(i))) {
 				c++;
 			}
 		}
@@ -263,7 +262,7 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 		String[] dat = new String[countActive()];
 		int c = 0;
 		for(int i=0; i<group.image2dCount(); i++) {
-			if(settings.isActive(i)) {
+			if(settings.isActive(group.get(i))) {
 				dat[c] = group.get(i).getTitle();
 				String tt = dat[c];
 				int tmp = 2;
@@ -294,7 +293,7 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 		String[] dat = new String[countActive()];
 		int c = 0;
 		for(int i=0; i<group.image2dCount(); i++) {
-			if(settings.isActive(i)) {
+			if(settings.isActive(group.get(i))) {
 				dat[c] = group.get(i).getShortTitle();
 				String tt = dat[c];
 				int tmp = 2;
@@ -333,8 +332,9 @@ public class ImageOverlay  extends Collectable2D<SettingsImageOverlay> implement
 			String[] t = getShortTitles();
 			for(String i : t)
 				s += i+" + ";
-			s = s.substring(0, s.length()-3);
+			if(s.length()>3)
+				s = s.substring(0, s.length()-3);
 		}			
-		return s;
+		return s.isEmpty()? "overlay" : s;
 	} 
 }

@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules.sub;
+package net.rs.lamsi.multiimager.FrameModules.sub.imageoverlay;
 
 
 import java.awt.Color;

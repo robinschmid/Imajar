@@ -93,9 +93,10 @@ public class ModuleMenu extends JButton {
 		load.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
+					Settings sett = mod.getSettings();
 					SettingsHolder settings = SettingsHolder.getSettings(); 
 					if(settingsChangedListener!=null)
-						settingsChangedListener.settingsChanged(settings.loadSettingsFromFile(mod, settingsClass));	
+						settingsChangedListener.settingsChanged(sett.loadSettingsFromFile(mod));	
 				} catch (Exception e1) { 
 					e1.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(mod, "Error while loading", e1);

@@ -61,7 +61,8 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 						for(File f : files.get(0)) {
 							// load
 							try {
-								Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
+								sett.loadFromXML(f);
+								Settings load = sett.copy();
 								if(load !=null)
 									addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
 							} catch(Exception ex) {
@@ -94,7 +95,8 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 					for(File f : files.get(0)) {
 						// load
 						try {
-							Settings load = SettingsHolder.getSettings().loadSettingsFromFile(f, sett);
+							sett.loadFromXML(f);
+							Settings load = sett.copy();
 							if(load !=null)
 								addPreset(menu, (T)load, FileAndPathUtil.eraseFormat(f.getName()));
 						} catch(Exception ex) {
@@ -239,10 +241,9 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 	 */
 	public void saveSettings() {
 		try {
-			SettingsHolder settings = SettingsHolder.getSettings(); 
 			Settings s = (Settings) getSettings();
 			if(s!=null) {
-				File f = settings.saveSettingsToFile(this, s);
+				File f = s.saveSettingsToFile(this);
 				File presetpath = new File(FileAndPathUtil.getPathOfJar(), s.getPathSettingsFile());
 				// path in presets?
 				if(f!=null && f.getParentFile().equals(presetpath)) {

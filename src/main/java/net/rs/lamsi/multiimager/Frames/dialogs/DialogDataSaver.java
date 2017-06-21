@@ -170,7 +170,7 @@ public class DialogDataSaver extends JFrame {
 		btnLoadSettings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					settings.loadSettingsFromFile(thisFrame, settings.getSetImage2DDataExport());
+					settings.getSetImage2DDataExport().loadSettingsFromFile(thisFrame);
 				} catch (Exception e1) { 
 					e1.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Error while loading ", e1);
@@ -185,7 +185,7 @@ public class DialogDataSaver extends JFrame {
 		btnSaveSettings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					settings.saveSettingsToFile(thisFrame, settings.getSetImage2DDataExport());
+					settings.getSetImage2DDataExport().saveSettingsToFile(thisFrame);
 				} catch (Exception e) { 
 					e.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(thisFrame, "Error while saving", e);

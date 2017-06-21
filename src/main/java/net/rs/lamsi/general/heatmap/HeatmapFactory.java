@@ -193,7 +193,7 @@ public class HeatmapFactory {
 		// create one paintscale for each active image
 		int counter = 0;
 		for(int i=0; i<img.size(); i++) {
-			if(settings.isActive(i)) {
+			if(settings.isActive(img.get(i))) {
 				Image2D cimg = img.get(i);
 				SettingsPaintScale ps = settings.getSettPaintScale(i);
 				// PaintScale für farbe? TODO mit Settings!

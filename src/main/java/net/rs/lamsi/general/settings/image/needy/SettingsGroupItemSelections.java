@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.settings.image.needy;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.w3c.dom.Document;
@@ -8,9 +9,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import net.rs.lamsi.general.datamodel.image.Collectable2DPlaceHolderLink;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
 
 public class SettingsGroupItemSelections extends Settings {
@@ -18,7 +16,7 @@ public class SettingsGroupItemSelections extends Settings {
 	private static final long serialVersionUID = 1L;
 	//
 
-	protected transient Map<Collectable2D, Boolean> active;
+	protected transient LinkedHashMap<SettingsCollectable2DLink, Boolean> active;
 
 	public SettingsGroupItemSelections() {
 		super("SettingsGroupItemSelections", "/Settings/SelectedGroupItems/", "setSelGroupItems"); 
@@ -28,7 +26,7 @@ public class SettingsGroupItemSelections extends Settings {
 
 	public void setAll(boolean state) {
 		if(active!=null) {
-			for (Map.Entry<Collectable2D, Boolean> entry : active.entrySet()) {
+			for (Map.Entry<SettingsCollectable2DLink, Boolean> entry : active.entrySet()) {
 				active.put(entry.getKey(), state);
 			}
 		}
@@ -42,10 +40,12 @@ public class SettingsGroupItemSelections extends Settings {
 	// xml input/output
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
-		String[] att = new String[]{"state"};
-		
-		for (Map.Entry<Collectable2D, Boolean> entry : active.entrySet())
-			toXML(elParent, doc, "activeEntry", entry.getKey(), att, new Object[]{entry.getValue()}); 
+		// state is saved as content 
+		// link settings are saved as attributes
+		for (Map.Entry<SettingsCollectable2DLink, Boolean> entry : active.entrySet()) {
+			String[][] att = entry.getKey().toXMLAttributes();
+			toXML(elParent, doc, "activeEntry", entry.getValue(), att[0], att[1]);
+		}
 	}
 
 	@Override
@@ -57,12 +57,17 @@ public class SettingsGroupItemSelections extends Settings {
 				String paramName = nextElement.getNodeName();
 				if(paramName.equals("activeEntry")) {
 					if(active == null) 
-						active = new HashMap<Collectable2D, Boolean>();
+						active = new LinkedHashMap<SettingsCollectable2DLink, Boolean>();
 					else active.clear();
 						
-					boolean state = Boolean.valueOf(nextElement.getAttribute("state")); 
-					Collectable2DPlaceHolderLink c = c2dFromXML(nextElement);
-					// insert placeholder
+					boolean state = booleanFromXML(nextElement); 
+					
+					String p = nextElement.getAttribute("project");
+					String g = nextElement.getAttribute("group");
+					String t = nextElement.getAttribute("title");
+					
+					SettingsCollectable2DLink c = new SettingsCollectable2DLink(t,g,p);
+					// insert link
 					active.put(c, state);
 				}
 			}
@@ -70,41 +75,11 @@ public class SettingsGroupItemSelections extends Settings {
 	}
 
 
-	public Map<Collectable2D, Boolean> getActive() {
+	public LinkedHashMap<SettingsCollectable2DLink, Boolean> getActive() {
 		return active;
 	}
-	public void setActive(Map<Collectable2D, Boolean> map) {
+	public void setActive(LinkedHashMap<SettingsCollectable2DLink, Boolean> map) {
 		active = map;
 	}
-	
-	@Override
-	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
-		super.replacePlaceHoldersInSettings(tree);
 
-		if(active!=null) {
-			for (Map.Entry<Collectable2D, Boolean> entry : active.entrySet()) {
-				if(Collectable2DPlaceHolderLink.class.isInstance(entry.getKey())) {
-					Collectable2DPlaceHolderLink pl = (Collectable2DPlaceHolderLink) entry.getKey();
-					Collectable2D c = tree.getCollectable2DFromPlaceHolder(pl);
-					if(c!=null) {
-						active.remove(entry.getKey());
-						active.put(c, entry.getValue());
-					}
-				}
-			}
-		}
-	}
-	
-	
-	@Override
-	public Settings copy() throws Exception {
-		SettingsGroupItemSelections sett = (SettingsGroupItemSelections) super.copy();
-		
-		Map<Collectable2D, Boolean> nm = new HashMap<>();
-		for (Map.Entry<Collectable2D, Boolean> entry : active.entrySet()) {
-			nm.put(entry.getKey(), entry.getValue());
-		}
-		sett.setActive(nm);
-		return sett;
-	}
 }

@@ -248,7 +248,7 @@ public class GeneralSettingsFrame extends JFrame {
 	protected void saveSettingsToFile() {
 		if(currentSettings!=null) {
 			try {
-				settings.saveSettingsToFile(this, currentSettings);
+				currentSettings.saveSettingsToFile(this);
 			} catch (Exception e) { 
 				e.printStackTrace();
 				DialogLoggerUtil.showErrorDialog(this, "Error while saving", e);
@@ -258,7 +258,7 @@ public class GeneralSettingsFrame extends JFrame {
 	protected void loadSettingsFromFile() {
 		if(currentSettings!=null) {
 			try {
-				settings.loadSettingsFromFile(this, currentSettings);
+				currentSettings.loadSettingsFromFile(this);
 			} catch (Exception e) { 
 				e.printStackTrace();
 				DialogLoggerUtil.showErrorDialog(this, "Error while loading", e);

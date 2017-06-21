@@ -532,7 +532,7 @@ public class Window {
 			public void actionPerformed(ActionEvent arg0) { 
 				// Save Settings Holder
 				try {
-					getSettings().saveSettingsToFile(window.getFrame(), getSettings());
+					getSettings().saveSettingsToFile(window.getFrame());
 				} catch (Exception e) {
 					DialogLoggerUtil.showErrorDialog(getFrame(), "Error while saving", e);
 					e.printStackTrace();
@@ -550,7 +550,7 @@ public class Window {
 			public void actionPerformed(ActionEvent arg0) { 
 				// Load settings Holder for all settings
 				try {
-					getSettings().loadSettingsFromFile(getFrame(), getSettings());
+					getSettings().loadSettingsFromFile(getFrame());
 				} catch (Exception e) { 
 					e.printStackTrace();
 					DialogLoggerUtil.showErrorDialog(getFrame(), "Error while loading ", e);

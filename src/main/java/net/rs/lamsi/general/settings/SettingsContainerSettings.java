@@ -117,7 +117,7 @@ public abstract class SettingsContainerSettings extends Settings {
 					try {
 						Class settingsClass = getRealClassFromXML(nextElement);
 						if(settingsClass!=null) {
-							// get super class name (hashed class name which was inserted to list) 
+							// get super class name (hashed class name which was inserted to HashMap) 
 							Class hashedClass = getHashedClassFromXML(nextElement);
 							
 							Settings s = getSettingsByClass(hashedClass);
@@ -128,6 +128,7 @@ public abstract class SettingsContainerSettings extends Settings {
 								replace = true;
 								// create new settings object of different class
 								s = Settings.createSettings(settingsClass);
+								ImageEditorWindow.log("No settings obj found: Creating a new object of "+settingsClass, LOG.DEBUG);
 							}
 							// load settings from xml
 							s.loadValuesFromXML(nextElement, doc);

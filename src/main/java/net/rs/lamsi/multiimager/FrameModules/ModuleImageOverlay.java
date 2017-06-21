@@ -8,10 +8,11 @@ import javax.swing.JButton;
 
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
+import net.rs.lamsi.general.framework.modules.specific.ModuleSelectGroupItems;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscaleOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.imageoverlay.ModulePaintscaleOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
@@ -23,6 +24,7 @@ public class ModuleImageOverlay extends MainSettingsModuleContainer<SettingsImag
 	private ModuleBackgroundImg moduleBG;
 	// 
 	private ModulePaintscaleOverlay modulePaintscale;
+	private ModuleSelectGroupItems moduleSelectGroupItems;
 	
 	/**
 	 * Create the panel.
@@ -49,6 +51,9 @@ public class ModuleImageOverlay extends MainSettingsModuleContainer<SettingsImag
 
 		moduleZoom = new ModuleZoom();
 		addModule(moduleZoom);
+		
+		moduleSelectGroupItems = new ModuleSelectGroupItems();
+		addModule(moduleSelectGroupItems);
 		
 		modulePaintscale = new ModulePaintscaleOverlay();
 		addModule(modulePaintscale);
@@ -78,6 +83,9 @@ public class ModuleImageOverlay extends MainSettingsModuleContainer<SettingsImag
 	}
 	public ModuleBackgroundImg getModuleBackground() {
 		return moduleBG;
+	}
+	public ModuleSelectGroupItems getModuleSelectGroupItems() {
+		return moduleSelectGroupItems;
 	}
 
 }

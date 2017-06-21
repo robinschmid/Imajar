@@ -202,4 +202,21 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 			super.setCurrentImage(img, setAllToPanel);
 		}
 		
+		@Override
+		public void setSettings(T settings, boolean setAllToPanel) {
+			super.setSettings(settings, setAllToPanel);
+			// set settings to all SettingsModules
+			for(Module m : listSettingsModules) {
+				if(SettingsModule.class.isInstance(m) && !Collectable2DSettingsModule.class.isInstance(m)) {
+					SettingsModule sm = ((SettingsModule)m);
+					// try to find settings in collection2d
+					Settings sett = settings.getSettingsByClass(sm.getSettingsClass());
+					
+					if(sett!=null) { 
+						sm.setSettings(sett, false);
+					}
+				}
+			}
+		}
+		
 }
