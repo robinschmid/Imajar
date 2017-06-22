@@ -6,12 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
-import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.chart.axis.ValueAxis;
@@ -22,9 +18,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
+
 public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
+	
+	// select,
+	private static Map<SelectionMode, Color> colors = new HashMap<SelectionMode, Color>();
+	private static Map<ROI, BasicStroke> strokes = new HashMap<ROI, BasicStroke>();
 	
 	/**
 	 *  current shape is given by combobox
@@ -55,15 +59,14 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 		SAMPLE, QUANTIFIER
 	}
 
-	public static final BasicStroke stroke = new BasicStroke(1.5f);
-	public static final BasicStroke strokeHighlight = new BasicStroke(4f);
-
 
 	// selectionmode
 	protected SelectionMode mode;
 	protected ROI roi = ROI.SAMPLE;
 	protected SelectionTableRow stats;
 	protected SelectionTableRow statsRegardingExclusion;
+	protected Color color; 
+	protected BasicStroke stroke;
 	// order for quantifiers
 	protected int orderNumber = 0;
 	// concentration for quantifier / qualifier
@@ -78,10 +81,14 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
 	public SettingsShapeSelection(Image2D currentImage, ROI roi, SelectionMode mode, T shape) {
 		super("SettingsShapeSelection", "/Settings/Selections/Shapes/", "setSelShape"); 
+		
 		this.shape = shape;
 		this.mode = mode;
 		this.roi = roi;
 		this.currentImg = currentImage;
+		color = getColorForSelectionMode(mode);
+		stroke = getStrokeForROI(roi);
+		
 		stats = new SelectionTableRow();
 		statsRegardingExclusion = new SelectionTableRow();
 	} 
@@ -90,6 +97,9 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 		super("SettingsShapeSelection", "/Settings/Selections/Shapes/", "setSelShape"); 
 		this.shape = shape;
 		this.mode = mode;
+		color = getColorForSelectionMode(mode);
+		// default roi
+		stroke = getStrokeForROI(roi);
 		stats = new SelectionTableRow();
 		statsRegardingExclusion = new SelectionTableRow();
 	}
@@ -205,6 +215,8 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 		toXML(elParent, doc, "roi", roi);
 		toXML(elParent, doc, "concentration", concentration);
 		toXML(elParent, doc, "orderNumber", orderNumber);
+		toXML(elParent, doc, "color", color);
+		toXML(elParent, doc, "stroke", stroke);
 	}
 
 	@Override
@@ -219,6 +231,8 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 				else if(paramName.equals("roi")) setRoi(ROI.valueOf(nextElement.getTextContent()));
 				else if(paramName.equals("concentration")) concentration = doubleFromXML(nextElement);
 				else if(paramName.equals("orderNumber")) orderNumber = intFromXML(nextElement);
+				else if(paramName.equals("color")) color = colorFromXML(nextElement);
+				else if(paramName.equals("stroke")) stroke = strokeFromXML(nextElement);
 			}
 		}
 	}
@@ -346,8 +360,52 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	public void setMode(SelectionMode mode) {
 		this.mode = mode;
 	}
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
 	public T getShape() {
 		return shape;
+	}
+	
+	public static Color getColorForSelectionMode(SelectionMode mode) {
+		if(colors.isEmpty()) {
+			colors.put(SelectionMode.SELECT, Color.GREEN);
+			colors.put(SelectionMode.INFO, Color.GRAY);
+			colors.put(SelectionMode.EXCLUDE, Color.RED);
+		}
+		return colors.get(mode);
+	}
+
+	public static Map<SelectionMode, Color> getColors() {
+		if(colors.isEmpty()) {
+			colors.put(SelectionMode.SELECT, Color.GREEN);
+			colors.put(SelectionMode.INFO, Color.GRAY);
+			colors.put(SelectionMode.EXCLUDE, Color.RED);
+		}
+		return colors;
+	}
+
+	
+	public static BasicStroke getStrokeForROI(ROI roi) {
+		if(strokes.isEmpty()) {
+			strokes.put(ROI.QUANTIFIER, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+					2f, new float[] {10f,5f, 2.5f, 5f}, 0f));
+			strokes.put(ROI.SAMPLE, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
+		}
+		return strokes.get(roi);
+	}
+	public static Map<ROI, BasicStroke> getStrokes() {
+		if(strokes.isEmpty()) {
+			strokes.put(ROI.QUANTIFIER, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+					2f, new float[] {10f,5f, 2.5f, 5f}, 0f));
+			strokes.put(ROI.SAMPLE, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
+		}
+		return strokes;
 	}
 
 	/**
@@ -355,19 +413,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 * @return
 	 */
 	public XYShapeAnnotation createXYShapeAnnotation() {
-		Color c = null;
-		switch(getMode()) {
-		case EXCLUDE:
-			c = Color.RED;
-			break;
-		case SELECT:
-			c = Color.GREEN;
-			break;
-		case INFO:
-			c = Color.gray;
-			break;
-		} 
-		return new XYShapeAnnotation(this.getShape(), isHighlighted()? strokeHighlight : stroke, c) {
+		Color c = getColor();
+		BasicStroke s = getStroke();
+		if(isHighlighted)
+			s = new BasicStroke(4f, s.getEndCap(), s.getLineJoin(), s.getMiterLimit(), s.getDashArray(), s.getDashPhase());
+		return new XYShapeAnnotation(this.getShape(), s, c) {
 			@Override
 			public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea,
 					ValueAxis domainAxis, ValueAxis rangeAxis,
@@ -429,5 +479,13 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	}
 	public boolean isHighlighted() {
 		return isHighlighted;
+	}
+
+	public BasicStroke getStroke() {
+		return stroke;
+	}
+
+	public void setStroke(BasicStroke stroke) {
+		this.stroke = stroke;
 	}
 }

@@ -1,8 +1,19 @@
 package net.rs.lamsi.general.settings.image.selection;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
@@ -15,14 +26,6 @@ import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsE
 import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
-
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class SettingsSelections extends Settings implements Serializable, Image2DSett, IntensityProcessingChangedListener {
 	// do not change the version!
@@ -307,11 +310,26 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 				SettingsShapeSelection s = selections.get(i);
 				s.appendSettingsToXML(elParent, doc);
 			}
+			// standard colors
+			Map<SelectionMode, Color> map = SettingsShapeSelection.getColors();
+			for(Map.Entry<SelectionMode, Color> e : map.entrySet()) {
+				toXML(elParent, doc, "stdcolor"+e.getKey(), e.getValue(), "selMode", e.getKey());
+			}
+			
+			// strokes
+			Map<ROI, BasicStroke> strokes = SettingsShapeSelection.getStrokes();
+			for(Map.Entry<SelectionMode, Color> e : map.entrySet()) {
+				toXML(elParent, doc, "stdstroke"+e.getKey(), e.getValue(), "ROI", e.getKey());
+			}
 		}
 	}
 
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
+		// standard colors
+		Map<SelectionMode, Color> map = SettingsShapeSelection.getColors();
+		Map<ROI, BasicStroke> strokes = SettingsShapeSelection.getStrokes();
+		
 		double xu=0, yu=0;
 		double xlower = Double.NaN, ylower = Double.NaN;
 		NodeList list = el.getChildNodes();
@@ -327,6 +345,18 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 					SettingsShapeSelection ns = SettingsShapeSelection.loadSettingsFromXML(nextElement, doc);
 					if(ns!=null)
 						selections.add(ns);
+				}
+				else if(paramName.startsWith("stdcolor")) {
+					// load standard colors
+					SelectionMode mode = SelectionMode.valueOf(nextElement.getAttribute("selMode"));
+					Color c = colorFromXML(nextElement);
+					map.put(mode, c);
+				}
+				else if(paramName.startsWith("stdstroke")) {
+					// load standard stroke
+					ROI roi = ROI.valueOf(nextElement.getAttribute("ROI"));
+					BasicStroke s = strokeFromXML(nextElement);
+					strokes.put(roi, s);
 				}
 			}
 		}

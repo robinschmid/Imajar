@@ -1,6 +1,8 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -38,9 +40,15 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYShapeAnnotation;
+import org.jfree.data.Range;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
+import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
@@ -59,11 +67,6 @@ import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.test.TestQuantifier;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
-
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYShapeAnnotation;
-import org.jfree.data.Range;
  
 
 public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener, MouseMotionListener {
@@ -100,6 +103,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private JCheckBox cbMarkDp;
 	private JComboBox<ROI> comboRoi;
 	private JButton btnRegression;
+	private JColorPickerButton cbtnColor;
 
 	/**
 	 * Launch the application.
@@ -232,6 +236,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		
 		JPanel panel_1 = new JPanel();
 		pnNorthMenuContainer.add(panel_1, BorderLayout.CENTER);
+		
+		cbtnColor = new JColorPickerButton((Component) null);
+		panel_1.add(cbtnColor);
 		
 		comboRoi = new JComboBox<ROI>();
 		panel_1.add(comboRoi);
@@ -421,12 +428,15 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				};
 				table.getSelectionModel().addListSelectionListener(sellist);
 				//table.getColumnModel().getSelectionModel().addListSelectionListener(sellist);
-				
+
 				
 				// add all
 				if(settSel.getSelections()!=null)
 					for(SettingsShapeSelection r : getSelections())
 						updateAnnotation(r);
+				
+				// set color
+				getCbtnColor().setColor(SettingsShapeSelection.getColorForSelectionMode(getCurrentSelectionMode()));
 				
 				// add to screen
 				getPnChartView().add(heat.getChartPanel(), BorderLayout.CENTER);
@@ -656,6 +666,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 					break;
 				}
 				if(tmpSelect!=null) {
+					tmpSelect.setColor(getCurrentColor());
 					isPressed = true;
 					addNewSelection(tmpSelect);
 					lastMouseEvent = e;
@@ -825,6 +836,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private SelectionMode getCurrentSelectionMode() {
 		return (SelectionMode) comboSelectionMode.getSelectedItem();
 	}
+	private Color getCurrentColor() {
+		return getCbtnColor().getColor();
+	}
 	private ROI getCurrentRoiMode() {
 		return (ROI) comboRoi.getSelectedItem();
 	}
@@ -845,5 +859,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	}
 	public JButton getBtnRegression() {
 		return btnRegression;
+	}
+	public JColorPickerButton getCbtnColor() {
+		return cbtnColor;
 	}
 }

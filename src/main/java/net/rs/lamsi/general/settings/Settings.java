@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.settings;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -290,6 +291,22 @@ public abstract class Settings implements Serializable {
 				paramElement.setAttribute("style", ""+f.getStyle());
 				paramElement.setAttribute("size", ""+f.getSize());
 			}
+			else if(BasicStroke.class.isInstance(o)) {
+				BasicStroke s = (BasicStroke)o;
+				paramElement.setAttribute("width", String.valueOf(s.getLineWidth()));
+				paramElement.setAttribute("cap", String.valueOf(s.getEndCap()));
+				paramElement.setAttribute("join", String.valueOf(s.getLineJoin()));
+				paramElement.setAttribute("miterlimit", String.valueOf(s.getMiterLimit()));
+				paramElement.setAttribute("dashphase", String.valueOf(s.getDashPhase()));
+				// array
+				StringBuilder sb = new StringBuilder();
+				for(int i=0; i<s.getDashArray().length; i++){
+					sb.append(s.getDashArray()[i]);
+					if(i<s.getDashArray().length-1) sb.append(";");
+				}
+					
+				paramElement.setAttribute("dasharray", sb.toString());
+			}
 			else if(RectangleInsets.class.isInstance(o)) {
 				RectangleInsets r = (RectangleInsets)o;
 				paramElement.setAttribute("top", ""+r.getTop());
@@ -316,6 +333,34 @@ public abstract class Settings implements Serializable {
 			else paramElement.setTextContent(String.valueOf(o));
 
 			// return to give an option for more attributes
+			return paramElement;
+		}
+		return null;
+	}
+	/**
+	 * with attributes
+	 * @param elParent
+	 * @param doc
+	 * @param name
+	 * @param o
+	 * @param attributes
+	 * @param attValues
+	 * @return
+	 */
+	public static Element toXML(Element elParent, Document doc, String name, Object o, String att, Object attValue) {
+		if(o!=null) {
+			//Element paramElement = doc.createElement(parameterElement);
+			//paramElement.setAttribute(nameAttribute, name);
+			Element paramElement = toXML(elParent, doc, name, o);
+
+			if(paramElement==null) {
+				paramElement = doc.createElement(name);
+				elParent.appendChild(paramElement); 
+				if(o!=null)
+					paramElement.setTextContent(String.valueOf(o));
+			}
+
+			paramElement.setAttribute(att, String.valueOf(attValue));
 			return paramElement;
 		}
 		return null;
@@ -615,6 +660,27 @@ public abstract class Settings implements Serializable {
 			return new Color(c.getRed(),c.getGreen(),c.getBlue(),alpha);
 		}
 		return null;
+	}
+	/**
+	 * 
+	 * @param el
+	 * @return null if no value was found
+	 */
+	public static BasicStroke strokeFromXML(final Element el) {
+		float w =  Float.parseFloat(el.getAttribute("width"));
+		float miterlimit =  Float.parseFloat(el.getAttribute("miterlimit"));
+		float dashphase =  Float.parseFloat(el.getAttribute("dashphase"));
+		
+		int cap =  Integer.parseInt(el.getAttribute("cap"));
+		int join =  Integer.parseInt(el.getAttribute("join"));
+
+		String[] dash = el.getAttribute("dasharray").split(";");
+		
+		float[] array = new float[dash.length];
+		for(int i=0; i<dash.length; i++) 
+			array[i] = Float.parseFloat(dash[i]);
+		
+		return new BasicStroke(w, cap, join, miterlimit, array, dashphase);
 	}
 
 	/**
