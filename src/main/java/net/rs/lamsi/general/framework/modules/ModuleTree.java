@@ -68,7 +68,17 @@ public class ModuleTree <T> extends Module {
 				if(isCollectable2DNode(node)) {
 					Collectable2D image = (Collectable2D) node.getUserObject();
 					if(image.getImageGroup()!=null) {
-						image.getImageGroup().remove(image);
+						ImageGroupMD g  =image.getImageGroup();
+						g.remove(image);
+						if(g.size()==0)
+							if(g.getProject()!=null)
+								g.getProject().remove(g);
+					}
+				}
+				else if(isGroupNode(node)) {
+					ImageGroupMD g = (ImageGroupMD) node.getUserObject();
+					if(g.getProject()!=null) {
+						g.getProject().remove(g);
 					}
 				}
 			}  

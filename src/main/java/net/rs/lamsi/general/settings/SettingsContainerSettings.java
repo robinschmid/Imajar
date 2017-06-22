@@ -14,6 +14,7 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierOnePoint;
 import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -121,6 +122,9 @@ public abstract class SettingsContainerSettings extends Settings {
 							Class hashedClass = getHashedClassFromXML(nextElement);
 							
 							Settings s = getSettingsByClass(hashedClass);
+							
+							if(settingsClass.equals(SettingsImage2DQuantifierOnePoint.class))
+								System.out.println("quanti");
 							
 							// same class?
 							boolean replace = false;

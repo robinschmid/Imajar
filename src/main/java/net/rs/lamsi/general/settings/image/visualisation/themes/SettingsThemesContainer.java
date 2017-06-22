@@ -64,11 +64,6 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 	}
 	
 	@Override
-	public void loadSubSettingsAndValuesFromXML(Element el, Document doc) {
-		super.loadSubSettingsAndValuesFromXML(el, doc);
-	}
-	
-	@Override
 	public void applyToImage(Image2D img) throws Exception {
 		super.applyToImage(img);
 	}

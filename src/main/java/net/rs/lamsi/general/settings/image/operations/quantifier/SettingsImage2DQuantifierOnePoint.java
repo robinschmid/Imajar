@@ -29,7 +29,11 @@ public class SettingsImage2DQuantifierOnePoint extends SettingsImage2DQuantifier
     protected transient Collectable2DPlaceHolderLink link = null;
     // regression version to track changes
     protected int regressionVersionID = 0;
-	
+
+	public SettingsImage2DQuantifierOnePoint() {
+		super(MODE.ONE_POINT); 
+		this.imgEx = null;
+	} 
 	public SettingsImage2DQuantifierOnePoint(Image2D ex) {
 		super(MODE.ONE_POINT); 
 		this.imgEx = ex;

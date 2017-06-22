@@ -57,6 +57,8 @@ import javax.swing.tree.TreeSelectionModel;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.data.Range;
 
+import com.sun.xml.bind.v2.runtime.reflect.Accessor.GetterSetterReflection;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
@@ -355,7 +357,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 						mnImportData.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
 								// choose project dialog
-								ImagingProject project = DialogChooseProject.choose(getModuleTreeImages().getSelectedProject(), getModuleTreeImages());
+								ImagingProject project = null;
+								if(!SettingsHolder.getSettings().getSetGeneralPreferences().getFileTFProject().accept(f))
+									project = DialogChooseProject.choose(getModuleTreeImages().getSelectedProject(), getModuleTreeImages());
 
 								// import file as image2d
 								logicRunner.loadImage2DAndProjectFromFile(f, project);

@@ -91,7 +91,6 @@ public class SettingsTheme extends Settings {
 				else if(paramName.equals("chartTitle")) chartTitle = nextElement.getTextContent();
 			}
 		}
-		System.out.println("finished");
 	}
 	
 	@Override
