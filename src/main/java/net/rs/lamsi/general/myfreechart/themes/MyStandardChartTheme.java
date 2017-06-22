@@ -163,6 +163,17 @@ public class MyStandardChartTheme extends StandardChartTheme {
 		Settings.toXML(el, doc, "cBGShortTitle", cBGShortTitle); 
 		Settings.toXML(el, doc, "cBackground", getChartBackgroundPaint());
 		Settings.toXML(el, doc, "cPlotBackground", getPlotBackgroundPaint());
+		
+		// fonts
+		Settings.toXML(el, doc, "smallFont", getSmallFont()); 
+		Settings.toXML(el, doc, "regularFont", getRegularFont()); 
+		Settings.toXML(el, doc, "largeFont", getLargeFont()); 
+		Settings.toXML(el, doc, "xxlFont", getExtraLargeFont()); 
+		
+		Settings.toXML(el, doc, "cAxis", getAxisLabelPaint()); 
+		Settings.toXML(el, doc, "cItem", getItemLabelPaint()); 
+		Settings.toXML(el, doc, "cTitle", getTitlePaint()); 
+		Settings.toXML(el, doc, "cTick", getTickLabelPaint()); 
 	}
 
 	public void loadValuesFromXML(Element el, Document doc) {
@@ -196,6 +207,15 @@ public class MyStandardChartTheme extends StandardChartTheme {
 						Color c = Settings.colorFromXML(nextElement);
 						setPlotBackgroundPaint(c);  
 					}
+					else if(paramName.equals("cAxis")) setAxisLabelPaint(Settings.colorFromXML(nextElement));   
+					else if(paramName.equals("cItem")) setItemLabelPaint(Settings.colorFromXML(nextElement));   
+					else if(paramName.equals("cTitle")) setTitlePaint(Settings.colorFromXML(nextElement));   
+					else if(paramName.equals("cTick")) setTickLabelPaint(Settings.colorFromXML(nextElement));   
+				// fonts
+					else if(paramName.equals("smallFont")) setSmallFont(Settings.fontFromXML(nextElement)); 
+					else if(paramName.equals("regularFont")) setRegularFont(Settings.fontFromXML(nextElement));  
+					else if(paramName.equals("largeFont")) setLargeFont(Settings.fontFromXML(nextElement));  
+					else if(paramName.equals("xxlFont")) setExtraLargeFont(Settings.fontFromXML(nextElement));   
 			}
 		}
 	}

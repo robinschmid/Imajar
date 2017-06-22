@@ -282,11 +282,10 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 
 	@Override
 	public SettingsImage2DQuantifier writeAllToSettings(SettingsImage2DQuantifier sett) {
-		if(sett!=null) {
 			boolean update = false;
 			try {
 				// quantify
-				update = sett.setActive(getCbQuantify().isSelected());
+				update = sett == null || sett.setActive(getCbQuantify().isSelected());
 				// get mode
 				MODE mode = SettingsImage2DQuantifier.MODE.LINEAR;
 				if(getTabbedPane().getSelectedComponent().equals(getTabOnePoint())) mode = MODE.ONE_POINT;
@@ -306,6 +305,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 					SettingsImage2DQuantifierLinear linear = (SettingsImage2DQuantifierLinear) sett;
 					update = (linear.setIntercept(doubleFromTxt(getTxtLinearIntercept())) && sett.isActive()) || update;
 					update = (linear.setSlope(doubleFromTxt(getTxtLinearSlope())) && sett.isActive()) || update;
+					currentImage.getSettings().replaceSettings(sett, true);
 					
 					System.out.println("SETTINGS SETTINGS A and B");
 					break;
@@ -318,6 +318,7 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 						update = sett.isActive();
 					}
 					SettingsImage2DQuantifierOnePoint ex = (SettingsImage2DQuantifierOnePoint) sett;
+					currentImage.getSettings().replaceSettings(sett, true);
 					update = (ex.setImgEx(imgEx) && sett.isActive()) || update;
 					break;
 				}
@@ -329,7 +330,6 @@ public class ModuleQuantifyStrategy extends Collectable2DSettingsModule<Settings
 				if(currentImage!=null && update)
 					currentImage.fireIntensityProcessingChanged();
 			}
-		}
 		return sett;
 	}
 

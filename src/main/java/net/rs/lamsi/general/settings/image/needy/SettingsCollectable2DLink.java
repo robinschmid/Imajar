@@ -97,6 +97,8 @@ public class SettingsCollectable2DLink extends Settings {
 				else if(paramName.equals("project")) project = nextElement.getTextContent();
 			}
 		}
+		if(group!=null && group.isEmpty()) group = null;
+		if(project != null && project.isEmpty()) project = null;
 	}
 
 	/**
@@ -104,7 +106,11 @@ public class SettingsCollectable2DLink extends Settings {
 	 * @return
 	 */
 	public String[][] toXMLAttributes() {
-		return new String[][]{{"project", "group", "title"},{project, group, title}};
+		if(project==null) {
+			if(group==null) return new String[][]{{"title"},{title}};
+			else return new String[][]{{"group", "title"},{group, title}};
+		}
+		else return new String[][]{{"project", "group", "title"},{project, group, title}};
 	}
 	
 	/**

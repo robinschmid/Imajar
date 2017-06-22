@@ -8,7 +8,7 @@ import javax.swing.JButton;
 
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
-import net.rs.lamsi.general.framework.modules.specific.ModuleSelectGroupItems;
+import net.rs.lamsi.general.framework.modules.selectgroupitems.ModuleSelectGroupItems;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;

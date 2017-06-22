@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.framework.modules.specific;
+package net.rs.lamsi.general.framework.modules.selectgroupitems;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;

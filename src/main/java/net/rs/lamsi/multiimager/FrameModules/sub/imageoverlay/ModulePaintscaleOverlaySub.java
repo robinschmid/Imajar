@@ -335,7 +335,29 @@ public class ModulePaintscaleOverlaySub extends Collectable2DSettingsModule<Sett
 		
 		// add standard paintscales to menu
 		// TODO comment out for window build
-		
+		addStandardPaintScalesToMenu();
+	}
+	
+
+	/*
+	1.	Grey
+	2.	R , G, B
+	3.	Black-blue-red
+	4.	Black-blue-red-white
+	5.	Black-blue-green-white
+	6.	Black-red-yellow-white
+	 */
+	private void addStandardPaintScalesToMenu() {
+		ModuleMenu menu = getPopupMenu();
+		menu.addSeparator();
+		setPresetindex(5);
+		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_PURPLE), "Purple");
+		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_YELLOW), "YELLOW");
+		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_BLUE), "Blue");
+		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_GREEN), "Green");
+		addPreset(menu, SettingsPaintScale.createSettings(SettingsPaintScale.S_RED), "Red");
+
+		setPresetindex(4);
 	}
 	
 	@Override

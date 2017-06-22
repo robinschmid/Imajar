@@ -222,8 +222,17 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
 	 * @return
 	 */
 	public Boolean isActive(Collectable2D img) {
-		Map<SettingsCollectable2DLink, Boolean> active = getActive();
-		return active!=null && active.containsKey(img)? active.get(img) : false;
+		return getSettGroupItemSelections().isActive(img);
+	}
+	/**
+	 * is constructed by setImages
+	 * whether to paint image[image] or not
+	 * @param source could be an image overlay in a group/project to specify the current group path for relative (in group) references
+	 * @param img
+	 * @return
+	 */
+	public Boolean isActive(Collectable2D source, Collectable2D img) {
+		return getSettGroupItemSelections().isActive(source, img);
 	}
 
 	public SettingsPaintScale getSettPaintScale(int i) {

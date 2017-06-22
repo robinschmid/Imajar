@@ -131,7 +131,9 @@ public abstract class SettingsContainerSettings extends Settings {
 								ImageEditorWindow.log("No settings obj found: Creating a new object of "+settingsClass, LOG.DEBUG);
 							}
 							// load settings from xml
-							s.loadValuesFromXML(nextElement, doc);
+							if(SettingsContainerSettings.class.isInstance(s))
+								((SettingsContainerSettings)s).loadSubSettingsAndValuesFromXML(nextElement, doc);
+							else s.loadValuesFromXML(nextElement, doc);
 							
 							// replace?
 							if(replace)

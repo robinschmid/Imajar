@@ -80,7 +80,7 @@ public class SettingsScaleInPlot extends Settings {
 	@Override
 	public void appendSettingsValuesToXML(Element el, Document doc) {
 		Settings.toXML(el, doc, "showScale", showScale); 
-		Settings.toXML(el, doc, "scaleUnit",scaleUnit); 
+ 		Settings.toXML(el, doc, "scaleUnit",scaleUnit); 
 		Settings.toXML(el, doc, "scaleFactor", scaleFactor); 
 		Settings.toXML(el, doc, "scaleValue", scaleValue); 
 		Settings.toXML(el, doc, "scaleXPos", scaleXPos); 

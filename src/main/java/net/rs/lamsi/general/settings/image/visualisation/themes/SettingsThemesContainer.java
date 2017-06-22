@@ -57,18 +57,16 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
 	
 	
 	@Override
-	public boolean replaceSettings(Settings sett, boolean addIfNotReplaced) {
-		return super.replaceSettings(sett, addIfNotReplaced);
-	}
-	
-
-	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 	}
 	@Override
 	public void loadValuesFromXML(Element el, Document doc) {
 	}
 	
+	@Override
+	public void loadSubSettingsAndValuesFromXML(Element el, Document doc) {
+		super.loadSubSettingsAndValuesFromXML(el, doc);
+	}
 	
 	@Override
 	public void applyToImage(Image2D img) throws Exception {

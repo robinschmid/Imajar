@@ -222,13 +222,10 @@ public class ImageLogicRunner {
 	public DefaultMutableTreeNode addProject(ImagingProject project) {
 		//  exists already?
 		int c = 1;
+		String name = project.getName();
 		while(treeImg.getProject(project.getName())!=null) {
 			// change name
 			c++;
-			String name = project.getName();
-			// remove number suffix
-			if(c>2)
-				name.substring(0, name.length()-2-String.valueOf(c).length());
 			// add number 
 			project.getSettings().setName(name+"("+c+")");
 		}

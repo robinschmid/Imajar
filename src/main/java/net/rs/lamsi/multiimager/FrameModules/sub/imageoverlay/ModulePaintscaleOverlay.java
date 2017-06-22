@@ -31,6 +31,7 @@ import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.needy.SettingsGroupItemSelections;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
@@ -70,7 +71,7 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	 */
 	public ModulePaintscaleOverlay() { 
 		super("Paintscale", false, SettingsImageOverlay.class, ImageOverlay.class); 
-		getPnContent().setLayout(new MigLayout("", "[grow][188px,grow][grow]", "[176px][]"));
+		getPnContent().setLayout(new MigLayout("", "[grow][188px,grow][grow]", "[][]"));
 		
 		formatAbs.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 		formatAbsSmall.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
@@ -135,6 +136,7 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		// set all images to all paintscale modules
 		// TODO
 		// create new
+		SettingsGroupItemSelections sett = img.getSettings().getSettGroupItemSelections();
 		if(modPSList==null || modPSList.length!=img.size()) {
 
 			tabbedPaintScales.removeAll();
@@ -147,14 +149,17 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 				modPSList[i].setCurrentImage(img.get(i), setAllToPanel);
 				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i), setAllToPanel);
 				
-				tabbedPaintScales.add(img.get(i).getTitle(), modPSList[i]);
+				if(sett.isActive(img.get(i))) {
+					modPSList[i].setVisible(true);
+					tabbedPaintScales.add(img.get(i).getTitle(), modPSList[i]);
+				}
+				else modPSList[i].setVisible(false);
 			}
 		}
 		else {
 			for(int i=0; i<img.size(); i++) {
 				modPSList[i].setCurrentImage(img.get(i), setAllToPanel);
 				modPSList[i].setSettings(img.getSettings().getSettPaintScale(i), setAllToPanel);
-				tabbedPaintScales.setTitleAt(i, img.get(i).getTitle());
 			}
 		}
 	}
@@ -200,15 +205,20 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 		getComboBlend().setSelectedItem(blend.getMode());
 		getTxtAlphaBlending().setText(formatPercentNumber(blend.getAlpha()));
 		
+		tabbedPaintScales.removeAll();
 		//rb
-		SettingsPaintScale ps = sett.getSettPaintScale(0);
-		if(ps!=null) {
-
 			for(int i=0; i<modPSList.length; i++) {
 				SettingsPaintScale ps2 = sett.getSettPaintScale(i);
 				modPSList[i].setAllViaExistingSettings(ps2);
+				
+				if(sett.isActive(modPSList[i].getCurrentImage())) {
+					modPSList[i].setVisible(true);
+					tabbedPaintScales.add(modPSList[i].getCurrentImage().getTitle(), modPSList[i]);
+				}
+				else modPSList[i].setVisible(false);
 			}
-		}
+			tabbedPaintScales.revalidate();
+			tabbedPaintScales.repaint();
 		// finished
 		ImageLogicRunner.setIS_UPDATING(true);
 		ImageEditorWindow.getEditor().fireUpdateEvent(true);
@@ -218,6 +228,29 @@ public class ModulePaintscaleOverlay extends Collectable2DSettingsModule<Setting
 	public SettingsImageOverlay writeAllToSettings(SettingsImageOverlay sett) {
 		if(sett!=null) {
 			try {
+//				 selections changed?
+				boolean changed = false;
+
+				for(int i=0; i<modPSList.length && !changed; i++) {
+					if(!sett.isActive(modPSList[i].getCurrentImage()).equals(modPSList[i].isVisible())) {
+						changed = true;
+					}
+				}
+				
+				if(changed) {
+					tabbedPaintScales.removeAll();
+					//rb
+					for(int i=0; i<modPSList.length; i++) {
+						if(sett.isActive(modPSList[i].getCurrentImage())){
+								modPSList[i].setVisible(true);
+							tabbedPaintScales.add(modPSList[i].getCurrentImage().getTitle(), modPSList[i]);
+						}
+						else modPSList[i].setVisible(false);
+					}
+				}
+//					tabbedPaintScales.revalidate();
+//					tabbedPaintScales.repaint();
+//				}
 				// blend
 				BlendComposite blend = BlendComposite.getInstance((BlendingMode) getComboBlend().getSelectedItem(), floatFromTxt(getTxtAlphaBlending())) ;
 				sett.setBlend(blend);

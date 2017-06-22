@@ -5,7 +5,7 @@ import net.rs.lamsi.general.settings.Settings;
 
 /**
  * Used in {@link SettingsModule} for loading settings in the {@link ModuleMenu} and setting them
- * @author vukmir69
+ * @author robin schmid
  *
  */
 public interface SettingsChangedListener {
