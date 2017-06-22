@@ -70,6 +70,8 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
 		currentImg = img;
 	}
 	
+	
+	
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		toXML(elParent, doc, "isActive", isActive);
