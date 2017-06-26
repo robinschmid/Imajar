@@ -12,6 +12,7 @@ import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleISDivide;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleQuantifyStrategy;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
@@ -29,6 +30,7 @@ public class ModuleImage2D extends MainSettingsModuleContainer<SettingsImage2D, 
 	private ModuleBackgroundImg moduleBG;
 	private ModuleSelectExcludeData moduleSelect;
 	private ModuleQuantifyStrategy modQuantifier;
+	private ModuleISDivide modISDivider;
 	//
 
 	/**
@@ -74,6 +76,9 @@ public class ModuleImage2D extends MainSettingsModuleContainer<SettingsImage2D, 
 		moduleSelect = new ModuleSelectExcludeData(window);
 		addModule(moduleSelect);
 
+		modISDivider = new ModuleISDivide(window);
+		addModule(modISDivider);
+		
 		modQuantifier = new ModuleQuantifyStrategy(window);
 		addModule(modQuantifier);
 		
@@ -105,5 +110,8 @@ public class ModuleImage2D extends MainSettingsModuleContainer<SettingsImage2D, 
 	}
 	public ModuleQuantifyStrategy getModuleQuantify() {
 		return modQuantifier;
+	}
+	public ModuleISDivide getModuleDivide() {
+		return modISDivider;
 	}
 }

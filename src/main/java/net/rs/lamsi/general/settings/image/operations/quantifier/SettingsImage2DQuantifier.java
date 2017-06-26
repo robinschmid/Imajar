@@ -22,7 +22,12 @@ public abstract class SettingsImage2DQuantifier extends Settings implements Imag
     protected boolean isActive = false;
     protected transient Image2D currentImg = null;
 	
-	
+    public SettingsImage2DQuantifier(MODE mode, String description, String path, String fileEnding) {
+		super(description, path, fileEnding);
+		this.mode = mode;
+		resetAll();		
+	} 
+    
 	public SettingsImage2DQuantifier(MODE mode) {
 		super("SettingsImage2DQuantifier", "/Settings/operations/", "setQuantifier"); 
 		this.mode = mode;

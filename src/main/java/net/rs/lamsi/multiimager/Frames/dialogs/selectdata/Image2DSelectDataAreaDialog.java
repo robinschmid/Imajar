@@ -1,8 +1,10 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -49,6 +51,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
+import net.rs.lamsi.general.framework.basics.strokechooser.JStrokeChooserPanel;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
@@ -104,6 +107,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private JComboBox<ROI> comboRoi;
 	private JButton btnRegression;
 	private JColorPickerButton cbtnColor;
+	private JStrokeChooserPanel strokeChooserPanel;
 
 	/**
 	 * Launch the application.
@@ -239,6 +243,10 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		
 		cbtnColor = new JColorPickerButton((Component) null);
 		panel_1.add(cbtnColor);
+		
+		strokeChooserPanel = new JStrokeChooserPanel();
+		strokeChooserPanel.getButton().setPreferredSize(new Dimension(50, 20));
+		panel_1.add(strokeChooserPanel);
 		
 		comboRoi = new JComboBox<ROI>();
 		panel_1.add(comboRoi);
@@ -488,7 +496,10 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	 * @param r
 	 */
 	private void addNewSelection(SettingsShapeSelection r) {
+		r.setColor(getCurrentColor());
+		r.setStroke(getCurrentStroke());
 		setCurrentSelect(r);
+
 		// put data in table
 		tableModel.addRow(r, false);
 		// update statistics
@@ -666,7 +677,6 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 					break;
 				}
 				if(tmpSelect!=null) {
-					tmpSelect.setColor(getCurrentColor());
 					isPressed = true;
 					addNewSelection(tmpSelect);
 					lastMouseEvent = e;
@@ -839,6 +849,9 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private Color getCurrentColor() {
 		return getCbtnColor().getColor();
 	}
+	private BasicStroke getCurrentStroke() {
+		return strokeChooserPanel.getStroke();
+	}
 	private ROI getCurrentRoiMode() {
 		return (ROI) comboRoi.getSelectedItem();
 	}
@@ -862,5 +875,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	}
 	public JColorPickerButton getCbtnColor() {
 		return cbtnColor;
+	}
+	public JStrokeChooserPanel getStrokeChooserPanel() {
+		return strokeChooserPanel;
 	}
 }

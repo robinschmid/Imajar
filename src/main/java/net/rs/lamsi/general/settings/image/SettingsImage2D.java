@@ -34,6 +34,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		addSettings(new SettingsThemesContainer(true));
 		addSettings(new SettingsImage2DQuantifierLinear());
 		addSettings(new SettingsImage2DOperations());
+		addSettings(new SettingsImage2DQuantifierIS());
 		addSettings(new SettingsZoom());
 		addSettings(new SettingsSelections());
 		addSettings(new SettingsCropAndShift());
@@ -49,6 +50,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 			addSettings(new SettingsThemesContainer(true));
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
+			addSettings(new SettingsImage2DQuantifierIS());
 			addSettings(new SettingsZoom());
 			addSettings(new SettingsSelections());
 			addSettings(new SettingsCropAndShift());
@@ -64,6 +66,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 			addSettings(new SettingsThemesContainer(true));
 			addSettings(new SettingsImage2DQuantifierLinear());
 			addSettings(new SettingsImage2DOperations());
+			addSettings(new SettingsImage2DQuantifierIS());
 			addSettings(new SettingsZoom());
 			addSettings(new SettingsSelections());
 			addSettings(new SettingsCropAndShift());
@@ -128,7 +131,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 		return (SettingsImage2DQuantifier) list.get(SettingsImage2DQuantifier.class);
 	}
 	public SettingsImage2DQuantifierIS getInternalQuantifierIS() {
-		return getOperations().getInternalQuantifier();
+		return (SettingsImage2DQuantifierIS) getSettingsByClass(SettingsImage2DQuantifierIS.class);
 	}
 	public void setInternalQuantifierIS(SettingsImage2DQuantifierIS isQ) {
 		getOperations().setInternalQuantifier(isQ);
