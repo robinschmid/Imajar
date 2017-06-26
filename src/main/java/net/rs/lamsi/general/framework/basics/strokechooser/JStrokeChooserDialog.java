@@ -99,6 +99,7 @@ public class JStrokeChooserDialog extends JDialog {
 			{
 				strokeChooserPanel = new JStrokeChooserPanel(result);
 				strokeChooserPanel.getButton().setPreferredSize(new Dimension(33, 20));
+				strokeChooserPanel.getButton().setMinimumSize(new Dimension(33, 20));
 				strokeChooserPanel.setButtonActive(false);
 				panel.add(strokeChooserPanel, "cell 0 0 4 1,grow");
 			}
@@ -268,9 +269,10 @@ public class JStrokeChooserDialog extends JDialog {
 					        return path;
 					    }
 				};
-				pnPreview.setPreferredSize(new Dimension(10, 100));
+				pnPreview.setPreferredSize(new Dimension(10, 150));
 				panel.add(pnPreview, "cell 0 7 4 1,grow");
 			}
+			pack();
 		}
 		{
 			JPanel buttonPane = new JPanel();
