@@ -81,7 +81,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	// max and min z (intensity)
 	protected double averageIProcessed = -1;
 	protected double minZ=Double.NaN, maxZ=Double.NaN;
-	protected double minZSelected=Double.NaN, maxZSelected=Double.NaN;
+	protected double minZSelected=Double.NaN, maxZSelected=Double.NaN, avgZSelected = Double.NaN;
 	protected double minZFiltered = -1;
 	protected double maxZFiltered = -1;
 	// store total dp count 
@@ -839,8 +839,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 				final int sdp = excludeLastLine && ((reflectH && rot==90) || (!reflectH && (rot == -90 || rot==270)))? 1:0;
 				final int ldp = excludeLastLine && ((!reflectH && rot==90) || (reflectH && (rot == -90 || rot==270)))? 1:0;
 
-				
-				
+
+
 				// get full matrix
 				final int cols = getMaxLinesCount()-sl-ll;
 				final int rows = getMaxLineLength()-sdp-ldp;
@@ -850,7 +850,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 
 				// track first dp / first line / last dp/line index
 				int firstDP = 0, lastDP = rows;
-				
+
 				// c for lines
 				for(int c=0; c<cols; c++) {
 					int l = c+sl;
@@ -868,7 +868,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 						else {
 							x[c][r] = Float.NaN;
 							y[c][r] = Float.NaN;
-							
+
 							// set last and first dp
 							if(r==firstDP) 
 								firstDP++;
@@ -892,17 +892,17 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 						}
 					}
 				}
-				
+
 				// new size: between first and last dp/line
 				int w = lastDP-firstDP;
 				int h = lastLine-firstLine;
 
 				// shift by start x and y
 				float startx = x[firstLine][firstDP], starty = y[firstLine][firstDP];
-				
+
 				Double[][] newz = new Double[h][w];
 				Float[][] newx = new Float[h][w], newy = new Float[h][w];
-				
+
 				for(int l = 0; l<h; l++) {
 					for(int dp=0; dp<w; dp++) {
 						newz[l][dp] = z[l+firstLine][dp+firstDP];
@@ -1136,6 +1136,40 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		}
 		//
 		return z;
+	} 
+
+	/**
+	 * all intensities as one array 
+	 * limited to selections/exclusions or not
+	 * @return float intensity Array
+	 */
+	public double[] toIArray(boolean raw, boolean onlySelected) {
+		if(onlySelected) {
+			// calc count of points
+			ArrayList<Double> z = new ArrayList<Double>();
+			// for lines (that are actually datapoints)
+			int maxlines = getMaxLinesCount();
+			int maxdp = getMaxLineLength();
+			int c=0;
+			for(int l=0; l<maxlines; l++) {
+				for(int dp=0; dp<maxdp; dp++) {
+					// for dp ( that are actually lines)
+					double tmp;
+					if(!isExcludedDP(l, dp) && isSelectedDP(l, dp) && !Double.isNaN(tmp=getI(raw, l, dp))) {
+						z.add(tmp);
+					}
+				}
+			}
+			// convert
+			double[] zz = new double[z.size()];
+			for(int i=0; i<z.size(); i++)
+				zz[i] = z.get(i);
+
+			return zz;
+		}
+		else {
+			return toIArray(raw);
+		}
 	} 
 
 	/**
@@ -1413,79 +1447,34 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public double getMinIntensity(boolean onlySelected) {
-		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
+		// array with values only (no NaN)
+		double[] inten = toIArray(false, onlySelected);
 		if(onlySelected) {
 			if(Double.isNaN(minZSelected)) {
 				minZSelected =  Double.POSITIVE_INFINITY;
+				for(double i : inten)
+					if(i<minZSelected) minZSelected = i;
+			}
 
-				int[] length = getLineLenghts();
-				int rotation = settings.getSettImage().getRotationOfData();
-				if((rotation==90 || rotation==270 || rotation == -90)) {
-					// for lines (that are actually datapoints)
-					for(int dp=0; dp<data.getLinesCount(); dp++) {
-						for(int l=0; l<length[dp]; l++) {
-							double tmp;
-							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))<minZSelected)) {
-								minZSelected = tmp;
-							}
-						}
-					}
-				}
-				else {
-					// for lines
-					for(int l=0; l<data.getLinesCount(); l++) {
-						// for dp
-						for(int dp=0; dp<length[l]; dp++) {
-							double tmp;
-							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))<minZSelected)) {
-								minZSelected = tmp;
-							}
-						}
-					}
-				}
-			}
-			if(minZSelected==Double.POSITIVE_INFINITY) {
+			if(minZSelected == Double.POSITIVE_INFINITY) {
 				minZSelected = Double.NaN;
-				return 0;
+				return Double.NaN;
 			}
-			// return
-			return minZSelected!=Double.POSITIVE_INFINITY? minZSelected : -1;
+			return minZSelected;
 		}
 		else {
-			//
 			if(Double.isNaN(minZ)) {
-				// calc min z
-				minZ = Double.POSITIVE_INFINITY;
-				double pi;
+				minZ =  Double.POSITIVE_INFINITY;
+				for(double i : inten)
+					if(i<minZ) minZ = i;
+			}
 
-				int[] length = getLineLenghts();
-				int rotation = settings.getSettImage().getRotationOfData();
-				if((rotation==90 || rotation==270 || rotation == -90)) {
-					// for lines (that are actually datapoints)
-					for(int dp=0; dp<data.getLinesCount(); dp++) {
-						for(int l=0; l<length[dp]; l++) {
-							if((pi=getI(false,l, dp))<minZ)
-								minZ = pi;
-						}
-					}
-				}
-				else {
-					// for lines
-					for(int l=0; l<data.getLinesCount(); l++) {
-						// for dp
-						for(int dp=0; dp<length[l]; dp++) {
-							if((pi=getI(false,l, dp))<minZ)
-								minZ = pi;
-						}
-					}
-				}
-			}
-			if(minZ==Double.POSITIVE_INFINITY) {
+			if(minZ == Double.POSITIVE_INFINITY) {
 				minZ = Double.NaN;
-				return 0;
+				return Double.NaN;
 			}
-			return minZ!=Double.POSITIVE_INFINITY? minZ : -1;
+			return minZ;
 		}
 	}
 
@@ -1494,79 +1483,68 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public double getMaxIntensity(boolean onlySelected) {
-		// check for update in parent i processing
 		checkForUpdateInParentIProcessing();
-		if(onlySelected) { 
+		// array with values only (no NaN)
+		double[] inten = toIArray(false, onlySelected);
+		if(onlySelected) {
 			if(Double.isNaN(maxZSelected)) {
 				maxZSelected =  Double.NEGATIVE_INFINITY;
-
-				int[] length = getLineLenghts();
-				int rotation = settings.getSettImage().getRotationOfData();
-				if((rotation==90 || rotation==270 || rotation == -90)) {
-					// for lines (that are actually datapoints)
-					for(int dp=0; dp<data.getLinesCount(); dp++) {
-						for(int l=0; l<length[dp]; l++) {
-							double tmp;
-							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
-								maxZSelected = tmp;
-							}
-						}
-					}
-				}
-				else {
-					// for lines
-					for(int l=0; l<data.getLinesCount(); l++) {
-						// for dp
-						for(int dp=0; dp<length[l]; dp++) {
-							double tmp;
-							if((!isExcludedDP(l, dp) && isSelectedDP(l, dp) && (tmp = getI(false, l, dp))>maxZSelected)) {
-								maxZSelected = tmp;
-							}
-						}
-					}
-				}
+				for(double i : inten)
+					if(i>maxZSelected) maxZSelected = i;
 			}
 
 			if(maxZSelected == Double.NEGATIVE_INFINITY) {
 				maxZSelected = Double.NaN;
-				return 0;
+				return Double.NaN;
 			}
 			return maxZSelected;
 		}
-		else { 
-			//
+		else {
 			if(Double.isNaN(maxZ)) {
-				// calc min z
-				maxZ = Double.NEGATIVE_INFINITY;
-				double pi;
-
-				int[] length = getLineLenghts();
-				int rotation = settings.getSettImage().getRotationOfData();
-				if((rotation==90 || rotation==270 || rotation == -90)) {
-					// for lines (that are actually datapoints)
-					for(int dp=0; dp<data.getLinesCount(); dp++) {
-						for(int l=0; l<length[dp]; l++) {
-							if((pi=getI(false, l, dp))>maxZ)
-								maxZ = pi; 
-						}
-					}
-				}
-				else {
-					// for lines
-					for(int l=0; l<data.getLinesCount(); l++) {
-						// for dp
-						for(int dp=0; dp<length[l]; dp++) {
-							if((pi=getI(false, l, dp))>maxZ)
-								maxZ = pi; 
-						}
-					}
-				}
+				maxZ =  Double.NEGATIVE_INFINITY;
+				for(double i : inten)
+					if(i>maxZ) maxZ = i;
 			}
+
 			if(maxZ == Double.NEGATIVE_INFINITY) {
 				maxZ = Double.NaN;
-				return 0;
+				return Double.NaN;
 			}
 			return maxZ;
+		}
+	}
+
+
+	/**
+	 * Calcs the average I for this img
+	 * @return
+	 */
+	public double getAverageIntensity(boolean onlySelected) {
+		checkForUpdateInParentIProcessing();
+		// array with values only (no NaN)
+		double[] inten = toIArray(false, onlySelected);
+		if(onlySelected) {
+			if(Double.isNaN(avgZSelected)) {
+				avgZSelected = 0;
+
+				for(double i : inten)
+					avgZSelected += i;
+
+				avgZSelected = avgZSelected/inten.length;
+			}
+			return avgZSelected;
+		}
+		else {
+			//
+			if(Double.isNaN(averageIProcessed)) { 
+				averageIProcessed = 0;
+
+				for(double i : inten)
+					averageIProcessed += i;
+
+				averageIProcessed = averageIProcessed/inten.length;
+			}
+			return averageIProcessed;
 		}
 	}
 
@@ -1829,25 +1807,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 
 
 
-	/**
-	 * Calcs the average I for this img
-	 * @return
-	 */
-	public double getAverageIProcessed() {
-		// check for update in parent i processing
-		checkForUpdateInParentIProcessing();
-		//
-		if(averageIProcessed==-1) { 
-			averageIProcessed = 0;
-			double[] inten = toIArray(false);
-
-			for(double i : inten)
-				averageIProcessed += i;
-
-			averageIProcessed = averageIProcessed/inten.length;
-		}
-		return averageIProcessed;
-	}
 	// vars for that:
 	private double[] averageIProcessedForLine;
 	/**
@@ -1891,11 +1850,13 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		if(lastIProcChangeTime>=Integer.MAX_VALUE-1)
 			lastIProcChangeTime = -1;
 
-		averageIProcessed = -1;
+		averageIProcessed = Double.NaN;
 		minZ = Double.NaN;
 		maxZ = Double.NaN;
 		minZSelected = Double.NaN;
 		maxZSelected = Double.NaN;
+		avgZSelected = Double.NaN;
+
 
 		// applyCutFilter?
 		lastAppliedMaxFilter = -1;

@@ -12,11 +12,11 @@ import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleISDivide;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleQuantifyStrategy;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleISDivide;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleQuantifyStrategy;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 

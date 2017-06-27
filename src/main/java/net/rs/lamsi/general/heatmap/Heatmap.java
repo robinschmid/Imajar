@@ -15,7 +15,7 @@ import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleSelectExcludeData;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYShapeAnnotation;

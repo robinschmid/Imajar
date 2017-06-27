@@ -21,6 +21,28 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     
+    public enum THRESHOLD_MODE {
+    	REPLACE_AVG("Replace IS value by avg"), REPLACE_MIN("Replace IS value by min"), REPLACE_MAX("Replace IS value by max"), SET_TO_ZERO("Set result to zero"), SET_TO_VALUE("Set result to value...");
+    	
+    	private String text;
+    	
+    	private THRESHOLD_MODE(String text) {
+    		this.text = text;
+		}
+    	
+    	@Override
+    	public String toString() {
+    		return text;
+    	}
+    	
+    	public THRESHOLD_MODE getMode(String text) {
+    		for(THRESHOLD_MODE m : THRESHOLD_MODE.values())
+    			if(m.text.equals(text))
+    				return m;
+    		return null;
+    	}
+    }
+    
     // image for IS
     protected Image2D imgIS;
     // after import there is only a link
@@ -28,6 +50,14 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
     
     // double
     protected double concentrationFactor = 1;
+    // internal standard intensity threshold (to not devide by 0/too small values
+    protected double threshold = 0;
+    protected double replacementValue = 0;
+    
+    // the mode to replace/set a value if Intensity(IS) <= threshold
+    protected THRESHOLD_MODE mode = THRESHOLD_MODE.REPLACE_AVG;
+    
+    
 	
 	
 	public SettingsImage2DQuantifierIS() {
@@ -52,12 +82,32 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
 			return intensity;
 		else {
 			double is = imgIS.getI(false, line, dp);
+			
+			// error - not in dimension - return NaN
 			if(Double.isNaN(is))
-				return is;
-			if(is==0)
-				return 0;
-			else 
-				return intensity/is*concentrationFactor;
+				return Double.NaN;
+			if(is==0) {
+				// handle 0 with mode
+				switch(mode) {
+				case REPLACE_AVG:
+					imgIS.getAverageIntensity(false);
+					is = imgIS.getAvgIntensity(false);
+					break;
+				case REPLACE_MAX:
+					is = imgIS.getMaxIntensity(false);
+					break;
+				case REPLACE_MIN:
+					is = imgIS.getMinNotZeroIntensity(false);
+					break;
+				case SET_TO_VALUE:
+					return replacementValue;
+				case SET_TO_ZERO:
+					return 0;
+				}
+			}
+			
+			// either is was in range or was replaced
+			return intensity/is*concentrationFactor;
 		} 
 	}
 	/**

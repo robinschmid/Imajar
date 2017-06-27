@@ -1,4 +1,4 @@
-package net.rs.lamsi.multiimager.FrameModules.sub;
+package net.rs.lamsi.multiimager.FrameModules.sub.dataoperations;
 
 
 import java.awt.BorderLayout;
@@ -31,6 +31,8 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQuantifierIS, Image2D> { 
 	//
@@ -46,6 +48,10 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 	private JTextField txtExPath;
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private JTextField txtFactor;
+	private JTextField txtThreshold;
+	private JTextField txtReplaceValue;
+	private JCheckBox cbUseISMin;
+	private JComboBox comboReplaceMode;
 
 	/**
 	 * Create the panel.
@@ -58,7 +64,7 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 
 		JPanel pnNorth = new JPanel();
 		getPnContent().add(pnNorth, BorderLayout.NORTH);
-		pnNorth.setLayout(new MigLayout("", "[][][grow]", "[][]"));
+		pnNorth.setLayout(new MigLayout("", "[][][grow]", "[][][][][]"));
 
 		cbQuantify = new JCheckBox("Quantify");
 		cbQuantify.setToolTipText("Each data point's intensity value is divided by the intensity value of the corresponding dp in the given IS image and multiplied by the given factor. This is done before applying a quantification strategy (e.g. linear/regression).");
@@ -72,6 +78,35 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 		txtFactor.setText("1");
 		pnNorth.add(txtFactor, "cell 1 1,alignx left");
 		txtFactor.setColumns(10);
+		
+		JLabel lblIsThreshold = new JLabel("IS threshold");
+		pnNorth.add(lblIsThreshold, "cell 0 2,alignx trailing");
+		
+		txtThreshold = new JTextField();
+		txtThreshold.setToolTipText("Intensity threshold for the internal standard. If the intensity drops below this value one of the options below is applied (replace by average, minimum or set the value to 0)");
+		txtThreshold.setText("0");
+		pnNorth.add(txtThreshold, "cell 1 2,alignx left");
+		txtThreshold.setColumns(10);
+		
+		cbUseISMin = new JCheckBox("use minimum of IS paint scale");
+		cbUseISMin.setToolTipText("Uses the minimum that was set in the paint scale settings of the internal standard image");
+		cbUseISMin.setSelected(true);
+		pnNorth.add(cbUseISMin, "cell 2 2");
+		
+		JLabel lblOperation = new JLabel("operation");
+		pnNorth.add(lblOperation, "cell 0 3,alignx trailing");
+		
+		comboReplaceMode = new JComboBox();
+		comboReplaceMode.setModel(new DefaultComboBoxModel(new String[] {"Replace by average", "Replace by minimum", "Replace by maximum", "Set resulting value to zero", "Set resulting value to a given value"}));
+		comboReplaceMode.setSelectedIndex(0);
+		pnNorth.add(comboReplaceMode, "flowx,cell 1 3 2 1,alignx left");
+		
+		txtReplaceValue = new JTextField();
+		txtReplaceValue.setEnabled(false);
+		txtReplaceValue.setToolTipText("Value for a replacement");
+		txtReplaceValue.setText("0");
+		pnNorth.add(txtReplaceValue, "cell 1 4");
+		txtReplaceValue.setColumns(10);
 
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, BorderLayout.CENTER);
@@ -239,5 +274,17 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 	}
 	public JTextField getTxtFactor() {
 		return txtFactor;
+	}
+	public JCheckBox getCbUseISMin() {
+		return cbUseISMin;
+	}
+	public JTextField getTxtThreshold() {
+		return txtThreshold;
+	}
+	public JComboBox getComboReplaceMode() {
+		return comboReplaceMode;
+	}
+	public JTextField getTxtReplaceValue() {
+		return txtReplaceValue;
 	}
 }

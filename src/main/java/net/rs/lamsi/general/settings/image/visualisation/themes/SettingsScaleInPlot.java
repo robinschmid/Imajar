@@ -104,6 +104,7 @@ public class SettingsScaleInPlot extends Settings {
 				else if(paramName.equals("scaleYPos"))scaleYPos = Settings.floatFromXML(nextElement);  
 				else if(paramName.equals("fontScaleInPlot"))fontScaleInPlot = Settings.fontFromXML(nextElement);  
 				else if(paramName.equals("scaleFontColor"))scaleFontColor = Settings.colorFromXML(nextElement);  
+				else if(paramName.equals("scaleUnit")) scaleUnit = nextElement.getTextContent();  
 			}
 		}
 	}
