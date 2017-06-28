@@ -9,7 +9,14 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.ProgressMonitor;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
@@ -25,10 +32,6 @@ import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.threads.ProgressUpdateTaskMonitor;
-
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class DataExportUtil {
 	private static TxtWriter writer = new TxtWriter();
@@ -71,7 +74,6 @@ public class DataExportUtil {
 						// TODO name extention for txt
 						exportDataImage2D(imgList.get(i), setImage2DDataExport, qualifier, i==0, i==imgList.size()-1, true);
 						// no exception then progress
-						System.out.println("set progress " +(int)((i+1)/imgList.size()));
 						setProgress((int)((i+1)*100.0/imgList.size()));
 					}	
 				}catch(Exception ex) {
@@ -110,11 +112,107 @@ public class DataExportUtil {
 	 * @throws IOException 
 	 * @throws InvalidFormatException 
 	 */
-	public static void exportDataImage2D(Image2D img, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException { 		
-		lastwb = null;
-		exportDataImage2D(img, sett, "", true, true, false);
+	public static void exportDataImage2D(final Component parent, Image2D img, SettingsImage2DDataExport s) throws InvalidFormatException, IOException { 		
 
-		if(sett.isWritingToClipboard())
+		switch(s.getExportStructure()) {
+		case IMAGE:
+			exportDataImage2D(img, s);
+			break;
+		case GROUP:
+			// no group?
+			if(img.getImageGroup()==null) {
+				s.setExportStructure(EXPORT_STRUCTURE.IMAGE);
+				exportDataImage2D(parent, img, s);
+				return;
+			}
+			else {
+				final SettingsImage2DDataExport ss = s;
+				final ImageGroupMD g = img.getImageGroup();
+				new ProgressUpdateTask(g.image2dCount()) {
+					@Override
+					protected Boolean doInBackground2() throws Exception {
+						// name
+						String name = ss.getFilename();
+						// create group folder
+						File folder = ss.getPath();
+						ss.setPath(new File(folder, g.getName()));
+						int size = g.image2dCount();
+						for(int d=0; d<size; d++) {
+							Image2D i = (Image2D)g.get(d);
+							// name
+//							ss.setFilename(name+i.getTitle());
+
+							String qualifier = i.getTitle();
+							// TODO name extention for txt
+							exportDataImage2D(i, ss, qualifier, d==0, d==size-1, true);
+							
+							addProgressStep(1);
+						}
+						return true;
+					}
+				}.execute();
+				break;
+			}
+		case PROJECT:
+			// no group?
+			if(img.getImageGroup()==null) {
+				s.setExportStructure(EXPORT_STRUCTURE.IMAGE);
+				exportDataImage2D(parent, img, s);
+				return;
+			}
+			else if(img.getImageGroup().getProject()==null) {
+				s.setExportStructure(EXPORT_STRUCTURE.GROUP);
+				exportDataImage2D(parent, img, s);
+				return;
+			}
+			else {
+				final ImagingProject project = img.getImageGroup().getProject();
+				final SettingsImage2DDataExport ss = s;
+				
+				new ProgressUpdateTask(project.size()) {
+					@Override
+					protected Boolean doInBackground2() throws Exception {
+						// name
+						String name = ss.getFilename();
+						// create group folder
+						File folder = new File(ss.getPath(), project.getName());
+
+						for(ImageGroupMD g : project.getGroups()) {
+							ss.setPath(new File(folder, g.getName()));
+							// 
+							int size = g.image2dCount();
+							for(int d=0; d<size; d++) {
+								Image2D i = (Image2D)g.get(d);
+								// name
+//								ss.setFilename(name+i.getTitle());
+
+								String qualifier = i.getTitle();
+								// TODO name extention for txt
+								exportDataImage2D(i, ss, qualifier, d==0, d==size-1, true);
+								
+								addProgressStep(1.0/size);
+							}
+						}
+						return true;
+					}
+				}.execute();
+				break;
+			}
+		}
+	} 
+	/**
+	 * export one image
+	 * @param img
+	 * @param sett
+	 * @throws IOException 
+	 * @throws InvalidFormatException 
+	 */
+	public static void exportDataImage2D(Image2D img, SettingsImage2DDataExport s) throws InvalidFormatException, IOException { 		
+		lastwb = null;
+
+		exportDataImage2D(img, s, "", true, true, false);
+
+		if(s.isWritingToClipboard())
 			DialogLoggerUtil.showMessageDialog(null, "Succeed", "File(s) saved successfully");
 	} 
 
@@ -217,6 +315,7 @@ public class DataExportUtil {
 			if(lastFile || !sett.isSavesAllFilesToOneXLS()) {
 				xwriter.saveWbToFile(new File(file), wb);
 				xwriter.closeAllWorkbooks();
+				lastwb = null;
 			} 
 		} 
 		else {
@@ -230,7 +329,7 @@ public class DataExportUtil {
 				path = sett.getPath();
 			}
 			File file = new File(path, FileAndPathUtil.eraseFormat((sett.getFilename()))+qualifier+"."+sett.getFileFormat().toString());
-			
+
 
 			writer.openNewFileOutput(file.getAbsolutePath());
 
@@ -257,7 +356,7 @@ public class DataExportUtil {
 			writer.closeDatOutput(); 
 			//log
 			ImageEditorWindow.log("Written: "+file.getName()+" to "+file.getParent(), LOG.MESSAGE);
-			
+
 			// export x matrix
 			if(sett.getMode().equals(ModeData.X_MATRIX_STANDARD) && firstFile && xmatrix != null) {
 				file = new File(path, "xmatrix."+sett.getFileFormat().toString());
@@ -319,9 +418,9 @@ LOOKUP_TABLE default
 	 */
 	public static void exportDataImage2DInRects(final Image2D img, final SettingsSelections sel, 
 			final SettingsImage2DDataSelectionsExport sett) throws Exception  { 
-		
+
 		new ProgressUpdateTask(4) {
-			
+
 			@Override
 			protected Boolean doInBackground2() throws Exception {
 				SettingsSelections selections = sel;
@@ -333,9 +432,9 @@ LOOKUP_TABLE default
 					// update later
 					update = true;
 				}
-				
+
 				addProgressStep(1.0);
-				
+
 				double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
 				// export the data
 				//writer it to txt or xlsx	
@@ -343,9 +442,9 @@ LOOKUP_TABLE default
 					// update?
 					if(update)
 						selections.updateStatistics();
-					
+
 					addProgressStep(1.0);
-					
+
 					// save
 					ArrayList<SettingsShapeSelection> tableRows = selections.getSelections();
 					// write table rows
@@ -358,7 +457,7 @@ LOOKUP_TABLE default
 
 						addProgressStep(1.0/tableRows.size());
 					}
-					
+
 					String s = ClipboardWriter.dataToTabSepString(erows);
 					s = s+"\n\nOnly selected, not excluded data points\n"+ClipboardWriter.dataToTabSepString(dataSelected);
 
@@ -535,7 +634,7 @@ LOOKUP_TABLE default
 			} 
 			xwriter.writeDataArrayToSheet(sheet, data,1,5); 
 		}
-		*/
+		 */
 	} 
 
 

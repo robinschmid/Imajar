@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 
@@ -47,24 +48,15 @@ public class SettingsImage2DDataExport extends Settings {
 	private String separation;
 	
 	private FileType fileFormat;
-	private boolean exportsAllFiles, savesAllFilesToOneXLS;
+	private boolean savesAllFilesToOneXLS;
 	private boolean isExportRaw, isWriteTitleRow, isWritingToClipboard;
 	// use reflect, rotate and imaging mode
 	private boolean useReflectRotate;
-	
-	public boolean isUseReflectRotate() {
-		return useReflectRotate;
-	}
-	public void setUseReflectRotate(boolean useReflectRotate) {
-		this.useReflectRotate = useReflectRotate;
-	}
-
-	private ModeData mode = ModeData.X_MATRIX_STANDARD;
-	
 	// new one
 	// cuts the data to minum of line width
 	private boolean isCuttingDataToMin = true;
-	
+	private EXPORT_STRUCTURE exportStructure;
+	private ModeData mode = ModeData.X_MATRIX_STANDARD;
 	
 
 	@Override
@@ -73,7 +65,7 @@ public class SettingsImage2DDataExport extends Settings {
 		filename = "";
 		separation = ",";
 		fileFormat = FileType.CSV;
-		exportsAllFiles = false;
+		exportStructure = EXPORT_STRUCTURE.IMAGE;
 		savesAllFilesToOneXLS = true;
 		isExportRaw = false;
 		isWriteTitleRow = true;
@@ -90,7 +82,7 @@ public class SettingsImage2DDataExport extends Settings {
 		toXML(elParent, doc, "separation", separation); 
 		toXML(elParent, doc, "fileFormat", fileFormat); 
 		toXML(elParent, doc, "isCuttingDataToMin", isCuttingDataToMin); 
-		toXML(elParent, doc, "exportsAllFiles", exportsAllFiles); 
+		toXML(elParent, doc, "exportStructure", exportStructure); 
 		toXML(elParent, doc, "savesAllFilesToOneXLS", savesAllFilesToOneXLS); 
 		toXML(elParent, doc, "isWriteTitleRow", isWriteTitleRow); 
 		toXML(elParent, doc, "isWritingToClipboard", isWritingToClipboard); 
@@ -111,7 +103,7 @@ public class SettingsImage2DDataExport extends Settings {
 				else if(paramName.equals("separation")) separation = nextElement.getTextContent(); 
 				else if(paramName.equals("fileFormat"))fileFormat = FileType.valueOf(nextElement.getTextContent());  
 				else if(paramName.equals("mode"))mode = ModeData.valueOf(nextElement.getTextContent());  
-				else if(paramName.equals("exportsAllFiles"))exportsAllFiles = booleanFromXML(nextElement);  
+				else if(paramName.equals("exportStructure"))exportStructure = EXPORT_STRUCTURE.valueOf(nextElement.getTextContent());  
 				else if(paramName.equals("savesAllFilesToOneXLS"))savesAllFilesToOneXLS = booleanFromXML(nextElement);  
 				else if(paramName.equals("isExportRaw"))isExportRaw = booleanFromXML(nextElement);  
 				else if(paramName.equals("isWriteTitleRow"))isWriteTitleRow = booleanFromXML(nextElement);  
@@ -153,12 +145,6 @@ public class SettingsImage2DDataExport extends Settings {
 	public void setFileFormat(FileType fileFormat) {
 		this.fileFormat = fileFormat;
 	}
-	public boolean isExportsAllFiles() {
-		return exportsAllFiles;
-	}
-	public void setExportsAllFiles(boolean exportsAllFiles) {
-		this.exportsAllFiles = exportsAllFiles;
-	}
 	public boolean isSavesAllFilesToOneXLS() {
 		return savesAllFilesToOneXLS;
 	}
@@ -170,6 +156,13 @@ public class SettingsImage2DDataExport extends Settings {
 		this.path = path;
 	}
 
+	
+	public boolean isUseReflectRotate() {
+		return useReflectRotate;
+	}
+	public void setUseReflectRotate(boolean useReflectRotate) {
+		this.useReflectRotate = useReflectRotate;
+	}
 	public void setIsExportRaw(boolean state) {
 		isExportRaw = state;
 	}
@@ -217,5 +210,11 @@ public class SettingsImage2DDataExport extends Settings {
 
 	public void setMode(ModeData mode) {
 		this.mode = mode;
+	}
+	public EXPORT_STRUCTURE getExportStructure() {
+		return exportStructure;
+	}
+	public void setExportStructure(EXPORT_STRUCTURE s) {
+		exportStructure = s;
 	}
 }

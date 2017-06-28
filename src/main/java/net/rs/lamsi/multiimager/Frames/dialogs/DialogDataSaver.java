@@ -28,6 +28,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
@@ -68,8 +69,6 @@ public class DialogDataSaver extends JFrame {
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private JLabel lblSucceed;
 	private JCheckBox cbSaveAllFilesInOne;
-	private JRadioButton rbAllFiles;
-	private JRadioButton rbSelectedFileOnly;
 	private JPanel pnMS;
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_3 = new ButtonGroup();
@@ -92,6 +91,7 @@ public class DialogDataSaver extends JFrame {
 	private JCheckBox cbShapesSelNEx;
 	private JCheckBox cbShapes, cbShapesData, cbX, cbY, cbZ;
 	private JPanel pnCenter;
+	private JComboBox comboExportStructure;
 	
 	// TODO
 	// Irgendwann das aufrufen: 
@@ -130,6 +130,10 @@ public class DialogDataSaver extends JFrame {
 		btnSelectPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				// open fileChooser 
+				File path = new File(getTxtPath().getText());
+				if(path.exists() && path.isDirectory())
+					fcDirectoriesChooser.setCurrentDirectory(path);
+				
 				fcDirectoriesChooser.showOpenDialog(thisFrame);
 		    	File file = fcDirectoriesChooser.getSelectedFile(); 
 		        if(file!=null) { 
@@ -206,25 +210,12 @@ public class DialogDataSaver extends JFrame {
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// renew all settings
-				renewAllSettings();
-				// Save Data to file at path
-				try {
-					boolean exported = false; 
-					if(currentMode==MODE.ALL) {
-						if(imgList==null || (settings.getSetImage2DDataExport().isExportsAllFiles()==false && img!=null))
-							DataExportUtil.exportDataImage2D(img, settings.getSetImage2DDataExport());
-						else if(imgList!=null && imgList.size()>0) 
-							DataExportUtil.exportDataImage2D(thisFrame, imgList, settings.getSetImage2DDataExport());
-					}
-					else if(currentMode == MODE.SELECTED_RECTS){
-						DataExportUtil.exportDataImage2DInRects(img, selections, settings.getSetImage2DDataSelectionsExport());
-					}
-				} catch(Exception ex) { 
-					DialogLoggerUtil.showErrorDialog(thisFrame, "Not saved", ex);
-					ex.printStackTrace();
-				}
+				SettingsImage2DDataExport s = renewAllSettings();
+				exportData(s);
 			}
 		});
+		
+		
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -241,49 +232,30 @@ public class DialogDataSaver extends JFrame {
 		
 		pnXlsOptions = new JPanel();
 		pnMS.add(pnXlsOptions);
-		pnXlsOptions.setLayout(new MigLayout("", "[178px,grow][154px]", "[23px][23px][23px][23px][14px]"));
+		pnXlsOptions.setLayout(new MigLayout("", "[178px,grow][154px]", "[23px][23px][23px][14px]"));
 		
-		rbAllFiles = new JRadioButton("All images");
-		rbAllFiles.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				// TODO manche cb deaktivieren
-				JRadioButton rb = (JRadioButton) e.getSource();
-				try {
-					if(rb.isSelected()) getCbSaveAllFilesInOne().setEnabled(true); 
-					else getCbSaveAllFilesInOne().setEnabled(false);
-				}catch(Exception ex) { 
-				}
-			}
-		});
-		buttonGroup_1.add(rbAllFiles);
-		rbAllFiles.setSelected(true);
-		rbAllFiles.setToolTipText("Export all loaded files at once");
-		pnXlsOptions.add(rbAllFiles, "cell 0 0,growx,aligny top");
+		comboExportStructure = new JComboBox(EXPORT_STRUCTURE.values());
+		pnXlsOptions.add(comboExportStructure, "cell 0 0,growx");
 		
 		cbSaveAllFilesInOne = new JCheckBox("Save all to one .xlsx file");
 		cbSaveAllFilesInOne.setSelected(true);
 		cbSaveAllFilesInOne.setToolTipText("Save data from all files in one xls-file or in seperate ones");
 		pnXlsOptions.add(cbSaveAllFilesInOne, "cell 1 0,growx,aligny top");
 		
-		rbSelectedFileOnly = new JRadioButton("Selected image only");
-		buttonGroup_1.add(rbSelectedFileOnly);
-		rbSelectedFileOnly.setToolTipText("Export only the selected file");
-		pnXlsOptions.add(rbSelectedFileOnly, "cell 0 1,growx,aligny top");
-		
 		lblSucceed = new JLabel("Succeed");
 		lblSucceed.setVisible(false);
 		
 		cbWriteTitleRow = new JCheckBox("Write title row");
 		cbWriteTitleRow.setSelected(true);
-		pnXlsOptions.add(cbWriteTitleRow, "cell 0 3");
+		pnXlsOptions.add(cbWriteTitleRow, "cell 0 2");
 		
 		comboDataFormat = new JComboBox();
 		comboDataFormat.setToolTipText("Select the data export pattern: X-matrix is the standard and exports one xmatrix.txt file to keep information about data point width. XYYY is for equally spaced data points. XYXY (altern.) is for data points not spaced equally. Only-Y has no information about spacing.");
 		comboDataFormat.setModel(new DefaultComboBoxModel(ModeData.values()));
 		comboDataFormat.setSelectedIndex(0);
-		pnXlsOptions.add(comboDataFormat, "cell 0 4,growx");
+		pnXlsOptions.add(comboDataFormat, "cell 0 3,growx");
 		lblSucceed.setForeground(new Color(0, 128, 0));
-		pnXlsOptions.add(lblSucceed, "cell 1 4,alignx right,aligny top");
+		pnXlsOptions.add(lblSucceed, "cell 1 3,alignx right,aligny top");
 		
 		panel_1 = new JPanel();
 		pnMS.add(panel_1, BorderLayout.SOUTH);
@@ -367,6 +339,51 @@ public class DialogDataSaver extends JFrame {
 	}
 	
 	
+	protected void exportData(SettingsImage2DDataExport s) {
+		// Save Data to file at path
+		try {
+			boolean exported = false; 
+			if(currentMode==MODE.ALL) {
+				// export full data 
+				switch(s.getExportStructure()) {
+				case ALL:
+					if(imgList==null) { // cannot save all - change to project
+						s.setExportStructure(EXPORT_STRUCTURE.PROJECT);
+						getComboExportStructure().setSelectedItem(s.getExportStructure());
+						exportData(s);
+						// stop and new
+						return;
+					}
+					else {
+						// export all
+						DataExportUtil.exportDataImage2D(this, imgList, s);
+						// stop
+						return;
+					}
+				case PROJECT:
+					// no project?
+					if(img.getImageGroup()!=null && img.getImageGroup().getProject()==null) {
+						s.setExportStructure(EXPORT_STRUCTURE.GROUP);
+						getComboExportStructure().setSelectedItem(s.getExportStructure());
+						exportData(s);
+						// stop and new
+						return;
+					}
+					break;
+				}
+
+				// write project, group or single image
+				DataExportUtil.exportDataImage2D(this, img, s);
+			}
+			else if(currentMode == MODE.SELECTED_RECTS){
+				DataExportUtil.exportDataImage2DInRects(img, selections, settings.getSetImage2DDataSelectionsExport());
+			}
+		} catch(Exception ex) { 
+			DialogLoggerUtil.showErrorDialog(this, "Not saved", ex);
+			ex.printStackTrace();
+		}		
+	}
+
 	/**
 	 * txt or xlsx or clipboard
 	 * @param currentMode
@@ -419,7 +436,7 @@ public class DialogDataSaver extends JFrame {
 	
 	//##########################################################################################
 	// 
-	private void renewAllSettings() {
+	private SettingsImage2DDataExport renewAllSettings() {
 		if(currentMode.equals(MODE.ALL)) {
 			SettingsImage2DDataExport settingsData = this.settings.getSetImage2DDataExport(); 
 		// Set mode 
@@ -431,7 +448,7 @@ public class DialogDataSaver extends JFrame {
 		settingsData.setFilename(getTxtFileName().getText());
 		
 		// always one file if to clipboard
-		settingsData.setExportsAllFiles(getRbAllFiles().isSelected() && !getCbToClipboard().isSelected());
+		settingsData.setExportStructure((EXPORT_STRUCTURE)getComboExportStructure().getSelectedItem());
 		settingsData.setSavesAllFilesToOneXLS(getCbSaveAllFilesInOne().isSelected());
 		 
 		settingsData.setIsExportRaw(getCbRawData().isSelected());
@@ -440,6 +457,7 @@ public class DialogDataSaver extends JFrame {
 		settingsData.setMode((ModeData) getComboDataFormat().getSelectedItem());
 		
 		settingsData.setSeparation(txtSep.getText());
+		return settingsData;
 		}
 		else {
 			SettingsImage2DDataSelectionsExport s = this.settings.getSetImage2DDataSelectionsExport();
@@ -454,6 +472,7 @@ public class DialogDataSaver extends JFrame {
 			s.setAll(cbSummary.isSelected(), cbDef.isSelected(), cbArray.isSelected(), cbImgEx.isSelected(), cbImgSel.isSelected(), 
 					cbImgSelNEx.isSelected(), cbShapes.isSelected(), cbShapesSelNEx.isSelected(), cbShapesData.isSelected(), 
 					cbX.isSelected(), cbY.isSelected(), cbZ.isSelected());
+			return s;
 		}
 	}
 	// all cb set
@@ -461,7 +480,7 @@ public class DialogDataSaver extends JFrame {
 		if(selections==null) {
 			SettingsImage2DDataExport settingsData = this.settings.getSetImage2DDataExport(); 
 	
-			getRbAllFiles().setSelected(settingsData.isExportsAllFiles());
+			getComboExportStructure().setSelectedItem(settingsData.getExportStructure());
 			// TODO select combo
 			comboBox.setSelectedItem(settingsData.getFileFormat());
 			//
@@ -480,8 +499,8 @@ public class DialogDataSaver extends JFrame {
 		}
 		else {
 			SettingsImage2DDataSelectionsExport s = this.settings.getSetImage2DDataSelectionsExport();
-	
-			getRbAllFiles().setSelected(s.isExportsAllFiles());
+
+			getComboExportStructure().setSelectedItem(s.getExportStructure());
 			// TODO select combo
 			comboBox.setSelectedItem(s.getFileFormat());
 			//
@@ -523,12 +542,6 @@ public class DialogDataSaver extends JFrame {
 	}
 	public JCheckBox getCbSaveAllFilesInOne() {
 		return cbSaveAllFilesInOne;
-	}
-	public JRadioButton getRbAllFiles() {
-		return rbAllFiles;
-	}
-	public JRadioButton getRbSelectedFileOnly() {
-		return rbSelectedFileOnly;
 	}
 	public JPanel getPnMS() {
 		return pnMS;
@@ -580,5 +593,8 @@ public class DialogDataSaver extends JFrame {
 	}
 	public JPanel getPnCenter() {
 		return pnCenter;
+	}
+	public JComboBox getComboExportStructure() {
+		return comboExportStructure;
 	}
 }
