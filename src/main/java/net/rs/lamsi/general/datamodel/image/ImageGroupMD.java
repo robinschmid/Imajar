@@ -388,4 +388,20 @@ public class ImageGroupMD implements Serializable {
 				return c;
 		return null;
 	}
+
+	/**
+	 * try to set a new group name 
+	 * checks if this name is not empty and unique
+	 * @param name new name
+	 * @return the same text parameter if the name was changed - or the old name (empty string if no group is present)
+	 */
+	public String setGroupName(String name) {
+		// try to find a group for the name
+		if(getProject()==null || getProject().getGroupByName(name)==null) {
+			//change
+			getSettings().setName(name);
+			return name;
+		}
+		else return getName();
+	}
 }

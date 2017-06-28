@@ -8,12 +8,14 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
+import net.rs.lamsi.general.framework.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
-import net.rs.lamsi.general.settings.interf.DatasetSettings;
 import net.rs.lamsi.general.settings.interf.GroupSettings;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import weka.gui.experiment.GeneratorPropertyIteratorPanel;
 
 public abstract class Collectable2D <T extends SettingsContainerSettings>  implements Serializable {	 
 	// do not change the version!
@@ -154,5 +156,37 @@ public abstract class Collectable2D <T extends SettingsContainerSettings>  imple
 	@Override
 	public String toString() {
 		return toListName();
+	}
+
+	/**
+	 * try to set a new project name 
+	 * checks if this name is not empty and unique
+	 * @param name new name
+	 * @return the same text parameter if the name was changed - or the old name (empty string if no project is present)
+	 */
+	public String setProjectName(String name) {
+		if(getImageGroup()==null || getImageGroup().getProject()==null)
+			return "";
+		// try to find a project for the name
+		ModuleTreeWithOptions tree = ImageEditorWindow.getEditor().getModuleTreeImages();
+		if(tree.getProject(name)==null) {
+			//change
+			getImageGroup().getProject().getSettings().setName(name);
+			return name;
+		}
+		else return getImageGroup().getProject().getName();
+	}
+	
+
+	/**
+	 * try to set a new group name 
+	 * checks if this name is not empty and unique
+	 * @param name new name
+	 * @return the same text parameter if the name was changed - or the old name (empty string if no group is present)
+	 */
+	public String setGroupName(String name) {
+		if(getImageGroup()==null)
+			return "";
+		else return getImageGroup().setGroupName(name);
 	}
 }

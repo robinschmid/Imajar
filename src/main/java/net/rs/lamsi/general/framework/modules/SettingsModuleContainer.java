@@ -194,8 +194,8 @@ extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
 		@Override 
 		public void setCurrentImage(S img, boolean setAllToPanel) {
 			for(Module m : listSettingsModules) {
-				if(Collectable2DSettingsModule.class.isInstance(m)) {
-					Collectable2DSettingsModule sm = ((Collectable2DSettingsModule)m);
+				if(SettingsModuleObject.class.isInstance(m)) {
+					SettingsModuleObject sm = ((SettingsModuleObject)m);
 					sm.setCurrentImage(img, false);
 				}
 			}

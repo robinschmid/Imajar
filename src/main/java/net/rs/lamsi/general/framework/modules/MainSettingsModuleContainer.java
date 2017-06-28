@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.interf.SettingsModuleObject;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
+import net.rs.lamsi.multiimager.FrameModules.ModuleProjectGroup;
 
 /**
  * the main settings container for each collectable2d subclass (image2d, imageoverlay)
@@ -24,12 +25,21 @@ public abstract class MainSettingsModuleContainer<T extends SettingsContainerSet
 extends SettingsModuleContainer<T, S> implements SettingsModuleObject<S> {
 
 
+	// settings for project and group name
+	// set current collectable 2d
+	private ModuleProjectGroup modProjectGroup;
+	
+	//
 	private JPanel pnTitleSettings;
 	private JCheckBox cbAuto;
 
 	public MainSettingsModuleContainer(String title, boolean westside, Class settc, Class objclass) { 
 		super(title, westside, settc, objclass);
-
+		
+		// projec and group
+		modProjectGroup = new ModuleProjectGroup();
+		addModule(modProjectGroup);
+		
 		// add buttons to this module
 		pnTitleSettings = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) pnTitleSettings.getLayout();
@@ -44,7 +54,7 @@ extends SettingsModuleContainer<T, S> implements SettingsModuleObject<S> {
 		cbAuto.setSelected(true);
 		pnTitleSettings.add(cbAuto);
 	}	
-
+	
 	public JCheckBox getcbAutoUpdating() {
 		return cbAuto;
 	}
