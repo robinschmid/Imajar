@@ -4,13 +4,16 @@ package net.rs.lamsi.multiimager.FrameModules.sub.dataoperations;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -27,12 +30,12 @@ import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier.MODE;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
+import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS.THRESHOLD_MODE;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
 import net.rs.lamsi.utils.DialogLoggerUtil;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
+import java.awt.FlowLayout;
 
 public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQuantifierIS, Image2D> { 
 	//
@@ -52,6 +55,7 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 	private JTextField txtReplaceValue;
 	private JCheckBox cbUseISMin;
 	private JComboBox comboReplaceMode;
+	private JCheckBox cbOnlyUseSelected;
 
 	/**
 	 * Create the panel.
@@ -64,7 +68,7 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 
 		JPanel pnNorth = new JPanel();
 		getPnContent().add(pnNorth, BorderLayout.NORTH);
-		pnNorth.setLayout(new MigLayout("", "[][][grow]", "[][][][][]"));
+		pnNorth.setLayout(new MigLayout("", "[][grow][grow]", "[][][][grow][]"));
 
 		cbQuantify = new JCheckBox("Quantify");
 		cbQuantify.setToolTipText("Each data point's intensity value is divided by the intensity value of the corresponding dp in the given IS image and multiplied by the given factor. This is done before applying a quantification strategy (e.g. linear/regression).");
@@ -96,10 +100,27 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 		JLabel lblOperation = new JLabel("operation");
 		pnNorth.add(lblOperation, "cell 0 3,alignx trailing");
 		
+		JPanel panel_1 = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_1.getLayout();
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		flowLayout.setVgap(0);
+		flowLayout.setHgap(0);
+		pnNorth.add(panel_1, "cell 1 3 2 1,grow");
+		
 		comboReplaceMode = new JComboBox();
-		comboReplaceMode.setModel(new DefaultComboBoxModel(new String[] {"Replace by average", "Replace by minimum", "Replace by maximum", "Set resulting value to zero", "Set resulting value to a given value"}));
+		panel_1.add(comboReplaceMode);
+		comboReplaceMode.setModel(new DefaultComboBoxModel(THRESHOLD_MODE.values()));
+		comboReplaceMode.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				getTxtReplaceValue().setEditable((comboReplaceMode.getSelectedItem().toString().equals(THRESHOLD_MODE.SET_TO_VALUE.toString())));
+			}
+		});
 		comboReplaceMode.setSelectedIndex(0);
-		pnNorth.add(comboReplaceMode, "flowx,cell 1 3 2 1,alignx left");
+		
+		cbOnlyUseSelected = new JCheckBox("only use selected dp");
+		panel_1.add(cbOnlyUseSelected);
+		cbOnlyUseSelected.setToolTipText("Uses selected data points only");
 		
 		txtReplaceValue = new JTextField();
 		txtReplaceValue.setEnabled(false);
@@ -210,8 +231,14 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 		getTxtExPath().getDocument().addDocumentListener(dl);
 		getTxtFactor().getDocument().addDocumentListener(dl);
 
+		getTxtReplaceValue().getDocument().addDocumentListener(dl);
+		getTxtThreshold().getDocument().addDocumentListener(dl);
+
+		getCbUseISMin().addItemListener(il);
+		getComboReplaceMode().addItemListener(il);
 		// is active?
 		getCbQuantify().addItemListener(il);
+		getCbOnlyUseSelected().addItemListener(il);
 	}
 
 	@Override
@@ -227,6 +254,14 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 		if(sett!=null) {
 			getCbQuantify().setSelected(sett.isActive());
 			getTxtFactor().setText(String.valueOf(sett.getConcentrationFactor()));
+
+			getTxtReplaceValue().setText(String.valueOf(sett.getReplacementValue()));
+			getTxtThreshold().setText(String.valueOf(sett.getThreshold()));
+
+			getCbUseISMin().setSelected(sett.isUseISMinimumAsThreshold());
+			getCbOnlyUseSelected().setSelected(sett.isOnlySelected());
+			
+			getComboReplaceMode().setSelectedItem(sett.getISMode());
 			//
 			imgEx = sett.getImgIS();
 			if(imgEx!=null) {
@@ -249,6 +284,11 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 			if(sett!=null) {
 				sett.setImgIS(imgEx);
 				sett.setConcentrationFactor(doubleFromTxt(getTxtFactor()));
+				sett.setMode((THRESHOLD_MODE) comboReplaceMode.getSelectedItem());
+				sett.setReplacementValue(doubleFromTxt(getTxtReplaceValue()));
+				sett.setThreshold(doubleFromTxt(getTxtThreshold()));
+				sett.setUseISMinimumAsThreshold(getCbUseISMin().isSelected());
+				sett.setOnlySelected(getCbOnlyUseSelected().isSelected());
 			}
 			} catch(Exception ex) {
 			ex.printStackTrace();
@@ -286,5 +326,8 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 	}
 	public JTextField getTxtReplaceValue() {
 		return txtReplaceValue;
+	}
+	public JCheckBox getCbOnlyUseSelected() {
+		return cbOnlyUseSelected;
 	}
 }

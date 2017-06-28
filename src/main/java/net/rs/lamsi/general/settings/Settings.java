@@ -315,6 +315,7 @@ public abstract class Settings implements Serializable {
 				paramElement.setAttribute("right", ""+r.getRight());
 			}
 			else if(Collectable2D.class.isInstance(o)) {
+				// collectable2d and placeholderlinks
 				Collectable2D c = (Collectable2D)o;
 				// save name, group, project
 				paramElement.setTextContent(c.getTitle());

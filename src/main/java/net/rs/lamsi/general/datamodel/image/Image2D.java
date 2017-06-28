@@ -81,6 +81,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	// max and min z (intensity)
 	protected double averageIProcessed = -1;
 	protected double minZ=Double.NaN, maxZ=Double.NaN;
+	protected double minNonZeroZSelected = Double.NaN, minNonZeroZ = Double.NaN;
 	protected double minZSelected=Double.NaN, maxZSelected=Double.NaN, avgZSelected = Double.NaN;
 	protected double minZFiltered = -1;
 	protected double maxZFiltered = -1;
@@ -1477,6 +1478,42 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 			return minZ;
 		}
 	}
+	
+	/**
+	 * minimum intensity that is not zero processed 
+	 * @return
+	 */
+	public double getMinNonZeroIntensity(boolean onlySelected) {
+		checkForUpdateInParentIProcessing();
+		// array with values only (no NaN)
+		double[] inten = toIArray(false, onlySelected);
+		if(onlySelected) {
+			if(Double.isNaN(minNonZeroZSelected)) {
+				minNonZeroZSelected =  Double.POSITIVE_INFINITY;
+				for(double i : inten)
+					if(i<minNonZeroZSelected && i!=0) minNonZeroZSelected = i;
+			}
+
+			if(minNonZeroZSelected == Double.POSITIVE_INFINITY) {
+				minNonZeroZSelected = Double.NaN;
+				return Double.NaN;
+			}
+			return minNonZeroZSelected;
+		}
+		else {
+			if(Double.isNaN(minNonZeroZ)) {
+				minNonZeroZ =  Double.POSITIVE_INFINITY;
+				for(double i : inten)
+					if(i<minNonZeroZ && i!=0) minNonZeroZ = i;
+			}
+
+			if(minNonZeroZ == Double.POSITIVE_INFINITY) {
+				minNonZeroZ = Double.NaN;
+				return Double.NaN;
+			}
+			return minNonZeroZ;
+		}
+	}
 
 	/**
 	 * maximum intensity processed 
@@ -1856,6 +1893,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		minZSelected = Double.NaN;
 		maxZSelected = Double.NaN;
 		avgZSelected = Double.NaN;
+		
+		minNonZeroZ = Double.NaN;
+		minNonZeroZSelected = Double.NaN;
 
 
 		// applyCutFilter?

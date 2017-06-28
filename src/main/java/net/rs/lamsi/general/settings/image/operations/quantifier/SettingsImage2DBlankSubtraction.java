@@ -86,7 +86,7 @@ public class SettingsImage2DBlankSubtraction extends SettingsImage2DQuantifier {
 		if(isApplicable()) {
 			if(modeData==MODE_DATA_IMG) {
 				// one image as blank
-				if(mode==MODE_AVERAGE) return (imgBlank.getAverageIProcessed());
+				if(mode==MODE_AVERAGE) return (imgBlank.getAverageIntensity(false));
 				else if(mode==MODE_ACTUAL_DP) return (imgBlank.getI(false,line, dp));
 				else return (imgBlank.getAverageIProcessed(line));
 			} 
