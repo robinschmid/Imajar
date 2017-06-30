@@ -53,7 +53,7 @@ public class SettingsHolder extends SettingsContainerSettings {
 		super("SettingsHolder", "/Settings/", "setall");
 		//  settings 
 		addSettings(new SettingsDataSaver("/Settings/Export/", "setds"));
-		//addSettings(new SettingsChargeCalculator());
+		addSettings(new SettingsChargeCalculator());
 		addSettings(new SettingsGeneralValueFormatting());
 
 		// visualization only for Toolset
