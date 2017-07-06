@@ -10,7 +10,14 @@ public class SettingsMSImage extends SettingsGeneralImage {
 	
     // my pm and name
 	protected MZIon mzIon = null;
- 
+	
+	public SettingsMSImage() {
+		super("/Settings/MSImage/", "setMSI");
+		this.velocity = 50;
+		this.spotsize = 50;
+		this.timePerLine = 1;
+		this.isTriggered = true;
+	}
 	public SettingsMSImage(boolean allFiles, boolean isTriggert, float velocity, float spotsize, double timePerLine, MZIon mzIon) {
 		super("/Settings/MSImage/", "setMSI");
 		this.velocity = velocity;
@@ -21,6 +28,7 @@ public class SettingsMSImage extends SettingsGeneralImage {
 		this.allFiles = allFiles;
 	}
 
+	
 	@Override
 	public Class getSuperClass() {
 		return SettingsGeneralImage.class; 

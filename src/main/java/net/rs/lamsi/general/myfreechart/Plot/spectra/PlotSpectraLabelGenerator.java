@@ -38,10 +38,10 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 		// no labels?
 		if(!settings.isShowLabels())
 			return null;
-		
+
 		// distance
 		POINTS_RESERVE_X = settings.getMinimumSpaceBetweenLabels();
-		
+
 		// X and Y values of current data point
 		double originalX = dataset.getX(series, item).doubleValue();
 		double originalY = dataset.getY(series, item).doubleValue();
@@ -53,12 +53,12 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 		if(relativeInt < settings.getMinimumRelativeIntensityOfLabel()) {
 			return null;
 		}
-		
+
 		// Calculate data size of 1 screen pixel
 		double xLength = (double) plot.getChart().getXYPlot().getDomainAxis().getRange()
 				.getLength();
 		double pixelX = xLength / plot.getWidth();		
-		
+
 
 		// Size of data set
 		int itemCount = dataset.getItemCount(series);
@@ -100,7 +100,7 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 			double mzValue = dataset.getXValue(series, item);
 			label = mzFormat.format(mzValue);
 		}
-		
+
 		// Calc and show charge?
 		if(settings.isShowCharge()) {
 			// Calc Charge and display if isotope pattern found
@@ -112,7 +112,7 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 		//
 		return label;
 	}
-	
+
 	/*
 	 * Calculates Charge by isotope pattern
 	 * returns 0 if there is no isotope pattern
@@ -120,14 +120,14 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 	private int calcChargeByIsotopePattern(XYDataset dataset, int series, int item) {
 		SettingsChargeCalculator settings = Window.getWindow().getSettings().getSetChargeCalc();
 		int charge = 0;
-		
+
 		// find all peaks in range and put them in this vector
 		Vector<Point2D> peaks = new Vector<Point2D>();
 		// + direction
 		getPossiblePeaksInDistance(peaks, dataset, series, item, +1);
 		// - direction
 		getPossiblePeaksInDistance(peaks, dataset, series, item, -1);
-		
+
 		// get maximum intensity
 		double maxInt = 0;
 		for(Point2D p : peaks) 
@@ -141,14 +141,14 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 				i--;
 			}				
 		}
-		
+
 		// isotope pattern? use filter
 		MZChargeCalculatorDouble chargeFilter = new MZChargeCalculatorDouble(peaks, settings, new Point2D.Double(dataset.getXValue(series, item), dataset.getYValue(series, item)) );
 		charge = chargeFilter.doFiltering();
 		// no charge found = 0
 		return charge;
 	} 
-	
+
 	/*
 	 * Searches for peaks in a possible range
 	 * maximal distance is 1
@@ -168,40 +168,44 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
 		do {
 			i += direction;
 			// only if i-2direction is in bounds
-			if(i-2*direction>=0 && i-2*direction<dataset.getItemCount(series)) {
-				double lastiIntensity = dataset.getYValue(series, i-direction);
-				double iIntensity = dataset.getYValue(series, i);
-				// no peak found
-				if(!peakStartFound) {
-					if(iIntensity>0 && lastiIntensity>0 && iIntensity*2/3>lastiIntensity) {
-						// peak found
-						peakStartFound = true;
-						peakMZ = dataset.getXValue(series, i);
-						peakMaxIntensity = iIntensity;
+			try{
+				if(i-direction>=0 && i-direction<dataset.getItemCount(series) && i>=0 && i<dataset.getItemCount(series)) {
+					double lastiIntensity = dataset.getYValue(series, i-direction);
+					double iIntensity = dataset.getYValue(series, i);
+					// no peak found
+					if(!peakStartFound) {
+						if(iIntensity>0 && lastiIntensity>0 && iIntensity*2/3>lastiIntensity) {
+							// peak found
+							peakStartFound = true;
+							peakMZ = dataset.getXValue(series, i);
+							peakMaxIntensity = iIntensity;
+						}
+					}
+					// peak already found
+					else {
+						// intensity higher?
+						if(iIntensity>lastiIntensity && iIntensity> peakMaxIntensity) {
+							peakMZ = dataset.getXValue(series, i);
+							peakMaxIntensity = iIntensity; 
+						}
+						// end of peak? 3 points with decreasing tendence or half of maxIntensity
+						if((iIntensity<=lastiIntensity && lastiIntensity<=dataset.getYValue(series, i-direction*2)) || iIntensity==0 || iIntensity<=peakMaxIntensity/2) {
+							// add peak to list TODO
+							if(direction==1) peaks.add(new Point2D.Double(peakMZ, peakMaxIntensity));
+							else peaks.add(0, new Point2D.Double(peakMZ, peakMaxIntensity));
+							// Start new search
+							getPossiblePeaksInDistance(peaks, dataset, series, i, direction);
+							// END METHOD
+							return;
+						}
 					}
 				}
-				// peak already found
-				else {
-					// intensity higher?
-					if(iIntensity>lastiIntensity && iIntensity> peakMaxIntensity) {
-						peakMZ = dataset.getXValue(series, i);
-						peakMaxIntensity = iIntensity; 
-					}
-					// end of peak? 3 points with decreasing tendence or half of maxIntensity
-					if((iIntensity<=lastiIntensity && lastiIntensity<=dataset.getYValue(series, i-direction*2)) || iIntensity==0 || iIntensity<=peakMaxIntensity/2) {
-						// add peak to list TODO
-						if(direction==1) peaks.add(new Point2D.Double(peakMZ, peakMaxIntensity));
-						else peaks.add(0, new Point2D.Double(peakMZ, peakMaxIntensity));
-						// Start new search
-						getPossiblePeaksInDistance(peaks, dataset, series, i, direction);
-						// END METHOD
-						return;
-					}
-				}
+			} catch(Exception ex) {
+				ex.printStackTrace();
 			}
 			// stop when XYData end reached or out of distance
 		}while(i>0 && i<dataset.getItemCount(series) && distance>Math.abs(startMZ-dataset.getXValue(series, i)));
-		
+
 	}
-	
+
 } 

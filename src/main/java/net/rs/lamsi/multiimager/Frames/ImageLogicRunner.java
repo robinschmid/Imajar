@@ -124,7 +124,7 @@ public class ImageLogicRunner {
 	 *  add and remove image from jList gets automatically removed from vector<Image2D>
 	 * @param gid parent node id
 	 */
-	public IconNode addImage(Collectable2D i, String projectName, String gid) {  
+	public void addImage(Collectable2D i, String projectName, String gid) {  
 		// TODO 
 		ImageGroupMD group = treeImg.getGroup(projectName, gid);
 		// group exists?
@@ -132,18 +132,13 @@ public class ImageLogicRunner {
 			group.add(i);
 			IconNode node = addImageNode(i, group.getNode()); 
 			treeImg.getTreeModel().reload(); 
-			return node;
 		}
 		else {
 			// cerate and add group
 			// create image group 
 			group = new ImageGroupMD(i);
+			group.setGroupName(gid);
 			addGroup(group, projectName);
-			// add to tree
-			IconNode parent = new IconNode(gid);
-			IconNode node = addImageNode(i, parent);
-			treeImg.addNodeToRoot(parent);
-			return node;
 		}
 	}
 	/**

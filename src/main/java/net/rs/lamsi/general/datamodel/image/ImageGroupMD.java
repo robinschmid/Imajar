@@ -15,6 +15,7 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
+import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.SettingsImageGroup;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImgTableRow;
@@ -85,6 +86,27 @@ public class ImageGroupMD implements Serializable {
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
+				}
+				else if(data.hasSameDataDimensionsAs(img.getData())) {
+					// copy data over
+					if(data.addDimension(img)) {
+						try {
+							img.setData(data);
+							img.setIndex(data.size()-1);
+							images.add(image2dCount(),img);
+							img.setImageGroup(this);
+							// add to all overlays
+							for(int i=image2dCount(); i<size(); i++)
+								if(ImageOverlay.class.isInstance(get(i)))
+									try {
+										((ImageOverlay)get(i)).addImage(img);
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 		}

@@ -93,7 +93,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 
 	public Image2D(SettingsImage2D settings) {
 		super(settings);
-		setSettings(settings);
 	}
 
 	public Image2D(ImageDataset data) {

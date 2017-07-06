@@ -10,11 +10,13 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
 import net.rs.lamsi.general.settings.SettingsDataSaver;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.massimager.MyMZ.ChromGenType;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
@@ -919,7 +921,7 @@ public class LogicRunner {
 			// set Path from first rawfile TODO
 			// setMSIDiscon.setRAWFilepath(specList.firstElement().getFile().getPath());
 			// 
-			Image2D img = Image2D.generateImage2DFrom(window.getSettings().getSetPaintScale(), setMSIDiscon, mzChrom);
+			Image2D img = Image2D.generateImage2DFrom(SettingsPaintScale.createStandardSettings(), setMSIDiscon, mzChrom);
 			return img;
 		} 
 		else return null;

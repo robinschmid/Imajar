@@ -586,7 +586,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				
 						pnSettImageCon = new JPanel();
 						pnWestImageSettings.getPnContent().add(pnSettImageCon, BorderLayout.CENTER);
-						pnSettImageCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][][top][][][][][][][][][][][]"));
+						pnSettImageCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][][top][][][][][][][][][][][][]"));
 						
 								lbDisconCon = new JLabel("Discontinuos");
 								pnSettImageCon.add(lbDisconCon, "cell 0 0 2 1");
@@ -691,21 +691,30 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																																// send image to imageeditor // TODO
 																																if(currentHeat!=null && currentHeat.getImage()!=null) {
 																																	// TODO txtID.getText()
-																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(),"MS project", getTxtImgGroupID().getText());
+																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(), getTxtProject().getText(), getTxtImgGroupID().getText());
 																																}
 																															}
 																														});
 																														
-																														lblId = new JLabel("ID:");
-																														pnSettImageCon.add(lblId, "flowx,cell 0 5");
+																														lblProject = new JLabel("project");
+																														pnSettImageCon.add(lblProject, "cell 0 5,alignx trailing");
+																														
+																														txtProject = new JTextField();
+																														txtProject.setToolTipText("Porject name in image editor");
+																														txtProject.setText("RAW");
+																														pnSettImageCon.add(txtProject, "cell 1 5,growx");
+																														txtProject.setColumns(10);
+																														
+																														lblId = new JLabel("group");
+																														pnSettImageCon.add(lblId, "flowx,cell 0 6");
 																														
 																														txtImgGroupID = new JTextField();
 																														txtImgGroupID.setToolTipText("ID for grouping in ImageEditor");
-																														txtImgGroupID.setText("RAW");
-																														pnSettImageCon.add(txtImgGroupID, "cell 1 5,growx");
+																														txtImgGroupID.setText("g");
+																														pnSettImageCon.add(txtImgGroupID, "cell 1 6,growx");
 																														txtImgGroupID.setColumns(10);
 																														btnSendImage.setToolTipText("Sends image to image editor");
-																														pnSettImageCon.add(btnSendImage, "cell 1 6");
+																														pnSettImageCon.add(btnSendImage, "cell 1 7");
 																												
 																												pnPeakList = new ModuleListWithOptions("PeakLists", true, wnd.getLogicRunner().getPeakLists());
 																												pnPeakList.getList().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -731,11 +740,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 																												lbSelectedPeakList = new JLabel("");
 																												pnPeakList.getPnOptions().add(lbSelectedPeakList, "cell 0 1");
 		//
-		//initMZMineListeners();
+		initMZMineListeners();
 		//
-		//setKeyBindings();
+		setKeyBindings();
 		// init dialogs
-		//initDialogs();
+		initDialogs();
 	}  
 	
 	private void initDialogs() {
@@ -1712,6 +1721,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private JTextField txtAddSplit;
 	private JButton button_1;
 	private JPanel panel;
+	private JLabel lblProject;
+	private JTextField txtProject;
 	public void startImageUpdater() {
 		if(startTime == -1){
 			startTime = System.currentTimeMillis();
@@ -1845,5 +1856,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	}
 	public JTextField getTxtSplitStartX() {
 		return txtSplitStartX;
+	}
+	public JTextField getTxtProject() {
+		return txtProject;
 	}
 }
