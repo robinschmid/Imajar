@@ -214,7 +214,12 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		// TODO process intensity
 		if(raw || Double.isNaN(i)) return i;
 		else {
-			// subtract blank and apply IS
+			// subtract blank 
+			SettingsSelections sel = settings.getSettSelections();
+			if(sel!=null) {
+				i = sel.calcIntensity(this, l, dp, i);
+			}
+			// apply IS
 			SettingsImage2DQuantifierIS isq = settings.getInternalQuantifierIS();
 			if(isq!=null) {
 				i = isq.calcIntensity(this, l, dp, i);

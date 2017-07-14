@@ -56,9 +56,16 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 * defines the task for this ROI
 	 */
 	public enum ROI {
-		SAMPLE, QUANTIFIER
-	}
+		SAMPLE, QUANTIFIER, BLANK_LINES, BLANK_COLUMNS;
 
+		/**
+		 * is blank or something else?
+		 * @return
+		 */
+		public boolean isBlank() {
+			return equals(BLANK_LINES) || equals(BLANK_COLUMNS);
+		}
+	}
 
 	// selectionmode
 	protected SelectionMode mode;
@@ -74,6 +81,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
 	protected transient Image2D currentImg;
 
+	
 	// highlight selection
 	protected boolean isHighlighted = false;
 	// the Shape
@@ -294,8 +302,10 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	
 	/**
 	 * 
-	 * @param x
-	 * @param y
+	 * @param x left edge of data point
+	 * @param y bottom of data point
+	 * @param w width of data point (to calculate centre point)
+	 * @param h height of data point
 	 * @param i
 	 * @param isExcluded
 	 * @return
@@ -393,19 +403,25 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	
 	public static BasicStroke getStrokeForROI(ROI roi) {
 		if(strokes.isEmpty()) {
-			strokes.put(ROI.QUANTIFIER, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
-					2f, new float[] {10f,5f, 2.5f, 5f}, 0f));
-			strokes.put(ROI.SAMPLE, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
+			createStandardStrokes();
 		}
 		return strokes.get(roi);
 	}
 	public static Map<ROI, BasicStroke> getStrokes() {
 		if(strokes.isEmpty()) {
-			strokes.put(ROI.QUANTIFIER, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
-					2f, new float[] {10f,5f, 2.5f, 5f}, 0f));
-			strokes.put(ROI.SAMPLE, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
+			createStandardStrokes();
 		}
 		return strokes;
+	}
+	
+	private static void createStandardStrokes() {
+		strokes.put(ROI.QUANTIFIER, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+				2f, new float[] {10f,5f, 2.5f, 5f}, 0f));
+		strokes.put(ROI.SAMPLE, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
+		strokes.put(ROI.BLANK_COLUMNS, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+				2f, new float[] {15f,7.5f}, 0f));
+		strokes.put(ROI.BLANK_LINES, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+				2f, new float[] {15f,7.5f}, 0f));
 	}
 
 	/**
@@ -437,6 +453,21 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 */
 	public SelectionTableRow getDefaultTableRow() {
 		return mode.equals(SelectionMode.SELECT)? statsRegardingExclusion : stats;
+	}
+
+	/**
+	 * table row is in regards to exclusion for selections and the other for exclude and info
+	 * @return
+	 */
+	public SelectionTableRow getStats() {
+		return stats;
+	}
+	/**
+	 * table row is in regards to exclusion for selections and the other for exclude and info
+	 * @return
+	 */
+	public SelectionTableRow getStatsRegardingExclusions() {
+		return statsRegardingExclusion;
 	}
 
 	/**

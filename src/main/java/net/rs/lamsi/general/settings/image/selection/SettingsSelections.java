@@ -19,6 +19,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
+import net.rs.lamsi.general.settings.image.operations.quantifier.Image2DQuantifyStrategyImpl;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
@@ -27,7 +28,7 @@ import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
-public class SettingsSelections extends Settings implements Serializable, Image2DSett, IntensityProcessingChangedListener {
+public class SettingsSelections extends Settings implements Serializable, Image2DQuantifyStrategyImpl, Image2DSett, IntensityProcessingChangedListener {
 	// do not change the version!
 	private static final long serialVersionUID = 1L;
 
@@ -48,6 +49,9 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 	// version id for regression to track changes 
 	// for quantified images to register value processing changes
 	protected int regressionVersionID = 1;
+
+	// use blank reduction?
+	protected boolean blankActive = false;
 
 	public SettingsSelections() {
 		super("SettingsSelection", "/Settings/Selections/", "setSelList"); 
@@ -180,8 +184,8 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 				for(int i=0; i<selections.size(); i++) {
 					SettingsShapeSelection s = selections.get(i);
 
-					// check with the information that it is excluded
-					s.check(x[d]+w,y[d]+h,z[d], w, h, isExcluded);
+					// check with the information whether it is excluded
+					s.check(x[d],y[d],z[d], w, h, isExcluded);
 				}
 			}
 
@@ -304,7 +308,7 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 	// xml input/output
 	@Override
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
-		//toXML(elParent, doc, "xrange.lower", xrange.getLowerBound()); 
+		toXML(elParent, doc, "blankActive", blankActive); 
 		if(selections!=null) {
 			for(int i=0; i<selections.size(); i++) {
 				SettingsShapeSelection s = selections.get(i);
@@ -358,6 +362,8 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 					BasicStroke s = strokeFromXML(nextElement);
 					strokes.put(roi, s);
 				}
+				else if(paramName.equals("blankActive"))
+					blankActive = booleanFromXML(nextElement);
 			}
 		}
 	}
@@ -790,6 +796,52 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 
 	public int getRegressionVersionID() {
 		return regressionVersionID;
+	}
+
+	
+	//###############################################################################
+	// blank 
+	public void setBlankActive(boolean selected) {
+		blankActive = selected;
+	}
+	
+	public boolean isBlankActive() {
+		return blankActive;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean hasBlankROI() {
+		if(selections==null || selections.isEmpty())
+			return false;
+		
+		for (SettingsShapeSelection s : selections) {
+			if(s.getRoi().isBlank())
+				return true;
+		}
+		return false;
+	}
+
+	@Override
+	public double calcIntensity(Image2D img, int line, int dp, double intensity) {
+		if(isBlankActive() && hasBlankROI()) {
+			// get direction: columns or rows?
+			// get average per col or row
+			double average = 0;
+			int c = 0;
+			for (SettingsShapeSelection s : selections) {
+				if(s.getRoi().isBlank()) {
+					average += s.getStatsRegardingExclusions().getAvg();
+					c++;
+				}
+			}
+			if(c!=0)
+				average = average / c;
+			// subtract
+			return intensity-average;
+		}
+		else return intensity;
 	}
 }
 

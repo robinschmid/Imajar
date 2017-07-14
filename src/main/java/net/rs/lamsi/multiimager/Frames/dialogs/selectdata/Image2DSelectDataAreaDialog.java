@@ -108,6 +108,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private JButton btnRegression;
 	private JColorPickerButton cbtnColor;
 	private JStrokeChooserPanel strokeChooserPanel;
+	private JCheckBox cbShowAnnotations;
 
 	/**
 	 * Launch the application.
@@ -188,6 +189,11 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		
 		JPanel pnNorthMenu = new JPanel();
 		pnNorthMenuContainer.add(pnNorthMenu, BorderLayout.NORTH);
+		
+		cbShowAnnotations = new JCheckBox("show annotations");
+		cbShowAnnotations.setToolTipText("Show annotations for blank application direction and other descriptors");
+		cbShowAnnotations.setSelected(true);
+		pnNorthMenu.add(cbShowAnnotations);
 		
 		cbPerformance = new JCheckBox("Performance");
 		cbPerformance.setToolTipText("Calculates statistics at the end of the creation of a shape. (Saves performance)");
@@ -878,5 +884,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	}
 	public JStrokeChooserPanel getStrokeChooserPanel() {
 		return strokeChooserPanel;
+	}
+	public JCheckBox getCbShowAnnotations() {
+		return cbShowAnnotations;
 	}
 }

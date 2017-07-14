@@ -26,6 +26,7 @@ import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
+import javax.swing.SwingConstants;
 
 public class ModuleSelectExcludeData extends Collectable2DSettingsModule<SettingsSelections, Image2D> { 
 	//
@@ -35,6 +36,9 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 	private JLabel lbSelectedRects;
 	private JCheckBox cbShowSelExcl;
 	private JButton btnOpenSelectData;
+	private JLabel lblBlankSettings;
+	private JCheckBox cbApplyBlank;
+	private JLabel lblBlankInfo;
 
 	/**
 	 * Create the panel.
@@ -46,7 +50,7 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 		
 		JPanel panel = new JPanel();
 		getPnContent().add(panel, BorderLayout.CENTER);
-		panel.setLayout(new MigLayout("", "[][][]", "[][][][][]"));
+		panel.setLayout(new MigLayout("", "[][][]", "[][][][][][][][][]"));
 		
 		cbShowSelExcl = new JCheckBox("Show selected and exluded rects");
 		cbShowSelExcl.addItemListener(new ItemListener() {
@@ -113,6 +117,17 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 			}
 		});
 		panel.add(btnOpenSelectData, "cell 1 4");
+		
+		lblBlankSettings = new JLabel("Blank settings");
+		lblBlankSettings.setFont(new Font("Tahoma", Font.BOLD, 12));
+		panel.add(lblBlankSettings, "cell 1 6");
+		
+		cbApplyBlank = new JCheckBox("apply blank");
+		panel.add(cbApplyBlank, "cell 1 7");
+		
+		lblBlankInfo = new JLabel("");
+		lblBlankInfo.setHorizontalAlignment(SwingConstants.LEFT);
+		panel.add(lblBlankInfo, "cell 1 8 2 1");
 	}
 	
 	/**
@@ -136,7 +151,7 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 
 	@Override
 	public SettingsSelections writeAllToSettings(SettingsSelections si) {
-		
+		si.setBlankActive(getCbApplyBlank().isSelected());
 		return si;
 	}
 	
@@ -156,8 +171,15 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 
 	@Override
 	public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+		getCbApplyBlank().addItemListener(il);
 	}
 	@Override
 	public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl, ColorChangedListener ccl, ItemListener il) {
+	}
+	public JLabel getLblBlankInfo() {
+		return lblBlankInfo;
+	}
+	public JCheckBox getCbApplyBlank() {
+		return cbApplyBlank;
 	}
 }

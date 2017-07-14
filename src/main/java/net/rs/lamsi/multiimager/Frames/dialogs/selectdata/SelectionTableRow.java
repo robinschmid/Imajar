@@ -24,6 +24,8 @@ public class SelectionTableRow implements Serializable{
 	private double max, min, median, p99, avg, sdev, sum;
 	private int n;
 
+	// keep data for rows/columns for blank subtraction
+//	private boolean keepDataForRowsCols = false;
 
 
 	public SelectionTableRow() {
@@ -78,9 +80,8 @@ public class SelectionTableRow implements Serializable{
 		// calc stdev
 		sdev = Math.sqrt(sdev/(double)(data.size()-1));
 
-		
 		// erase data
-		data = null;
+			data = null;
 	}
 
 	public ChartPanel getHisto() {
@@ -90,7 +91,6 @@ public class SelectionTableRow implements Serializable{
 	public void setHisto(ChartPanel histo) {
 		this.histo = histo;
 	}
-
 
 	public double getMax() {
 		return max;
