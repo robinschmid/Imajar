@@ -70,6 +70,8 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 	private JTextField txtChartTitle;
 	private JColorPickerButton cbtnPlotBgColor;
 	private JColorPickerButton cbtnBGColor;
+	private JTextField txtXTitle;
+	private JTextField txtYTitle;
 
 
 	public ModuleGeneralTheme() {
@@ -204,7 +206,7 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 
 		JPanel panel_3 = new JPanel();
 		modAxes.getPnContent().add(panel_3, BorderLayout.CENTER);
-		panel_3.setLayout(new MigLayout("", "[grow][][][][grow]", "[][]"));
+		panel_3.setLayout(new MigLayout("", "[grow][][][grow][grow]", "[][]"));
 
 		JLabel lblXAxis = new JLabel("x axis");
 		lblXAxis.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -213,6 +215,12 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 		cbShowXAxis = new JCheckBox("show x axis");
 		cbShowXAxis.setSelected(true);
 		panel_3.add(cbShowXAxis, "cell 2 0");
+		
+		txtXTitle = new JTextField();
+		txtXTitle.setToolTipText("Domain axis title");
+		txtXTitle.setText("x");
+		panel_3.add(txtXTitle, "cell 3 0,growx");
+		txtXTitle.setColumns(10);
 
 		JLabel lblYAxis = new JLabel("y axis");
 		lblYAxis.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -221,6 +229,12 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 		cbShowYAxis = new JCheckBox("show y axis");
 		cbShowYAxis.setSelected(true);
 		panel_3.add(cbShowYAxis, "cell 2 1");
+		
+		txtYTitle = new JTextField();
+		txtYTitle.setToolTipText("Range axis title");
+		txtYTitle.setText("y");
+		panel_3.add(txtYTitle, "cell 3 1,growx");
+		txtYTitle.setColumns(10);
 		// add standard themes to menu
 		addStandardThemesToMenu();
 	}
@@ -304,6 +318,8 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 		getCbNoBackground().addItemListener(il); 
 
 		getTxtChartTitle().getDocument().addDocumentListener(dl);
+		getTxtXTitle().getDocument().addDocumentListener(dl);
+		getTxtYTitle().getDocument().addDocumentListener(dl);
 
 		// font specs
 		getFontAxesCaption().addListener(ccl, il, dl);
@@ -396,6 +412,9 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 			// chart title
 			getTxtChartTitle().setText(st.getChartTitle());
 
+			getTxtXTitle().setText(st.getxAxisTitle());
+			getTxtYTitle().setText(st.getyAxisTitle());
+			
 			// set fonts:
 			getFontAxesCaption().setSelectedFont(t.getLargeFont());
 			getFontAxesLabels().setSelectedFont(t.getRegularFont());
@@ -429,7 +448,8 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 						getFontMaster().getSelectedFont(), getFontMaster().getColor(),
 						getFontAxesCaption().getSelectedFont(), getFontAxesCaption().getColor(),
 						getFontAxesLabels().getSelectedFont(), getFontAxesLabels().getColor(),
-						getFontPlotTitle().getSelectedFont(), getFontPlotTitle().getColor(), getTxtChartTitle().getText());
+						getFontPlotTitle().getSelectedFont(), getFontPlotTitle().getColor(), getTxtChartTitle().getText(),
+						getTxtXTitle().getText(), getTxtYTitle().getText());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -476,5 +496,11 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 	}
 	public JColorPickerButton getCbtnPlotBgColor() {
 		return cbtnPlotBgColor;
+	}
+	public JTextField getTxtYTitle() {
+		return txtYTitle;
+	}
+	public JTextField getTxtXTitle() {
+		return txtXTitle;
 	}
 }

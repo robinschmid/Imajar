@@ -35,6 +35,7 @@ public class SettingsTheme extends Settings {
 	
 	// chart title
 	private String chartTitle = "";
+	private String xAxisTitle = "x", yAxisTitle = "y";
 
 	public SettingsTheme() {
 		this(null);
@@ -54,17 +55,20 @@ public class SettingsTheme extends Settings {
 	public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, Color cPlotBG,
 			boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, 
 			Font fMaster, Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle,
-			String chartTitle) {
+			String chartTitle, String xAxisTitle, String yAxisTitle) {
 		theme.setAll(antiAlias, showTitle, noBG, cBG, cPlotBG, showXGrid, showYGrid, showXAxis, showYAxis, 
 				fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle);
 		
 		this.chartTitle = chartTitle;
-		
+		this.xAxisTitle = xAxisTitle;
+		this.yAxisTitle = yAxisTitle;
 	}
 	@Override
 	public void resetAll() { 
 		theme = ChartThemeFactory.getStandardTheme();
 		chartTitle = "";
+		xAxisTitle = "x (µm)";
+		yAxisTitle = "y (µm)";
 	}
 
 	public void setShortTitle(Color c, Color bg, Font font) {
@@ -77,6 +81,8 @@ public class SettingsTheme extends Settings {
 	public void appendSettingsValuesToXML(Element elParent, Document doc) {
 		theme.appendThemeSettingsToXML(elParent, doc);
 		toXML(elParent, doc, "chartTitle", chartTitle);
+		toXML(elParent, doc, "xAxisTitle", xAxisTitle);
+		toXML(elParent, doc, "yAxisTitle", yAxisTitle);
 	}
 
 	@Override
@@ -89,6 +95,8 @@ public class SettingsTheme extends Settings {
 				if(paramName.equals(MyStandardChartTheme.XML_DESC))
 					theme.loadValuesFromXML(nextElement, doc);
 				else if(paramName.equals("chartTitle")) chartTitle = nextElement.getTextContent();
+				else if(paramName.equals("xAxisTitle")) xAxisTitle = nextElement.getTextContent();
+				else if(paramName.equals("yAxisTitle")) yAxisTitle = nextElement.getTextContent();
 			}
 		}
 	}
@@ -113,6 +121,8 @@ public class SettingsTheme extends Settings {
 		theme.apply(chart);
 		
 		chart.setTitle(chartTitle);
+		chart.getXYPlot().getDomainAxis().setLabel(xAxisTitle);
+		chart.getXYPlot().getRangeAxis().setLabel(yAxisTitle);
 	}
 	
 	public MyStandardChartTheme getTheme() {
@@ -132,5 +142,17 @@ public class SettingsTheme extends Settings {
 	}
 	public void setChartTitle(String chartTitle) {
 		this.chartTitle = chartTitle;
+	}
+	public String getxAxisTitle() {
+		return xAxisTitle;
+	}
+	public String getyAxisTitle() {
+		return yAxisTitle;
+	}
+	public void setxAxisTitle(String xAxisTitle) {
+		this.xAxisTitle = xAxisTitle;
+	}
+	public void setyAxisTitle(String yAxisTitle) {
+		this.yAxisTitle = yAxisTitle;
 	}
 }

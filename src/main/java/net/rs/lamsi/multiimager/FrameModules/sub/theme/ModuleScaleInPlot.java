@@ -55,7 +55,7 @@ public class ModuleScaleInPlot extends Collectable2DSettingsModule<SettingsScale
 		
 		JPanel panel_4 = new JPanel();
 		panel.add(panel_4, "cell 1 1");
-		panel_4.setLayout(new MigLayout("", "[][85.00][][]", "[][][][][][grow][grow]"));
+		panel_4.setLayout(new MigLayout("", "[][85.00][]", "[][][][][][grow][grow]"));
 		
 		JLabel lblUnit = new JLabel("value");
 		panel_4.add(lblUnit, "cell 0 0,alignx trailing");
@@ -66,6 +66,12 @@ public class ModuleScaleInPlot extends Collectable2DSettingsModule<SettingsScale
 		txtScaleValue.setHorizontalAlignment(SwingConstants.TRAILING);
 		panel_4.add(txtScaleValue, "flowx,cell 1 0,alignx left");
 		txtScaleValue.setColumns(10);
+		
+		txtScaleUnit = new JTextField();
+		txtScaleUnit.setToolTipText("Unit for scale width");
+		txtScaleUnit.setPreferredSize(new Dimension(5, 20));
+		panel_4.add(txtScaleUnit, "flowx,cell 2 0");
+		txtScaleUnit.setColumns(10);
 		
 		JLabel lblFactor = new JLabel("factor");
 		panel_4.add(lblFactor, "cell 0 1,alignx trailing");
@@ -84,7 +90,7 @@ public class ModuleScaleInPlot extends Collectable2DSettingsModule<SettingsScale
 		sliderScaleXPos.setPreferredSize(new Dimension(100, 23));
 		sliderScaleXPos.setMinimumSize(new Dimension(100, 23));
 		sliderScaleXPos.setValue(90);
-		panel_4.add(sliderScaleXPos, "cell 1 3 3 1,growx");
+		panel_4.add(sliderScaleXPos, "cell 1 3 2 1,growx");
 		
 		JLabel lblYPos = new JLabel("y pos");
 		panel_4.add(lblYPos, "cell 0 4,alignx trailing");
@@ -93,19 +99,13 @@ public class ModuleScaleInPlot extends Collectable2DSettingsModule<SettingsScale
 		sliderScaleYPos.setValue(10);
 		sliderScaleYPos.setPreferredSize(new Dimension(100, 23));
 		sliderScaleYPos.setMinimumSize(new Dimension(100, 23));
-		panel_4.add(sliderScaleYPos, "cell 1 4 3 1,growx");
+		panel_4.add(sliderScaleYPos, "cell 1 4 2 1,growx");
 		
 		fontScale = new JFontSpecs();
-		panel_4.add(fontScale, "cell 0 5 4 1,alignx left,growy");
-		
-		txtScaleUnit = new JTextField();
-		txtScaleUnit.setToolTipText("Unit for scale width");
-		txtScaleUnit.setPreferredSize(new Dimension(5, 20));
-		panel_4.add(txtScaleUnit, "cell 1 0");
-		txtScaleUnit.setColumns(10);
+		panel_4.add(fontScale, "cell 0 5 3 1,alignx left,growy");
 		
 		JLabel lblUnit_1 = new JLabel("unit");
-		panel_4.add(lblUnit_1, "cell 1 0");
+		panel_4.add(lblUnit_1, "cell 2 0");
 		
 		setMaxPresets(15);
 	}
