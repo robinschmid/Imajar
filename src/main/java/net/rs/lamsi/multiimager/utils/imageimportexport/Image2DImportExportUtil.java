@@ -1375,9 +1375,10 @@ public class Image2DImportExportUtil {
 		}
 		
 		// add x to all scan lines
-		if(x!=null)
-		for (int i = 0; i < x.length; i++) {
+		if(x!=null) {
+		for (int i = 0; i < x.length && i<scanLines.size(); i++) {
 			scanLines.get(i).setX(x[i]);
+		}
 		}
 		
 		// Generate Image2D from scanLines 
