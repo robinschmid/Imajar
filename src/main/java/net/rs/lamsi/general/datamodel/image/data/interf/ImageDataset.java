@@ -3,6 +3,7 @@ package net.rs.lamsi.general.datamodel.image.data.interf;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -20,6 +21,13 @@ public abstract class ImageDataset  implements Serializable {
 	// listener
 	protected ArrayList<RawDataChangedListener> rawDataChangedListener;
 
+	/**
+	 * appends lines to a dataset
+	 * @param add
+	 * @throws Exception 
+	 */
+	public abstract void appendLines(ScanLineMD[] add) throws Exception;
+	
 	/**
 	 * counts the lines in a data set
 	 * @return

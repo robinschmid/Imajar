@@ -426,4 +426,17 @@ public class ImageGroupMD implements Serializable {
 		}
 		else return getName();
 	}
+	/**
+	 * same ordering of dimensions? images
+	 * @param g
+	 * @return
+	 */
+	public boolean hasSameOrdering(ImageGroupMD g) {
+		if(g.image2dCount()!=this.image2dCount())
+			return false;
+		for(int i=0; i<g.image2dCount(); i++)
+			if(!g.get(i).getTitle().equals(this.get(i).getTitle()))
+				return false;
+		return true;
+	}
 }

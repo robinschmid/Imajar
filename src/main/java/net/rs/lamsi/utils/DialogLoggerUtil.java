@@ -20,10 +20,14 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.poi.ss.formula.functions.T;
+
+import net.rs.lamsi.general.framework.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -99,12 +103,26 @@ public class DialogLoggerUtil {
 	 * show tree dialog and choose
 	 * @param parent
 	 * @param list
-	 * @param selectionMode
+	 * @param selectionMode TreeSelectionModel
 	 * @param selectedi
 	 * @return
 	 */
-	public static TreePath[] showTreeDialogAndChoose(Window parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections) {
-		ChooseFromTreeDialog dialog = new ChooseFromTreeDialog(parent, root, selectionMode, selections);
+	public static TreePath[] showTreeDialogAndChoose(Window parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections, String title, String message) {
+		ChooseFromTreeDialog dialog = new ChooseFromTreeDialog(parent, root, selectionMode, selections, title, message);
+		return dialog.getSelected();
+	}
+	
+	/**
+	 * show tree dialog and choose
+	 * @param parent
+	 * @param list
+	 * @param selectionMode TreeSelectionModel
+	 * @param selectedi
+	 * @return
+	 */
+	public static TreePath[] showTreeDialogAndChoose(Window parent, JTree tree, int selectionMode, String title, String message) {
+		ChooseFromTreeDialog dialog = new ChooseFromTreeDialog(parent, 
+				(DefaultMutableTreeNode)tree.getModel().getRoot(), selectionMode, tree.getSelectionPaths(), title, message);
 		return dialog.getSelected();
 	}
 	
@@ -271,26 +289,26 @@ public class DialogLoggerUtil {
 		
 		private TreePath[] selected = null;
 		
-		public TreePath[] getSelected() {
-			return selected;
-		}
-
-		public void setSelected(TreePath[] selected) {
-			this.selected = selected;
-		}
  
-		public ChooseFromTreeDialog(Window parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections) {
+		public ChooseFromTreeDialog(Window parent, DefaultMutableTreeNode root, int selectionMode, TreePath[] selections, String title, String message) {
 			super(parent);
 			// create List
 			final JTree tree = new JTree(root);
 			tree.setCellRenderer(new IconNodeRenderer());
-			init(tree, selectionMode, selections); 
+			init(tree, selectionMode, selections, title, message); 
 		}
-		
-		private void init(final JTree tree, int selectionMode, TreePath[] selections) { 
+
+		private void init(final JTree tree, int selectionMode, TreePath[] selections, String title, String message) { 
+			setTitle(title);
+			
 			getContentPane().setLayout(new BorderLayout());
 			tree.getSelectionModel().setSelectionMode(selectionMode);
 			tree.setSelectionPaths(selections); 
+			if(message!=null && !message.isEmpty()) {
+				// message
+				getContentPane().add(new JTextArea(message), BorderLayout.NORTH);
+			}
+			
 			// add mouse listener
 			TreeAction la = new TreeAction(tree, new AbstractAction() {
 				
@@ -337,6 +355,13 @@ public class DialogLoggerUtil {
 			//
 			setVisible(true);
 			getContentPane().validate(); 
+		}
+		public TreePath[] getSelected() {
+			return selected;
+		}
+
+		public void setSelected(TreePath[] selected) {
+			this.selected = selected;
 		}
 	}
 }

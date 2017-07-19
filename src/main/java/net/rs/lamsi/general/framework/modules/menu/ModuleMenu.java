@@ -124,7 +124,11 @@ public class ModuleMenu extends JButton {
 					//int[] ind = DialogLoggerUtil.showListDialogAndChoose(ImageEditorWindow.getEditor(), list, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					
 
-					final TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(ImageEditorWindow.getEditor(), ImageEditorWindow.getEditor().getModuleTreeImages().getRoot(), TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, ImageEditorWindow.getEditor().getModuleTreeImages().getTree().getSelectionPaths());
+					final TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(ImageEditorWindow.getEditor(), 
+							ImageEditorWindow.getEditor().getModuleTreeImages().getRoot(), 
+							TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, 
+							ImageEditorWindow.getEditor().getModuleTreeImages().getTree().getSelectionPaths(),
+							"Multi select", "Select images, groups or projects");
 					if(paths==null) return;
 					new ProgressUpdateTask(paths.length) {
 						@Override

@@ -393,6 +393,18 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		mnAction.add(btnCrop);
 		
 		JMenuItem mntmCombineImages = new JMenuItem("Combine images");
+		mntmCombineImages.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open Dialog
+				try {
+					logicRunner.combineImages();
+				} catch (Exception e1) {
+					DialogLoggerUtil.showErrorDialog(thisFrame, "Groups were not compatible", e1);
+					e1.printStackTrace();
+				}
+			}
+		});
 		mnAction.add(mntmCombineImages);
 		
 		JMenuItem mntmSplitImages = new JMenuItem("Split images");
@@ -465,7 +477,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		mntmMultiImageExplorer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// select image list TODO
-				TreePath path = DialogLoggerUtil.showTreeDialogAndChoose(thisFrame, getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION, getModuleTreeImages().getTree().getSelectionPaths())[0];
+				TreePath path = DialogLoggerUtil.showTreeDialogAndChoose(thisFrame, 
+						getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION, 
+						getModuleTreeImages().getTree().getSelectionPaths(), "Single selection", "One image or group")[0];
 				// show dialog with mutliple image view
 				if(path!=null) { 
 					// TODO correct?

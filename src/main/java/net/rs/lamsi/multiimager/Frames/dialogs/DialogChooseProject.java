@@ -73,7 +73,9 @@ public class DialogChooseProject  extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					ModuleTree tree = ImageEditorWindow.getEditor().getModuleTreeImages();
 					//
-					TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(thisdialog, tree.getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION, tree.getTree().getSelectionPaths());
+					TreePath[] paths = DialogLoggerUtil.showTreeDialogAndChoose(thisdialog, tree.getRoot(), 
+							TreeSelectionModel.SINGLE_TREE_SELECTION, tree.getTree().getSelectionPaths(), 
+							"Single selection", "Select one image");
 					if(paths!=null && paths.length>0) {
 						project = tree.getProject(paths[0]);
 						if(project!=null)

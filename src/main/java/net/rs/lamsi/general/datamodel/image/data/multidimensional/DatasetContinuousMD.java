@@ -347,4 +347,8 @@ public class DatasetContinuousMD  extends MDDataset implements Serializable  {
 	public int size() {
 		return line!=null? line.getImageCount() : 0;
 	}
+	@Override
+	public void appendLines(ScanLineMD[] add) throws Exception {
+		throw new Exception("appendLines is not applicatble to a continuous dataset");
+	}
 }

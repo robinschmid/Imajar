@@ -16,6 +16,10 @@ import javax.swing.JOptionPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+
+import org.jfree.chart.ChartPanel;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
@@ -23,6 +27,8 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
@@ -45,9 +51,7 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
-import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
-
-import org.jfree.chart.ChartPanel;
+import nom.tam.fits.ImageData;
 
 public class ImageLogicRunner {
 	//##################################################################################
@@ -709,6 +713,71 @@ public class ImageLogicRunner {
 	}
 
 
+	/**
+	 * combine multiple images by selection in tree
+	 * @throws Exception 
+	 */
+	public void combineImages() throws Exception {
+		TreePath[] main = DialogLoggerUtil.showTreeDialogAndChoose(window, getTree().getTree(), 
+				TreeSelectionModel.SINGLE_TREE_SELECTION, "Single selection", "Select the main group");
+
+		if(main!=null && main.length>0) {
+			DefaultMutableTreeNode test = (DefaultMutableTreeNode) main[0].getLastPathComponent();
+			ImageGroupMD group = null;
+			if(getTree().isCollectable2DNode(test)) {
+				group = getTree().getImageFromPath(test).getImageGroup();
+			}
+			else if(getTree().isGroupNode(test)) {
+				group = getTree().getImageGroup(test);
+			}
+				
+			if(group!=null) {
+				MDDataset data = group.getData();
+				// search for the same image
+				TreePath[] add = DialogLoggerUtil.showTreeDialogAndChoose(window, getTree().getTree(), 
+						TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, "Multi selection", "Select more groups to merge");
+				
+				for(TreePath a : add) {
+					DefaultMutableTreeNode addNode = (DefaultMutableTreeNode) a.getLastPathComponent();
+					if(getTree().isGroupNode(addNode)) {
+						ImageGroupMD g = getTree().getImageGroup(addNode);
+						if(DatasetLinesMD.class.isInstance(g.getData()) && g.image2dCount()== group.image2dCount()) {
+							ScanLineMD[] lines = ((DatasetLinesMD)g.getData()).getLines().clone();
+							// same ordering?
+							if(!g.hasSameOrdering(group)) {
+								// reorder dimensions
+								for(int i=0; i<g.image2dCount(); i++) {
+									// i  = current dimension
+									boolean swapped = false;
+									for(int t = 0; t<group.image2dCount(); t++) {
+										// t = target dimension
+										if(g.get(i).getTitle().equals(group.get(t).getTitle())) {
+											swapped = true;
+											// swap dimensions
+											for(ScanLineMD l : lines) {
+												Double[] dim = l.getIntensity().remove(i);
+												l.getIntensity().add(t, dim);
+											}
+										}
+									}
+									// not swapped? error
+									if(!swapped)
+										throw new Exception("There was no image "+g.get(i).getTitle()+" in group "+group.getName());
+								}
+							}
+							// add lines
+							try {
+								data.appendLines(lines);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+				
+			}
+		}
+	}
 
 	/**
 	 * creates an overlay of the currently selected group

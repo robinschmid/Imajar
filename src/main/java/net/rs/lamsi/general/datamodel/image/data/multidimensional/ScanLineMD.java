@@ -170,6 +170,13 @@ public class ScanLineMD  implements Serializable  {
 		return intensity.size();
 	}
 	
+	
+	public List<Double[]> getIntensity() {
+		return intensity;
+	}
+	public void setIntensity(List<Double[]> intensity) {
+		this.intensity = intensity;
+	}
 	/**
 	 * right edge of the last data point (x)
 	 * @return

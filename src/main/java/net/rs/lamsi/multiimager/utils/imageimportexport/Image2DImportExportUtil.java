@@ -1360,7 +1360,7 @@ public class Image2DImportExportUtil {
 				}
 			} 
 		}
-		// 
+		// add last line
 		if(iList!=null) {
 			// a new element was found
 			titles.add(title);
@@ -1373,6 +1373,13 @@ public class Image2DImportExportUtil {
 				scanLines.get(i).addDimension(iList[i]);
 			} 
 		}
+		
+		// add x to all scan lines
+		if(x!=null)
+		for (int i = 0; i < x.length; i++) {
+			scanLines.get(i).setX(x[i]);
+		}
+		
 		// Generate Image2D from scanLines 
 		DatasetLinesMD data = new DatasetLinesMD(scanLines); 
 		return data.createImageGroup(file, titles);

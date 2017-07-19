@@ -151,7 +151,9 @@ public class ModuleISDivide extends Collectable2DSettingsModule<SettingsImage2DQ
 		btnChooseFromCurrent.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					TreePath[] p = DialogLoggerUtil.showTreeDialogAndChoose(window, window.getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION,  window.getModuleTreeImages().getTree().getSelectionPaths());
+					TreePath[] p = DialogLoggerUtil.showTreeDialogAndChoose(window, 
+							window.getModuleTreeImages().getRoot(), TreeSelectionModel.SINGLE_TREE_SELECTION,  
+							window.getModuleTreeImages().getTree().getSelectionPaths(), "Single selection", "Select one image");
 					if(p!=null && p.length>0) {
 						Object img = ((DefaultMutableTreeNode)p[0].getLastPathComponent());
 						if(IconNode.class.isInstance(img) && Image2D.class.isInstance(((IconNode)img).getUserObject())) {

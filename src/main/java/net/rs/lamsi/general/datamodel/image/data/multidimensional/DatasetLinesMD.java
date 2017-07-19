@@ -53,6 +53,27 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 		avgDP=-1;
 	}
 
+
+	public void appendLines(ScanLineMD[] add) {
+		if(add[0].getImageCount()==lines[0].getImageCount()) {
+			int size = add.length + lines.length;
+			
+			ScanLineMD[] nl = new ScanLineMD[size];
+			
+			for(int i=0; i<lines.length; i++) {
+				nl[i] = lines[i];
+			}
+			for(int i=0; i<add.length; i++)
+				nl[lines.length+i] = add[i];
+
+			lines = nl;
+			
+			reset();
+			fireRawDataChangedEvent();
+		}
+	}
+	
+	
 	public ImageGroupMD createImageGroup() {
 		if(lines==null || lines.length==0)
 			return null;
