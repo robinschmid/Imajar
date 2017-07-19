@@ -6,15 +6,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+
+import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 
 /**
  * opens a {@link JStrokeChooserDialog} 
@@ -23,16 +22,21 @@ import javax.swing.JPanel;
  */
 public class JStrokeChooserPanel extends JPanel {
 	private JButton button;
-	private BasicStroke stroke;
+	
+	private SettingsBasicStroke stroke;
 	
 	private ArrayList<ApplyListener> listener;
 
 	
 	public JStrokeChooserPanel() {
-		this(new BasicStroke(1.5f));
+		this(new SettingsBasicStroke(1.5f));
+	}
+
+	public JStrokeChooserPanel(BasicStroke s) {
+		this(new SettingsBasicStroke(s));
 	}
 	
-	public JStrokeChooserPanel(BasicStroke str) {
+	public JStrokeChooserPanel(SettingsBasicStroke str) {
 		super();
 		this.stroke = str;
 		
@@ -50,7 +54,7 @@ public class JStrokeChooserPanel extends JPanel {
 				Graphics2D g2 = (Graphics2D)g;
 				
 				if(stroke!=null) {
-					g2.setStroke(stroke);
+					g2.setStroke(stroke.getStroke());
 					float w = stroke.getLineWidth();
 					g2.drawLine(2, (int)(d.height-w)/2, d.width-2, (int)(d.height-w)/2);
 				}
@@ -64,7 +68,7 @@ public class JStrokeChooserPanel extends JPanel {
 					@Override
 					public void apply(Object o) {
 						if(o!=null) {
-							BasicStroke s = (BasicStroke)o;
+							SettingsBasicStroke s = (SettingsBasicStroke)o;
 							setStroke(s);
 							button.repaint();
 						}
@@ -93,7 +97,7 @@ public class JStrokeChooserPanel extends JPanel {
 		return button;
 	}
 
-	public BasicStroke getStroke() {
+	public SettingsBasicStroke getStroke() {
 		return stroke;
 	}
 
@@ -101,7 +105,7 @@ public class JStrokeChooserPanel extends JPanel {
 		button.setEnabled(b);
 	}
 
-	public void setStroke(BasicStroke s) {
+	public void setStroke(SettingsBasicStroke s) {
 		stroke = s;
 		fireStrokeChangedEvent();
 	}

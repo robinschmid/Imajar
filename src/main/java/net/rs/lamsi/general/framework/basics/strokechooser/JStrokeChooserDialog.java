@@ -29,6 +29,7 @@ import javax.swing.event.DocumentEvent;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
+import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 
 public class JStrokeChooserDialog extends JDialog {
 
@@ -46,7 +47,7 @@ public class JStrokeChooserDialog extends JDialog {
 	private Border errorBorder = BorderFactory.createLineBorder(Color.RED, 2);
 	private Border stdBorder;
 	
-	private BasicStroke result;
+	private SettingsBasicStroke result;
 	private JStrokeChooserPanel strokeChooserPanel;
 
 	/**
@@ -54,7 +55,7 @@ public class JStrokeChooserDialog extends JDialog {
 	 */
 	public static void main(String[] args) {
 		try {
-			JStrokeChooserDialog dialog = new JStrokeChooserDialog(new BasicStroke(1.5f));
+			JStrokeChooserDialog dialog = new JStrokeChooserDialog(new SettingsBasicStroke(1.5f));
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		} catch (Exception e) {
@@ -65,23 +66,21 @@ public class JStrokeChooserDialog extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public JStrokeChooserDialog(BasicStroke stroke) {
+	public JStrokeChooserDialog(SettingsBasicStroke stroke) {
 		result = stroke;
 		
 		ItemListener itemListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				BasicStroke s = getStrokeChooserPanel().getStroke();
+				SettingsBasicStroke s = getStrokeChooserPanel().getStroke();
 				// all values
-				float w = s.getLineWidth();
-				float miterLimit = s.getMiterLimit();
-				float phase = s.getDashPhase();
-				float[] array = s.getDashArray();
 				int join = getJoinSelection();
 				int cap = getCapSelection();
 				
+				s.setJoin(join);
+				s.setCap(cap);
 				// create new
-				getStrokeChooserPanel().setStroke(new BasicStroke(w,cap, join, miterLimit, array, phase));
+				getStrokeChooserPanel().setStroke(s);
 				getStrokeChooserPanel().repaint();
 			}
 		};
@@ -214,7 +213,7 @@ public class JStrokeChooserDialog extends JDialog {
 						int w = d.width/3-x*2;
 						int h = d.height-y-2;
 						
-						g2.setStroke(getStrokeChooserPanel().getStroke());
+						g2.setStroke(getStrokeChooserPanel().getStroke().getStroke());
 						// draw rect
 						g2.setColor(Color.BLACK);
 						g2.drawRect(x, y, w, h);
@@ -327,22 +326,20 @@ public class JStrokeChooserDialog extends JDialog {
 				try {
 					float f = Float.valueOf(txt.getText());
 					
-					BasicStroke s = getStrokeChooserPanel().getStroke();
-					// all values
-					float w = s.getLineWidth();
-					float miterLimit = s.getMiterLimit();
-					float phase = s.getDashPhase();
-					float[] array = s.getDashArray();
-					int join = s.getLineJoin();
-					int cap = s.getEndCap();
-					
+					SettingsBasicStroke s = getStrokeChooserPanel().getStroke();
 					// 
-					if(txt.equals(getTxtWidth())) w = f;
-					if(txt.equals(getTxtMiterLimit())) miterLimit = f;
-					if(txt.equals(getTxtPhase())) phase = f;
+					if(txt.equals(getTxtWidth())) {
+						s.setLineWidth(f);
+					}
+					if(txt.equals(getTxtMiterLimit())) {
+						s.setMiterlimit(f);
+					}
+					if(txt.equals(getTxtPhase())) {
+						s.setDashphase(f);
+					}
 					
 					// create new
-					getStrokeChooserPanel().setStroke(new BasicStroke(w,cap, join, miterLimit, array, phase));
+					getStrokeChooserPanel().setStroke(s);
 					getStrokeChooserPanel().repaint();
 					pnPreview.repaint();
 					
@@ -369,16 +366,12 @@ public class JStrokeChooserDialog extends JDialog {
 					for(int i=0; i<split.length; i++)
 						array[i] = Float.valueOf(split[i]);
 					
-					BasicStroke s = getStrokeChooserPanel().getStroke();
+					SettingsBasicStroke s = getStrokeChooserPanel().getStroke();
 					// all values
-					float w = s.getLineWidth();
-					float miterLimit = s.getMiterLimit();
-					float phase = s.getDashPhase();
-					int join = s.getLineJoin();
-					int cap = s.getEndCap();
+					s.setDashArray(array);
 					
 					// create new
-					getStrokeChooserPanel().setStroke(new BasicStroke(w,cap, join, miterLimit, array, phase));
+					getStrokeChooserPanel().setStroke(s);
 					getStrokeChooserPanel().repaint();
 					pnPreview.repaint();
 					
@@ -407,7 +400,7 @@ public class JStrokeChooserDialog extends JDialog {
 			int join = getJoinSelection();
 			int cap = getCapSelection();
 
-			BasicStroke s = new BasicStroke(w,cap, join, miterLimit, array, phase);
+			SettingsBasicStroke s = new SettingsBasicStroke(w,cap, join, miterLimit, array, phase);
 			// create new
 			getStrokeChooserPanel().setStroke(s);
 			getStrokeChooserPanel().repaint();

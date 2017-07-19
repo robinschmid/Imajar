@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.general.settings.image.operations.quantifier.Image2DQuantifyStrategyImpl;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
@@ -321,8 +322,8 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 			}
 			
 			// strokes
-			Map<ROI, BasicStroke> strokes = SettingsShapeSelection.getStrokes();
-			for(Map.Entry<SelectionMode, Color> e : map.entrySet()) {
+			Map<ROI, SettingsBasicStroke> strokes = SettingsShapeSelection.getStrokes();
+			for(Map.Entry<ROI, SettingsBasicStroke> e : strokes.entrySet()) {
 				toXML(elParent, doc, "stdstroke"+e.getKey(), e.getValue(), "ROI", e.getKey());
 			}
 		}
@@ -332,7 +333,7 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 	public void loadValuesFromXML(Element el, Document doc) {
 		// standard colors
 		Map<SelectionMode, Color> map = SettingsShapeSelection.getColors();
-		Map<ROI, BasicStroke> strokes = SettingsShapeSelection.getStrokes();
+		Map<ROI, SettingsBasicStroke> strokes = SettingsShapeSelection.getStrokes();
 		
 		double xu=0, yu=0;
 		double xlower = Double.NaN, ylower = Double.NaN;
@@ -341,16 +342,7 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 			if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element nextElement = (Element) list.item(i);
 				String paramName = nextElement.getNodeName();
-				// is a settings node?
-				if(isSettingsNode(nextElement, SettingsShapeSelection.class)) {
-					if(selections==null)
-						selections = new ArrayList<SettingsShapeSelection>();
-					// how to load from xml????
-					SettingsShapeSelection ns = SettingsShapeSelection.loadSettingsFromXML(nextElement, doc);
-					if(ns!=null)
-						selections.add(ns);
-				}
-				else if(paramName.startsWith("stdcolor")) {
+				if(paramName.startsWith("stdcolor")) {
 					// load standard colors
 					SelectionMode mode = SelectionMode.valueOf(nextElement.getAttribute("selMode"));
 					Color c = colorFromXML(nextElement);
@@ -359,11 +351,20 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 				else if(paramName.startsWith("stdstroke")) {
 					// load standard stroke
 					ROI roi = ROI.valueOf(nextElement.getAttribute("ROI"));
-					BasicStroke s = strokeFromXML(nextElement);
+					SettingsBasicStroke s = strokeFromXML(nextElement);
 					strokes.put(roi, s);
 				}
 				else if(paramName.equals("blankActive"))
 					blankActive = booleanFromXML(nextElement);
+				// is a settings node?
+				else if(isSettingsNode(nextElement, SettingsShapeSelection.class)) {
+					if(selections==null)
+						selections = new ArrayList<SettingsShapeSelection>();
+					// how to load from xml????
+					SettingsShapeSelection ns = SettingsShapeSelection.loadSettingsFromXML(nextElement, doc);
+					if(ns!=null)
+						selections.add(ns);
+				}
 			}
 		}
 	}
@@ -842,6 +843,14 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 			return intensity-average;
 		}
 		else return intensity;
+	}
+	
+	@Override
+	public void applyToImage(Image2D img) throws Exception {
+		super.applyToImage(img);
+		SettingsSelections sel = img.getSettings().getSettSelections();
+		sel.setCurrentImage(img);
+		sel.updateStatistics();
 	}
 }
 

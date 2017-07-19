@@ -20,6 +20,7 @@ import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 
 public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
@@ -28,7 +29,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	
 	// select,
 	private static Map<SelectionMode, Color> colors = new HashMap<SelectionMode, Color>();
-	private static Map<ROI, BasicStroke> strokes = new HashMap<ROI, BasicStroke>();
+	private static Map<ROI, SettingsBasicStroke> strokes = new HashMap<ROI, SettingsBasicStroke>();
 	
 	/**
 	 *  current shape is given by combobox
@@ -73,7 +74,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	protected SelectionTableRow stats;
 	protected SelectionTableRow statsRegardingExclusion;
 	protected Color color; 
-	protected BasicStroke stroke;
+	protected SettingsBasicStroke stroke;
 	// order for quantifiers
 	protected int orderNumber = 0;
 	// concentration for quantifier / qualifier
@@ -401,13 +402,13 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	}
 
 	
-	public static BasicStroke getStrokeForROI(ROI roi) {
+	public static SettingsBasicStroke getStrokeForROI(ROI roi) {
 		if(strokes.isEmpty()) {
 			createStandardStrokes();
 		}
 		return strokes.get(roi);
 	}
-	public static Map<ROI, BasicStroke> getStrokes() {
+	public static Map<ROI, SettingsBasicStroke> getStrokes() {
 		if(strokes.isEmpty()) {
 			createStandardStrokes();
 		}
@@ -415,12 +416,12 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	}
 	
 	private static void createStandardStrokes() {
-		strokes.put(ROI.QUANTIFIER, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+		strokes.put(ROI.QUANTIFIER, new SettingsBasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
 				2f, new float[] {10f,5f, 2.5f, 5f}, 0f));
-		strokes.put(ROI.SAMPLE, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
-		strokes.put(ROI.BLANK_COLUMNS, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+		strokes.put(ROI.SAMPLE, new SettingsBasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 2f));
+		strokes.put(ROI.BLANK_COLUMNS, new SettingsBasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
 				2f, new float[] {15f,7.5f}, 0f));
-		strokes.put(ROI.BLANK_LINES, new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
+		strokes.put(ROI.BLANK_LINES, new SettingsBasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 
 				2f, new float[] {15f,7.5f}, 0f));
 	}
 
@@ -430,7 +431,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 	 */
 	public XYShapeAnnotation createXYShapeAnnotation() {
 		Color c = getColor();
-		BasicStroke s = getStroke();
+		BasicStroke s = getStrokeSettings().getStroke();
 		if(isHighlighted)
 			s = new BasicStroke(4f, s.getEndCap(), s.getLineJoin(), s.getMiterLimit(), s.getDashArray(), s.getDashPhase());
 		return new XYShapeAnnotation(this.getShape(), s, c) {
@@ -512,11 +513,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 		return isHighlighted;
 	}
 
-	public BasicStroke getStroke() {
+	public SettingsBasicStroke getStrokeSettings() {
 		return stroke;
 	}
 
-	public void setStroke(BasicStroke stroke) {
+	public void setStroke(SettingsBasicStroke stroke) {
 		this.stroke = stroke;
 	}
 }

@@ -1,6 +1,5 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.selectdata;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -55,6 +54,7 @@ import net.rs.lamsi.general.framework.basics.strokechooser.JStrokeChooserPanel;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.selection.SettingsElipseSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsPolygonSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsRectSelection;
@@ -94,6 +94,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private boolean isPressed = false;
 	// coordinates of first and second mouse event (data space)
 	private float x0,x1,y0,y1;
+	private double lastConcentration = 0;
 	// components
 	private JPanel contentPane;
 	private JPanel pnChartView;
@@ -244,6 +245,19 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		pnNorthMenu.add(btnRegression);
 		pnNorthMenu.add(btnExportData);
 		
+		JButton btnUpdateStats = new JButton("Update stats");
+		btnUpdateStats.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// update all rects
+				settSel.updateStatistics();
+				// update table
+				tableModel.fireTableDataChanged();
+				repaint();
+			}
+		});
+		btnUpdateStats.setToolTipText("Updates statistics (is usually performed automatically)");
+		pnNorthMenu.add(btnUpdateStats);
+		
 		JPanel panel_1 = new JPanel();
 		pnNorthMenuContainer.add(panel_1, BorderLayout.CENTER);
 		
@@ -265,6 +279,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 		comboSelectionMode = new JComboBox<SelectionMode>();
 		panel_1.add(comboSelectionMode);
 		comboSelectionMode.setModel(new DefaultComboBoxModel(SelectionMode.values()));
+		
 		
 
 		JButton btnFinish = new JButton("Finish shape");
@@ -305,6 +320,18 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				contentPane.requestFocusInWindow();
+				// change color and stroke
+				Color c = SettingsShapeSelection.getColorForSelectionMode(getCurrentSelectionMode());
+				getCbtnColor().setColor(c);
+			}
+		});
+		comboRoi.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				contentPane.requestFocusInWindow();
+				// change color and stroke
+				SettingsBasicStroke stroke = SettingsShapeSelection.getStrokeForROI(getCurrentRoiMode());
+				getStrokeChooserPanel().setStroke(stroke);
 			}
 		});
 		comboShape.addItemListener(new ItemListener() {
@@ -458,6 +485,13 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				heat.getChartPanel().addMouseListener(this);
 				heat.getChartPanel().addMouseMotionListener(this); 
 				heat.getChartPanel().setMouseZoomable(false);
+				
+				// init stroke and color
+				SettingsBasicStroke stroke = SettingsShapeSelection.getStrokeForROI(getCurrentRoiMode());
+				getStrokeChooserPanel().setStroke(stroke);
+				Color c = SettingsShapeSelection.getColorForSelectionMode(getCurrentSelectionMode());
+				getCbtnColor().setColor(c);
+				
 				// show
 				setVisible(true); 
 			} catch(Exception ex) {
@@ -712,8 +746,8 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 				if(currentSelect.getRoi().equals(ROI.QUANTIFIER)) {
 					// open dialog
 					try {
-						double concentration = Double.valueOf(JOptionPane.showInputDialog("concentration", "0"));
-						currentSelect.setConcentration(concentration);
+						lastConcentration = Double.valueOf(JOptionPane.showInputDialog("concentration", String.valueOf(lastConcentration)));
+						currentSelect.setConcentration(lastConcentration);
 					} catch (Exception ex) {
 					}
 				}
@@ -855,7 +889,7 @@ public class Image2DSelectDataAreaDialog extends JFrame implements MouseListener
 	private Color getCurrentColor() {
 		return getCbtnColor().getColor();
 	}
-	private BasicStroke getCurrentStroke() {
+	private SettingsBasicStroke getCurrentStroke() {
 		return strokeChooserPanel.getStroke();
 	}
 	private ROI getCurrentRoiMode() {

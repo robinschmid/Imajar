@@ -41,6 +41,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.SettingsCollectable2DPlaceHolder;
 import net.rs.lamsi.general.settings.image.needy.SettingsCollectable2DLink;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
@@ -291,8 +292,8 @@ public abstract class Settings implements Serializable {
 				paramElement.setAttribute("style", ""+f.getStyle());
 				paramElement.setAttribute("size", ""+f.getSize());
 			}
-			else if(BasicStroke.class.isInstance(o)) {
-				BasicStroke s = (BasicStroke)o;
+			else if(SettingsBasicStroke.class.isInstance(o)) {
+				SettingsBasicStroke s = (SettingsBasicStroke)o;
 				paramElement.setAttribute("width", String.valueOf(s.getLineWidth()));
 				paramElement.setAttribute("cap", String.valueOf(s.getEndCap()));
 				paramElement.setAttribute("join", String.valueOf(s.getLineJoin()));
@@ -667,7 +668,7 @@ public abstract class Settings implements Serializable {
 	 * @param el
 	 * @return null if no value was found
 	 */
-	public static BasicStroke strokeFromXML(final Element el) {
+	public static SettingsBasicStroke strokeFromXML(final Element el) {
 		float w =  Float.parseFloat(el.getAttribute("width"));
 		float miterlimit =  Float.parseFloat(el.getAttribute("miterlimit"));
 		float dashphase =  Float.parseFloat(el.getAttribute("dashphase"));
@@ -681,7 +682,7 @@ public abstract class Settings implements Serializable {
 		for(int i=0; i<dash.length; i++) 
 			array[i] = Float.parseFloat(dash[i]);
 		
-		return new BasicStroke(w, cap, join, miterlimit, array, dashphase);
+		return new SettingsBasicStroke(w, cap, join, miterlimit, array, dashphase);
 	}
 
 	/**
@@ -746,7 +747,7 @@ public abstract class Settings implements Serializable {
 			Class hashedClass = Class.forName(nextElement.getNodeName());
 			return hashedClass;
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("No class for xml object "+nextElement.getNodeName());
 		}
 		return null;
 	}
@@ -856,6 +857,15 @@ public abstract class Settings implements Serializable {
 		return description;
 	}
 
+	/**
+	 * checks if a and b are not equal 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public boolean changed(Object a, Object b) {
+		return ((a!=null ^ b!=null) || (a!=null && !a.equals(b)));
+	}
 	/**
 	 * returns a copy by binary copy
 	 * @return
