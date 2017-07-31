@@ -35,7 +35,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
-import net.rs.lamsi.general.settings.interf.GroupSettings;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
