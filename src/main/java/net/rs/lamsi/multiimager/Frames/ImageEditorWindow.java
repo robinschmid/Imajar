@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -23,6 +24,7 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
@@ -66,6 +68,7 @@ import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
+import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.framework.modules.ModuleTreeWithOptions;
 import net.rs.lamsi.general.framework.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
@@ -175,12 +178,14 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private JTextField txtDirectFileFilter;
 	private JTextField txtDirectStartsWith;
 	private JCheckBox cbSumTasks;
-	private JCheckBoxMenuItem cbDebug;
+	private JCheckBoxMenuItem cbDebug, cbMenuNorth;
 	private JCheckBoxMenuItem cbKeepAspectRatio;
 	private JCheckBoxMenuItem cbCreateImageIcons;
 	private JPanel pnChartAspectRatio;
 	private JTextField txtDirectAutoScale;
 	private JCheckBox cbDirectAutoScale;
+	private JPanel pnNorth;
+	private JPanel pnNorthMenu;
 
 	/**
 	 * Launch the application.
@@ -497,13 +502,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JMenuItem mntmSelectData = new JMenuItem("Select data");
 		mntmSelectData.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(activeModuleContainer!=null) { 
-					// TODO correct?
-					ModuleSelectExcludeData mod = (ModuleSelectExcludeData)activeModuleContainer.getModuleByClass(ModuleSelectExcludeData.class);
-					if(mod!=null) {
-						mod.getBtnOpenSelectData().doClick();
-					}
-				}
+				openDataSelectionDialog();
 			}
 		});
 		mnView.add(mntmSelectData);
@@ -565,6 +564,15 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		});
 		cbKeepAspectRatio.setSelected(true);
 		mnWindow.add(cbKeepAspectRatio);
+
+		cbMenuNorth = new JCheckBoxMenuItem("Show quick menu bar");
+		cbMenuNorth.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) { 
+				getPnNorthMenu().setVisible(cbMenuNorth.isSelected());
+			}
+		});
+		cbMenuNorth.setSelected(true);
+		mnWindow.add(cbMenuNorth);
 		
 		cbDebug = new JCheckBoxMenuItem("Debug");
 		cbDebug.setSelected(true);
@@ -575,6 +583,19 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		this.setVisible(true); 
 		// collapse all
 	} 
+
+	/**
+	 * opens the data selection dialog if possible
+	 */
+	protected void openDataSelectionDialog() {
+		if(activeModuleContainer!=null) { 
+			// TODO correct?
+			ModuleSelectExcludeData mod = (ModuleSelectExcludeData)activeModuleContainer.getModuleByClass(ModuleSelectExcludeData.class);
+			if(mod!=null) {
+				mod.getBtnOpenSelectData().doClick();
+			}
+		}
+	}
 
 	/**
 	 * Initialize the contents of the frame.
@@ -670,7 +691,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 		JPanel center = new JPanel();
 		splitPane.setRightComponent(center);
-		center.setLayout(new BorderLayout(5, 5));
+		center.setLayout(new BorderLayout(0, 0));
 
 		pnCenterImageView = new JPanel();
 		pnCenterImageView.addComponentListener(aspectRatioListener = new AspectRatioListener(pnCenterImageView, true,  RATIO.LIMIT_TO_PARENT_SIZE) { 
@@ -693,6 +714,25 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		gbl_panel.columnWeights = new double[]{Double.MIN_VALUE};
 		gbl_panel.rowWeights = new double[]{Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
+		
+		pnNorthMenu = new JPanel();
+		center.add(pnNorthMenu, BorderLayout.NORTH);
+		FlowLayout fl_pnNorthMenu = (FlowLayout) pnNorthMenu.getLayout();
+		fl_pnNorthMenu.setVgap(0);
+		fl_pnNorthMenu.setHgap(4);
+		fl_pnNorthMenu.setAlignment(FlowLayout.LEFT);
+		
+		JButton button = new JButton("");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openDataSelectionDialog();
+			}
+		});
+		button.setPreferredSize(new Dimension(31, 31));
+		button.setIcon(new ImageIcon(
+				new ImageIcon(Module.class.getResource("/img/btnROI.png")).getImage().
+				getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+		pnNorthMenu.add(button);
 
 		JPanel north = new JPanel();
 		pnNorthContent.add(north, BorderLayout.NORTH);
@@ -721,122 +761,127 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
 		JLabel lblLog = new JLabel("Log");
 		pnLog.add(lblLog, BorderLayout.NORTH);
-
-		pnDirectIANorthDisplay = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) pnDirectIANorthDisplay.getLayout();
-		flowLayout_1.setAlignment(FlowLayout.LEFT);
-		getContentPane().add(pnDirectIANorthDisplay, BorderLayout.NORTH);
-
-		JToggleButton tglbtnIsrunning = new JToggleButton("isRunning");
-		tglbtnIsrunning.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				try {
-					long sleep = Long.valueOf(getTxtDirectTime().getText());
-					String fileFilter = getTxtDirectFileFilter().getText();
-					String startsWith = getTxtDirectStartsWith().getText();
-					double scaleFactor = Double.valueOf(getTxtDirectAutoScale().getText());
-					
-					logicRunner.getDIARunner().setUp(sleep, fileFilter, startsWith, getCbSumTasks().isSelected(), getCbDirectAutoScale().isSelected(), scaleFactor);
-					JToggleButton tb = (JToggleButton) e.getSource();
-					logicRunner.getDIARunner().setPaused(!tb.isSelected());
-				} catch(Exception ex) {
-					DialogLoggerUtil.showErrorDialog(thisFrame, "Can't start DIA", ex);
-				}
-			}
-		});
 		
-		cbSumTasks = new JCheckBox("sum tasks");
-		cbSumTasks.setSelected(true);
-		pnDirectIANorthDisplay.add(cbSumTasks);
+		pnNorth = new JPanel();
+		getContentPane().add(pnNorth, BorderLayout.NORTH);
+		pnNorth.setLayout(new BorderLayout(0, 0));
 		
-		cbDirectAutoScale = new JCheckBox("auto scale");
-		cbDirectAutoScale.addItemListener(new ItemListener() { 
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				try {
-					if(logicRunner!=null && logicRunner.getDIARunner() !=null)
-						logicRunner.getDIARunner().setAutoScale(cbDirectAutoScale.isSelected());
-				} catch(Exception ex) { 
-				}
-			}
-		});
-		cbDirectAutoScale.setToolTipText("Enter scale factor to the right. Scaling the maximum intensity of paint scale");
-		cbDirectAutoScale.setSelected(true);
-		pnDirectIANorthDisplay.add(cbDirectAutoScale);
-		
-		txtDirectAutoScale = new JTextField();
-		txtDirectAutoScale.getDocument().addDocumentListener(new DocumentListener() {
-			
-			@Override
-			public void removeUpdate(DocumentEvent e) {
+				pnDirectIANorthDisplay = new JPanel();
+				pnNorth.add(pnDirectIANorthDisplay, BorderLayout.SOUTH);
+				FlowLayout flowLayout_1 = (FlowLayout) pnDirectIANorthDisplay.getLayout();
+				flowLayout_1.setAlignment(FlowLayout.LEFT);
 				
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				try { 
-					if(getTxtDirectAutoScale().getText().length()>0) {
-						double scaleFactor = Double.valueOf(getTxtDirectAutoScale().getText());
-						logicRunner.getDIARunner().setScaleFactor(scaleFactor);
-					}
-				} catch(Exception ex) { 
-				}
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				try { 
-					if(getTxtDirectAutoScale().getText().length()>0) {
-						double scaleFactor = Double.valueOf(getTxtDirectAutoScale().getText());
-						logicRunner.getDIARunner().setScaleFactor(scaleFactor);
-					}
-				} catch(Exception ex) { 
-				}
-			}
-		});
-		txtDirectAutoScale.setToolTipText("Auto scale factor. (X times maximum intensity of last line)");
-		txtDirectAutoScale.setText("2");
-		pnDirectIANorthDisplay.add(txtDirectAutoScale);
-		txtDirectAutoScale.setColumns(2);
-		pnDirectIANorthDisplay.add(tglbtnIsrunning);
-
-		txtDirectTime = new JTextField();
-		txtDirectTime.setHorizontalAlignment(SwingConstants.TRAILING);
-		txtDirectTime.setText("4");
-		pnDirectIANorthDisplay.add(txtDirectTime);
-		txtDirectTime.setColumns(3);
-
-		JLabel lblS = new JLabel("s");
-		pnDirectIANorthDisplay.add(lblS);
-
-		Component horizontalStrut = Box.createHorizontalStrut(20);
-		pnDirectIANorthDisplay.add(horizontalStrut);
-
-		JLabel lblFilter = new JLabel("filter:");
-		pnDirectIANorthDisplay.add(lblFilter);
-
-		txtDirectFileFilter = new JTextField();
-		txtDirectFileFilter.setToolTipText("filter file format");
-		txtDirectFileFilter.setText("csv");
-		pnDirectIANorthDisplay.add(txtDirectFileFilter);
-		txtDirectFileFilter.setColumns(4);
-
-		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
-		pnDirectIANorthDisplay.add(horizontalStrut_2);
-
-		JLabel lblStartsWith = new JLabel("starts with:");
-		pnDirectIANorthDisplay.add(lblStartsWith);
-
-		txtDirectStartsWith = new JTextField();
-		pnDirectIANorthDisplay.add(txtDirectStartsWith);
-		txtDirectStartsWith.setColumns(8);
-
-		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
-		pnDirectIANorthDisplay.add(horizontalStrut_1);
+						JToggleButton tglbtnIsrunning = new JToggleButton("isRunning");
+						tglbtnIsrunning.addItemListener(new ItemListener() {
+							public void itemStateChanged(ItemEvent e) {
+								try {
+									long sleep = Long.valueOf(getTxtDirectTime().getText());
+									String fileFilter = getTxtDirectFileFilter().getText();
+									String startsWith = getTxtDirectStartsWith().getText();
+									double scaleFactor = Double.valueOf(getTxtDirectAutoScale().getText());
+									
+									logicRunner.getDIARunner().setUp(sleep, fileFilter, startsWith, getCbSumTasks().isSelected(), getCbDirectAutoScale().isSelected(), scaleFactor);
+									JToggleButton tb = (JToggleButton) e.getSource();
+									logicRunner.getDIARunner().setPaused(!tb.isSelected());
+								} catch(Exception ex) {
+									DialogLoggerUtil.showErrorDialog(thisFrame, "Can't start DIA", ex);
+								}
+							}
+						});
+						
+						cbSumTasks = new JCheckBox("sum tasks");
+						cbSumTasks.setSelected(true);
+						pnDirectIANorthDisplay.add(cbSumTasks);
+						
+						cbDirectAutoScale = new JCheckBox("auto scale");
+						cbDirectAutoScale.addItemListener(new ItemListener() { 
+							@Override
+							public void itemStateChanged(ItemEvent e) {
+								try {
+									if(logicRunner!=null && logicRunner.getDIARunner() !=null)
+										logicRunner.getDIARunner().setAutoScale(cbDirectAutoScale.isSelected());
+								} catch(Exception ex) { 
+								}
+							}
+						});
+						cbDirectAutoScale.setToolTipText("Enter scale factor to the right. Scaling the maximum intensity of paint scale");
+						cbDirectAutoScale.setSelected(true);
+						pnDirectIANorthDisplay.add(cbDirectAutoScale);
+						
+						txtDirectAutoScale = new JTextField();
+						txtDirectAutoScale.getDocument().addDocumentListener(new DocumentListener() {
+							
+							@Override
+							public void removeUpdate(DocumentEvent e) {
+								
+							}
+							
+							@Override
+							public void insertUpdate(DocumentEvent e) {
+								try { 
+									if(getTxtDirectAutoScale().getText().length()>0) {
+										double scaleFactor = Double.valueOf(getTxtDirectAutoScale().getText());
+										logicRunner.getDIARunner().setScaleFactor(scaleFactor);
+									}
+								} catch(Exception ex) { 
+								}
+							}
+							
+							@Override
+							public void changedUpdate(DocumentEvent e) {
+								try { 
+									if(getTxtDirectAutoScale().getText().length()>0) {
+										double scaleFactor = Double.valueOf(getTxtDirectAutoScale().getText());
+										logicRunner.getDIARunner().setScaleFactor(scaleFactor);
+									}
+								} catch(Exception ex) { 
+								}
+							}
+						});
+						txtDirectAutoScale.setToolTipText("Auto scale factor. (X times maximum intensity of last line)");
+						txtDirectAutoScale.setText("2");
+						pnDirectIANorthDisplay.add(txtDirectAutoScale);
+						txtDirectAutoScale.setColumns(2);
+						pnDirectIANorthDisplay.add(tglbtnIsrunning);
+						
+								txtDirectTime = new JTextField();
+								txtDirectTime.setHorizontalAlignment(SwingConstants.TRAILING);
+								txtDirectTime.setText("4");
+								pnDirectIANorthDisplay.add(txtDirectTime);
+								txtDirectTime.setColumns(3);
+								
+										JLabel lblS = new JLabel("s");
+										pnDirectIANorthDisplay.add(lblS);
+										
+												Component horizontalStrut = Box.createHorizontalStrut(20);
+												pnDirectIANorthDisplay.add(horizontalStrut);
+												
+														JLabel lblFilter = new JLabel("filter:");
+														pnDirectIANorthDisplay.add(lblFilter);
+														
+																txtDirectFileFilter = new JTextField();
+																txtDirectFileFilter.setToolTipText("filter file format");
+																txtDirectFileFilter.setText("csv");
+																pnDirectIANorthDisplay.add(txtDirectFileFilter);
+																txtDirectFileFilter.setColumns(4);
+																
+																		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
+																		pnDirectIANorthDisplay.add(horizontalStrut_2);
+																		
+																				JLabel lblStartsWith = new JLabel("starts with:");
+																				pnDirectIANorthDisplay.add(lblStartsWith);
+																				
+																						txtDirectStartsWith = new JTextField();
+																						pnDirectIANorthDisplay.add(txtDirectStartsWith);
+																						txtDirectStartsWith.setColumns(8);
+																						
+																								Component horizontalStrut_1 = Box.createHorizontalStrut(20);
+																								pnDirectIANorthDisplay.add(horizontalStrut_1);
 		pnDirectIANorthDisplay.setVisible(false);
 		
 		
-		
+		// add menu north items
+				
 	}
 	// END OF CONSTRUCTOR
 	//###############################################################################################
@@ -1361,4 +1406,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		return aspectRatioListener;
 	}
 
+	public JPanel getPnNorth() {
+		return pnNorth;
+	}
+	public JPanel getPnNorthMenu() {
+		return pnNorthMenu;
+	}
 }
