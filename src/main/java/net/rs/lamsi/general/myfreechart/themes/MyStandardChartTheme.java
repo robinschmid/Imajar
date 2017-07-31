@@ -192,20 +192,24 @@ public class MyStandardChartTheme extends StandardChartTheme {
 				else  if(paramName.equals("isAntiAliased")) isAntiAliased = Settings.booleanFromXML(nextElement); 
 					else if(paramName.equals("showTitle"))isShowTitle = Settings.booleanFromXML(nextElement);  
 					else if(paramName.equals("noBackground")){
-						hasNoBG = true;
-						setNoBackground(Settings.booleanFromXML(nextElement));  
+						hasNoBG = Settings.booleanFromXML(nextElement);
+						setNoBackground(hasNoBG);  
 					}
 					else if(paramName.equals("fontShortTitle"))fontShortTitle = Settings.fontFromXML(nextElement);  
 					else if(paramName.equals("cShortTitle")) cShortTitle = Settings.colorFromXML(nextElement);  
 					else if(paramName.equals("cBGShortTitle")) cBGShortTitle = Settings.colorFromXML(nextElement);    
-					else if(paramName.equals("cBackground") && !hasNoBG) {
+					else if(paramName.equals("cBackground")) {
 						Color c = Settings.colorFromXML(nextElement);
 						setChartBackgroundPaint(c);  
 						setLegendBackgroundPaint(c);
+						if(hasNoBG)
+							setNoBackground(hasNoBG);
 					}
 					else if(paramName.equals("cPlotBackground")) {
 						Color c = Settings.colorFromXML(nextElement);
 						setPlotBackgroundPaint(c);  
+						if(hasNoBG)
+							setNoBackground(hasNoBG);
 					}
 					else if(paramName.equals("cAxis")) setAxisLabelPaint(Settings.colorFromXML(nextElement));   
 					else if(paramName.equals("cItem")) setItemLabelPaint(Settings.colorFromXML(nextElement));   
