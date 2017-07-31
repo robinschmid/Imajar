@@ -16,7 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
-import net.rs.lamsi.general.dialogs.GraphicsExportDialog.EXPORT_STRUCTURE;
+import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;

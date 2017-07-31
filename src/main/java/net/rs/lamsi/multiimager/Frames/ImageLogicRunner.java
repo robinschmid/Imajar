@@ -30,7 +30,7 @@ import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
 import net.rs.lamsi.general.heatmap.Heatmap;
@@ -51,7 +51,6 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
-import nom.tam.fits.ImageData;
 
 public class ImageLogicRunner {
 	//##################################################################################
@@ -357,7 +356,7 @@ public class ImageLogicRunner {
 	 */
 	public void openExportHeatGraphicsDialog() {
 		if(currentHeat!=null)
-			GraphicsExportDialog.openDialog(currentHeat.getChart(), getSelectedImage());
+			HeatmapGraphicsExportDialog.openDialog(currentHeat.getChart(), getSelectedImage());
 	}
 
 	// saves selected Image to file

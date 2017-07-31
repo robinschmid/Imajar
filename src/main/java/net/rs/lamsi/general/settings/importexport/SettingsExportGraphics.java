@@ -39,6 +39,8 @@ public class SettingsExportGraphics extends Settings {
 	// only use width
 	protected boolean useOnlyWidth = false;
 	
+	protected boolean showAnnotations = true;
+	
 	// Background Color
 	private Color colorBackground = null;
 	
@@ -53,6 +55,7 @@ public class SettingsExportGraphics extends Settings {
 		format = FORMAT.PDF;  
 		fileName = "";
 		resolution = new SettingsImageResolution();
+		showAnnotations = true;
 	}
 	
 
@@ -64,6 +67,7 @@ public class SettingsExportGraphics extends Settings {
 		toXML(elParent, doc, "path", path); 
 		toXML(elParent, doc, "format", format); 
 		toXML(elParent, doc, "useOnlyWidth", useOnlyWidth); 
+		toXML(elParent, doc, "showAnnotations", showAnnotations); 
 		toXML(elParent, doc, "colorBackground", colorBackground); 
 		toXML(elParent, doc, "fixedSize", fixedSize);
 		resolution.appendSettingsToXML(elParent, doc);
@@ -79,7 +83,8 @@ public class SettingsExportGraphics extends Settings {
 				if(paramName.equals("fileName")) fileName = nextElement.getTextContent(); 
 				else if(paramName.equals("path"))path = fileFromXML(nextElement);  
 				else if(paramName.equals("format"))format = FORMAT.valueOf(nextElement.getTextContent());  
-				else if(paramName.equals("useOnlyWidth"))useOnlyWidth = booleanFromXML(nextElement);  
+				else if(paramName.equals("useOnlyWidth"))useOnlyWidth = booleanFromXML(nextElement); 
+				else if(paramName.equals("showAnnotations"))showAnnotations = booleanFromXML(nextElement);  
 				else if(paramName.equals("colorBackground"))colorBackground = colorFromXML(nextElement);  
 				else if(paramName.equals("fixedSize")) fixedSize = FIXED_SIZE.valueOf(nextElement.getTextContent());
 				else if(isSettingsNode(nextElement, resolution.getSuperClass()))
@@ -179,6 +184,12 @@ public class SettingsExportGraphics extends Settings {
 	}
 	public void setFixedSize(FIXED_SIZE fixedSize) {
 		this.fixedSize = fixedSize;
+	}
+	public boolean isShowAnnotations() {
+		return showAnnotations;
+	}
+	public void setShowAnnotations(boolean showAnnotations) {
+		this.showAnnotations = showAnnotations;
 	}
 	
 }

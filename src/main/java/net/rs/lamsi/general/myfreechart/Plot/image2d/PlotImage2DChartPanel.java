@@ -7,18 +7,17 @@ import java.io.IOException;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.jfree.chart.JFreeChart;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
-
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.freehep.graphicsbase.util.export.ExportDialog;
-import org.jfree.chart.JFreeChart;
 
 public class PlotImage2DChartPanel extends PlotChartPanel {
 	private Collectable2D img;
@@ -31,7 +30,7 @@ public class PlotImage2DChartPanel extends PlotChartPanel {
 
 	protected void exportGraphics() {
 		// open export Graphics dialog 
-		GraphicsExportDialog.openDialog(getChart(), img); 
+		HeatmapGraphicsExportDialog.openDialog(getChart(), img); 
 	}
 
 	@Override

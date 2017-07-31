@@ -57,14 +57,13 @@ import javax.swing.tree.TreeSelectionModel;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.data.Range;
 
-import com.sun.xml.bind.v2.runtime.reflect.Accessor.GetterSetterReflection;
-
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.framework.modules.ModuleTreeWithOptions;
@@ -218,6 +217,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		// plot export dialog 
 		GraphicsExportDialog grpExportDialog = GraphicsExportDialog.createInstance();
 		WindowStyleUtil.changeWindowStyle(grpExportDialog, WindowStyleUtil.STYLE_SYSTEM);
+		HeatmapGraphicsExportDialog grpHeatmapExportDialog = HeatmapGraphicsExportDialog.createInstance();
+		WindowStyleUtil.changeWindowStyle(grpHeatmapExportDialog, WindowStyleUtil.STYLE_SYSTEM);
 		grpExportDialog.setVisible(false);
 		listFrames.addElement(grpExportDialog);
 		// give window to LogicPanel

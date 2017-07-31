@@ -61,26 +61,10 @@ import org.jfree.ui.FloatDimension;
 
 public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
-	public enum EXPORT_STRUCTURE {
-		IMAGE("Single image"),
-		GROUP("Group"),
-		PROJECT("Project"),
-		ALL("All images");
-
-		private String text;
-		EXPORT_STRUCTURE(String text) {
-			this.text  = text;
-		}
-		@Override
-		public String toString() {
-			return text;
-		}
-	}
-
 	// only one instance!
 	private static GraphicsExportDialog inst;
 	//
-	private final JPanel contentPanel = new JPanel();
+	protected final JPanel contentPanel = new JPanel();
 	private JTextField txtPath;
 	private JTextField txtFileName;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
@@ -108,16 +92,13 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
 	//###################################################################
 	// Vars
-	private ChartPanel chartPanel;
-	private Collectable2D selected;
+	protected ChartPanel chartPanel;
 
 	private boolean canExport;
 	private JPanel pnChartPreview;
 	private JRadioButton rbSVG;
 	private JRadioButton rbEPS;
 	private JRadioButton rbJPG;
-	private JComboBox comboExportStruc;
-	private JLabel lblExportTheFollowing;
 	private JPanel panel;
 	private JRadioButton rbEmf;
 	private JPanel panel_3;
@@ -144,20 +125,11 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	 * @param chart
 	 */
 	public static void openDialog(JFreeChart chart) {
-		inst.openDialogI(chart, null); 
+		inst.openDialogI(chart); 
 	}
-	public static void openDialog(JFreeChart chart, Collectable2D selected) {
-		inst.openDialogI(chart, selected); 
-	}
-	protected void openDialogI(JFreeChart chart, Collectable2D selected) {
-		inst.selected = selected;
-
-		//
+	protected void openDialogI(JFreeChart chart) {
 		try {
-			if(selected!=null) {
-				addChartToPanel(HeatmapFactory.generateHeatmap(selected).getChartPanel(), true);
-			}
-			else addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()), true);
+			addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()), true);
 			setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -243,88 +215,14 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		} 
 	}
 
-
-	private void saveGraphicsAs() {
+	protected void saveGraphicsAs() {
 		setAllSettings(SettingsHolder.getSettings());
 		//
 		if(canExport) {
 			final SettingsExportGraphics sett = (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
 			try {
-				if(selected==null) {
 					ImageEditorWindow.log("Writing image to file: "+sett.getFullFilePath(), LOG.MESSAGE);
 					ChartExportUtil.writeChartToImage(chartPanel, sett);
-				}
-				else {
-
-					new ProgressUpdateTask(1) {
-
-						@Override
-						protected Boolean doInBackground2() throws Exception {
-							try {
-								EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE)getComboExportStruc().getSelectedItem();
-
-								switch(struc) {
-								case ALL:
-									File rootPath = (sett.getPath());
-									List<Collectable2D> list = ImageEditorWindow.getImages();
-									if(list!=null)
-										for(Collectable2D c : list) {
-											if(c.getImageGroup()!=null) {
-												if(c.getImageGroup().getProject()!=null) {
-													// add project and group folder
-													sett.setPath(new File(new File(rootPath, c.getImageGroup().getProject().getName().replace(".", "_")),
-															c.getImageGroup().getName().replace(".", "_")));
-												}
-												// add group folder
-												else  sett.setPath(new File(rootPath, c.getImageGroup().getName().replace(".", "_")));
-											}
-											saveCollectable2DGraphics(sett, c, c.getTitle());
-
-											addProgressStep(1.0/list.size());
-										}
-									break;
-								case PROJECT:
-									if(selected!=null && selected.getImageGroup()!=null && selected.getImageGroup().getProject()!=null) {
-										ImagingProject project = selected.getImageGroup().getProject();
-										File mainPath = new File(sett.getPath(), project.getName().replace(".", "_"));
-										for(ImageGroupMD g : project.getGroups()) {
-											sett.setPath(new File(mainPath, g.getName().replace(".", "_")));
-											for(Collectable2D c : g.getImages()) {
-												saveCollectable2DGraphics(sett, c, c.getTitle());
-
-												addProgressStep(1.0/g.getImages().size()/project.getGroups().size());
-											}
-										}
-									}
-									break;
-								case GROUP:
-									if(selected!=null && selected.getImageGroup()!=null) {
-										sett.setPath(new File(sett.getPath(), selected.getImageGroup().getName().replace(".", "_")));
-										for(Collectable2D c : selected.getImageGroup().getImages()) {
-											saveCollectable2DGraphics(sett, c, c.getTitle());
-
-											addProgressStep(1.0/selected.getImageGroup().getImages().size());
-										}
-									}
-									break;
-								case IMAGE:
-									ImageEditorWindow.log("Writing image to file: "+sett.getFullFilePath(), LOG.MESSAGE);
-									ChartExportUtil.writeChartToImage(chartPanel, sett);
-									addProgressStep(1.0);
-									break;
-								}
-								// 
-								ImageEditorWindow.log("File written successfully", LOG.MESSAGE);
-								DialogLoggerUtil.showMessageDialogForTime(inst, "Information", "File written successfully ", 1000);
-							} catch (Exception e) {
-								e.printStackTrace();
-								ImageEditorWindow.log("File not written.", LOG.ERROR);
-								DialogLoggerUtil.showErrorDialog(inst, "File not written. ", e);
-							}
-							return true;
-						}
-					}.execute();
-				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				ImageEditorWindow.log("File not written.", LOG.ERROR);
@@ -333,33 +231,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		}
 	}  
 
-	private void saveCollectable2DGraphics(SettingsExportGraphics sett, Collectable2D img, String title) {
-		// change file name
-		File path = sett.getPath();
-		String fileName = sett.getFileName(); 
-		// import all
-		try {
-			// create chart
-			Heatmap heat = HeatmapFactory.generateHeatmap(img);
-			// TODO maybe you have to put it on the chartpanel and show it? 
-			addChartToPanel(heat.getChartPanel(), false);
-			// set the name and path 
-			// replace
-			title = title.replaceAll("[:*?\"<>|]", "_"); 
-			title = title.replace("."	, ",");
-			// title as filename
-			sett.setFileName(fileName+title);
-			// export
-			ImageEditorWindow.log("Writing image to file: "+sett.getFullFilePath(), LOG.MESSAGE);
-			ChartExportUtil.writeChartToImage(heat.getChartPanel(), sett);
-
-			// reset
-			sett.setFileName(fileName);
-		} catch(Exception ex) {
-			ex.printStackTrace();
-			ImageEditorWindow.log("FIle: "+sett.getFileName()+" is not saveable. \n"+ex.getMessage(), LOG.ERROR);
-		}
-	}
 
 	@Override
 	public void setAllSettings(SettingsHolder settings) { 
@@ -465,7 +336,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new MigLayout("", "[][][grow]", "[][][][grow]"));
+		contentPanel.setLayout(new MigLayout("", "[][][grow]", "[][][][][grow]"));
 		{
 			txtPath = new JTextField();
 			txtPath.setToolTipText("Path without filename");
@@ -493,7 +364,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		{
 			JPanel pnSettingsLeft = new JPanel();
 			pnSettingsLeft.setMinimumSize(new Dimension(260, 260));
-			contentPanel.add(pnSettingsLeft, "cell 0 3,grow");
+			contentPanel.add(pnSettingsLeft, "cell 0 4,grow");
 			pnSettingsLeft.setLayout(new BorderLayout(0, 0));
 			{
 				JScrollPane scrollPane = new JScrollPane();
@@ -664,25 +535,19 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 						panel_3 = new JPanel();
 						grid.add(panel_3);
 						panel_3.setLayout(new BorderLayout(0, 0));
+						
+						JPanel panel_1 = new JPanel();
+						panel_3.add(panel_1, BorderLayout.CENTER);
+						panel_1.setLayout(new MigLayout("", "[]", "[]"));
 					}
 				}
 			}
 		}
 		{
-			lblExportTheFollowing = new JLabel("Export the following:");
-			contentPanel.add(lblExportTheFollowing, "flowx,cell 0 2");
-		}
-		{
-			comboExportStruc = new JComboBox();
-			comboExportStruc.setFont(new Font("Tahoma", Font.BOLD, 12));
-			comboExportStruc.setModel(new DefaultComboBoxModel(EXPORT_STRUCTURE.values()));
-			contentPanel.add(comboExportStruc, "cell 0 2");
-		}
-		{
 			{
 				pnChartPreview = new JPanel();
 				pnChartPreview.setLayout(null);
-				contentPanel.add(pnChartPreview, "cell 1 3 2 1,grow");
+				contentPanel.add(pnChartPreview, "cell 1 4 2 1,grow");
 			}
 		}
 		{
@@ -787,9 +652,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 	}
 	public JRadioButton getRbEPS() {
 		return rbEPS;
-	}
-	public JComboBox getComboExportStruc() {
-		return comboExportStruc;
 	}
 	public JRadioButton getRbEmf() {
 		return rbEmf;

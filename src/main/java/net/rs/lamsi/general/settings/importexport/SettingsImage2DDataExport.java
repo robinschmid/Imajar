@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import net.rs.lamsi.general.dialogs.GraphicsExportDialog.EXPORT_STRUCTURE;
+import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 
