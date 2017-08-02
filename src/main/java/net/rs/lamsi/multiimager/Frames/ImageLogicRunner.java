@@ -168,12 +168,10 @@ public class ImageLogicRunner {
 			// create new project 
 			project = new ImagingProject(projectName);
 			project.add(group);
-			addProject(project);
+			addProject(project, false);
 		}
-		else {
 			// add group
 			addGroup(group, project);
-		}
 	}
 	/**
 	 * add group to the specified project (project may be null)
@@ -187,8 +185,9 @@ public class ImageLogicRunner {
 		} 
 		// project was already added?
 		else if(project!=null && project.getNode()==null)
-			addProject(project);
-		else {
+			addProject(project, false);
+		
+		
 			// add group
 			DefaultMutableTreeNode parentPr = project!=null? project.getNode() : treeImg.getRoot();
 			// add group to parentProject
@@ -209,7 +208,6 @@ public class ImageLogicRunner {
 				}
 			} 
 			treeImg.reload();
-		}
 	}
 
 	/**
@@ -217,7 +215,7 @@ public class ImageLogicRunner {
 	 * @param project
 	 * @return
 	 */
-	public DefaultMutableTreeNode addProject(ImagingProject project) {
+	public DefaultMutableTreeNode addProject(ImagingProject project, boolean addsGroups) {
 		//  exists already?
 		int c = 1;
 		String name = project.getName();
@@ -234,8 +232,9 @@ public class ImageLogicRunner {
 		treeImg.addNodeToRoot(node);
 
 		// add all groups
-		for(int i=0; i<project.size(); i++) 
-			addGroup(project.get(i), project);
+		if(addsGroups)
+			for(int i=0; i<project.size(); i++) 
+				addGroup(project.get(i), project);
 
 		return node;
 	}
@@ -512,7 +511,7 @@ public class ImageLogicRunner {
 						// load image group from file 
 						ImagingProject project = Image2DImportExportUtil.readProjectFromStandardZip(f, this);
 						if(project!=null) {
-							addProject(project);
+							addProject(project, true);
 							preferences.addImage2DImportExportPath(f, false);
 							
 							// replace place holders in settings
