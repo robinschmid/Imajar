@@ -111,6 +111,7 @@ public class ImportDataDialog extends JDialog {
 	private JCheckBox cbNoXData;
 	private JRadioButton rbiCAPQOneRow;
 	private JComboBox comboSeparationSpecial;
+	private JRadioButton rbShimadzuICPMS;
 
 	/**
 	 * Launch the application.
@@ -143,7 +144,7 @@ public class ImportDataDialog extends JDialog {
 				{
 					panel_1 = new JPanel();
 					tabMSPresets.add(panel_1, BorderLayout.NORTH);
-					panel_1.setLayout(new MigLayout("", "[][][]", "[][][]"));
+					panel_1.setLayout(new MigLayout("", "[][][]", "[][][][]"));
 					{
 						rbMP17Thermo = new JRadioButton("iCAP-Q - Thermo Fisher Scientific");
 						rbMP17Thermo.addActionListener(new ActionListener() { 
@@ -189,8 +190,13 @@ public class ImportDataDialog extends JDialog {
 							buttonGroup_2.add(rbiCAPQOneRow);
 							panel_1.add(rbiCAPQOneRow, "cell 0 1");
 						}
+						{
+							rbShimadzuICPMS = new JRadioButton("Sh");
+							buttonGroup_2.add(rbShimadzuICPMS);
+							panel_1.add(rbShimadzuICPMS, "cell 0 2");
+						}
 						buttonGroup_2.add(rbNeptune);
-						panel_1.add(rbNeptune, "cell 0 2");
+						panel_1.add(rbNeptune, "cell 0 3");
 					}
 				}
 				{
@@ -641,7 +647,22 @@ public class ImportDataDialog extends JDialog {
 				} 
 				getRbiCAPQOneRow().setSelected(true);
 				break;
-			}
+			
+		case PRESETS_SHIMADZU_ICP_MS:
+			getTabbedPane().setSelectedComponent(getTabMSPresets());
+			
+			// seperation   
+			if(sep.equals(",")) getComboSeparationSpecial().setSelectedIndex(0);
+			else if(sep.equals(" ")) getComboSeparationSpecial().setSelectedIndex(1);
+			else if(sep.equals("	")) getComboSeparationSpecial().setSelectedIndex(2);
+			else if(sep.equals(";")) getComboSeparationSpecial().setSelectedIndex(3);
+			else { 
+				getComboSeparationSpecial().setSelectedIndex(4);
+				getTxtSpecialSeparation().setText(sep);
+			} 
+			rbShimadzuICPMS.setSelected(true);
+			break;
+		}
 		}
 		else {
 			// xlsx?
@@ -759,6 +780,11 @@ public class ImportDataDialog extends JDialog {
 			}
 			else if(rbNeptune.isSelected()) {
 				IMPORT importMode = IMPORT.PRESETS_THERMO_NEPTUNE; 
+				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, null, filter, false,
+						startLine, endLine, startDP, endDP);
+			}
+			else if(rbShimadzuICPMS.isSelected()) {
+				IMPORT importMode = IMPORT.PRESETS_SHIMADZU_ICP_MS; 
 				settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation, null, filter, false,
 						startLine, endLine, startDP, endDP);
 			}

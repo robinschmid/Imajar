@@ -110,6 +110,22 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 		}
 		return g;
 	}
+	public ImageGroupMD createImageGroup(File dataFile, String[] titles) {
+		ImageGroupMD g = createImageGroup();
+		// set data path and name
+		if(dataFile!=null) {
+			g.getSettings().setName((dataFile.getName()));
+			g.getSettings().setPathData(dataFile.getAbsolutePath());
+		}
+		
+		// set titles
+		int i = 0;
+		for(Collectable2D c : g.getImages()) {
+			((Image2D) c).getSettings().getSettImage().setTitle(titles[i]);
+			i++;
+		}
+		return g;
+	}
 
 	public ImageGroupMD createImageGroup(String name) {
 		ImageGroupMD g = createImageGroup();

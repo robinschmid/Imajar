@@ -644,6 +644,8 @@ public class Image2DImportExportUtil {
 			return importFromThermoMP17FileToImage(files, sett, task); 
 		case PRESETS_THERMO_iCAPQ_ONE_ROW:
 			return new ImageGroupMD[]{importFromThermoiCapOneRowFileToImage(files, sett, task)};
+		case PRESETS_SHIMADZU_ICP_MS:
+			return importFromShimadzuICPMSToImage(files, sett, task); 
 		}
 
 		return null;
@@ -1191,7 +1193,161 @@ public class Image2DImportExportUtil {
 
 	//################################################################################
 	// Presets
+	/**
+	 * imports from Shimadzu ICP MS Files (different separations)
+	 * 0		1	2			3	4	
+	 * MainRuns	0	75As (1)	Y	7.5000022500006747
+	 * or x values for m/z --> delete
+	 * MainRuns	0	75As (1)	X [u]	74.9219970703125
+	 * @param file
+	 * @param sett
+	 * @return
+	 * @throws Exception
+	 */
+	public static ImageGroupMD[] importFromShimadzuICPMSToImage(File[] file, SettingsImageDataImportTxt sett, ProgressUpdateTask task) throws Exception { 
+		// images
+		ArrayList<ImageGroupMD> groups=new ArrayList<ImageGroupMD>();
 
+		// all files
+		for(File f : file) {
+			ImageGroupMD group = importFromShimadzuICPMSToImage(f, sett);
+
+			// group size is 1 and dimensions are the same?
+			if(groups.size()>=1 && group.size()==1 && group.getData().hasSameDataDimensionsAs(groups.get(0).getData())) {
+				// add to data set
+				groups.get(0).getData().addDimension((Image2D) group.get(0));
+				// add image to first group
+				groups.get(0).add(group.get(0));
+			}
+			// else - add to group list
+			else {
+				if(group!=null)
+					groups.add(group);
+			}
+
+			if(task!=null) task.addProgressStep(1.0);
+		}
+
+		//return image 
+		ImageGroupMD imgArray [] = new ImageGroupMD[groups.size()];
+		imgArray = groups.toArray(imgArray);
+		return imgArray;
+	}
+	private static ImageGroupMD importFromShimadzuICPMSToImage(File file, SettingsImageDataImportTxt sett) throws Exception { 
+		// from days to seconds
+		float factor = 24 *60 *60;
+		// images
+		// store data in ArrayList
+		ScanLineMD[] scanLines = null;
+		
+		List<Double>[] z = null;
+		List<Float> x = new ArrayList<Float>();
+		float startx = Float.NaN;
+		
+		boolean startFound = false;
+		String[] titles = null;
+		
+		// separation 
+		String separation = sett.getSeparation();
+		// separation for UTF-8 space 
+		char splitc = 0;
+		String splitUTF8 = String.valueOf(splitc);
+		// count data points
+		int dp = 0;
+		// line by line
+		BufferedReader br = txtWriter.getBufferedReader(file);
+		String s;
+		String[] lsep = null;;
+		while ((s = br.readLine()) != null) {
+			// try to separate by separation
+			String[] sep = s.split(separation);
+			// if sep.size==1 try and split symbol=space try utf8 space
+			if(sep.length<=1 && separation.equals(" ")) {
+				sep = s.split(splitUTF8);
+				if(sep.length>1)
+					separation = splitUTF8; 
+			}
+			
+			// is data line?
+			if(startFound || TextAnalyzer.isNumberValue(sep[0])) {
+				// first data line
+				// load titles
+				if(!startFound) {
+					// count elements in row-1
+					int size = 0;
+					for(int i=2; i<lsep.length; i++) {
+						if(lsep[i].equals(lsep[1])) {
+							size = i-1;
+							break;
+						}
+					}
+					
+					titles = new String[size];
+					for(int i=0; i<size; i++) {
+						titles[i] = lsep[i+1];
+					}
+					
+					// free
+					lsep = null;
+					startFound = true;
+				}
+				
+				// load data
+				if(scanLines == null) {
+					int lines = (sep.length-1)/titles.length;
+					scanLines = new ScanLineMD[lines];
+					z = new ArrayList[sep.length-1];
+					for(int i = 0; i<z.length; i++) {
+						z[i] = new ArrayList<Double>();
+					}
+				}
+
+				try {
+					// insert x
+					float xv = Float.valueOf(sep[0]);
+					xv *= factor;
+					if(Float.isNaN(startx))
+						startx = xv;
+					x.add(xv-startx);
+					
+					// insert data
+					for(int i=1; i<sep.length; i++) {
+						double value = Double.valueOf(sep[i]);
+						z[i-1].add(value);
+					}
+				}catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+
+			// last sep
+			if(!startFound) {
+				lsep = sep;
+			}
+		}
+		
+
+		try {
+			// set x
+			for(int i=0; i<scanLines.length; i++)
+				scanLines[i] = new ScanLineMD(x);
+			// port to scan lines
+			int line = 0;
+			for(int i=0; i<z.length; i++) {
+				scanLines[line].addDimension(z[i]);
+				// next line
+				if((i+1)%titles.length==0)
+					line++;
+			}
+		}catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		// Generate Image2D from scanLines 
+		DatasetLinesMD data = new DatasetLinesMD(scanLines); 
+		return data.createImageGroup(file, titles);
+	}
+	
 	/**
 	 * imports from Thermo MP17 Files (iCAP-Q) (different separations)
 	 * 0		1	2			3	4	
