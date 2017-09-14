@@ -43,6 +43,7 @@ public class SettingsGeneralImage extends Settings {
 	protected float xPosTitle = 0.9f, yPosTitle = 0.9f;
 	
 	protected float velocity, spotsize;
+	protected double intensityFactor;
 	// crop marks
 	protected double x0=0,x1=0,y0=0,y1=0;
 	// Imaging Mode
@@ -97,10 +98,11 @@ public class SettingsGeneralImage extends Settings {
 		useBlur = false;
 		blurRadius = 2;
 		isCropDataToMin = true;
+		intensityFactor = 1;
 	}
 
 
-	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize, 
+	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize,
 			IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData, 
 			boolean useInterpolation, double interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin) { 
 		this.velocity = velocity;
@@ -117,7 +119,6 @@ public class SettingsGeneralImage extends Settings {
 		this.blurRadius = blurRadius;
 		this.useBlur = useBlur;
 		this.isCropDataToMin = isCropDataToMin;
-		// imaging path? TODO
 	}
 
 
@@ -166,6 +167,7 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "useBlur", useBlur); 
 		toXML(elParent, doc, "blurRadius", blurRadius); 
 		toXML(elParent, doc, "isCropDataToMin", isCropDataToMin); 
+		toXML(elParent, doc, "intensityFactor", intensityFactor); 
 		
 		rotation.appendSettingsToXML(elParent, doc);
 	}
@@ -180,6 +182,7 @@ public class SettingsGeneralImage extends Settings {
 				if(paramName.equals("allFiles")) allFiles = booleanFromXML(nextElement); 
 				else if(paramName.equals("velocity"))velocity = floatFromXML(nextElement);  
 				else if(paramName.equals("spotsize"))spotsize = floatFromXML(nextElement); 
+				else if(paramName.equals("intensityFactor"))intensityFactor = doubleFromXML(nextElement);  
 				else if(paramName.equals("xPosTitle"))xPosTitle = floatFromXML(nextElement); 
 				else if(paramName.equals("yPosTitle"))yPosTitle = floatFromXML(nextElement);  
 				else if(paramName.equals("title"))title = nextElement.getTextContent();  
@@ -441,6 +444,22 @@ public class SettingsGeneralImage extends Settings {
 	}
 	public void setCropDataToMin(boolean isCropDataToMin) {
 		this.isCropDataToMin = isCropDataToMin;
+	}
+	public double getIntensityFactor() {
+		return intensityFactor;
+	}
+
+	/**
+	 * 
+	 * @param intensityFactor
+	 * @return true if value has changed
+	 */
+	public boolean setIntensityFactor(double intensityFactor) {
+		if(Math.abs(intensityFactor-this.intensityFactor)>0.0001) {
+		this.intensityFactor = intensityFactor;
+		return true;
+		}
+		return false;
 	}
 	
 }

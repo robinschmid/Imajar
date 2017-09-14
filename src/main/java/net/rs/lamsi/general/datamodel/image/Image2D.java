@@ -198,6 +198,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	/**
 	 * intensity values in respect to rotation reflection imaging mode
 	 * @param raw
+	 * @param useSettings use rotation and reflection...
 	 * @param l
 	 * @param dp
 	 * @return
@@ -213,6 +214,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 		// TODO process intensity
 		if(raw || Double.isNaN(i)) return i;
 		else {
+			// intensity factor
+			i *= settings.getSettImage().getIntensityFactor();
 			// subtract blank 
 			SettingsSelections sel = settings.getSettSelections();
 			if(sel!=null) {
