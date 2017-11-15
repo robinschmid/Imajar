@@ -5,8 +5,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import net.rs.lamsi.general.settings.SettingsChargeCalculator;
-import net.sf.mzmine.parameters.parametertypes.MZTolerance;
-import net.sf.mzmine.parameters.parametertypes.RTTolerance;
+import net.sf.mzmine.parameters.parametertypes.tolerances.MZTolerance;
+import net.sf.mzmine.parameters.parametertypes.tolerances.RTTolerance;
 
 public class MZChargeCalculatorDouble {
 

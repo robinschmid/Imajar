@@ -1,14 +1,11 @@
 package net.rs.lamsi.massimager.MyMZ;
 
-import java.io.File;
-import java.util.Vector;
 
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.exceptions.FilteringFailedException;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra.MZSpectrumCombineFilter;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
-import net.sf.mzmine.datamodel.Spectrum;
  
 
 public class MZDataFactory {  

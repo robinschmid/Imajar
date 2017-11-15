@@ -1,19 +1,11 @@
 package net.rs.lamsi.general.myfreechart.Plot.spectra;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import net.rs.lamsi.massimager.Frames.Window;
-import net.sf.mzmine.datamodel.Feature;
-import net.sf.mzmine.datamodel.IsotopePattern;
-import net.sf.mzmine.datamodel.PeakList;
-import net.sf.mzmine.datamodel.PeakListRow;
-import net.sf.mzmine.main.WindowMZMine;
-import net.sf.mzmine.modules.visualization.spectra.datasets.IsotopesDataSet;
-import net.sf.mzmine.modules.visualization.spectra.datasets.PeakListDataSet;
 
 import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.data.xy.XYDataset;
+
+import net.rs.lamsi.massimager.Frames.Window;
 
 class PlotSpectraToolTipGenerator implements XYToolTipGenerator { 
 

@@ -42,7 +42,7 @@ public class ThreadRawDataUpdate extends SwingWorker<Boolean, Object> {
     	  System.out.println("DONE Thread");
     	  if(get()) {
     		  System.out.println("LOAD RAWS");
-    		  MZMineCallBackListener.callRawDataListeners();
+    		  MZMineCallBackListener.callAllListenersForRaw();
     		  System.out.println("LOADING FINISHED");
     	  } 
       } catch ( /* InterruptedException, ExecutionException */ Exception e ) { 

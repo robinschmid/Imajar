@@ -1,34 +1,14 @@
 package net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation;
 
-import java.util.Arrays;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 import net.rs.lamsi.general.settings.SettingsChargeCalculator;
-import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Feature;
-import net.sf.mzmine.datamodel.MZmineProject;
 import net.sf.mzmine.datamodel.PeakList;
-import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
-import net.sf.mzmine.datamodel.IsotopePattern.IsotopePatternStatus;
-import net.sf.mzmine.datamodel.PeakList.PeakListAppliedMethod;
-import net.sf.mzmine.datamodel.impl.SimpleDataPoint;
-import net.sf.mzmine.datamodel.impl.SimpleFeature;
-import net.sf.mzmine.datamodel.impl.SimpleIsotopePattern;
-import net.sf.mzmine.datamodel.impl.SimplePeakList;
-import net.sf.mzmine.datamodel.impl.SimplePeakListAppliedMethod;
-import net.sf.mzmine.datamodel.impl.SimplePeakListRow;
-import net.sf.mzmine.main.WindowMZMine;
-import net.sf.mzmine.modules.peaklistmethods.isotopes.deisotoper.IsotopeGrouperParameters;
-import net.sf.mzmine.parameters.ParameterSet;
-import net.sf.mzmine.parameters.parametertypes.MZTolerance;
-import net.sf.mzmine.parameters.parametertypes.RTTolerance;
-import net.sf.mzmine.taskcontrol.TaskStatus;
-import net.sf.mzmine.util.PeakSorter;
-import net.sf.mzmine.util.PeakUtils;
-import net.sf.mzmine.util.SortingDirection;
-import net.sf.mzmine.util.SortingProperty;
+import net.sf.mzmine.parameters.parametertypes.tolerances.MZTolerance;
+import net.sf.mzmine.parameters.parametertypes.tolerances.RTTolerance;
 
 public class MZChargeCalculatorMZMine {
 

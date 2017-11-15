@@ -1,29 +1,9 @@
 package net.rs.lamsi.massimager.test;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.sf.mzmine.main.WindowMZMine;
-import net.sf.mzmine.modules.MZmineModule;
-import net.sf.mzmine.parameters.ParameterSet;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 public class TestXML {
 

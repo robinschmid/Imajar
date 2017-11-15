@@ -62,8 +62,11 @@ import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.myfilechooser.exceptions.NoFileSelectedException;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
+import net.sf.mzmine.datamodel.MZmineProjectListener;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.RawDataFile;
+import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter;
+import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter.Operation;
 
 
 public class Window {
@@ -202,9 +205,14 @@ public class Window {
 
 	// listen for new PeakLists or RawDataFiles
 	private void registerMZMineListeners() {
-		MZMineRawDataListsChangedListener rawListener = new MZMineRawDataListsChangedListener() { 
+		MZMineCallBackListener.addMZmineProjectListener(new MZmineProjectListenerAdapter() {
 			@Override
-			public void rawDataListsChanged(RawDataFile[] rawDataLists) {
+			public void peakListsChanged(PeakList pkl, Operation op) {
+				
+			}
+			
+			@Override
+			public void dataFilesChanged(RawDataFile r, Operation op) {
 				DefaultListModel model = (DefaultListModel) getListFiles().getModel();
 				model.removeAllElements();
 				// get list of rawdata files 
@@ -230,18 +238,7 @@ public class Window {
 					}
 				}
 			}
-		};
-		
-		MZMinePeakListsChangedListener peakListener = new MZMinePeakListsChangedListener() { 
-			@Override
-			public void peakListsChanged(PeakList[] peakLists) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
-		
-		MZMineCallBackListener.addMZMinePeakListChangedListener(peakListener);
-		MZMineCallBackListener.addMZMineRawDataListChangedListener(rawListener);
+		});
 	}
 
 	// second App: ImageEditorWindow for final image processing

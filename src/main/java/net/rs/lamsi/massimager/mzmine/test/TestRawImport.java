@@ -1,8 +1,6 @@
 package net.rs.lamsi.massimager.mzmine.test;
 
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
-import net.sf.mzmine.main.WindowMZMine;
-import net.sf.mzmine.taskcontrol.TaskPriority;
 
 public class TestRawImport {
 

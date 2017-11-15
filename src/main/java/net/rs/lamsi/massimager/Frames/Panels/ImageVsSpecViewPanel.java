@@ -43,6 +43,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 
+import org.jfree.chart.ChartPanel;
+import org.jfree.data.Range;
+
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.framework.modules.Module;
@@ -51,9 +54,9 @@ import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.Plot.spectra.PlotSpectraLineAndShapeRenderer;
 import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.SelectMZDirectDialog;
 import net.rs.lamsi.massimager.Frames.Menu.MenuChartActions;
@@ -64,13 +67,14 @@ import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
 import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation.MZChargeCalculatorMZMine;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
+import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
-
-import org.jfree.chart.ChartPanel;
-import org.jfree.data.Range;
+import net.sf.mzmine.datamodel.RawDataFile;
+import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter;
+import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter.Operation;
  
 
 /*TODO
@@ -208,8 +212,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 						double minmz = Double.MAX_VALUE;
 						double maxmz = Double.MIN_VALUE;
 						for(Feature p : peak) {
-							if(p.getRawDataPointsMZRange().getMin()<minmz) minmz = p.getRawDataPointsMZRange().getMin();
-							if(p.getRawDataPointsMZRange().getMax()>maxmz) maxmz = p.getRawDataPointsMZRange().getMax();
+							if(p.getRawDataPointsMZRange().lowerEndpoint()<minmz) minmz = p.getRawDataPointsMZRange().lowerEndpoint();
+							if(p.getRawDataPointsMZRange().upperEndpoint()>maxmz) maxmz = p.getRawDataPointsMZRange().upperEndpoint();
 						}
 						// 
 						selectedVsMiddleMZ = (minmz+maxmz)/2;
@@ -784,19 +788,23 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		actionMap.put(key, new KeyAction(key));
 	}
 	private void initMZMineListeners() {
-		MZMinePeakListsChangedListener listener = new MZMinePeakListsChangedListener() { 
+		MZMineCallBackListener.addMZmineProjectListener(new MZmineProjectListenerAdapter() {
 			@Override
-			public void peakListsChanged(PeakList[] peakLists) {
+			public void peakListsChanged(PeakList p, Operation op) {
 				// remove all pkls
 				getPnPeakList().removeAllElements();
 				// add all
-				for (PeakList pkl : peakLists) {
+				PeakList[] list = MZMineLogicsConnector.getPeakLists();
+				for (PeakList pkl : list) {
 					getPnPeakList().addElement(pkl, pkl.getName());
 				}
 			}
-		};
-		//
-		MZMineCallBackListener.addMZMinePeakListChangedListener(listener);
+			
+			@Override
+			public void dataFilesChanged(RawDataFile raw, Operation op) {
+				
+			}
+		});
 	}
 
 	protected void setSelectedPeakList(PeakList pkl) {
@@ -1004,7 +1012,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	// Set bottom spectrum chartpanel
 	public void setChartBottomSpectrum(ChartPanel chartSpec2) { 
 		if(chartBottomSpec!=null) {
-			net.sf.mzmine.util.Range lastzoom = ChartLogics.getZoomDomainAxis(chartBottomSpec);
+			Range lastzoom = ChartLogics.getZoomDomainAxis(chartBottomSpec);
 			ChartLogics.setZoomDomainAxis(chartSpec2, lastzoom, true);
 		}  
 		this.chartBottomSpec = chartSpec2;
@@ -1104,14 +1112,14 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		
 		if((selectedModeMiddle==MODE_TIC || selectedModeMiddle==MODE_EIC)) {
 			if(chartMiddleChrom!=null) {
-				net.sf.mzmine.util.Range lastzoom = ChartLogics.getZoomDomainAxis(chartMiddleChrom);
+				Range lastzoom = ChartLogics.getZoomDomainAxis(chartMiddleChrom);
 				ChartLogics.setZoomDomainAxis(chartChrom2, lastzoom, true);
 			}
 			this.chartMiddleChrom = chartChrom2;
 		}  
 		if((selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON)) {
 			if(chartMiddleImage!=null) {
-				net.sf.mzmine.util.Range lastzoom = ChartLogics.getZoomDomainAxis(chartMiddleImage);
+				Range lastzoom = ChartLogics.getZoomDomainAxis(chartMiddleImage);
 				ChartLogics.setZoomDomainAxis(chartChrom2, lastzoom, true);
 			}
 			this.chartMiddleImage = chartChrom2;
@@ -1204,7 +1212,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 
 	public void setChartTopChrom(ChartPanel chartChrom2) {
 		if(chartTopChrom!=null) {
-			net.sf.mzmine.util.Range lastzoom = ChartLogics.getZoomDomainAxis(chartTopChrom);
+			Range lastzoom = ChartLogics.getZoomDomainAxis(chartTopChrom);
 			ChartLogics.setZoomDomainAxis(chartChrom2, lastzoom, true);
 		} 
 		this.chartTopChrom = chartChrom2;
@@ -1274,7 +1282,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		// TODO PEAK pick
 		if(selectedPeakList!=null) {
 			// rows
-			PeakListRow[] rows = selectedPeakList.getRowsInsideMZRange(new net.sf.mzmine.util.Range(mz-pm, mz+pm)); 
+			PeakListRow[] rows = selectedPeakList.getRowsInsideMZRange(com.google.common.collect.Range.<Double>closed(mz-pm, mz+pm)); 
 			
 			// add only the highest peak?
 			if(getMenuTopTableActions().getBtnOnlyHighestPeak().isSelected()) { 
@@ -1326,9 +1334,9 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			Feature[] peaks = r.getPeaks();
 			for (int j = 0; j < peaks.length; j++) {
 				Feature p = peaks[j];
-				net.sf.mzmine.util.Range range = p.getRawDataPointsRTRange();
-				if(range.getMin()<minPeakRT) minPeakRT = range.getMin();
-				if(range.getMax()>maxPeakRT) maxPeakRT = range.getMax();
+				com.google.common.collect.Range<Double> range = p.getRawDataPointsRTRange();
+				if(range.lowerEndpoint()<minPeakRT) minPeakRT = range.lowerEndpoint();
+				if(range.upperEndpoint()>maxPeakRT) maxPeakRT = range.upperEndpoint();
 			}
 			
 			if(rtMin<=maxPeakRT && minPeakRT<=rtMax) {

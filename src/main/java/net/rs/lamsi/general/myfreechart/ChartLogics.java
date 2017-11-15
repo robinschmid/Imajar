@@ -8,16 +8,16 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.JPanel;
 
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.sf.mzmine.util.Range;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.Range;
 import org.jfree.ui.RectangleEdge;
+
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 public class ChartLogics {
 
@@ -104,9 +104,9 @@ public class ChartLogics {
         // ranges
     	XYPlot plot = (XYPlot) myChart.getChart().getPlot();
         ValueAxis domainAxis = plot.getDomainAxis();
-        org.jfree.data.Range x = domainAxis.getRange();
+        Range x = domainAxis.getRange();
         ValueAxis rangeAxis = plot.getRangeAxis();
-        org.jfree.data.Range y = rangeAxis.getRange();
+        Range y = rangeAxis.getRange();
         
         // plot height is fixed
         double plotHeight = plotWidth / x.getLength()*y.getLength();
@@ -368,8 +368,8 @@ public class ChartLogics {
         XYPlot plot = (XYPlot) myChart.getChart().getPlot(); 
         ValueAxis domainAxis = plot.getDomainAxis(); 
         
-        domainAxis.setLowerBound(zoom.getMin());
-        domainAxis.setUpperBound(zoom.getMax());
+        domainAxis.setLowerBound(zoom.getLowerBound());
+        domainAxis.setUpperBound(zoom.getUpperBound());
         
         if(autoRangeY) { 
         	NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
@@ -394,9 +394,10 @@ public class ChartLogics {
         
     	Range range = new Range(domainAxis.getLowerBound()+distance, domainAxis.getUpperBound()+distance);
     	
-    	if(range.getMin()<0){
-    		double negative = range.getMin(); 
-    		range = new Range(0, range.getMax()-negative);
+    	
+    	if(range.getLowerBound()<0){
+    		double negative = range.getLowerBound(); 
+    		range = new Range(0, range.getUpperBound()-negative);
     	}
     	
         setZoomDomainAxis(myChart, range, autoRangeY);
@@ -415,9 +416,9 @@ public class ChartLogics {
         
     	Range range = new Range(domainAxis.getLowerBound()+xoffset, domainAxis.getUpperBound()+xoffset);
     	
-    	if(range.getMin()<0){
-    		double negative = range.getMin(); 
-    		range = new Range(0, range.getMax()-negative);
+    	if(range.getLowerBound()<0){
+    		double negative = range.getLowerBound(); 
+    		range = new Range(0, range.getUpperBound()-negative);
     	}
     	
         setZoomDomainAxis(myChart, range, autoRangeY);

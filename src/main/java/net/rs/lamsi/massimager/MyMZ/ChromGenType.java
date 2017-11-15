@@ -1,9 +1,9 @@
 package net.rs.lamsi.massimager.MyMZ;
 
+import com.google.common.collect.Range;
+
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.Scan;
-import net.sf.mzmine.util.Range;
- 
 
 public abstract class ChromGenType {
 	// Highest Peak
@@ -11,7 +11,7 @@ public abstract class ChromGenType {
 		@Override
 		public double getIntensity(double mz, double pm, Scan spec) { 
 			try{
-				DataPoint[] dps = spec.getDataPointsByMass(new Range(mz-pm, mz+pm));
+				DataPoint[] dps = spec.getDataPointsByMass(Range.<Double>closed(mz-pm, mz+pm));
 				DataPoint mostIntense = null;
 				for (int i = 0; i < dps.length; i++) {
 					DataPoint d = dps[i];
@@ -30,7 +30,7 @@ public abstract class ChromGenType {
 		@Override
 		public double getIntensity(double mz, double pm, Scan spec) {
 			try{
-				DataPoint[] dps = spec.getDataPointsByMass(new Range(mz-pm, mz+pm));
+				DataPoint[] dps = spec.getDataPointsByMass(Range.<Double>closed(mz-pm, mz+pm));
 				double sum = 0;
 				for (int i = 0; i < dps.length; i++) {
 					DataPoint d = dps[i];

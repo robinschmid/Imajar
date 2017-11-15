@@ -9,16 +9,19 @@ import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.desktop.impl.MainMenu;
 import net.sf.mzmine.desktop.impl.MainPanel;
 import net.sf.mzmine.desktop.impl.MainWindow;
-import net.sf.mzmine.main.WindowMZMine;
+import net.sf.mzmine.main.MZmineCore;
 import net.sf.mzmine.modules.MZmineRunnableModule;
 import net.sf.mzmine.modules.rawdatamethods.rawdataimport.RawDataImportParameters;
 import net.sf.mzmine.parameters.Parameter;
 import net.sf.mzmine.parameters.ParameterSet;
-import net.sf.mzmine.parameters.parametertypes.PeakListsParameter;
-import net.sf.mzmine.parameters.parametertypes.RawDataFilesParameter;
+import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsParameter;
+import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsSelection;
+import net.sf.mzmine.parameters.parametertypes.selectors.PeakListsSelectionType;
+import net.sf.mzmine.parameters.parametertypes.selectors.RawDataFilesParameter;
+import net.sf.mzmine.parameters.parametertypes.selectors.RawDataFilesSelection;
+import net.sf.mzmine.parameters.parametertypes.selectors.RawDataFilesSelectionType;
 import net.sf.mzmine.taskcontrol.Task;
 import net.sf.mzmine.taskcontrol.TaskPriority;
-import net.sf.mzmine.util.ExitCode;
  
 
 
@@ -31,9 +34,9 @@ public class MZMineLogicsConnector {
 	
 	public static void connectToMZMine() {
 		String[] args = new String[0];
-		WindowMZMine.main(args);
+		MZmineCore.main(args);
 
-		MainWindow mainWnd = (MainWindow) WindowMZMine.getDesktop();
+		MainWindow mainWnd = (MainWindow) MZmineCore.getDesktop();
 		MainMenu menu = mainWnd.getMainMenu();
 		MainPanel mainPN = mainWnd.getMainPanel();
 		//
@@ -43,7 +46,7 @@ public class MZMineLogicsConnector {
 	//
 	public static boolean addTaskToStack(Task task) {
 		try{
-			WindowMZMine.getTaskController().addTask(task, TaskPriority.NORMAL);
+			MZmineCore.getTaskController().addTask(task, TaskPriority.NORMAL);
 			return true;
 		} catch(Exception ex) {
 			ex.printStackTrace();
@@ -51,57 +54,82 @@ public class MZMineLogicsConnector {
 		}
 	}
 	
-	// returns all peaklists in tree
-	public static PeakList[] getPeakLists() {
-		MZmineProject project = WindowMZMine.getCurrentProject();  
-		PeakList[] peakLists = project.getPeakLists(); 
-		return peakLists;
-	}
-	// returns all rawDataFiles in tree
-	public static RawDataFile[] getRawDataLists() {
-		MZmineProject project = WindowMZMine.getCurrentProject(); 
-		RawDataFile[] rawFiles = project.getDataFiles();   
-		return rawFiles;
+	/**
+	 * current project
+	 * @return
+	 */
+	public static MZmineProject getProject() {
+		return MZmineCore.getProjectManager().getCurrentProject();
 	}
 	
-	// simulates a click on a JMenuItem-Module (starts the module code sided)
+	/**
+	 * peak lists
+	 * @return
+	 */
+	public static PeakList[] getPeakLists() {
+		return getProject().getPeakLists();
+	}
+
+	/**
+	 * raw data files
+	 * @return
+	 */
+	public static RawDataFile[] getRawDataLists() {
+		return getProject().getDataFiles();
+	}
+	
+	/**
+	 * simulates a click on a JMenuItem-Module (starts the module code sided)
+	 * @param moduleName
+	 */
 	public static void activateModule(String moduleName) {
-		MainWindow mainWnd = (MainWindow) WindowMZMine.getDesktop();
+		MainWindow mainWnd = (MainWindow) MZmineCore.getDesktop();
 		MainMenu menu = mainWnd.getMainMenu();
 		
 		menu.startModuleCodeSided(moduleName);
 	}
 	
-	// used to open an import dialog
+	/**
+	 * used to open an import dialog
+	 */
 	public static void importRawDataDialog() {
 		activateModule(MODULE_RAW_IMPORT);
 	}
 	
+	/**
+	 * import files
+	 * or use importRawDataDialog()
+	 * @param files
+	 */
 	public static void importRawDataDirect(File[] files) {
-		MainWindow mainWnd = (MainWindow) WindowMZMine.getDesktop();
+		MainWindow mainWnd = getMZmineMainWindow();
 		MainMenu menu = mainWnd.getMainMenu(); 
 		MZmineRunnableModule module = menu.getModuleByName(MODULE_RAW_IMPORT);
 		
 		if (module != null) {
-			RawDataImportParameters moduleParameters = (RawDataImportParameters) WindowMZMine.getConfiguration().getModuleParameters(module.getClass());
+			RawDataImportParameters moduleParameters = (RawDataImportParameters) MZmineCore.getConfiguration().getModuleParameters(module.getClass());
 
-			RawDataFile selectedFiles[] = WindowMZMine.getDesktop().getSelectedDataFiles();
+			RawDataFile selectedFiles[] = mainWnd.getSelectedDataFiles();
+			RawDataFilesSelection sel = new RawDataFilesSelection(RawDataFilesSelectionType.SPECIFIC_FILES);
+			sel.setSpecificFiles(selectedFiles);
 			if (selectedFiles.length > 0) {
 				for (Parameter<?> p : moduleParameters.getParameters()) {
 					if (p instanceof RawDataFilesParameter) {
 						RawDataFilesParameter rdp = (RawDataFilesParameter) p;
-						rdp.setValue(selectedFiles);
+						rdp.setValue(sel);
 					}
 				}
 
 			}
-			PeakList selectedPeakLists[] = WindowMZMine.getDesktop()
-					.getSelectedPeakLists();
+			PeakList selectedPeakLists[] = getMZmineMainWindow().getSelectedPeakLists();
+			PeakListsSelection selP = new PeakListsSelection();
+			selP.setSelectionType(PeakListsSelectionType.SPECIFIC_PEAKLISTS);
+			selP.setSpecificPeakLists(selectedPeakLists);
 			if (selectedPeakLists.length > 0) {
 				for (Parameter<?> p : moduleParameters.getParameters()) {
 					if (p instanceof PeakListsParameter) {
 						PeakListsParameter plp = (PeakListsParameter) p;
-						plp.setValue(selectedPeakLists);
+						plp.setValue(selP);
 					}
 				}
 			}
@@ -112,10 +140,13 @@ public class MZMineLogicsConnector {
 			 
 			ParameterSet parametersCopy = moduleParameters.cloneParameterSet(); 
 			ArrayList<Task> tasks = new ArrayList<Task>();
-			module.runModule(parametersCopy, tasks);
-			WindowMZMine.getTaskController().addTasks(tasks.toArray(new Task[0])); 
+			module.runModule(getProject(), parametersCopy, tasks);
+			MZmineCore.getTaskController().addTasks(tasks.toArray(new Task[0])); 
 			return;
 		}
 	}
 	
+	public static MainWindow getMZmineMainWindow() {
+		return (MainWindow) MZmineCore.getDesktop();
+	}
 }

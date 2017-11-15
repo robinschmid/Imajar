@@ -1,14 +1,15 @@
 package net.rs.lamsi.general.settings;
 
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
-import net.sf.mzmine.parameters.parametertypes.MZTolerance;
-import net.sf.mzmine.parameters.parametertypes.RTTolerance;
+import net.sf.mzmine.parameters.parametertypes.tolerances.MZTolerance;
+import net.sf.mzmine.parameters.parametertypes.tolerances.RTTolerance;
 
 
 public class SettingsChargeCalculator extends SettingsGeneralImage {
 	// do not change the version!
     private static final long serialVersionUID = 1L;
     //
+    
 	private MZTolerance mzTolerance;
 	private RTTolerance rtTolerance;
 	private boolean monotonicShape;
