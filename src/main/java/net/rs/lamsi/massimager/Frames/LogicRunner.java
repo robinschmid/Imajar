@@ -9,8 +9,13 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jfree.chart.ChartPanel;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.Simple2DDataset;
 import net.rs.lamsi.general.settings.SettingsDataSaver;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
@@ -28,15 +33,13 @@ import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
 import net.rs.lamsi.utils.myfilechooser.exceptions.NoFileSelectedException;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
-import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
+import net.sf.mzmine.datamodel.Coordinates;
+import net.sf.mzmine.datamodel.ImagingRawData;
+import net.sf.mzmine.datamodel.ImagingScan;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
-
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.jfree.chart.ChartPanel;
+import net.sf.mzmine.datamodel.impl.ImagingParameters;
 
 // abgeleitet von JFrame -> Oeffnet das Fenster
 public class LogicRunner { 
@@ -81,7 +84,7 @@ public class LogicRunner {
     private MZChromatogram[] currentMZChrom;
 	private MZChromatogram currentTIC, currentSpectrum, currentFileTIC;
 	private int selectedFileIndex=-1; 
-	
+	private boolean isImagingRaw = false;
 	
 	// IMAGES
 	private Image2D currentImageDiscon, currentImageCon;
@@ -100,6 +103,26 @@ public class LogicRunner {
 	private void setUpFileReader() {
 		// mzXML reader:
 		reader = new MZXMLReaderList();
+	}
+	
+
+	/**
+	 * The RawDataFile at index i or null if not in range
+	 * @return
+	 */
+	public RawDataFile getRawDataFile(int i) {
+		if(listSpecFiles!=null && i>=0 && i<listSpecFiles.size())
+		return listSpecFiles.get(i);
+		else return null;
+	}
+	/**
+	 * The selected RawDataFile or null if none is selected (or not in range)
+	 * @return
+	 */
+	public RawDataFile getSelectedRawDataFile() {
+		if(listSpecFiles!=null && selectedFileIndex>=0 && selectedFileIndex<listSpecFiles.size())
+		return listSpecFiles.get(selectedFileIndex);
+		else return null;
 	}
 	
 	//###############################################################################
@@ -684,10 +707,14 @@ public class LogicRunner {
     // Erneuert alle Plots
     public void setNewFileSelectedAndShowAll(int i) {
     	selectedFileIndex = i;
+    	// is iamging raw data?
+    	isImagingRaw = getSelectedFile() instanceof ImagingRawData;
+    	
     	// TODO set currentMZ PM and RT
     	System.out.println("New File Selected "+i);
     	// 
     	if(i>=0) { 
+    		window.getTabThresomeTICvsMZvsSpec().setCurrentRawFile(getSelectedFile());
 	    	renewSpecVsImageVsChrom();
     	}
     }
@@ -926,6 +953,52 @@ public class LogicRunner {
 		} 
 		else return null;
 	}
+
+	/**
+	 * 
+	 * @param setMSI
+	 * @param raw needs to be a ImagingRawDataFile
+	 * @return
+	 */
+	public Image2D generateImage(SettingsMSImage setMSI, RawDataFile raw) {
+		// Heatmap erstellen
+		if(raw != null && raw instanceof ImagingRawData) { 
+			ChromGenType gen = ChromGenType.HIGHEST_PEAK;
+			ImagingParameters param = ((ImagingRawData)raw).getImagingParam();
+			MZIon ion = setMSI.getMZIon();
+			
+			// result data matrix
+			double[][] data = new double[param.getHeight()][param.getWidth()];
+			for(int y = 0; y<data.length; y++)
+				for (int x = 0; x < data[y].length; x++)
+					data[y][x] = 0;
+			
+			int[] numbers = raw.getScanNumbers();
+			// data
+			double intensity = 0;
+			Coordinates coord = null;
+			for(int i=0; i<numbers.length; i++) {
+				Scan scan = raw.getScan(numbers[i]);
+				// intensity
+				intensity = gen.getIntensity(ion.getMz(), ion.getPm(), scan);
+				
+				// position
+				if(scan instanceof ImagingScan) {
+					coord = ((ImagingScan)scan).getCoordinates();
+				}
+				
+				// coord is 1 based
+				data[coord.getY()-1][coord.getX()-1] = intensity;
+			}
+			
+			Simple2DDataset idata = new Simple2DDataset((float)param.getPixelWidth(), (float)param.getPixelShape(), data);
+			
+			Image2D image = new Image2D(idata);
+			
+			return image;
+		}
+		return null;
+	}
 	
 	// Creation of spectrums and other things finished
 	//###############################################################################
@@ -987,7 +1060,7 @@ public class LogicRunner {
 	} 
 	
 	public RawDataFile getSelectedFile() {
-		return listSpecFiles.get(selectedFileIndex);
+		return selectedFileIndex>=0 && selectedFileIndex<listSpecFiles.size()? listSpecFiles.get(selectedFileIndex) : null;
 	}
 
 	public Vector<PeakList> getPeakLists() {

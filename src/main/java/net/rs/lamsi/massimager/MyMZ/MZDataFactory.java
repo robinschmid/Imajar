@@ -4,6 +4,8 @@ package net.rs.lamsi.massimager.MyMZ;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.exceptions.FilteringFailedException;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra.MZSpectrumCombineFilter;
 import net.sf.mzmine.datamodel.DataPoint;
+import net.sf.mzmine.datamodel.ImagingRawData;
+import net.sf.mzmine.datamodel.ImagingScan;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
  
@@ -114,37 +116,49 @@ public class MZDataFactory {
 	// Get TIC
 	// MZ Chrom from all Spectrum
 	public static MZChromatogram getTIC(RawDataFile raw) {
-		// TODO Auto-generated method stub
 		MZChromatogram chrom = new MZChromatogram("TIC");
-		// Alle spektren durchgehen nach chromType entscheiden wie die Intensität ist
+		// imaging scan
+		double xspace = 0;
+		boolean isImageRaw = (raw instanceof ImagingRawData);
+		if(isImageRaw) xspace = ((ImagingRawData)raw).getImagingParam().getPixelWidth();
+		// for all spectra
 		int[] scani = raw.getScanNumbers();
+		// x
+		double x = 0;
 		for(int i=0; i<scani.length; i++) {
 			Scan spec = raw.getScan(scani[i]);
-			// time bekommen
-			double rt = spec.getRetentionTime();
-			// intensity bekommen 
+			
+			// imaging scan
+			if(isImageRaw)
+				x += xspace;
+			else x = spec.getRetentionTime();
+			// intensity 
 			double intensity = spec.getTIC();
-			// daten hinzufügen
-			chrom.add(rt, intensity);
+			chrom.add(x, intensity);
 		}
 		//		
 		return chrom;
 	}
 	// MZ Chrom from all Spectrum
 	public static MZChromatogram getMZChrom(RawDataFile raw, MZIon mzIon, ChromGenType chromType) {
-		// TODO Auto-generated method stub
 		MZChromatogram chrom = new MZChromatogram(mzIon.getMz());
 		chrom.setDescription(mzIon.getName());
-		// Alle spektren durchgehen nach chromType entscheiden wie die Intensität ist
+		// imaging scan
+		double xspace = 0;
+		boolean isImageRaw = (raw instanceof ImagingRawData);
+
 		int[] scani = raw.getScanNumbers();
+		// x
+		double x = 0;
 		for(int i=0; i<scani.length; i++) {
 			Scan spec = raw.getScan(scani[i]);
-			// time bekommen
-			double rt = spec.getRetentionTime();
-			// intensity bekommen 
+			// imaging scan
+			if(isImageRaw)
+				x += xspace;
+			else x = spec.getRetentionTime();
+			// intensity  
 			double intensity = chromType.getIntensity(mzIon.getMz(), mzIon.getPm(), spec);
-			// daten hinzufügen
-			chrom.add(rt, intensity);
+			chrom.add(x, intensity);
 		}
 		//		
 		return chrom;

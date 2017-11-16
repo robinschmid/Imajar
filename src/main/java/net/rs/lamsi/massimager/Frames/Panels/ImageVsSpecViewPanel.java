@@ -70,6 +70,7 @@ import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
 import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.sf.mzmine.datamodel.Feature;
+import net.sf.mzmine.datamodel.ImagingRawData;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
@@ -94,7 +95,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			VK_1_RELEASED = "VK_1_RELEASED", VK_2_RELEASED = "VK_2_RELEASED", VK_3_RELEASED = "VK_3_RELEASED";
 	public static int KEY_LEFT = KeyEvent.VK_A, KEY_RIGHT = KeyEvent.VK_D, KEY_UP = KeyEvent.VK_W, KEY_DOWN = KeyEvent.VK_S;
 	public static final int VIEW_BOTTOM_SPECTRUM = 0, VIEW_MIDDLE_IMAGECHROM = 1, VIEW_TOP_CHROM = 2;
-	public static final int MODE_TIC = 0, MODE_EIC = 1, MODE_IMAGE_CON = 2, MODE_IMAGE_DISCON = 3, MODE_PEAK_LIST = 4;
+	public static final int MODE_TIC = 0, MODE_EIC = 1, MODE_IMAGE_CON = 2, MODE_IMAGE_DISCON = 3, MODE_IMAGE = 5, MODE_PEAK_LIST = 4;
 	public static final int SPECTRUM_SELECTION_MODE_RT =0, SPECTRUM_SELECTION_MODE_XY = 1;
 
 	// MySTUFF
@@ -333,6 +334,21 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		btnMiddleImageCon.setMaximumSize(new Dimension(25, 25));
 		btnMiddleImageCon.setMargin(new Insets(0, 0, 0, 0));
 		toolBar_1.add(btnMiddleImageCon);
+		
+		btnMiddleImage = new JToggleButton("");
+		btnMiddleImage.setToolTipText("Imaging");
+		btnMiddleImage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setModeMiddle(MODE_IMAGE);
+			}
+		});
+		btnGroup_middle.add(btnMiddleImage);
+		btnMiddleImage.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_img_C.png")));
+		btnMiddleImage.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_img_C_selec.png")));
+		btnMiddleImage.setMinimumSize(new Dimension(25, 25));
+		btnMiddleImage.setMaximumSize(new Dimension(25, 25));
+		btnMiddleImageCon.setMargin(new Insets(0, 0, 0, 0));
+		toolBar_1.add(btnMiddleImage);
 		
 		menuMiddleChartActions = new MenuChartActions() { 
 			@Override
@@ -828,7 +844,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		getLbPMMiddle().setVisible(mode!=MODE_TIC);
 		
 		// show or hide imagesettings Panel
-		getPnWestImageSettings().setVisible(mode==MODE_IMAGE_CON || mode==MODE_IMAGE_DISCON);
+		getPnWestImageSettings().setVisible(mode==MODE_IMAGE_CON || mode==MODE_IMAGE_DISCON|| mode==MODE_IMAGE);
 		getPnImgCon().setVisible(mode==MODE_IMAGE_CON);
 
 		// update top view and chart
@@ -918,10 +934,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				selectedVsMiddleMZ = mz;
 				selectedVsMiddlePM = pm;
 				// IMAGE?
-				if(selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON) {
+				if(selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON || selectedModeMiddle==MODE_IMAGE) {
 					// First get new Imagesettings
 					setupNewImageSettingsFromPanel(); 
 					Image2D image = null;
+					
 					// Image Con
 					if(selectedModeMiddle==MODE_IMAGE_CON) {
 						image = window.getLogicRunner().generateImageCon(settImage, settSplitCon);
@@ -930,6 +947,9 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					if(selectedModeMiddle==MODE_IMAGE_DISCON) {
 						image = window.getLogicRunner().generateImageDiscon(settImage); 
 					} 	
+					// image generation if raw data is imaging raw data file
+					if(selectedModeMiddle==MODE_IMAGE)
+						image = window.getLogicRunner().generateImage(settImage, window.getLogicRunner().getSelectedRawDataFile());
 					// set chart
 					if(image!=null) {
 						currentHeat = window.getHeatFactory().generateHeatmap(image);
@@ -1706,6 +1726,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private JToggleButton btnMiddleEIC;
 	private JToggleButton btnMiddleImageDisc;
 	private JToggleButton btnMiddleImageCon;
+	private JToggleButton btnMiddleImage;
 	private final ButtonGroup btnGroup_middle = new ButtonGroup();
 	private JToolBar toolBar_2;
 	private JToggleButton tglbtnOri;
@@ -1749,7 +1770,16 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			ex.printStackTrace();
 		}
 	}
-	
+
+
+	public void setCurrentRawFile(RawDataFile raw) {
+    	boolean isImagingRaw = raw instanceof ImagingRawData;
+
+    	btnMiddleImageCon.setVisible(!isImagingRaw);
+    	btnMiddleImageDisc.setVisible(!isImagingRaw);
+    	btnMiddleImage.setVisible(isImagingRaw);
+
+	}
 	// ########################################################################################
 	// GETTERS AND SETTERS
 	public PnChartWithSettings getPnMiddleImageChrom() {
