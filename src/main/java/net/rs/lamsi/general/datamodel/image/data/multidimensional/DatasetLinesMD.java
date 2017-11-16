@@ -30,7 +30,10 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 	// settings of rotation, reflection, imaging mode
 	protected SettingsGeneralRotation settRot;
 	
-	
+
+	public DatasetLinesMD() { 
+		settRot = new SettingsGeneralRotation();
+	}
 	public DatasetLinesMD(ScanLineMD[] listLines) { 
 		settRot = new SettingsGeneralRotation();
 		lines = listLines;
@@ -158,11 +161,27 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 
 	@Override
 	public boolean addDimension(Image2D img) {
-		if(img.getData().hasSameDataDimensionsAs(this)) {
-			// add dimension to all lines
-			for(int i=0; i<lines.length; i++)
-				lines[i].addDimension(img, i);
-			
+		if(this.hasSameDataDimensionsAs(img.getData())) {
+			// this is empty?
+			if(this.getLinesCount()==0) {
+				lines = new ScanLineMD[img.getData().getLinesCount()];
+				for(int y=0; y<lines.length; y++) {
+					int dps = img.getData().getLineLength(y);
+					float[] xx = new float[dps];
+					Double[] ii = new Double[dps];
+					for (int x = 0; x < dps; x++) {
+						xx[x] = img.getData().getX(y, x);
+						ii[x] = img.getData().getI(0,y, x);
+					}
+					lines[y] = new ScanLineMD(xx, ii);
+				}
+				setLines(lines);
+			}
+			else {
+				// add dimension to all lines
+				for(int i=0; i<lines.length; i++)
+					lines[i].addDimension(img, i);
+			}
 			// replace image data
 			img.setData(this);
 			img.setIndex(lines[0].getImageCount()-1);
@@ -177,7 +196,7 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 	@Override
 	public int getLinesCount() {
 		// TODO Auto-generated method stub
-		return lines.length;
+		return lines==null? 0 : lines.length;
 	}
 	@Override
 	public int getLineLength(int i) {
@@ -244,6 +263,7 @@ public class DatasetLinesMD extends MDDataset implements Serializable  {
 
 	@Override
 	public int getTotalDPCount() {
+		if(lines==null) return 0;
 		if(totalDPCount == -1) {
 			// calc
 			totalDPCount = 0;

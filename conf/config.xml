@@ -12,7 +12,7 @@
         <parameter name="R executable path"/>
         <parameter name="Send anonymous statistics">true</parameter>
         <parameter name="Window state">
-            <position>2630:-94</position>
+            <position>2593:-185</position>
             <size>1294:1407</size>
             <maximized>false</maximized>
         </parameter>
@@ -126,7 +126,7 @@
         <module class="net.sf.mzmine.modules.rawdatamethods.rawdataimport.RawDataImportModule">
             <parameters>
                 <parameter name="Raw data file names">
-                    <file>C:\DATA\MALDI Sh\examples\HR2MSI mouse urinary bladder S096.imzML</file>
+                    <file>C:\DATA\MALDI Sh\examples\S042_Processed.imzML</file>
                 </parameter>
             </parameters>
         </module>
@@ -1160,6 +1160,8 @@
                 <parameter name="Raw data files" type="GUI_SELECTED_FILES"/>
                 <parameter name="Scan number"/>
                 <parameter name="Window state">
+                    <position>0:0</position>
+                    <size>1729:1119</size>
                     <maximized>false</maximized>
                 </parameter>
             </parameters>

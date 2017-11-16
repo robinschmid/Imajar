@@ -131,13 +131,6 @@ public class ImageLogicRunner {
 	public void addImage(Collectable2D i, String projectName, String gid) {  
 		// TODO 
 		ImageGroupMD group = treeImg.getGroup(projectName, gid);
-		// simple 2d dataset?
-		if(i instanceof Image2D) {
-			Image2D img = (Image2D)i;
-			if(img.getData() instanceof Simple2DDataset) {
-				
-			}
-		}
 		
 		// group exists?
 		if(group!=null) {

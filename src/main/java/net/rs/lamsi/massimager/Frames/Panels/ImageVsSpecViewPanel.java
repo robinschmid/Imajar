@@ -76,7 +76,7 @@ import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter;
 import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter.Operation;
- 
+
 
 /*TODO
  * WICHTIG:
@@ -130,9 +130,10 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private double selectedVsMiddleMZ = -1, selectedVsMiddlePM = 1;
 	//
 	private ChartPanel chartBottomSpec = null, chartTopChrom = null, chartMiddleChrom = null, chartMiddleImage = null;
-	
-	private Heatmap currentHeat;
 
+	private Heatmap currentHeat;
+	
+	private boolean isImagingRawData = false;
 
 
 
@@ -197,7 +198,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				startImageUpdater();
 			}
 		}; 
-		
+
 		//
 
 		tableMzPeak = new PnTableMZPick() { 
@@ -264,7 +265,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		topmidle = new JPanel();
 		pnMZImageChrom.add(topmidle, BorderLayout.NORTH);
 		topmidle.setLayout(new BorderLayout(0, 0));
-		
+
 		toolBar_1 = new JToolBar();
 		toolBar_1.setSize(new Dimension(25, 25));
 		toolBar_1.setRollover(true);
@@ -272,7 +273,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		toolBar_1.setMaximumSize(new Dimension(25, 25));
 		toolBar_1.setBorder(null);
 		topmidle.add(toolBar_1, BorderLayout.WEST);
-		
+
 		btnMiddleTIC = new JToggleButton("");
 		btnMiddleTIC.setToolTipText("Total ion current");
 		btnMiddleTIC.addActionListener(new ActionListener() {
@@ -288,7 +289,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		btnMiddleTIC.setMargin(new Insets(0, 0, 0, 0));
 		btnMiddleTIC.setBounds(new Rectangle(0, 0, 24, 24));
 		toolBar_1.add(btnMiddleTIC);
-		
+
 		btnMiddleEIC = new JToggleButton("");
 		btnMiddleEIC.setToolTipText("Selected mz ion trace");
 		btnMiddleEIC.addActionListener(new ActionListener() {
@@ -304,7 +305,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		btnMiddleEIC.setMaximumSize(new Dimension(25, 25));
 		btnMiddleEIC.setMargin(new Insets(0, 0, 0, 0));
 		toolBar_1.add(btnMiddleEIC);
-		
+
 		btnMiddleImageDisc = new JToggleButton("");
 		btnMiddleImageDisc.setToolTipText("Discontinuous imaging (triggert). One file per scan line");
 		btnMiddleImageDisc.addActionListener(new ActionListener() {
@@ -319,7 +320,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		btnMiddleImageDisc.setMaximumSize(new Dimension(25, 25));
 		btnMiddleImageDisc.setMargin(new Insets(0, 0, 0, 0));
 		toolBar_1.add(btnMiddleImageDisc);
-		
+
 		btnMiddleImageCon = new JToggleButton("");
 		btnMiddleImageCon.setToolTipText("Continuous imaging. One file for complete image");
 		btnMiddleImageCon.addActionListener(new ActionListener() {
@@ -334,7 +335,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		btnMiddleImageCon.setMaximumSize(new Dimension(25, 25));
 		btnMiddleImageCon.setMargin(new Insets(0, 0, 0, 0));
 		toolBar_1.add(btnMiddleImageCon);
-		
+
 		btnMiddleImage = new JToggleButton("");
 		btnMiddleImage.setToolTipText("Imaging");
 		btnMiddleImage.addActionListener(new ActionListener() {
@@ -349,7 +350,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		btnMiddleImage.setMaximumSize(new Dimension(25, 25));
 		btnMiddleImageCon.setMargin(new Insets(0, 0, 0, 0));
 		toolBar_1.add(btnMiddleImage);
-		
+
 		menuMiddleChartActions = new MenuChartActions() { 
 			@Override
 			public void selectMZorRT() {
@@ -360,7 +361,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		};
 		menuMiddleChartActions.setMaximumSize(new Dimension(2147483647, 28));
 		topmidle.add(menuMiddleChartActions, BorderLayout.CENTER);
-		
+
 
 		pnSpec = new PnChartWithSettings();
 		splitMZvsSpec.setRightComponent(pnSpec);
@@ -422,19 +423,19 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		gbc_lbY2.gridx = 0;
 		gbc_lbY2.gridy = 6;
 		pnSpec.getEastSettings().add(lbY2, gbc_lbY2);
-		
+
 		panel_1 = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) panel_1.getLayout();
 		flowLayout.setVgap(0);
 		flowLayout.setHgap(0);
 		flowLayout.setAlignment(FlowLayout.LEFT);
 		pnSpec.add(panel_1, BorderLayout.NORTH);
-		
+
 		toolBar_2 = new JToolBar();
 		panel_1.add(toolBar_2);
 		toolBar_2.setFloatable(false);
 		toolBar_2.setRollover(true);
-		
+
 		tglbtnOri = new JToggleButton("");
 		tglbtnOri.setToolTipText("Change orientation");
 		tglbtnOri.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_split_change.png")));
@@ -446,7 +447,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			}
 		});
 		toolBar_2.add(tglbtnOri);
-		
+
 		menuBottomChartActions = new MenuChartActions() {
 			@Override
 			public void selectMZorRT() {
@@ -470,107 +471,107 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				}
 			}
 		});
-		
-				menuTop = new JPanel();
-				pnTopEICTIC1.add(menuTop, BorderLayout.NORTH);
-				menuTop.setLayout(new BorderLayout(0, 0));
-				
-						cbHideTopTIC = new JCheckBox("");
-						cbHideTopTIC.setSelected(true);
-						menuTop.add(cbHideTopTIC, BorderLayout.EAST);
-						cbHideTopTIC.addChangeListener(new ChangeListener() {
-							public void stateChanged(ChangeEvent e) {
-								JCheckBox cb = (JCheckBox) e.getSource();
-								getPnTopEICTIC().setVisible(cb.isSelected());
-							}
-						});
-						cbHideTopTIC.setToolTipText("Hide");
-				
-				toolBar = new JToolBar();
-				toolBar.setRollover(true);
-				toolBar.setMinimumSize(new Dimension(13, 25));
-				toolBar.setMaximumSize(new Dimension(25, 25));
-				toolBar.setSize(new Dimension(25, 25));
-				toolBar.setBorder(null);
-				menuTop.add(toolBar, BorderLayout.WEST);
-				
-						btnTopTic = new JToggleButton("");
-						btnTopTic.setToolTipText("Total ion current");
-						btnTopTic.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent arg0) {
-								setModeTop(MODE_TIC);
-							}
-						});
-						
-						btnTopSplitchange = new JToggleButton("");
-						btnTopSplitchange.setToolTipText("Change orientation");
-						btnTopSplitchange.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								JToggleButton btn = (JToggleButton)e.getSource(); 
-								getSplitCenterThree().setOrientation(btn.isSelected()? JSplitPane.HORIZONTAL_SPLIT: JSplitPane.VERTICAL_SPLIT);
-							}
-						});
-						btnTopSplitchange.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_split_change_selec.png")));
-						btnTopSplitchange.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_split_change.png")));
-						btnTopSplitchange.setMinimumSize(new Dimension(25, 25));
-						btnTopSplitchange.setMaximumSize(new Dimension(25, 25));
-						btnTopSplitchange.setMargin(new Insets(0, 0, 0, 0));
-						btnTopSplitchange.setBounds(new Rectangle(0, 0, 24, 24));
-						toolBar.add(btnTopSplitchange);
-						btngroup_TOP.add(btnTopTic);
-						btnTopTic.setSelected(true);
-						btnTopTic.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_tic_selected.png")));
-						btnTopTic.setMargin(new Insets(0, 0, 0, 0));
-						btnTopTic.setMinimumSize(new Dimension(25, 25));
-						btnTopTic.setMaximumSize(new Dimension(25, 25));
-						btnTopTic.setBounds(new Rectangle(0, 0, 24, 24));
-						btnTopTic.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_tic.png")));
-						toolBar.add(btnTopTic);
-						
-								btnTopEic = new JToggleButton("");
-								btnTopEic.setToolTipText("Selected mz ion trace");
-								btnTopEic.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent e) {
-										setModeTop(MODE_EIC);
-									}
-								});
-								btngroup_TOP.add(btnTopEic);
-								btnTopEic.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_mz_selected.png")));
-								btnTopEic.setMargin(new Insets(0, 0, 0, 0));
-								btnTopEic.setMinimumSize(new Dimension(25, 25));
-								btnTopEic.setMaximumSize(new Dimension(25, 25));
-								btnTopEic.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_mz.png")));
-								toolBar.add(btnTopEic);
-								
-								btnTopListPeaks = new JToggleButton("");
-								btnTopListPeaks.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent e) {
-										setModeTop(MODE_PEAK_LIST);
-									}
-								});
-								btngroup_TOP.add(btnTopListPeaks);
-								btnTopListPeaks.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_table.png")));
-								btnTopListPeaks.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_table_selec.png")));
-								btnTopListPeaks.setToolTipText("List of extracted peaks (by mz)");
-								btnTopListPeaks.setMinimumSize(new Dimension(25, 25));
-								btnTopListPeaks.setMaximumSize(new Dimension(25, 25));
-								btnTopListPeaks.setMargin(new Insets(0, 0, 0, 0));
-								toolBar.add(btnTopListPeaks);
-								
-								menuTopChartActions = new MenuChartActions() { 
-									@Override
-									public void selectMZorRT() {
-										// TODO 
-										// Select MZ + PM for Top Chart
-										dialogSelectMZDirect.open(0);
-									}
-								};
-								menuTopChartActions.setMaximumSize(new Dimension(2147483647, 28));
-								menuTop.add(menuTopChartActions, BorderLayout.CENTER);
-								
-								menuTopTableActions = new MenuTableActions(getTableMzPeak());
-								menuTopTableActions.setMaximumSize(new Dimension(2147483647, 28));
-								
+
+		menuTop = new JPanel();
+		pnTopEICTIC1.add(menuTop, BorderLayout.NORTH);
+		menuTop.setLayout(new BorderLayout(0, 0));
+
+		cbHideTopTIC = new JCheckBox("");
+		cbHideTopTIC.setSelected(true);
+		menuTop.add(cbHideTopTIC, BorderLayout.EAST);
+		cbHideTopTIC.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				JCheckBox cb = (JCheckBox) e.getSource();
+				getPnTopEICTIC().setVisible(cb.isSelected());
+			}
+		});
+		cbHideTopTIC.setToolTipText("Hide");
+
+		toolBar = new JToolBar();
+		toolBar.setRollover(true);
+		toolBar.setMinimumSize(new Dimension(13, 25));
+		toolBar.setMaximumSize(new Dimension(25, 25));
+		toolBar.setSize(new Dimension(25, 25));
+		toolBar.setBorder(null);
+		menuTop.add(toolBar, BorderLayout.WEST);
+
+		btnTopTic = new JToggleButton("");
+		btnTopTic.setToolTipText("Total ion current");
+		btnTopTic.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setModeTop(MODE_TIC);
+			}
+		});
+
+		btnTopSplitchange = new JToggleButton("");
+		btnTopSplitchange.setToolTipText("Change orientation");
+		btnTopSplitchange.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JToggleButton btn = (JToggleButton)e.getSource(); 
+				getSplitCenterThree().setOrientation(btn.isSelected()? JSplitPane.HORIZONTAL_SPLIT: JSplitPane.VERTICAL_SPLIT);
+			}
+		});
+		btnTopSplitchange.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_split_change_selec.png")));
+		btnTopSplitchange.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_split_change.png")));
+		btnTopSplitchange.setMinimumSize(new Dimension(25, 25));
+		btnTopSplitchange.setMaximumSize(new Dimension(25, 25));
+		btnTopSplitchange.setMargin(new Insets(0, 0, 0, 0));
+		btnTopSplitchange.setBounds(new Rectangle(0, 0, 24, 24));
+		toolBar.add(btnTopSplitchange);
+		btngroup_TOP.add(btnTopTic);
+		btnTopTic.setSelected(true);
+		btnTopTic.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_tic_selected.png")));
+		btnTopTic.setMargin(new Insets(0, 0, 0, 0));
+		btnTopTic.setMinimumSize(new Dimension(25, 25));
+		btnTopTic.setMaximumSize(new Dimension(25, 25));
+		btnTopTic.setBounds(new Rectangle(0, 0, 24, 24));
+		btnTopTic.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_tic.png")));
+		toolBar.add(btnTopTic);
+
+		btnTopEic = new JToggleButton("");
+		btnTopEic.setToolTipText("Selected mz ion trace");
+		btnTopEic.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setModeTop(MODE_EIC);
+			}
+		});
+		btngroup_TOP.add(btnTopEic);
+		btnTopEic.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_mz_selected.png")));
+		btnTopEic.setMargin(new Insets(0, 0, 0, 0));
+		btnTopEic.setMinimumSize(new Dimension(25, 25));
+		btnTopEic.setMaximumSize(new Dimension(25, 25));
+		btnTopEic.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_mz.png")));
+		toolBar.add(btnTopEic);
+
+		btnTopListPeaks = new JToggleButton("");
+		btnTopListPeaks.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setModeTop(MODE_PEAK_LIST);
+			}
+		});
+		btngroup_TOP.add(btnTopListPeaks);
+		btnTopListPeaks.setIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_table.png")));
+		btnTopListPeaks.setSelectedIcon(new ImageIcon(ImageVsSpecViewPanel.class.getResource("/img/btn_table_selec.png")));
+		btnTopListPeaks.setToolTipText("List of extracted peaks (by mz)");
+		btnTopListPeaks.setMinimumSize(new Dimension(25, 25));
+		btnTopListPeaks.setMaximumSize(new Dimension(25, 25));
+		btnTopListPeaks.setMargin(new Insets(0, 0, 0, 0));
+		toolBar.add(btnTopListPeaks);
+
+		menuTopChartActions = new MenuChartActions() { 
+			@Override
+			public void selectMZorRT() {
+				// TODO 
+				// Select MZ + PM for Top Chart
+				dialogSelectMZDirect.open(0);
+			}
+		};
+		menuTopChartActions.setMaximumSize(new Dimension(2147483647, 28));
+		menuTop.add(menuTopChartActions, BorderLayout.CENTER);
+
+		menuTopTableActions = new MenuTableActions(getTableMzPeak());
+		menuTopTableActions.setMaximumSize(new Dimension(2147483647, 28));
+
 		pnTopEICTIC1.add(pnTopEICTIC, BorderLayout.CENTER);
 		buttonGroup.add(pnTopEICTIC.getRbSelectedChartView());
 		GridBagLayout gridBagLayout_2 = (GridBagLayout) pnTopEICTIC.getEastSettings().getLayout();
@@ -593,172 +594,172 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		gbc_lbPMTop.gridx = 0;
 		gbc_lbPMTop.gridy = 2;
 		pnTopEICTIC.getEastSettings().add(lbPMTop, gbc_lbPMTop);
-		
+
 		pnWestSettings = new JPanel();
 		add(pnWestSettings, BorderLayout.WEST);
 		pnWestSettings.setLayout(new BorderLayout(0, 0));
-		
 
-		
-				pnWestImageSettings = new Module("Image settings", true);
-				pnWestSettings.add(pnWestImageSettings, BorderLayout.EAST);
-				pnWestImageSettings.getPnContent().setLayout(new BorderLayout(0, 0));
-				
-						pnSettImageCon = new JPanel();
-						pnWestImageSettings.getPnContent().add(pnSettImageCon, BorderLayout.CENTER);
-						pnSettImageCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][][top][][][][][][][][][][][][]"));
-						
-								lbDisconCon = new JLabel("Discontinuos");
-								pnSettImageCon.add(lbDisconCon, "cell 0 0 2 1");
-								
-										lbVelocity = new JLabel("v =");
-										pnSettImageCon.add(lbVelocity, "flowx,cell 0 2,alignx trailing");
-										
-												txtVelocity = new JTextField();
-												txtVelocity.setText("50");
-												txtVelocity.setToolTipText("Velocity [\u00B5m/s]");
-												pnSettImageCon.add(txtVelocity, "cell 1 2");
-												txtVelocity.setColumns(10);
-												txtVelocity.getDocument().addDocumentListener(autoDocumentL);
-												
-														lbSpotsize = new JLabel("d =");
-														pnSettImageCon.add(lbSpotsize, "cell 0 3,alignx trailing");
-														
-																txtSpotsize = new JTextField();
-																txtSpotsize.setText("50");
-																txtSpotsize.setToolTipText("Spot size [\u00B5m]");
-																pnSettImageCon.add(txtSpotsize, "cell 1 3,alignx left");
-																txtSpotsize.setColumns(10);
-																txtSpotsize.getDocument().addDocumentListener(autoDocumentL);
-																
-																		pnImgCon = new JPanel();
-																		pnSettImageCon.add(pnImgCon, "cell 0 4 2 1,grow");
-																		pnImgCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][grow]"));
-																		
-																				lblTp = new JLabel("Split after");
-																				pnImgCon.add(lblTp, "cell 0 0,alignx trailing");
-																				
-																						txtTimePerLine = new JTextField();
-																						txtTimePerLine.setText("60");
-																						txtTimePerLine.setToolTipText("Time [s] or scans per line");
-																						pnImgCon.add(txtTimePerLine, "cell 1 0,alignx left");
-																						txtTimePerLine.setColumns(5);
-																						
-																						lblStartX = new JLabel("Start x");
-																						pnImgCon.add(lblStartX, "cell 0 1,alignx trailing");
-																						
-																						txtSplitStartX = new JTextField();
-																						txtSplitStartX.setToolTipText("Start X to be removed from the data.");
-																						txtSplitStartX.setText("0");
-																						pnImgCon.add(txtSplitStartX, "cell 1 1,growx");
-																						txtSplitStartX.setColumns(5);
-																						txtSplitStartX.getDocument().addDocumentListener(autoDocumentL);
-																						
-																						comboSplitUnit = new JComboBox();
-																						comboSplitUnit.setModel(new DefaultComboBoxModel(XUNIT.values()));
-																						comboSplitUnit.setSelectedIndex(0);
-																						pnImgCon.add(comboSplitUnit, "cell 1 2,growx");
-																						
-																						panel = new JPanel();
-																						pnImgCon.add(panel, "cell 0 3 2 1,grow");
-																						
-																						button = new JButton("-");
-																						button.addActionListener(new ActionListener() {
-																							public void actionPerformed(ActionEvent e) {
-																								if(getComboSplitUnit().getSelectedItem().equals(XUNIT.DP)) {
-																									int tpl = Module.intFromTxt(getTxtTimePerLine())-
-																											Module.intFromTxt(txtAddSplit);
-																									getTxtTimePerLine().setText(String.valueOf(tpl));
-																								}
-																								else  {
-																									float tpl = Module.floatFromTxt(getTxtTimePerLine())-
-																											Module.floatFromTxt(txtAddSplit);
-																									NumberFormat format = SettingsHolder.getSettings().getSetGeneralValueFormatting().getRTFormat();
-																									getTxtTimePerLine().setText(format.format(tpl));
-																								}
-																							}
-																						});
-																						panel.add(button);
-																						
-																						txtAddSplit = new JTextField();
-																						panel.add(txtAddSplit);
-																						txtAddSplit.setToolTipText("The data points or time units to be added to \"split after\".");
-																						txtAddSplit.setText("10");
-																						txtAddSplit.setColumns(5);
-																						
-																						button_1 = new JButton("+");
-																						button_1.addActionListener(new ActionListener() {
-																							public void actionPerformed(ActionEvent e) {
-																								if(getComboSplitUnit().getSelectedItem().equals(XUNIT.DP)) {
-																									int tpl = Module.intFromTxt(getTxtTimePerLine())+
-																											Module.intFromTxt(txtAddSplit);
-																									getTxtTimePerLine().setText(String.valueOf(tpl));
-																								}
-																								else  {
-																									float tpl = Module.floatFromTxt(getTxtTimePerLine())+
-																											Module.floatFromTxt(txtAddSplit);
-																									NumberFormat format = SettingsHolder.getSettings().getSetGeneralValueFormatting().getRTFormat();
-																									getTxtTimePerLine().setText(format.format(tpl));
-																								}
-																							}
-																						});
-																						panel.add(button_1);
-																						txtTimePerLine.getDocument().addDocumentListener(autoDocumentL);
-																												
-																														btnSendImage = new JButton("Send Image");
-																														btnSendImage.addActionListener(new ActionListener() {
-																															public void actionPerformed(ActionEvent arg0) {
-																																// send image to imageeditor // TODO
-																																if(currentHeat!=null && currentHeat.getImage()!=null) {
-																																	// TODO txtID.getText()
-																																	window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(), getTxtProject().getText(), getTxtImgGroupID().getText());
-																																}
-																															}
-																														});
-																														
-																														lblProject = new JLabel("project");
-																														pnSettImageCon.add(lblProject, "cell 0 5,alignx trailing");
-																														
-																														txtProject = new JTextField();
-																														txtProject.setToolTipText("Porject name in image editor");
-																														txtProject.setText("RAW");
-																														pnSettImageCon.add(txtProject, "cell 1 5,growx");
-																														txtProject.setColumns(10);
-																														
-																														lblId = new JLabel("group");
-																														pnSettImageCon.add(lblId, "flowx,cell 0 6");
-																														
-																														txtImgGroupID = new JTextField();
-																														txtImgGroupID.setToolTipText("ID for grouping in ImageEditor");
-																														txtImgGroupID.setText("g");
-																														pnSettImageCon.add(txtImgGroupID, "cell 1 6,growx");
-																														txtImgGroupID.setColumns(10);
-																														btnSendImage.setToolTipText("Sends image to image editor");
-																														pnSettImageCon.add(btnSendImage, "cell 1 7");
-																												
-																												pnPeakList = new ModuleListWithOptions("PeakLists", true, wnd.getLogicRunner().getPeakLists());
-																												pnPeakList.getList().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-																												pnWestSettings.add(pnPeakList, BorderLayout.WEST);
-																												
-																												btnApplyPeakList = new JButton("Apply peaklist to rawdata");
-																												btnApplyPeakList.addActionListener(new ActionListener() {
-																													public void actionPerformed(ActionEvent e) {
-																														// TODO set used PeakLists
-																														try {
-																															PeakList pkl = window.getLogicRunner().getPeakLists().get(pnPeakList.getList().getSelectedIndex());
-																															if(pkl!=null) {
-																																setSelectedPeakList(pkl);
-																																getLbSelectedPeakList().setText(pkl.getName());
-																															}
-																														}catch(Exception ex) {
-																														}
-																													}
-																												});
-																												pnPeakList.getPnOptions().setLayout(new MigLayout("", "[155px]", "[23px][]"));
-																												pnPeakList.getPnOptions().add(btnApplyPeakList, "cell 0 0,alignx left,aligny top");
-																												
-																												lbSelectedPeakList = new JLabel("");
-																												pnPeakList.getPnOptions().add(lbSelectedPeakList, "cell 0 1");
+
+
+		pnWestImageSettings = new Module("Image settings", true);
+		pnWestSettings.add(pnWestImageSettings, BorderLayout.EAST);
+		pnWestImageSettings.getPnContent().setLayout(new BorderLayout(0, 0));
+
+		pnSettImageCon = new JPanel();
+		pnWestImageSettings.getPnContent().add(pnSettImageCon, BorderLayout.CENTER);
+		pnSettImageCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][][top][][][][][][][][][][][][]"));
+
+		lbDisconCon = new JLabel("Discontinuos");
+		pnSettImageCon.add(lbDisconCon, "cell 0 0 2 1");
+
+		lbVelocity = new JLabel("v =");
+		pnSettImageCon.add(lbVelocity, "flowx,cell 0 2,alignx trailing");
+
+		txtVelocity = new JTextField();
+		txtVelocity.setText("50");
+		txtVelocity.setToolTipText("Velocity [\u00B5m/s]");
+		pnSettImageCon.add(txtVelocity, "cell 1 2");
+		txtVelocity.setColumns(10);
+		txtVelocity.getDocument().addDocumentListener(autoDocumentL);
+
+		lbSpotsize = new JLabel("d =");
+		pnSettImageCon.add(lbSpotsize, "cell 0 3,alignx trailing");
+
+		txtSpotsize = new JTextField();
+		txtSpotsize.setText("50");
+		txtSpotsize.setToolTipText("Spot size [\u00B5m]");
+		pnSettImageCon.add(txtSpotsize, "cell 1 3,alignx left");
+		txtSpotsize.setColumns(10);
+		txtSpotsize.getDocument().addDocumentListener(autoDocumentL);
+
+		pnImgCon = new JPanel();
+		pnSettImageCon.add(pnImgCon, "cell 0 4 2 1,grow");
+		pnImgCon.setLayout(new MigLayout("", "[grow][grow]", "[][][][grow]"));
+
+		lblTp = new JLabel("Split after");
+		pnImgCon.add(lblTp, "cell 0 0,alignx trailing");
+
+		txtTimePerLine = new JTextField();
+		txtTimePerLine.setText("60");
+		txtTimePerLine.setToolTipText("Time [s] or scans per line");
+		pnImgCon.add(txtTimePerLine, "cell 1 0,alignx left");
+		txtTimePerLine.setColumns(5);
+
+		lblStartX = new JLabel("Start x");
+		pnImgCon.add(lblStartX, "cell 0 1,alignx trailing");
+
+		txtSplitStartX = new JTextField();
+		txtSplitStartX.setToolTipText("Start X to be removed from the data.");
+		txtSplitStartX.setText("0");
+		pnImgCon.add(txtSplitStartX, "cell 1 1,growx");
+		txtSplitStartX.setColumns(5);
+		txtSplitStartX.getDocument().addDocumentListener(autoDocumentL);
+
+		comboSplitUnit = new JComboBox();
+		comboSplitUnit.setModel(new DefaultComboBoxModel(XUNIT.values()));
+		comboSplitUnit.setSelectedIndex(0);
+		pnImgCon.add(comboSplitUnit, "cell 1 2,growx");
+
+		panel = new JPanel();
+		pnImgCon.add(panel, "cell 0 3 2 1,grow");
+
+		button = new JButton("-");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(getComboSplitUnit().getSelectedItem().equals(XUNIT.DP)) {
+					int tpl = Module.intFromTxt(getTxtTimePerLine())-
+							Module.intFromTxt(txtAddSplit);
+					getTxtTimePerLine().setText(String.valueOf(tpl));
+				}
+				else  {
+					float tpl = Module.floatFromTxt(getTxtTimePerLine())-
+							Module.floatFromTxt(txtAddSplit);
+					NumberFormat format = SettingsHolder.getSettings().getSetGeneralValueFormatting().getRTFormat();
+					getTxtTimePerLine().setText(format.format(tpl));
+				}
+			}
+		});
+		panel.add(button);
+
+		txtAddSplit = new JTextField();
+		panel.add(txtAddSplit);
+		txtAddSplit.setToolTipText("The data points or time units to be added to \"split after\".");
+		txtAddSplit.setText("10");
+		txtAddSplit.setColumns(5);
+
+		button_1 = new JButton("+");
+		button_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(getComboSplitUnit().getSelectedItem().equals(XUNIT.DP)) {
+					int tpl = Module.intFromTxt(getTxtTimePerLine())+
+							Module.intFromTxt(txtAddSplit);
+					getTxtTimePerLine().setText(String.valueOf(tpl));
+				}
+				else  {
+					float tpl = Module.floatFromTxt(getTxtTimePerLine())+
+							Module.floatFromTxt(txtAddSplit);
+					NumberFormat format = SettingsHolder.getSettings().getSetGeneralValueFormatting().getRTFormat();
+					getTxtTimePerLine().setText(format.format(tpl));
+				}
+			}
+		});
+		panel.add(button_1);
+		txtTimePerLine.getDocument().addDocumentListener(autoDocumentL);
+
+		btnSendImage = new JButton("Send Image");
+		btnSendImage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// send image to imageeditor // TODO
+				if(currentHeat!=null && currentHeat.getImage()!=null) {
+					// TODO txtID.getText()
+					window.sendImage2DToImageEditor((Image2D) currentHeat.getImage(), getTxtProject().getText(), getTxtImgGroupID().getText());
+				}
+			}
+		});
+
+		lblProject = new JLabel("project");
+		pnSettImageCon.add(lblProject, "cell 0 5,alignx trailing");
+
+		txtProject = new JTextField();
+		txtProject.setToolTipText("Porject name in image editor");
+		txtProject.setText("RAW");
+		pnSettImageCon.add(txtProject, "cell 1 5,growx");
+		txtProject.setColumns(10);
+
+		lblId = new JLabel("group");
+		pnSettImageCon.add(lblId, "flowx,cell 0 6");
+
+		txtImgGroupID = new JTextField();
+		txtImgGroupID.setToolTipText("ID for grouping in ImageEditor");
+		txtImgGroupID.setText("g");
+		pnSettImageCon.add(txtImgGroupID, "cell 1 6,growx");
+		txtImgGroupID.setColumns(10);
+		btnSendImage.setToolTipText("Sends image to image editor");
+		pnSettImageCon.add(btnSendImage, "cell 1 7");
+
+		pnPeakList = new ModuleListWithOptions("PeakLists", true, wnd.getLogicRunner().getPeakLists());
+		pnPeakList.getList().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		pnWestSettings.add(pnPeakList, BorderLayout.WEST);
+
+		btnApplyPeakList = new JButton("Apply peaklist to rawdata");
+		btnApplyPeakList.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO set used PeakLists
+				try {
+					PeakList pkl = window.getLogicRunner().getPeakLists().get(pnPeakList.getList().getSelectedIndex());
+					if(pkl!=null) {
+						setSelectedPeakList(pkl);
+						getLbSelectedPeakList().setText(pkl.getName());
+					}
+				}catch(Exception ex) {
+				}
+			}
+		});
+		pnPeakList.getPnOptions().setLayout(new MigLayout("", "[155px]", "[23px][]"));
+		pnPeakList.getPnOptions().add(btnApplyPeakList, "cell 0 0,alignx left,aligny top");
+
+		lbSelectedPeakList = new JLabel("");
+		pnPeakList.getPnOptions().add(lbSelectedPeakList, "cell 0 1");
 		//
 		initMZMineListeners();
 		//
@@ -766,7 +767,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		// init dialogs
 		initDialogs();
 	}  
-	
+
 	private void initDialogs() {
 		dialogSelectMZDirect = new SelectMZDirectDialog(this);
 	}
@@ -775,7 +776,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		ActionMap actionMap = getPnBottomSpec().getActionMap();
 		int condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
 		InputMap inputMap = getPnBottomSpec().getInputMap(condition );
-		
+
 		// pressed events
 		addKey(actionMap, inputMap, KEY_LEFT, VK_LEFT, false);
 		addKey(actionMap, inputMap, KEY_UP, VK_UP, false); 
@@ -797,7 +798,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		addKey(actionMap, inputMap, KeyEvent.VK_3, VK_3_RELEASED, true); 
 		addKey(actionMap, inputMap, KeyEvent.VK_DELETE, VK_DELETE_RELEASED, true); 
 		addKey(actionMap, inputMap, KeyEvent.VK_F5, VK_F5_RELEASED, true); 
- 
+
 	} 
 	private void addKey(ActionMap actionMap, InputMap inputMap, int keyEvent, String key, boolean released) {
 		inputMap.put(KeyStroke.getKeyStroke(keyEvent, 0, released), key);
@@ -815,10 +816,10 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					getPnPeakList().addElement(pkl, pkl.getName());
 				}
 			}
-			
+
 			@Override
 			public void dataFilesChanged(RawDataFile raw, Operation op) {
-				
+
 			}
 		});
 	}
@@ -842,7 +843,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		// set things visible
 		getLbMZMiddle().setVisible(mode!=MODE_TIC);
 		getLbPMMiddle().setVisible(mode!=MODE_TIC);
-		
+
 		// show or hide imagesettings Panel
 		getPnWestImageSettings().setVisible(mode==MODE_IMAGE_CON || mode==MODE_IMAGE_DISCON|| mode==MODE_IMAGE);
 		getPnImgCon().setVisible(mode==MODE_IMAGE_CON);
@@ -860,7 +861,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		// update top view and chart
 		renewTopChrom(selectedVsTopMZ, selectedVsTopPM);
 	}
-	
+
 
 	// is active on tab is shown
 	public void setIsShown() {
@@ -883,7 +884,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	public void renewAll() { 
 		renewTopChrom(selectedVsTopMZ, selectedVsTopPM);
 		renewMiddleImageChrom(selectedVsMiddleMZ, selectedVsMiddlePM);
-		
+
 		// get selected File
 		if(specSelectionMode==SPECTRUM_SELECTION_MODE_RT) {
 			selectedSpectrum = window.getLogicRunner().generateSpectrumSUMByRT(selectedVsRetentionTime[0], selectedVsRetentionTime[1]);
@@ -894,13 +895,18 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		}
 		// got spec?
 		if(selectedSpectrum==null) {
-			setSelectedVsRetentionTime(0, 0);
-			selectedSpectrum = MZDataFactory.getSpectrumAsMZChrom(window.getLogicRunner().generateSpectrumByRT(0));
+			if(isImageRawData) {
+
+			}
+			else {
+				setSelectedVsRetentionTime(0, 0);
+				selectedSpectrum = MZDataFactory.getSpectrumAsMZChrom(window.getLogicRunner().generateSpectrumByRT(0));
+			}
 		}
 		//
 		renewBottomSpectrum(selectedSpectrum);
 	}
- 
+
 	public void renewBottomSpectrum(MZChromatogram spec) {
 		if(spec!=null) { 
 			// 
@@ -909,10 +915,10 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			JPanel view = getPnBottomSpec().getPnChartView(); 
 			view.removeAll();  
 			ChartPanel chart = spec.getChromChartPanel("", "m/z", "intensity");
-			
+
 			// Renderer with label generator
 			PlotSpectraLineAndShapeRenderer renderer = new PlotSpectraLineAndShapeRenderer(chart, Color.RED); 
-			
+
 			setChartBottomSpectrum(chart);
 			view.add(chart, BorderLayout.CENTER);
 			view.validate(); 
@@ -938,7 +944,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					// First get new Imagesettings
 					setupNewImageSettingsFromPanel(); 
 					Image2D image = null;
-					
+
 					// Image Con
 					if(selectedModeMiddle==MODE_IMAGE_CON) {
 						image = window.getLogicRunner().generateImageCon(settImage, settSplitCon);
@@ -987,7 +993,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				// Open Peak List
 				view.add(tableMzPeak, BorderLayout.CENTER);
 				view.validate();
-				
+
 				// Add Menu to 
 				getMenuTop().remove(getMenuTopChartActions());
 				getMenuTop().add(getMenuTopTableActions(), BorderLayout.CENTER);
@@ -998,7 +1004,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				getMenuTop().remove(getMenuTopTableActions());
 				getMenuTop().add(getMenuTopChartActions(), BorderLayout.CENTER);
 				getMenuTop().repaint();
-				
+
 				// Chartpanel if not a List
 				// TIC
 				if(selectedModeTop==MODE_TIC)
@@ -1010,7 +1016,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					// EIC
 					if(selectedModeTop==MODE_EIC)
 						chart = window.getLogicRunner().generateEICAsChartPanel(new MZIon("", selectedVsTopMZ, selectedVsTopPM));
-	
+
 					// show
 					getLbMZTop().setText("mz="+window.round(mz, 6));
 					getLbPMTop().setText("pm="+window.round(pm, 6));
@@ -1049,7 +1055,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				if(e.getButton()==MouseEvent.BUTTON1) {
 					// get Plot Values  
 					Point2D released = ChartLogics.mouseXYToPlotXY(chartBottomSpec, e.getX(), e.getY());
-	
+
 					// nur wenn innerhalb der range
 					Range yrange = chartBottomSpec.getChart().getXYPlot().getRangeAxis().getRange();
 					Range xrange = chartBottomSpec.getChart().getXYPlot().getDomainAxis().getRange();
@@ -1070,26 +1076,26 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 									renewMiddleImageChrom(mz, pm);
 								}
 								else if(selectedView==VIEW_TOP_CHROM){
-										// Aktionen ausführen: hier: Spektrum wurde angeklickt
-										// MZ ausgewählt mit pm
-										double mz = (released.getX()+pressed.getX())/2;
-										double pm = Math.abs((released.getX()-pressed.getX()))/2;
-										System.out.println(mz+"+TOP-"+pm); 
-										// Peak List selected?
-										if(selectedModeTop==MODE_PEAK_LIST) {
-											// add to table
-											addMZtoTable(mz, pm);									
-										} 
-										// open EIC
-										else if(selectedModeTop==MODE_EIC){
-											renewTopChrom(mz, pm); 
-										}
+									// Aktionen ausführen: hier: Spektrum wurde angeklickt
+									// MZ ausgewählt mit pm
+									double mz = (released.getX()+pressed.getX())/2;
+									double pm = Math.abs((released.getX()-pressed.getX()))/2;
+									System.out.println(mz+"+TOP-"+pm); 
+									// Peak List selected?
+									if(selectedModeTop==MODE_PEAK_LIST) {
+										// add to table
+										addMZtoTable(mz, pm);									
+									} 
+									// open EIC
+									else if(selectedModeTop==MODE_EIC){
+										renewTopChrom(mz, pm); 
+									}
 								} 
 							}
 						}
 						else if(released.getY()<yrange.getLowerBound() && scrollsXAxis) {
 							// scroll x axis if mouse pressed and moved on axis
-							
+
 						}
 					}
 				}
@@ -1129,7 +1135,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	}
 
 	public void setChartMiddleImageChrom(ChartPanel chartChrom2) {
-		
+
 		if((selectedModeMiddle==MODE_TIC || selectedModeMiddle==MODE_EIC)) {
 			if(chartMiddleChrom!=null) {
 				Range lastzoom = ChartLogics.getZoomDomainAxis(chartMiddleChrom);
@@ -1144,7 +1150,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			}
 			this.chartMiddleImage = chartChrom2;
 		}  
-		 
+
 		chartChrom2.setMouseZoomable(selectedView==VIEW_MIDDLE_IMAGECHROM);
 		chartChrom2.setMouseWheelEnabled(true); 
 		// set menu chart actions
@@ -1199,7 +1205,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			@Override
 			public void mousePressed(MouseEvent e) {  
 				ChartPanel chart = getCurrentChartMiddle();
-				
+
 				Point2D pos = ChartLogics.mouseXYToPlotXY(chart, e.getX(), e.getY());
 				// nur speichern wenn innerhalb des charts
 				Range yrange = chart.getChart().getXYPlot().getRangeAxis().getRange();
@@ -1222,7 +1228,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			}
 		});
 	}
-	
+
 	protected ChartPanel getCurrentChartMiddle() {
 		// TODO falls neue dazu kommen ändern
 		// also neue im middle
@@ -1303,7 +1309,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		if(selectedPeakList!=null) {
 			// rows
 			PeakListRow[] rows = selectedPeakList.getRowsInsideMZRange(com.google.common.collect.Range.<Double>closed(mz-pm, mz+pm)); 
-			
+
 			// add only the highest peak?
 			if(getMenuTopTableActions().getBtnOnlyHighestPeak().isSelected()) { 
 				// get highest peak in rt range
@@ -1331,10 +1337,10 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		// TODO save parameterset in config
 		System.out.println("Calc Charge");
 		MZChargeCalculatorMZMine chargeCalculator = new MZChargeCalculatorMZMine(selectedPeakList, Window.getWindow().getSettings().getSetChargeCalc(), row.getPeak(selectedPeakList.getRawDataFile(0)));
-		
+
 		// calculate charge finally
 		chargeCalculator.doFiltering();
-		
+
 		// add peak to table
 		getTableMzPeak().addPeak(row, selectedPeakList, selectedVsRetentionTime[0], selectedVsRetentionTime[1]);
 	}
@@ -1348,7 +1354,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		//
 		for (int i = 0; i < rows.length; i++) {
 			PeakListRow r = rows[i];
-			 
+
 			// is this peak in the rt range? 
 			double maxPeakRT = Double.MIN_VALUE, minPeakRT = Double.MAX_VALUE;
 			Feature[] peaks = r.getPeaks();
@@ -1358,7 +1364,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				if(range.lowerEndpoint()<minPeakRT) minPeakRT = range.lowerEndpoint();
 				if(range.upperEndpoint()>maxPeakRT) maxPeakRT = range.upperEndpoint();
 			}
-			
+
 			if(rtMin<=maxPeakRT && minPeakRT<=rtMax) {
 				//highest peak?
 				if(highest==null || highest.getAverageHeight()<r.getAverageHeight()) {
@@ -1374,10 +1380,10 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	private void setupNewImageSettingsFromPanel() {
 		try {
 			settImage.setMZIon(new MZIon("mz="+window.round(selectedVsMiddleMZ, 3), selectedVsMiddleMZ, selectedVsMiddlePM));
-			
+
 			settImage.setSpotsize(Float.valueOf(getTxtSpotsize().getText()));
 			settImage.setVelocity(Float.valueOf(getTxtVelocity().getText()));
-			
+
 			settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
 			settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));
 			if(settSplitCon.getSplitMode()==XUNIT.DP)
@@ -1388,7 +1394,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			JOptionPane.showMessageDialog(window.getFrame(), "Wrong input in text fields for image settings. "+ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		}
 	}
-	
+
 	// set scrolling enabled for selected one only
 	public void setSelectedView(int selectedView) {
 		this.selectedView = selectedView;
@@ -1397,7 +1403,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		if(chartMiddleImage!=null) chartMiddleImage.setMouseZoomable(selectedView==VIEW_MIDDLE_IMAGECHROM);
 		if(chartTopChrom!=null) chartTopChrom.setMouseZoomable(selectedView==VIEW_TOP_CHROM);
 	}
-	
+
 	// #############################################################################
 	// Getters and Setters
 	public int getSelectedView() {
@@ -1475,7 +1481,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		getLbX2().setText("-"+window.round(x2, 1));
 		getLbY2().setText("-"+window.round(y2, 1));
 	}
-	
+
 
 
 	//##########################################################################################
@@ -1500,7 +1506,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			// TODO TEST Keys
 			long currentTime = System.currentTimeMillis();
 			if(!actionEvt.getActionCommand().endsWith("RELEASED"))System.out.println(actionEvt.getActionCommand()+" KeyPressed");
-			
+
 			switch(actionEvt.getActionCommand()) { 
 			case VK_DELETE:
 				if(selectedModeTop==MODE_PEAK_LIST) {
@@ -1513,8 +1519,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					renewAll();
 				}
 				break;
-				
-			// move chartPanel
+
+				// move chartPanel
 			case VK_LEFT:
 				// save time for acceleration in scroll speed 
 				// move chart left
@@ -1585,8 +1591,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 					}
 				} 
 				break; 
-				
-			// select view #
+
+				// select view #
 			case VK_1:
 				// TOP View
 				if(selectedView!=VIEW_TOP_CHROM) {
@@ -1633,14 +1639,14 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		public void keyReleased(ActionEvent actionEvt) {
 			long currentTime = System.currentTimeMillis();
 			System.out.println(actionEvt.getActionCommand()+" KeyReleased");
-			
+
 			switch(actionEvt.getActionCommand()) {
 			case VK_DELETE_RELEASED: 
 				break;
 			case VK_F5_RELEASED: 
 				break;
-				
-			// move chartPanel
+
+				// move chartPanel
 			case VK_LEFT_RELEASED:
 				keyTimeArrowLeft = -1; 
 				break;
@@ -1653,8 +1659,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			case VK_DOWN_RELEASED:
 				keyTimeArrowDown = -1;
 				break; 
-				
-			// select the last selected view if user has hold a number button
+
+				// select the last selected view if user has hold a number button
 			case VK_1_RELEASED:
 				if(keyTime1<currentTime-750)
 					setSelectedViewAndRadioButton(lastSelectedView);
@@ -1673,9 +1679,9 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			} 
 		} 
 	} 
-	
-	
-	 
+
+
+
 	/**
 	 * sets the radiobutton of the given view to selected=true (code sided view change)
 	 */
@@ -1714,7 +1720,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 	}
 	// END for KeyListening
 	//##########################################################################################
-	
+
 	//##########################################################################################
 	// Update Runner for Image updating after change in txt fields
 	protected long startTime = -1;
@@ -1759,7 +1765,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			threadImageUpdater.start();
 		}			
 	} 
-	
+
 	@Override
 	public void run() {
 		try {
@@ -1773,11 +1779,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 
 
 	public void setCurrentRawFile(RawDataFile raw) {
-    	boolean isImagingRaw = raw instanceof ImagingRawData;
+		isImagingRawData = raw instanceof ImagingRawData;
 
-    	btnMiddleImageCon.setVisible(!isImagingRaw);
-    	btnMiddleImageDisc.setVisible(!isImagingRaw);
-    	btnMiddleImage.setVisible(isImagingRaw);
+		btnMiddleImageCon.setVisible(!isImagingRawData);
+		btnMiddleImageDisc.setVisible(!isImagingRawData);
+		btnMiddleImage.setVisible(isImagingRawData);
 
 	}
 	// ########################################################################################

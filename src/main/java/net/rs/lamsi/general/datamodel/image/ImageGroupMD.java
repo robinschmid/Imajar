@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
@@ -28,7 +29,7 @@ public class ImageGroupMD implements Serializable {
 
 	// project
 	protected ImagingProject project = null;
-	
+
 	// dataset
 	protected MDDataset data = null;
 	protected ArrayList<Collectable2D> images;
@@ -73,7 +74,12 @@ public class ImageGroupMD implements Serializable {
 	public void add(Collectable2D c2d) {
 		if(Image2D.class.isInstance(c2d)){
 			Image2D img = (Image2D)c2d;
+			// add dimension to current dataset?
+			boolean addDim = false;
+
+			// muldi dim?
 			if(MDDataset.class.isInstance(img.getData())) {
+				// if null use data sets data
 				if(data==null) data = (MDDataset) img.getData();
 				if(data.equals(img.getData())){
 					images.add(image2dCount(),img);
@@ -87,7 +93,16 @@ public class ImageGroupMD implements Serializable {
 								e.printStackTrace();
 							}
 				}
-				else if(data.hasSameDataDimensionsAs(img.getData())) {
+				addDim = true;
+			}
+			else {
+				// non multi dimensional?
+				addDim = true;
+			}
+			// add dimension 
+			if(addDim) {
+				if(data==null) data = new DatasetLinesMD();
+				if(data.hasSameDataDimensionsAs(img.getData())) {
 					// copy data over
 					if(data.addDimension(img)) {
 						try {
@@ -142,20 +157,20 @@ public class ImageGroupMD implements Serializable {
 	}
 
 
-	
+
 	/**
 	 * replace all collectable2d place holders in settings
 	 * @param tree
 	 */
 	public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
 		getSettings().replacePlaceHoldersInSettings(tree);
-		
+
 		for(Collectable2D g : images)
 			g.replacePlaceHoldersInSettings(tree);
 	}
-	
-	
-	
+
+
+
 
 	public void setBackgroundImage(Image image, File pathBGImage) {
 		this.bgImage = image;
@@ -378,7 +393,7 @@ public class ImageGroupMD implements Serializable {
 	public String getName() {
 		return settings.getName();
 	}
-	
+
 	@Override
 	public String toString() {
 		return getName()+"; "+settings.getPathData();

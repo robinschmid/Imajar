@@ -129,7 +129,8 @@ public abstract class ImageDataset  implements Serializable {
 	 * @return
 	 */
 	public boolean hasSameDataDimensionsAs(ImageDataset data){
-		if(data.equals(this)) return true;
+		// same or empty? true
+		if(data.equals(this) || this.getLinesCount()==0) return true;
 		if(data.getTotalDPCount()!=this.getTotalDPCount()) return false;
 		for(int i=0; i<data.getLinesCount(); i++) {
 			if(data.getLineLength(i)!=this.getLineLength(i)) 
