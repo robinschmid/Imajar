@@ -29,6 +29,7 @@ import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.Simple2DDataset;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
@@ -130,6 +131,14 @@ public class ImageLogicRunner {
 	public void addImage(Collectable2D i, String projectName, String gid) {  
 		// TODO 
 		ImageGroupMD group = treeImg.getGroup(projectName, gid);
+		// simple 2d dataset?
+		if(i instanceof Image2D) {
+			Image2D img = (Image2D)i;
+			if(img.getData() instanceof Simple2DDataset) {
+				
+			}
+		}
+		
 		// group exists?
 		if(group!=null) {
 			group.add(i);
