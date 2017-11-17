@@ -57,6 +57,7 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
+import net.rs.lamsi.massimager.Frames.LogicRunner;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.SelectMZDirectDialog;
 import net.rs.lamsi.massimager.Frames.Menu.MenuChartActions;
@@ -68,14 +69,12 @@ import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation.MZChargeCalculatorMZMine;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
-import net.rs.lamsi.massimager.mzmine.interfaces.MZMinePeakListsChangedListener;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.ImagingRawData;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter;
-import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter.Operation;
 
 
 /*TODO
@@ -885,18 +884,22 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 		renewTopChrom(selectedVsTopMZ, selectedVsTopPM);
 		renewMiddleImageChrom(selectedVsMiddleMZ, selectedVsMiddlePM);
 
+		LogicRunner runner = window.getLogicRunner();
+		Image2D img = runner.getCurrentImage();
 		// get selected File
 		if(specSelectionMode==SPECTRUM_SELECTION_MODE_RT) {
 			selectedSpectrum = window.getLogicRunner().generateSpectrumSUMByRT(selectedVsRetentionTime[0], selectedVsRetentionTime[1]);
 		}
 		else {
 			Rectangle2D rec = selectedImageRectForSpec;
-			selectedSpectrum = window.getLogicRunner().generateSpectrumByXY(settImage, rec);
+			selectedSpectrum = runner.generateSpectrumByXY(img!=null? img.getSettings().getSettImage() : settImage, rec);
 		}
 		// got spec?
 		if(selectedSpectrum==null) {
-			if(isImageRawData) {
-
+			if(isImagingRawData) {
+				setSelectedXY(1, 1, 1, 1);
+				Rectangle2D rec = selectedImageRectForSpec;
+				selectedSpectrum = window.getLogicRunner().generateSpectrumByXY(img!=null? img.getSettings().getSettImage() : settImage, rec);
 			}
 			else {
 				setSelectedVsRetentionTime(0, 0);
@@ -1143,7 +1146,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 			}
 			this.chartMiddleChrom = chartChrom2;
 		}  
-		if((selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON)) {
+		if((selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON) || selectedModeMiddle==MODE_IMAGE) {
 			if(chartMiddleImage!=null) {
 				Range lastzoom = ChartLogics.getZoomDomainAxis(chartMiddleImage);
 				ChartLogics.setZoomDomainAxis(chartChrom2, lastzoom, true);
@@ -1186,14 +1189,15 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 								// 
 								setSelectedVsRetentionTime(rt,rt2);
 							}
-							else if(selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle == MODE_IMAGE_DISCON) { 
+							else if(selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle == MODE_IMAGE_DISCON || selectedModeMiddle == MODE_IMAGE) { 
 								// area on Image selected
-								double x = pressed.getX();
-								double y = pressed.getY();
-								double x2 = released.getX();
-								double y2 = released.getY();
+								float x = (float)pressed.getX();
+								float y = (float)pressed.getY();
+								float x2 = (float)released.getX();
+								float y2 = (float)released.getY();
+								Image2D img = window.getLogicRunner().getCurrentImage();
 								// renew spec by img area
-								MZChromatogram spec = window.getLogicRunner().generateSpectrumByXY(settImage, x, y, x2, y2);
+								MZChromatogram spec = window.getLogicRunner().generateSpectrumByXY(img!=null? img.getSettings().getSettImage() : settImage, x, y, x2, y2);
 								renewBottomSpectrum(spec);
 								//
 								setSelectedXY(x, y, x2, y2);
@@ -1710,7 +1714,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 				return null;
 			else return chartTopChrom; 
 		case VIEW_MIDDLE_IMAGECHROM: 
-			if(selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON)
+			if(selectedModeMiddle==MODE_IMAGE_CON || selectedModeMiddle==MODE_IMAGE_DISCON || selectedModeMiddle==MODE_IMAGE)
 				return chartMiddleImage;
 			else return chartMiddleChrom;
 		case VIEW_BOTTOM_SPECTRUM:

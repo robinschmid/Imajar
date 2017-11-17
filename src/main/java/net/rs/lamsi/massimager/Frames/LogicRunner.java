@@ -4,6 +4,7 @@ package net.rs.lamsi.massimager.Frames;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
@@ -50,11 +51,11 @@ public class LogicRunner {
 	public static final int COMP_WIDTH = PN_PARAMETERS_WIDTH/2-10, COMP_HEIGHT=25, X = 5, Y=5;
 	public static final int CHART_WIDTH = WIDTH-COMP_WIDTH-X-10, CHART_HEIGHT = HEIGHT-10;
 	public static final int CHART_X = PN_PARAMETERS_WIDTH+X+5, CHART_Y = 5;
-	
+
 	public static final int VIEW_COUNT = 5, MODE_COUNT = 2;
 	public static final int VIEW_TIC=0, VIEW_MZCHROM = VIEW_TIC+1, VIEW_SPEC = VIEW_MZCHROM+1, VIEW_MSI_DISCON = VIEW_SPEC+1, VIEW_MSI_CON = VIEW_MSI_DISCON+1,
-						VIEW_VS_MZCHROM = VIEW_MSI_CON+1, VIEW_VS_SPEC = VIEW_VS_MZCHROM+1;
-	
+			VIEW_VS_MZCHROM = VIEW_MSI_CON+1, VIEW_VS_SPEC = VIEW_VS_MZCHROM+1;
+
 	// Export
 	public static final int XLS_COLUMNWIDTH = 50;
 	// Window
@@ -68,43 +69,43 @@ public class LogicRunner {
 	Vector<PeakList> listPeakList = new Vector<PeakList>(); 
 
 	// Variablen 
-    Vector<MZIon> listMZIon = new Vector<MZIon>();
+	Vector<MZIon> listMZIon = new Vector<MZIon>();
 	//
 	String filepath = "data/ASS-sauberes-spect.mzXML"; 
 
 	//###############################################################################
-    // Variablen
+	// Variablen
 	private int currentView = 0;
 
 	private double currentRT = 0; 
-    // Alle MZCHrom Daten als Liste speichern
-    private Vector<MZIon> listSelectedMZIon = new Vector<MZIon>();
-    
-    // wird gerade angeziegt 
-    private MZChromatogram[] currentMZChrom;
+	// Alle MZCHrom Daten als Liste speichern
+	private Vector<MZIon> listSelectedMZIon = new Vector<MZIon>();
+
+	// wird gerade angeziegt 
+	private MZChromatogram[] currentMZChrom;
 	private MZChromatogram currentTIC, currentSpectrum, currentFileTIC;
 	private int selectedFileIndex=-1; 
 	private boolean isImagingRaw = false;
-	
+
 	// IMAGES
-	private Image2D currentImageDiscon, currentImageCon;
-	
-	
+	private Image2D currentImage;
+
+
 
 	//###############################################################################
-    // Ein neues Fenster erstellen und alle Komponenten darauf plazieren
-    LogicRunner(Window window){    
-    	this.window = window;
-        // Setup fileReader
-        setUpFileReader();
-    } 
+	// Ein neues Fenster erstellen und alle Komponenten darauf plazieren
+	LogicRunner(Window window){    
+		this.window = window;
+		// Setup fileReader
+		setUpFileReader();
+	} 
 
-    // prepare File reader
+	// prepare File reader
 	private void setUpFileReader() {
 		// mzXML reader:
 		reader = new MZXMLReaderList();
 	}
-	
+
 
 	/**
 	 * The RawDataFile at index i or null if not in range
@@ -112,7 +113,7 @@ public class LogicRunner {
 	 */
 	public RawDataFile getRawDataFile(int i) {
 		if(listSpecFiles!=null && i>=0 && i<listSpecFiles.size())
-		return listSpecFiles.get(i);
+			return listSpecFiles.get(i);
 		else return null;
 	}
 	/**
@@ -121,12 +122,12 @@ public class LogicRunner {
 	 */
 	public RawDataFile getSelectedRawDataFile() {
 		if(listSpecFiles!=null && selectedFileIndex>=0 && selectedFileIndex<listSpecFiles.size())
-		return listSpecFiles.get(selectedFileIndex);
+			return listSpecFiles.get(selectedFileIndex);
 		else return null;
 	}
-	
+
 	//###############################################################################
-    // INPUT AND OUTPUT 
+	// INPUT AND OUTPUT 
 	// NEW loadFIles with UpdateProgressTask
 	public void loadFiles() {
 		MZMineLogicsConnector.importRawDataDialog();
@@ -172,10 +173,10 @@ public class LogicRunner {
 				} 
 			});
     	}
-    	*/
+		 */
 	}
-	
-    /*
+
+	/*
     public void loadMzXMLFile(File file) {
 		// TODO Auto-generated method stub
 		// load mzXML with reader
@@ -208,38 +209,38 @@ public class LogicRunner {
 			JOptionPane.showMessageDialog(window.getFrame(), "Cannot convert file from .RAW! "+e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE); 
         }   
 	}
-	*/
+	 */
 
-    public void saveImageFile() {
-    	// TODO 
-    	// Graphics Frame öffnen
-    	// dann 
-    	File file = window.getFileFromFileChooser(window.getFcSaveImage());
-    	// FileTypeFilter.addExtensionToFile
-        if(file!=null) { 
-        	//TODO SAVE DATA
-        }
-    }
-    
-    // Variablen zum Speichern der Excel datei
-    private XSSFWorkbook[] listWB;
-    private File[] listWBFiles;
- // Saving Stuff: With Settings to path, filename, etc
-    public boolean saveDataFile(final SettingsDataSaver settings, final XSSFExcelWriterReader excelWriter) throws NoFileSelectedException {   
-    	// wenn nur selected File und keins selektiert dann abbrechen
-    	if((settings.isExportsAllFiles() || window.getListFiles().getSelectedIndex()!=-1)) {
-	    	// Berechnen wie viele Workbooks erstelt werden sollen
-	    	int wbcount = 0;
-	    	if(settings.isExportsAllFiles()) {
-	        	// Export all files
-	    		if(settings.isSavesAllFilesToOneXLS()) {
-	    			// alle in eine xlsx
-	    			wbcount = 1;
-	    		}
-	    		else {
-	    			// alle in seperate files
-	        		wbcount = getListSpecFiles().size();  
-	    		}
+	public void saveImageFile() {
+		// TODO 
+		// Graphics Frame öffnen
+		// dann 
+		File file = window.getFileFromFileChooser(window.getFcSaveImage());
+		// FileTypeFilter.addExtensionToFile
+		if(file!=null) { 
+			//TODO SAVE DATA
+		}
+	}
+
+	// Variablen zum Speichern der Excel datei
+	private XSSFWorkbook[] listWB;
+	private File[] listWBFiles;
+	// Saving Stuff: With Settings to path, filename, etc
+	public boolean saveDataFile(final SettingsDataSaver settings, final XSSFExcelWriterReader excelWriter) throws NoFileSelectedException {   
+		// wenn nur selected File und keins selektiert dann abbrechen
+		if((settings.isExportsAllFiles() || window.getListFiles().getSelectedIndex()!=-1)) {
+			// Berechnen wie viele Workbooks erstelt werden sollen
+			int wbcount = 0;
+			if(settings.isExportsAllFiles()) {
+				// Export all files
+				if(settings.isSavesAllFilesToOneXLS()) {
+					// alle in eine xlsx
+					wbcount = 1;
+				}
+				else {
+					// alle in seperate files
+					wbcount = getListSpecFiles().size();  
+				}
 				if(settings.isExportEIC() && settings.isAllMZInSeperateFiles()) {
 					// All MZ in seperate files
 					// Wenn kein TIC oder Spectrum dann wbcount auf 0 setzen
@@ -249,10 +250,10 @@ public class LogicRunner {
 					// dann alle MZ zusätzlich ein file
 					wbcount += getMZListBySettings(settings.isSelectedMZOnly()).size(); 
 				}
-	    	}
-	    	else {
-	    		// export one file
-	    		wbcount = 1;
+			}
+			else {
+				// export one file
+				wbcount = 1;
 				if(settings.isExportEIC() && settings.isAllMZInSeperateFiles()) {
 					// All MZ in seperate files
 					// Wenn kein TIC oder Spectrum dann wbcount auf 0 setzen
@@ -262,22 +263,22 @@ public class LogicRunner {
 					// dann alle MZ zusätzlich ein file
 					wbcount += getMZListBySettings(settings.isSelectedMZOnly()).size(); 
 				}
-	    	}
-	    	// FERTIG: Anzahl der xlsx files
-	    	// Entweder ein File für spectrum und tic dann files für MZ
-	    	// ODer ein File für alles und dann Sheets für MZ
-	    	// Oder eine xls für jedes file und MZ als sheets oder als files am ende
-	    	listWB = new XSSFWorkbook[wbcount];
-	    	listWBFiles = new File[wbcount];
-	    	// Listen für files und 
-	    	ProgressUpdateTask task = new ProgressUpdateTask(listWB.length) {
+			}
+			// FERTIG: Anzahl der xlsx files
+			// Entweder ein File für spectrum und tic dann files für MZ
+			// ODer ein File für alles und dann Sheets für MZ
+			// Oder eine xls für jedes file und MZ als sheets oder als files am ende
+			listWB = new XSSFWorkbook[wbcount];
+			listWBFiles = new File[wbcount];
+			// Listen für files und 
+			ProgressUpdateTask task = new ProgressUpdateTask(listWB.length) {
 				// Load all Files
 				@Override
 				protected Boolean doInBackground2() throws Exception {
 					boolean retVal = true;
 					//
 					// jedes WB nacheinander füllen
-			    	// Files Aussuchen:  
+					// Files Aussuchen:  
 					for(int i=0; i<listWB.length; i++) {
 						// neues WB erstellen
 						listWB[i] = new XSSFWorkbook();
@@ -308,11 +309,11 @@ public class LogicRunner {
 								retVal = saveDataFileToWB(settings, excelWriter,i, filei, 0);
 							}
 							else { 
-					    		Vector<MZIon> mzList = getMZListBySettings(settings.isSelectedMZOnly());
+								Vector<MZIon> mzList = getMZListBySettings(settings.isSelectedMZOnly());
 								// Nicht alle MZ durchgehen sondern mit dem fileindex i
-					    		int mzindex = i;
-					    		if(settings.isExportsAllFiles() && !settings.isSavesAllFilesToOneXLS()) mzindex -= listSpecFiles.size();
-					    		else mzindex--;
+								int mzindex = i;
+								if(settings.isExportsAllFiles() && !settings.isSavesAllFilesToOneXLS()) mzindex -= listSpecFiles.size();
+								else mzindex--;
 								// Mz nehmen
 								MZIon mz = mzList.get(mzindex);
 								// nach den TIC xlsx kommt jetzt das richtige mz
@@ -336,7 +337,7 @@ public class LogicRunner {
 							}
 						}
 						// at end
-				    	// write and Close all workbooks Data Output 
+						// write and Close all workbooks Data Output 
 						if(retVal==true)
 							excelWriter.saveWbToFile(listWBFiles[i], listWB[i]);
 						else {
@@ -348,39 +349,39 @@ public class LogicRunner {
 				} 
 			};
 			task.execute();
-	    	
-	    	while(!task.isDone()) {
-	    		try {
-	    			Thread.sleep(33);
-	    		} catch (InterruptedException e) {
-	    			// TODO Auto-generated catch block
-	    			e.printStackTrace();
-	    			return false;
-	    		}
-	    	} 
-	    	return true;
-    	} 
-    	else {
-    		return false;
-    	}
-    }
-    // TODO ALT rauslöschen
+
+			while(!task.isDone()) {
+				try {
+					Thread.sleep(33);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return false;
+				}
+			} 
+			return true;
+		} 
+		else {
+			return false;
+		}
+	}
+	// TODO ALT rauslöschen
 	// Saving Stuff: With Settings to path, filename, etc
-    public boolean saveDataFileALT(SettingsDataSaver settings, XSSFExcelWriterReader excelWriter) throws NoFileSelectedException {   
-    	// wenn nur selected File und keins selektiert dann abbrechen
-    	if((settings.isExportsAllFiles() || window.getListFiles().getSelectedIndex()!=-1)) {
-	    	// Berechnen wie viele Workbooks erstelt werden sollen
-	    	int wbcount = 0;
-	    	if(settings.isExportsAllFiles()) {
-	        	// Export all files
-	    		if(settings.isSavesAllFilesToOneXLS()) {
-	    			// alle in eine xlsx
-	    			wbcount = 1;
-	    		}
-	    		else {
-	    			// alle in seperate files
-	        		wbcount = getListSpecFiles().size();  
-	    		}
+	public boolean saveDataFileALT(SettingsDataSaver settings, XSSFExcelWriterReader excelWriter) throws NoFileSelectedException {   
+		// wenn nur selected File und keins selektiert dann abbrechen
+		if((settings.isExportsAllFiles() || window.getListFiles().getSelectedIndex()!=-1)) {
+			// Berechnen wie viele Workbooks erstelt werden sollen
+			int wbcount = 0;
+			if(settings.isExportsAllFiles()) {
+				// Export all files
+				if(settings.isSavesAllFilesToOneXLS()) {
+					// alle in eine xlsx
+					wbcount = 1;
+				}
+				else {
+					// alle in seperate files
+					wbcount = getListSpecFiles().size();  
+				}
 				if(settings.isExportEIC() && settings.isAllMZInSeperateFiles()) {
 					// All MZ in seperate files
 					// Wenn kein TIC oder Spectrum dann wbcount auf 0 setzen
@@ -390,10 +391,10 @@ public class LogicRunner {
 					// dann alle MZ zusätzlich ein file
 					wbcount += getMZListBySettings(settings.isSelectedMZOnly()).size(); 
 				}
-	    	}
-	    	else {
-	    		// export one file
-	    		wbcount = 1;
+			}
+			else {
+				// export one file
+				wbcount = 1;
 				if(settings.isExportEIC() && settings.isAllMZInSeperateFiles()) {
 					// All MZ in seperate files
 					// Wenn kein TIC oder Spectrum dann wbcount auf 0 setzen
@@ -403,18 +404,18 @@ public class LogicRunner {
 					// dann alle MZ zusätzlich ein file
 					wbcount += getMZListBySettings(settings.isSelectedMZOnly()).size(); 
 				}
-	    	}
-	    	// FERTIG: Anzahl der xlsx files
-	    	// Entweder ein File für spectrum und tic dann files für MZ
-	    	// ODer ein File für alles und dann Sheets für MZ
-	    	// Oder eine xls für jedes file und MZ als sheets oder als files am ende
-	    	listWB = new XSSFWorkbook[wbcount];
-	    	listWBFiles = new File[wbcount];
-	    	// Listen für files und 
-	    	//TODO daten speichern? 
-	    	boolean retVal = false; 
-	    	// jedes WB nacheinander füllen
-	    	// Files Aussuchen:  
+			}
+			// FERTIG: Anzahl der xlsx files
+			// Entweder ein File für spectrum und tic dann files für MZ
+			// ODer ein File für alles und dann Sheets für MZ
+			// Oder eine xls für jedes file und MZ als sheets oder als files am ende
+			listWB = new XSSFWorkbook[wbcount];
+			listWBFiles = new File[wbcount];
+			// Listen für files und 
+			//TODO daten speichern? 
+			boolean retVal = false; 
+			// jedes WB nacheinander füllen
+			// Files Aussuchen:  
 			for(int i=0; i<listWB.length; i++) {
 				// neues WB erstellen
 				listWB[i] = new XSSFWorkbook();
@@ -443,11 +444,11 @@ public class LogicRunner {
 						retVal = saveDataFileToWB(settings, excelWriter,i, filei, 0);
 					}
 					else { 
-			    		Vector<MZIon> mzList = getMZListBySettings(settings.isSelectedMZOnly());
+						Vector<MZIon> mzList = getMZListBySettings(settings.isSelectedMZOnly());
 						// Nicht alle MZ durchgehen sondern mit dem fileindex i
-			    		int mzindex = i;
-			    		if(settings.isExportsAllFiles() && !settings.isSavesAllFilesToOneXLS()) mzindex -= listSpecFiles.size();
-			    		else mzindex--;
+						int mzindex = i;
+						if(settings.isExportsAllFiles() && !settings.isSavesAllFilesToOneXLS()) mzindex -= listSpecFiles.size();
+						else mzindex--;
 						// Mz nehmen
 						MZIon mz = mzList.get(mzindex);
 						// nach den TIC xlsx kommt jetzt das richtige mz
@@ -471,231 +472,231 @@ public class LogicRunner {
 					}
 				}
 				// at end
-		    	// write and Close all workbooks Data Output 
+				// write and Close all workbooks Data Output 
 				if(retVal==true)
 					excelWriter.saveWbToFile(listWBFiles[i], listWB[i]);
 				else {
 					// TODO fehler anzeigen. ein wb kann nciht exportiert werden.
 				}
 			}
-			 
-	    	//
-	    	return retVal;
-    	}
-    	else {
-    		// Single file aber nicht selektiert: throw error
-    		throw new NoFileSelectedException(); 
-    	}
-    }
-    // Das nächste File durchgehen und daten speichern
-    // filesExported zeigt wo das nächste geschrieben werden soll
-    private boolean saveDataFileToWB(SettingsDataSaver settings, XSSFExcelWriterReader xlsWriter, int listWBIndex, int specFileIndex, int filesExported) {
-    	// in ein file oder mehrere 
-    	try{ 
-    		// WB
-    		XSSFWorkbook wb = listWB[listWBIndex];
-    		// Styles 
-    		CellStyle borderStyle = wb.createCellStyle();
-    		borderStyle.setWrapText(true);
-    		borderStyle.setBorderRight(CellStyle.BORDER_MEDIUM); 
-	    	// Spectrum from File nehmen
-	    	RawDataFile spec = listSpecFiles.get(specFileIndex);
-	    	// Get WorkBook: 
-	    	File file;
-	    	//Save all to one xls?
-	    	// save all mz in seperate files?
-	    	if((settings.isSavesAllFilesToOneXLS() && filesExported==0)) {
-	    		// Nur einmal eine xls erzeugen
-	    		file = new File(settings.getPath(), settings.getFilename()+".xlsx");
-	    		listWBFiles[listWBIndex] = file;
-	    	}
-	    	else if (filesExported==0){
-	    		// Ansonsten immer ein Neues xls
-	    		file = new File(settings.getPath(), spec.getName()+".xlsx");  
-	        	// Open new Workbook
-	    		listWBFiles[listWBIndex] = file; 
-	    	}
-	    	// Get Postion
-	    	// Set Postion Offset for colls
-	    	int normcolloffset = filesExported*2;
-	    	int colloffset = normcolloffset;
-	    	// Write Time Only Once
-	    	if(settings.isWriteTimeOnlyOnce()) {
-	    		colloffset = filesExported; 
-	    	} 
-	    	// Onlyy?
-	    	boolean onlyY = !(!settings.isWriteTimeOnlyOnce() || filesExported==0);
-    	
-	    	// get WorkSheet 
-	    	// Write COntent
-	    	// Export TIC?
-	    	if(settings.isExportTIC()) {
-	    		XSSFSheet sheet = xlsWriter.getSheet(wb, "TIC");
-	    		// set column width of 1+colloffset
-	    		//sheet.setColumnWidth(1+colloffset, XLS_COLUMNWIDTH);
-	    		//
-	    		if(!onlyY) {
-	    			xlsWriter.writeToCell(sheet, 0+colloffset, 0, "Filename");
-		    		xlsWriter.writeToCell(sheet, 0+colloffset, 1, "Path");
-		    		//xlsWriter.writeToCell(sheet, 0+colloffset, 2, "Header");
-		    		// data header 
-		    		xlsWriter.writeToCell(sheet, 0+colloffset, 3, "time (s)");
-	    		}
-	    		// TimeRelated immer
-	    		xlsWriter.writeToCell(sheet, 1+colloffset, 0, spec.getName()).setCellStyle(borderStyle);
-	    		// xlsWriter.writeToCell(sheet, 1+colloffset, 1, spec.get).setCellStyle(borderStyle);
-	    		//xlsWriter.writeToCell(sheet, 1+colloffset, 2, spec.getHeader()).setCellStyle(borderStyle);
-	    		// data header
-	    		xlsWriter.writeToCell(sheet, 1+colloffset, 3, "intensity (cps)").setCellStyle(borderStyle); 
-	    		// TICDATA
-	    		writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getTIC(spec), wb, sheet, 0+colloffset,4, onlyY);
-	    	}
-	    	
-	    	// Export Spectrum?
-	    	if(settings.isExportSpectrum()) {
-	    		XSSFSheet sheet = xlsWriter.getSheet(wb, "Spetrum");
-	    		// set column width of 1+colloffset
-	    		//sheet.setColumnWidth(1+normcolloffset, XLS_COLUMNWIDTH);
-	    		//
-	    		xlsWriter.writeToCell(sheet, 0+normcolloffset, 0, "Filename");
-	    		xlsWriter.writeToCell(sheet, 0+normcolloffset, 1, "Path");
-	    		//xlsWriter.writeToCell(sheet, 0+normcolloffset, 2, "Header");
-	    		xlsWriter.writeToCell(sheet, 1+normcolloffset, 0, spec.getName()).setCellStyle(borderStyle);
-	    		//xlsWriter.writeToCell(sheet, 1+normcolloffset, 1, spec.getFile().getPath()).setCellStyle(borderStyle);
-	    		//xlsWriter.writeToCell(sheet, 1+normcolloffset, 2, spec.getHeader()).setCellStyle(borderStyle);
-	    		// get RT for spectrum
-	    		double rt = 0;
-	    		try{
-	    			rt = Double.valueOf(window.getTxtRetentionTime().getText());
-	    		} catch(Exception ex) { 
-	    		}
-	    		// write rt
-	    		xlsWriter.writeToCell(sheet, 0+normcolloffset, 3, "r. time");
-	    		xlsWriter.writeToCell(sheet, 1+normcolloffset, 3, rt).setCellStyle(borderStyle);
-	    		
-	    		// data header
-	    		xlsWriter.writeToCell(sheet, 0+normcolloffset, 4, "m/z");
-	    		xlsWriter.writeToCell(sheet, 1+normcolloffset, 4, "intensity (cps)").setCellStyle(borderStyle);
-	    		// TICDATA
-	    		writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getSpectrumAsMZChrom(spec, rt), wb, sheet, 0+normcolloffset,5, false);
-	    	}
-	    	
-	    	// Export EIC?
-	    	// Export TIC?
-	    	if(settings.isExportEIC()) {
-	    		// Alle MZ bekommen
-	    		Vector<MZIon> mzList = getMZListBySettings(settings.isSelectedMZOnly());
-	    		for(int i=0; i<mzList.size(); i++) {
-	    			MZIon mz = mzList.get(i); 
-		    		//
-		    		XSSFSheet sheet = xlsWriter.getSheet(wb, "mz="+mz.getMz()); 
-		    		// set column width of 1+colloffset
-		    		//sheet.setColumnWidth(1+colloffset, XLS_COLUMNWIDTH);
-		    		if(!onlyY) {
-			    		xlsWriter.writeToCell(sheet, 0+colloffset, 0, "Filename");
-			    		xlsWriter.writeToCell(sheet, 0+colloffset, 1, "Path");
-			    		//xlsWriter.writeToCell(sheet, 0+colloffset, 2, "Header");
-			    		// data header 
-			    		xlsWriter.writeToCell(sheet, 0+colloffset, 3, "time (s)");
-		    		}
-		    		// TimeRelated immer
-		    		xlsWriter.writeToCell(sheet, 1+colloffset, 0, spec.getName()).setCellStyle(borderStyle);
-		    		//xlsWriter.writeToCell(sheet, 1+colloffset, 1, spec.getFile().getPath()).setCellStyle(borderStyle);
-		    		//xlsWriter.writeToCell(sheet, 1+colloffset, 2, spec.getHeader()).setCellStyle(borderStyle);
-		    		// data header 
-		    		xlsWriter.writeToCell(sheet, 1+colloffset, 3, "intensity (cps)").setCellStyle(borderStyle); 
-		    		// TICDATA
-		    		writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getMZChrom(spec, mz, ChromGenType.HIGHEST_PEAK), wb, sheet, 0+colloffset,4, onlyY);
-	    		} 
-	    	} 
 
-    	}catch(Exception ex) {
-    		ex.printStackTrace();
-    		return false;
-    	}
-    	return true;
-    }
-    
-    // SAVE SEPARATED MZ
-    // vorher alle mz durchgehen und übergeben
-    private boolean saveDataFileWithSeperatedMZ(SettingsDataSaver settings,XSSFExcelWriterReader xlsWriter, int listWBIndex, int mzExported, MZIon mz) {
-    	// in ein file oder mehrere 
-    	try{ 
-	    	// Get WorkBook:  
-    		// WB
-    		XSSFWorkbook wb = listWB[listWBIndex];
-    		// Styles 
-    		CellStyle borderStyle = wb.createCellStyle();
-    		borderStyle.setWrapText(true);
-    		borderStyle.setBorderRight(CellStyle.BORDER_MEDIUM);
-    		// Nur einmal eine xls erzeugen
-    		File file = new File(settings.getPath(), mz.getMz()+mz.getName()+".xlsx");
-    		listWBFiles[listWBIndex] = file;
-    		
-	    	// Spectrum from File nehmen
-    		for(int filesExported=0; filesExported<listSpecFiles.size(); filesExported++) {
-		    	RawDataFile spec = listSpecFiles.get(filesExported); 
-		    	// Get Postion
-		    	// Set Postion Offset for colls
-		    	int colloffset = filesExported*2;
-		    	// Write Time Only Once
-		    	if(settings.isWriteTimeOnlyOnce()) {
-		    		colloffset = filesExported;
-		    	} 
-	    	
-		    	// get WorkSheet 
-		    	// Write COntent 
-	    		// Alle MZ bekommen  
-	    		XSSFSheet sheet = xlsWriter.getSheet(wb, "mz="+mz.getMz()); 
-	    		// set column width of 1+colloffset
-	    		//sheet.setColumnWidth(1+colloffset, XLS_COLUMNWIDTH);
-	    		//
-	    		boolean onlyY = !(!settings.isWriteTimeOnlyOnce() || filesExported==0);
-	    		if(!onlyY) {
-		    		xlsWriter.writeToCell(sheet, 0+colloffset, 0, "Filename");
-		    		xlsWriter.writeToCell(sheet, 0+colloffset, 1, "Path");
-		    		xlsWriter.writeToCell(sheet, 0+colloffset, 2, "Header");
-		    		// data header 
-		    		xlsWriter.writeToCell(sheet, 0+colloffset, 3, "time (s)");
-	    		}
-	    		// TimeRelated immer
-	    		xlsWriter.writeToCell(sheet, 1+colloffset, 0, spec.getName()).setCellStyle(borderStyle);
-	    		//xlsWriter.writeToCell(sheet, 1+colloffset, 1, spec.getFile().getPath()).setCellStyle(borderStyle);
-	    		//xlsWriter.writeToCell(sheet, 1+colloffset, 2, spec.headerInfo).setCellStyle(borderStyle);
-	    		// data header 
-	    		xlsWriter.writeToCell(sheet, 1+colloffset, 3, "intensity (cps)").setCellStyle(borderStyle); 
-	    		// TICDATA
-	    		writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getMZChrom(spec, mz, ChromGenType.HIGHEST_PEAK), wb, sheet, 0+colloffset,4,onlyY); 
-    		}
+			//
+			return retVal;
+		}
+		else {
+			// Single file aber nicht selektiert: throw error
+			throw new NoFileSelectedException(); 
+		}
+	}
+	// Das nächste File durchgehen und daten speichern
+	// filesExported zeigt wo das nächste geschrieben werden soll
+	private boolean saveDataFileToWB(SettingsDataSaver settings, XSSFExcelWriterReader xlsWriter, int listWBIndex, int specFileIndex, int filesExported) {
+		// in ein file oder mehrere 
+		try{ 
+			// WB
+			XSSFWorkbook wb = listWB[listWBIndex];
+			// Styles 
+			CellStyle borderStyle = wb.createCellStyle();
+			borderStyle.setWrapText(true);
+			borderStyle.setBorderRight(CellStyle.BORDER_MEDIUM); 
+			// Spectrum from File nehmen
+			RawDataFile spec = listSpecFiles.get(specFileIndex);
+			// Get WorkBook: 
+			File file;
+			//Save all to one xls?
+			// save all mz in seperate files?
+			if((settings.isSavesAllFilesToOneXLS() && filesExported==0)) {
+				// Nur einmal eine xls erzeugen
+				file = new File(settings.getPath(), settings.getFilename()+".xlsx");
+				listWBFiles[listWBIndex] = file;
+			}
+			else if (filesExported==0){
+				// Ansonsten immer ein Neues xls
+				file = new File(settings.getPath(), spec.getName()+".xlsx");  
+				// Open new Workbook
+				listWBFiles[listWBIndex] = file; 
+			}
+			// Get Postion
+			// Set Postion Offset for colls
+			int normcolloffset = filesExported*2;
+			int colloffset = normcolloffset;
+			// Write Time Only Once
+			if(settings.isWriteTimeOnlyOnce()) {
+				colloffset = filesExported; 
+			} 
+			// Onlyy?
+			boolean onlyY = !(!settings.isWriteTimeOnlyOnce() || filesExported==0);
 
-    	}catch(Exception ex) {
-    		ex.printStackTrace();
-    		return false;
-    	}
-    	return true;
-    }
-    
-    // MZChrom to xls 
-    private void writeMZChromToXLSAtPosition(XSSFExcelWriterReader xlsWriter, MZChromatogram chrom, XSSFWorkbook wb, XSSFSheet sheet, int scol, int srow, boolean onlyY) {
-    	// style
-    	CellStyle borderStyle = wb.createCellStyle(); 
+			// get WorkSheet 
+			// Write COntent
+			// Export TIC?
+			if(settings.isExportTIC()) {
+				XSSFSheet sheet = xlsWriter.getSheet(wb, "TIC");
+				// set column width of 1+colloffset
+				//sheet.setColumnWidth(1+colloffset, XLS_COLUMNWIDTH);
+				//
+				if(!onlyY) {
+					xlsWriter.writeToCell(sheet, 0+colloffset, 0, "Filename");
+					xlsWriter.writeToCell(sheet, 0+colloffset, 1, "Path");
+					//xlsWriter.writeToCell(sheet, 0+colloffset, 2, "Header");
+					// data header 
+					xlsWriter.writeToCell(sheet, 0+colloffset, 3, "time (s)");
+				}
+				// TimeRelated immer
+				xlsWriter.writeToCell(sheet, 1+colloffset, 0, spec.getName()).setCellStyle(borderStyle);
+				// xlsWriter.writeToCell(sheet, 1+colloffset, 1, spec.get).setCellStyle(borderStyle);
+				//xlsWriter.writeToCell(sheet, 1+colloffset, 2, spec.getHeader()).setCellStyle(borderStyle);
+				// data header
+				xlsWriter.writeToCell(sheet, 1+colloffset, 3, "intensity (cps)").setCellStyle(borderStyle); 
+				// TICDATA
+				writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getTIC(spec), wb, sheet, 0+colloffset,4, onlyY);
+			}
+
+			// Export Spectrum?
+			if(settings.isExportSpectrum()) {
+				XSSFSheet sheet = xlsWriter.getSheet(wb, "Spetrum");
+				// set column width of 1+colloffset
+				//sheet.setColumnWidth(1+normcolloffset, XLS_COLUMNWIDTH);
+				//
+				xlsWriter.writeToCell(sheet, 0+normcolloffset, 0, "Filename");
+				xlsWriter.writeToCell(sheet, 0+normcolloffset, 1, "Path");
+				//xlsWriter.writeToCell(sheet, 0+normcolloffset, 2, "Header");
+				xlsWriter.writeToCell(sheet, 1+normcolloffset, 0, spec.getName()).setCellStyle(borderStyle);
+				//xlsWriter.writeToCell(sheet, 1+normcolloffset, 1, spec.getFile().getPath()).setCellStyle(borderStyle);
+				//xlsWriter.writeToCell(sheet, 1+normcolloffset, 2, spec.getHeader()).setCellStyle(borderStyle);
+				// get RT for spectrum
+				double rt = 0;
+				try{
+					rt = Double.valueOf(window.getTxtRetentionTime().getText());
+				} catch(Exception ex) { 
+				}
+				// write rt
+				xlsWriter.writeToCell(sheet, 0+normcolloffset, 3, "r. time");
+				xlsWriter.writeToCell(sheet, 1+normcolloffset, 3, rt).setCellStyle(borderStyle);
+
+				// data header
+				xlsWriter.writeToCell(sheet, 0+normcolloffset, 4, "m/z");
+				xlsWriter.writeToCell(sheet, 1+normcolloffset, 4, "intensity (cps)").setCellStyle(borderStyle);
+				// TICDATA
+				writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getSpectrumAsMZChrom(spec, rt), wb, sheet, 0+normcolloffset,5, false);
+			}
+
+			// Export EIC?
+			// Export TIC?
+			if(settings.isExportEIC()) {
+				// Alle MZ bekommen
+				Vector<MZIon> mzList = getMZListBySettings(settings.isSelectedMZOnly());
+				for(int i=0; i<mzList.size(); i++) {
+					MZIon mz = mzList.get(i); 
+					//
+					XSSFSheet sheet = xlsWriter.getSheet(wb, "mz="+mz.getMz()); 
+					// set column width of 1+colloffset
+					//sheet.setColumnWidth(1+colloffset, XLS_COLUMNWIDTH);
+					if(!onlyY) {
+						xlsWriter.writeToCell(sheet, 0+colloffset, 0, "Filename");
+						xlsWriter.writeToCell(sheet, 0+colloffset, 1, "Path");
+						//xlsWriter.writeToCell(sheet, 0+colloffset, 2, "Header");
+						// data header 
+						xlsWriter.writeToCell(sheet, 0+colloffset, 3, "time (s)");
+					}
+					// TimeRelated immer
+					xlsWriter.writeToCell(sheet, 1+colloffset, 0, spec.getName()).setCellStyle(borderStyle);
+					//xlsWriter.writeToCell(sheet, 1+colloffset, 1, spec.getFile().getPath()).setCellStyle(borderStyle);
+					//xlsWriter.writeToCell(sheet, 1+colloffset, 2, spec.getHeader()).setCellStyle(borderStyle);
+					// data header 
+					xlsWriter.writeToCell(sheet, 1+colloffset, 3, "intensity (cps)").setCellStyle(borderStyle); 
+					// TICDATA
+					writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getMZChrom(spec, mz, ChromGenType.HIGHEST_PEAK), wb, sheet, 0+colloffset,4, onlyY);
+				} 
+			} 
+
+		}catch(Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	// SAVE SEPARATED MZ
+	// vorher alle mz durchgehen und übergeben
+	private boolean saveDataFileWithSeperatedMZ(SettingsDataSaver settings,XSSFExcelWriterReader xlsWriter, int listWBIndex, int mzExported, MZIon mz) {
+		// in ein file oder mehrere 
+		try{ 
+			// Get WorkBook:  
+			// WB
+			XSSFWorkbook wb = listWB[listWBIndex];
+			// Styles 
+			CellStyle borderStyle = wb.createCellStyle();
+			borderStyle.setWrapText(true);
+			borderStyle.setBorderRight(CellStyle.BORDER_MEDIUM);
+			// Nur einmal eine xls erzeugen
+			File file = new File(settings.getPath(), mz.getMz()+mz.getName()+".xlsx");
+			listWBFiles[listWBIndex] = file;
+
+			// Spectrum from File nehmen
+			for(int filesExported=0; filesExported<listSpecFiles.size(); filesExported++) {
+				RawDataFile spec = listSpecFiles.get(filesExported); 
+				// Get Postion
+				// Set Postion Offset for colls
+				int colloffset = filesExported*2;
+				// Write Time Only Once
+				if(settings.isWriteTimeOnlyOnce()) {
+					colloffset = filesExported;
+				} 
+
+				// get WorkSheet 
+				// Write COntent 
+				// Alle MZ bekommen  
+				XSSFSheet sheet = xlsWriter.getSheet(wb, "mz="+mz.getMz()); 
+				// set column width of 1+colloffset
+				//sheet.setColumnWidth(1+colloffset, XLS_COLUMNWIDTH);
+				//
+				boolean onlyY = !(!settings.isWriteTimeOnlyOnce() || filesExported==0);
+				if(!onlyY) {
+					xlsWriter.writeToCell(sheet, 0+colloffset, 0, "Filename");
+					xlsWriter.writeToCell(sheet, 0+colloffset, 1, "Path");
+					xlsWriter.writeToCell(sheet, 0+colloffset, 2, "Header");
+					// data header 
+					xlsWriter.writeToCell(sheet, 0+colloffset, 3, "time (s)");
+				}
+				// TimeRelated immer
+				xlsWriter.writeToCell(sheet, 1+colloffset, 0, spec.getName()).setCellStyle(borderStyle);
+				//xlsWriter.writeToCell(sheet, 1+colloffset, 1, spec.getFile().getPath()).setCellStyle(borderStyle);
+				//xlsWriter.writeToCell(sheet, 1+colloffset, 2, spec.headerInfo).setCellStyle(borderStyle);
+				// data header 
+				xlsWriter.writeToCell(sheet, 1+colloffset, 3, "intensity (cps)").setCellStyle(borderStyle); 
+				// TICDATA
+				writeMZChromToXLSAtPosition(xlsWriter, MZDataFactory.getMZChrom(spec, mz, ChromGenType.HIGHEST_PEAK), wb, sheet, 0+colloffset,4,onlyY); 
+			}
+
+		}catch(Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	// MZChrom to xls 
+	private void writeMZChromToXLSAtPosition(XSSFExcelWriterReader xlsWriter, MZChromatogram chrom, XSSFWorkbook wb, XSSFSheet sheet, int scol, int srow, boolean onlyY) {
+		// style
+		CellStyle borderStyle = wb.createCellStyle(); 
 		borderStyle.setBorderRight(CellStyle.BORDER_MEDIUM);
-    	
-    	// write mzchrom to position in sheet
-    	for(int i=0; i<chrom.getItemCount(); i++) {
-    		// x (time or m/z)
-    		if(!onlyY) xlsWriter.writeToCell(sheet, scol, srow+i, chrom.getX(i).doubleValue()); 
-    		// y (intensity)
-    		xlsWriter.writeToCell(sheet, scol+1, srow+i, chrom.getY(i).doubleValue()).setCellStyle(borderStyle); 
-    	}
-    }
 
-    // INPUT OUTPUT COMPLETE
+		// write mzchrom to position in sheet
+		for(int i=0; i<chrom.getItemCount(); i++) {
+			// x (time or m/z)
+			if(!onlyY) xlsWriter.writeToCell(sheet, scol, srow+i, chrom.getX(i).doubleValue()); 
+			// y (intensity)
+			xlsWriter.writeToCell(sheet, scol+1, srow+i, chrom.getY(i).doubleValue()).setCellStyle(borderStyle); 
+		}
+	}
+
+	// INPUT OUTPUT COMPLETE
 	//###############################################################################
-    
+
 	//###############################################################################
-    // LOGIC
-    // Wird als CurrentMode gesetzt
+	// LOGIC
+	// Wird als CurrentMode gesetzt
 	public void setAsCurrentMode(JList listFiles) {
 		// Alle Files wieder rein tun
 		for(int i=0; i<listSpecFiles.size(); i++) {
@@ -703,23 +704,23 @@ public class LogicRunner {
 		}
 		listFiles.repaint();
 	} 
- 
-    // Erneuert alle Plots
-    public void setNewFileSelectedAndShowAll(int i) {
-    	selectedFileIndex = i;
-    	// is iamging raw data?
-    	isImagingRaw = getSelectedFile() instanceof ImagingRawData;
-    	
-    	// TODO set currentMZ PM and RT
-    	System.out.println("New File Selected "+i);
-    	// 
-    	if(i>=0) { 
-    		window.getTabThresomeTICvsMZvsSpec().setCurrentRawFile(getSelectedFile());
-	    	renewSpecVsImageVsChrom();
-    	}
-    }
-    
-    private void renewSpecVsImageVsChrom() {
+
+	// Erneuert alle Plots
+	public void setNewFileSelectedAndShowAll(int i) {
+		selectedFileIndex = i;
+		// is iamging raw data?
+		isImagingRaw = getSelectedFile() instanceof ImagingRawData;
+
+		// TODO set currentMZ PM and RT
+		System.out.println("New File Selected "+i);
+		// 
+		if(i>=0) { 
+			window.getTabThresomeTICvsMZvsSpec().setCurrentRawFile(getSelectedFile());
+			renewSpecVsImageVsChrom();
+		}
+	}
+
+	private void renewSpecVsImageVsChrom() {
 		window.getTabThresomeTICvsMZvsSpec().renewAll();
 	}
 
@@ -727,7 +728,7 @@ public class LogicRunner {
 	public void closeAll() {
 		// TODO close all streams from mzmine?
 	}
-	
+
 	// returns a list of MZ: onlySelected or all
 	public Vector<MZIon> getMZListBySettings(boolean selectedOnly) {
 		if(selectedOnly) {
@@ -740,7 +741,7 @@ public class LogicRunner {
 		}
 		else return listMZIon;
 	}
-	
+
 
 	//###############################################################################
 	// Create Spectrums and all things for other Panels
@@ -780,27 +781,37 @@ public class LogicRunner {
 	// get spectrum from point in image. with image settings!
 	public Scan generateSpectrumByXY(SettingsGeneralImage sett, double x, double y) {
 		try{
-			// var init
-			int filei = -1;
-			double rt = 0;
-			// triggert / discon
-			if(sett.isTriggered()) {
-				// Fileindex y gibt aufschluss zur linie und damit zum file 
-				filei = (int)Math.floor(y/sett.getSpotsize());
-				if(filei<0) filei = 0;
-				if(filei>=listSpecFiles.size()) filei = listSpecFiles.size()-1;
-				// rt by x
-				rt = x/sett.getVelocity(); 
-			} else {
-				// Continuous
-				// x und y gehen in zeit ein
-				filei = selectedFileIndex;
-				rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
+			// raw data is imaging raw data - non retention time data
+			if(getSelectedFile() instanceof ImagingRawData){
+				ImagingRawData raw = (ImagingRawData)getSelectedFile();
+				ImagingParameters param = raw.getImagingParam();
+
+				return raw.getScan((float)x/sett.getVelocity(), (float)y/sett.getSpotsize());
 			}
-			// find File for y value
-			if(filei!=-1)
-				return MZDataFactory.getNearestSpectrumAtRT(listSpecFiles.get(filei), rt);
-			else return null;
+			// raw is retention time data
+			else {
+				// var init
+				int filei = -1;
+				double rt = 0;
+				// triggert / discon
+				if(sett.isTriggered()) {
+					// Fileindex y gibt aufschluss zur linie und damit zum file 
+					filei = (int)Math.floor(y/sett.getSpotsize());
+					if(filei<0) filei = 0;
+					if(filei>=listSpecFiles.size()) filei = listSpecFiles.size()-1;
+					// rt by x
+					rt = x/sett.getVelocity(); 
+				} else {
+					// Continuous
+					// x und y gehen in zeit ein
+					filei = selectedFileIndex;
+					rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
+				}
+				// find File for y value
+				if(filei!=-1)
+					return MZDataFactory.getNearestSpectrumAtRT(listSpecFiles.get(filei), rt);
+				else return null;
+			}
 		}catch(Exception ex) {
 			ex.printStackTrace();
 			return null;
@@ -808,89 +819,100 @@ public class LogicRunner {
 	} 
 	// get SUM spectrum from area in image. with image settings!
 	public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, Rectangle2D rect) {
-		double x = rect.getX();
-		double y = rect.getY();
-		double x2 = rect.getMaxX();
-		double y2 = rect.getMaxY();
+		float x = (float)rect.getX();
+		float y = (float)rect.getY();
+		float x2 = (float)rect.getMaxX();
+		float y2 = (float)rect.getMaxY();
 		return generateSpectrumByXY(sett, x, y, x2, y2);
 	}
 	// get SUM spectrum from area in image. with image settings!
-	public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, double x, double y, double x2, double y2) {
+	public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, float x, float y, float x2, float y2) {
 		try{
-			// var init
-			int fileiStart = -1;
-			int fileiEnd = -1;
-			double rt = 0;
-			double rt2 = 0;
-			// triggert / discon
-			if(sett.isTriggered()) {
-				// Fileindex y gibt aufschluss zur linie und damit zum file 
-				fileiStart = (int)Math.floor(y/sett.getSpotsize());
-				if(fileiStart<0) fileiStart = 0;
-				if(fileiStart>=listSpecFiles.size()) fileiStart = listSpecFiles.size()-1;
-				// End file index 
-				fileiEnd = (int)Math.floor(y2/sett.getSpotsize());
-				if(fileiEnd<0) fileiEnd = 0;
-				if(fileiEnd>=listSpecFiles.size()) fileiEnd = listSpecFiles.size()-1;
-				// rt by x
-				rt = x/sett.getVelocity(); 
-				rt2 = x2/sett.getVelocity(); 
-			} else {
-				// Continuous
-				// x und y gehen in zeit ein
-				fileiStart = selectedFileIndex;
-				fileiEnd = selectedFileIndex;
-				// time per line
-				if(sett.getModeTimePerLine()==SettingsGeneralImage.MODE_TIME_PER_LINE) {
-					// get Spectrum by time per line
-					rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
-					rt2 = Math.floor(y2/sett.getSpotsize())*sett.getTimePerLine() + x2/sett.getVelocity();  
-				}
-				else {
-					// resolution in scans per line
-					// get Spectrum by direct spectrum number 
-					// TODO wenn der mode umgestellt wird dann muss hier eine andere art zur berechnung des ausgewählten spektrums her
-					rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
-					rt2 = Math.floor(y2/sett.getSpotsize())*sett.getTimePerLine() + x2/sett.getVelocity();  
-				}
+			// raw data is imaging raw data - non retention time data
+			if(getSelectedFile() instanceof ImagingRawData){
+				ImagingRawData raw = (ImagingRawData)getSelectedFile();
+				ImagingParameters param = raw.getImagingParam();
+
+				ArrayList<Scan> list = raw.getScans(x/sett.getVelocity(), y/sett.getSpotsize(), x2/sett.getVelocity(), y2/sett.getSpotsize());
+				return MZDataFactory.getSpectrumSumAsMZChrom(list);
 			}
-			// for all files sum spectra from rt to rt2
-			if(fileiStart!=-1) {
-				if(fileiStart>fileiEnd) {
-					int tmp = fileiStart;
-					fileiStart = fileiEnd;
-					fileiEnd = tmp;
+			// raw is retention time data
+			else {
+				// var init
+				int fileiStart = -1;
+				int fileiEnd = -1;
+				double rt = 0;
+				double rt2 = 0;
+				// triggert / discon
+				if(sett.isTriggered()) {
+					// Fileindex y gibt aufschluss zur linie und damit zum file 
+					fileiStart = (int)Math.floor(y/sett.getSpotsize());
+					if(fileiStart<0) fileiStart = 0;
+					if(fileiStart>=listSpecFiles.size()) fileiStart = listSpecFiles.size()-1;
+					// End file index 
+					fileiEnd = (int)Math.floor(y2/sett.getSpotsize());
+					if(fileiEnd<0) fileiEnd = 0;
+					if(fileiEnd>=listSpecFiles.size()) fileiEnd = listSpecFiles.size()-1;
+					// rt by x
+					rt = x/sett.getVelocity(); 
+					rt2 = x2/sett.getVelocity(); 
+				} else {
+					// Continuous
+					// x und y gehen in zeit ein
+					fileiStart = selectedFileIndex;
+					fileiEnd = selectedFileIndex;
+					// time per line
+					if(sett.getModeTimePerLine()==SettingsGeneralImage.MODE_TIME_PER_LINE) {
+						// get Spectrum by time per line
+						rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
+						rt2 = Math.floor(y2/sett.getSpotsize())*sett.getTimePerLine() + x2/sett.getVelocity();  
+					}
+					else {
+						// resolution in scans per line
+						// get Spectrum by direct spectrum number 
+						// TODO wenn der mode umgestellt wird dann muss hier eine andere art zur berechnung des ausgewählten spektrums her
+						rt = Math.floor(y/sett.getSpotsize())*sett.getTimePerLine() + x/sett.getVelocity();
+						rt2 = Math.floor(y2/sett.getSpotsize())*sett.getTimePerLine() + x2/sett.getVelocity();  
+					}
 				}
-				
-				if(fileiEnd-fileiStart>=1) {
-					// Add alls specs
-					Vector<MZChromatogram> specList = new Vector<MZChromatogram>(); 
-					for(int i=fileiStart; i<=fileiEnd; i++) {
-						specList.add(MZDataFactory.getSpectrumSumAsMZChrom(listSpecFiles.get(i), rt, rt2)); 
-					} 
-					// Filter combine all specs 
-					MZSpectrumCombineFilter filter = new MZSpectrumCombineFilter(specList);
-					if(filter.doFiltering()) {
-						return (MZChromatogram) filter.getResult();
-					} else {
-						throw new FilteringFailedException("Cannot create sum spectrum for image"); 
+				// for all files sum spectra from rt to rt2
+				if(fileiStart!=-1) {
+					if(fileiStart>fileiEnd) {
+						int tmp = fileiStart;
+						fileiStart = fileiEnd;
+						fileiEnd = tmp;
+					}
+
+					if(fileiEnd-fileiStart>=1) {
+						// Add alls specs
+						Vector<MZChromatogram> specList = new Vector<MZChromatogram>(); 
+						for(int i=fileiStart; i<=fileiEnd; i++) {
+							specList.add(MZDataFactory.getSpectrumSumAsMZChrom(listSpecFiles.get(i), rt, rt2)); 
+						} 
+						// Filter combine all specs 
+						MZSpectrumCombineFilter filter = new MZSpectrumCombineFilter(specList);
+						if(filter.doFiltering()) {
+							return (MZChromatogram) filter.getResult();
+						} else {
+							throw new FilteringFailedException("Cannot create sum spectrum for image"); 
+						} 
+					}
+					else {
+						return MZDataFactory.getSpectrumSumAsMZChrom(listSpecFiles.get(fileiStart),rt, rt2);
 					} 
 				}
-				else {
-					return MZDataFactory.getSpectrumSumAsMZChrom(listSpecFiles.get(fileiStart),rt, rt2);
-				} 
+				else return null;
 			}
-			else return null;
 		}catch(Exception ex) {
 			ex.printStackTrace();
 			return null;
 		}
 	} 
-	
+
 	public ChartPanel generateSpectrumAsChartPanel(Scan spec) {
 		return MZDataFactory.getSpectrumAsMZChrom(spec).getChromChartPanel("", "m/z", "intensity");   
 	} 
-	
+
 	// TIC / EIC 
 	public ChartPanel generateTICAsChartPanel() throws Exception { 
 		if(selectedFileIndex!=-1 && listSpecFiles!=null)
@@ -902,13 +924,13 @@ public class LogicRunner {
 			return MZDataFactory.getMZChrom(listSpecFiles.get(selectedFileIndex), mzIon, ChromGenType.HIGHEST_PEAK).getChromChartPanel("MZ = "+mzIon.getMz(), "time", "intensity"); 	
 		else return null;
 	} 
-	
+
 	// Images
 	public Image2D generateImageCon(SettingsMSImage setMSICon, SettingsImageContinousSplit settSplit) { 
 		// pass options to reader. 
 		// TODO nicht immer SUM_PEAKS
 		MZChromatogram mzChrom = MZDataFactory.getMZChrom(getSelectedFile(), setMSICon.getMZIon(), ChromGenType.SUM_PEAKS); 
-        // Panel as ChartViewer 
+		// Panel as ChartViewer 
 		if(mzChrom!=null) {
 			// set title 
 			NumberFormat form = SettingsHolder.getSettings().getSetGeneralValueFormatting().getMZFormat();
@@ -918,11 +940,13 @@ public class LogicRunner {
 			//setMSICon.setRAWFilepath(listSpecFiles.get(selectedFileIndex).getFile().getPath());
 			// create image
 			Image2D img = Image2D.generateImage2DFromCon(window.getSettings().getSetPaintScale(), setMSICon, settSplit, mzChrom);
+
+			setCurrentImage(img);
 			return img;
 		} 
 		else return null;
 	}
-	
+
 	// Discontinous Imaging for Triggert Data
 	public Image2D generateImageDiscon(SettingsMSImage setMSIDiscon) {
 		// TODO mehrere MZ zum auswählen
@@ -949,6 +973,8 @@ public class LogicRunner {
 			// setMSIDiscon.setRAWFilepath(specList.firstElement().getFile().getPath());
 			// 
 			Image2D img = Image2D.generateImage2DFrom(SettingsPaintScale.createStandardSettings(), setMSIDiscon, mzChrom);
+
+			setCurrentImage(img);
 			return img;
 		} 
 		else return null;
@@ -966,13 +992,13 @@ public class LogicRunner {
 			ChromGenType gen = ChromGenType.HIGHEST_PEAK;
 			ImagingParameters param = ((ImagingRawData)raw).getImagingParam();
 			MZIon ion = setMSI.getMZIon();
-			
+
 			// result data matrix
 			double[][] data = new double[param.getHeight()][param.getWidth()];
 			for(int y = 0; y<data.length; y++)
 				for (int x = 0; x < data[y].length; x++)
 					data[y][x] = 0;
-			
+
 			int[] numbers = raw.getScanNumbers();
 			// data
 			double intensity = 0;
@@ -981,38 +1007,38 @@ public class LogicRunner {
 				Scan scan = raw.getScan(numbers[i]);
 				// intensity
 				intensity = gen.getIntensity(ion.getMz(), ion.getPm(), scan);
-				
+
 				// position
 				if(scan instanceof ImagingScan) {
 					coord = ((ImagingScan)scan).getCoordinates();
 				}
-				
+
 				// coord is 1 based
-				data[coord.getY()-1][coord.getX()-1] = intensity;
+				data[coord.getY()][coord.getX()] = intensity>-1E20? intensity : 0;
 			}
-			
+
 			Simple2DDataset idata = new Simple2DDataset((float)param.getPixelWidth(), (float)param.getPixelShape(), data);
-			
+
 			Image2D image = new Image2D(idata);
-			
+			setCurrentImage(image);
 			return image;
 		}
 		return null;
 	}
-	
+
 	// Creation of spectrums and other things finished
 	//###############################################################################
-	
+
 	// send images to ImageEditor  
-	public Image2D getCurrentImage2DDiscon() { 
-		return currentImageDiscon;
+	public Image2D getCurrentImage() { 
+		return currentImage;
 	} 
-	public Image2D getCurrentImage2DCon() { 
-		return currentImageCon;
-	} 
-	
+	public void setCurrentImage(Image2D img) {
+		currentImage = img;
+	}
+
 	//###############################################################################
-    // GETTERS AND SETTERS 
+	// GETTERS AND SETTERS 
 	public int getCurrentView() {
 		return currentView;
 	} 
@@ -1043,22 +1069,22 @@ public class LogicRunner {
 	public void setCurrentTIC(MZChromatogram currentTIC) {
 		this.currentTIC = currentTIC;
 	}
-    public Vector<RawDataFile> getListSpecFiles() {
+	public Vector<RawDataFile> getListSpecFiles() {
 		return listSpecFiles;
 	}
 
 	public void setListSpecFiles(Vector<RawDataFile> listSpecFiles) {
 		this.listSpecFiles = listSpecFiles;
 	}
-    
-    public int getSelectedFileIndex() {
+
+	public int getSelectedFileIndex() {
 		return selectedFileIndex;
 	}
 
 	public void setSelectedFileIndex(int selectedFileIndex) {
 		this.selectedFileIndex = selectedFileIndex;
 	} 
-	
+
 	public RawDataFile getSelectedFile() {
 		return selectedFileIndex>=0 && selectedFileIndex<listSpecFiles.size()? listSpecFiles.get(selectedFileIndex) : null;
 	}

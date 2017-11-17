@@ -1,5 +1,6 @@
 package net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra;
 
+import java.util.List;
 import java.util.Vector;
 
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
@@ -13,10 +14,11 @@ public class MZSpectrumCombineFilter extends AbstractDataFilter  {
 	private MZChromatogram result;
 	private RawDataFile raw = null;
 	private int start = -1, end = -1;
-	private Vector<Scan> specList = null;
-	Vector<MZChromatogram> chromList = null;
+	private List<Scan> specList = null;
+	private List<MZChromatogram> chromList = null;
 	// mzwindow for smoothening filter
 	private double mzwindow = -1;
+	
 	
 	// SetUp in constructor 
 	public MZSpectrumCombineFilter(RawDataFile raw) {
@@ -36,10 +38,10 @@ public class MZSpectrumCombineFilter extends AbstractDataFilter  {
 	}
 
 	// doFiltering
-	public <T> MZSpectrumCombineFilter(Vector<T> specList) {
+	public <T> MZSpectrumCombineFilter(List<T> specList) {
 		if(specList.size()>0) {
-			if(specList.get(0) instanceof Scan) this.specList  = ((Vector<Scan>) specList);
-			if(specList.get(0) instanceof MZChromatogram) this.chromList  = (Vector<MZChromatogram>) specList;
+			if(specList.get(0) instanceof Scan) this.specList  = ((List<Scan>) specList);
+			if(specList.get(0) instanceof MZChromatogram) this.chromList  = (List<MZChromatogram>) specList;
 		}
 		start=0;
 		end = getNumOfSpectra(); 
@@ -77,13 +79,15 @@ public class MZSpectrumCombineFilter extends AbstractDataFilter  {
 			if(mzwindow==-1) {
 				// one third of the distance between 2 datapoints (TODO zeros can be deleted - this will cause an wrong output)
 				// mzwindow could differ on higher mass TODO   
+				
 				mzwindow = (dpList[dpList.length/2].getMZ()-dpList[dpList.length/2 -1].getMZ())*1.0/3.0;
 			}
 			// add all points to mzchrom as spectrum
 			for (int j = 0; j < dpList.length; j++) {
 				DataPoint dp = dpList[j]; 
 				// add all peaks (they will be inserted sorted)
-				result.add(dp.getMZ(), dp.getIntensity());
+				double intensity = dp.getIntensity();
+				result.add(dp.getMZ(), intensity>-1E20? intensity : 0);
 			}
 		} 
 	}

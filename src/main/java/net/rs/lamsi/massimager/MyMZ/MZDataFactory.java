@@ -1,14 +1,15 @@
 package net.rs.lamsi.massimager.MyMZ;
 
 
+import java.util.List;
+
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.exceptions.FilteringFailedException;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.spectra.MZSpectrumCombineFilter;
 import net.sf.mzmine.datamodel.DataPoint;
 import net.sf.mzmine.datamodel.ImagingRawData;
-import net.sf.mzmine.datamodel.ImagingScan;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.Scan;
- 
+
 
 public class MZDataFactory {  
 
@@ -49,7 +50,7 @@ public class MZDataFactory {
 		// ansonsten last Element
 		return (scani[scani.length-1]);
 	}
-	
+
 	// From to
 	public static MZChromatogram getSpectrumSumAsMZChrom(RawDataFile raw, double t0, double t1) throws FilteringFailedException {
 		// TODO Auto-generated method stub
@@ -58,7 +59,7 @@ public class MZDataFactory {
 		int spec0 = getNearestSpectrumIndexAtRT(raw, t0); 
 		int spec1 = getNearestSpectrumIndexAtRT(raw, t1);   
 		// only one spec?
-		
+
 		if(spec0==spec1) { 
 			return getSpectrumAsMZChrom(raw.getScan(spec0));
 		}
@@ -112,7 +113,23 @@ public class MZDataFactory {
 		//		
 		return chrom;
 	}
-	
+	/**
+	 * combines a full lust of scans to one spectrum
+	 * @param list
+	 * @return
+	 * @throws FilteringFailedException
+	 */
+	public static MZChromatogram getSpectrumSumAsMZChrom(List<Scan> list) throws FilteringFailedException {
+		if(list==null || list.isEmpty()) return null;
+		// use filter for adding
+		MZSpectrumCombineFilter filter = new MZSpectrumCombineFilter(list);
+		if(filter.doFiltering()) {
+			return (MZChromatogram) filter.getResult();
+		} else {
+			throw new FilteringFailedException("Cannot create sum spectrum");
+		} 
+	}
+
 	// Get TIC
 	// MZ Chrom from all Spectrum
 	public static MZChromatogram getTIC(RawDataFile raw) {
@@ -127,14 +144,14 @@ public class MZDataFactory {
 		double x = 0;
 		for(int i=0; i<scani.length; i++) {
 			Scan spec = raw.getScan(scani[i]);
-			
+
 			// imaging scan
 			if(isImageRaw)
 				x += xspace;
 			else x = spec.getRetentionTime();
 			// intensity 
 			double intensity = spec.getTIC();
-			chrom.add(x, intensity);
+			chrom.add(x, intensity>-1E20? intensity : 0);
 		}
 		//		
 		return chrom;
@@ -164,5 +181,5 @@ public class MZDataFactory {
 		return chrom;
 	}
 
-	
+
 }
