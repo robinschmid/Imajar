@@ -129,12 +129,15 @@ public class ChartLogics {
      * @return
      */
 	public static Dimension calcSizeForPlotSize(ChartPanel myChart, double plotWidth, double plotHeight, int iterations) {
-        // ranges
-    	XYPlot plot = (XYPlot) myChart.getChart().getPlot();
+
+    	makeChartResizable(myChart);
     	
         // estimate plotwidth / height
         double estimatedChartWidth = plotWidth+200;
         double estimatedChartHeight = plotHeight+200;
+        
+        double lastW = estimatedChartWidth;
+        double lastH = estimatedChartHeight;
     	
         // paint and get closer
     	try {
@@ -153,9 +156,16 @@ public class ChartLogics {
 //            double titleHeight = chartArea.getHeight()-dataArea.getHeight(); 
             
             // calc width and height
-            estimatedChartWidth = estimatedChartWidth/dataArea.getWidth()*plotWidth;
-            estimatedChartHeight = estimatedChartHeight/dataArea.getHeight()*plotHeight;
+            estimatedChartWidth = estimatedChartWidth-dataArea.getWidth()+plotWidth;
+            estimatedChartHeight = estimatedChartHeight-dataArea.getHeight()+plotHeight;
             ImageEditorWindow.log("Estimated (i="+i+") size: "+(int)estimatedChartWidth+"x"+(int)estimatedChartHeight, LOG.DEBUG);
+            
+            if((int)lastW==(int)estimatedChartWidth && (int)lastH==(int)estimatedChartHeight)
+            	break;
+            else {
+            	lastW = estimatedChartWidth;
+            	lastH = estimatedChartHeight;
+            }
     	}
     	}catch(Exception ex) {
     		ex.printStackTrace();
@@ -173,7 +183,7 @@ public class ChartLogics {
      * @return
      */
     public static double calcHeightToWidth(ChartPanel myChart, double chartWidth, boolean copyToNewPanel) {  
-    	return calcHeightToWidth(myChart, chartWidth, (int)chartWidth*3, 4, copyToNewPanel);
+    	return calcHeightToWidth(myChart, chartWidth, chartWidth*3, 4, copyToNewPanel);
 	}
     /**
      * calculates the correct height with multiple iterations
@@ -187,6 +197,9 @@ public class ChartLogics {
     	//if(myChart.getChartRenderingInfo()==null || myChart.getChartRenderingInfo().getChartArea()==null || myChart.getChartRenderingInfo().getChartArea().getWidth()==0)
     	// result
     	double height = estimatedHeight;
+    	double lastH = height;
+    	
+    	makeChartResizable(myChart);
     	
     	// paint on a ghost panel
     	JPanel parent = (JPanel)myChart.getParent();
@@ -226,6 +239,9 @@ public class ChartLogics {
             
             // for next iteration
             estimatedHeight = height;
+            if((int)lastH==(int)height)
+            	break;
+            else lastH=height;
     	}
     	}catch(Exception ex) {
     		ex.printStackTrace();
@@ -241,11 +257,23 @@ public class ChartLogics {
 	}
     
     /**
+     * Removes draw size restrictions
+     * @param myChart
+     */
+    public static void makeChartResizable(ChartPanel myChart) {
+    	myChart.setMaximumDrawWidth(1000000000);
+    	myChart.setMinimumDrawWidth(0);
+    	myChart.setMaximumDrawHeight(1000000000);
+    	myChart.setMinimumDrawHeight(0);
+	}
+    
+    /**
      * 
      * @param myChart 
      * @return
      */
     public static double calcWidthToHeight(ChartPanel myChart, double chartHeight) {  
+    	makeChartResizable(myChart);
     	// paint on a ghost panel
     	JPanel parent = (JPanel)myChart.getParent();
     	JPanel p = new JPanel();
@@ -290,6 +318,7 @@ public class ChartLogics {
      * @return
      */
     public static Dimension calcMaxSize(ChartPanel myChart, double chartWidth, double chartHeight) {  
+    	makeChartResizable(myChart);
     	// paint on a ghost panel
     	JPanel parent = (JPanel)myChart.getParent();
     	JPanel p = new JPanel();
