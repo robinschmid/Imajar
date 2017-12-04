@@ -81,7 +81,7 @@ public class SettingsGeneralPreferences extends Settings {
 		fcImportPicture.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		
 
-		fcExportPicture.addChoosableFileFilter(filePictureExport = new FileTypeFilter(new String[]{"png", "jpg", "gif", "pdf", "eps", "svg"}, "Export images"));
+		fcExportPicture.addChoosableFileFilter(filePictureExport = new FileTypeFilter(new String[]{"png", "jpg", "gif", "pdf", "emf", "eps", "svg"}, "Export images"));
 		fcExportPicture.setFileFilter(filePictureExport);
 		fcExportPicture.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		
