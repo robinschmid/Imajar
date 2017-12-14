@@ -1,4 +1,5 @@
 package net.rs.lamsi.massimager.Frames.Dialogs;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,7 +24,6 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
-import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 
 public class DataSaverFrame extends JFrame {

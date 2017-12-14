@@ -6,12 +6,6 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
-import net.sf.mzmine.util.Range;
-
-import org.jfree.chart.ChartPanel;
-
 public class TestMZChrom {
 
 	private JFrame frame;
@@ -43,21 +37,21 @@ public class TestMZChrom {
 	}
 
 	private void createMZChrom() {
-		MZChromatogram chrom = new MZChromatogram("");
-		for(int i=0; i<100; i++) {
-			double x = i;
-			double y = x*x-100;
-			
-			chrom.add(x, y);
-		}
-		//
-		ChartPanel chart = chrom.getChromChartPanel("Test", "x", "y");
-		getPnChartView().add(chart, BorderLayout.CENTER); 
-		chart.validate();
-		
-		ChartLogics.setZoomDomainAxis(chart, new Range(10, 30), true); 
-		
-		chart.getPopupMenu();
+//		MZChromatogram chrom = new MZChromatogram("");
+//		for(int i=0; i<100; i++) {
+//			double x = i;
+//			double y = x*x-100;
+//			
+//			chrom.add(x, y);
+//		}
+//		//
+//		ChartPanel chart = chrom.getChromChartPanel("Test", "x", "y");
+//		getPnChartView().add(chart, BorderLayout.CENTER); 
+//		chart.validate();
+//		
+////		ChartLogics.setZoomDomainAxis(chart, new Range(10, 30), true); 
+//		
+//		chart.getPopupMenu();
 	}
 
 	/**
