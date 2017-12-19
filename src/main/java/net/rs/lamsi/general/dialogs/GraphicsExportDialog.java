@@ -250,7 +250,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 			else if(getRbJPG().isSelected()) format = SettingsExportGraphics.FORMAT.JPG;
 			else if(getRbEmf().isSelected()) format = SettingsExportGraphics.FORMAT.EMF;
 			sett.setFormat(format);
-
+			
 			// Resolution
 			if(getRbForPrintRes().isSelected()) 
 				sett.setResolution(300); 

@@ -61,10 +61,28 @@ public class ChartExportUtil {
 	 */
 	public static void writeChartToImage(ChartPanel chart, SettingsExportGraphics sett) throws Exception { 
 		boolean repaint = false;
+		// size for plot or chart
 		FIXED_SIZE fixed = sett.getFixedSize();
-		
+
+		// factor
 		Dimension oldSize = sett.getSize();
-		
+		int dpi = sett.getResolution();
+		double f = dpi/72.0;
+		boolean resized = false;
+		// pixel graphics and resolution != 72 dpi
+		if(sett.getFormat().isPixel() && dpi!=72) {
+			// change font size 
+			ChartLogics.scaleFonts(chart.getChart(), f);
+			
+			// change width and height
+			double w = sett.getSize().getWidth()*f;
+			double h = sett.getSize().getHeight()*f;
+			sett.setSize(new Dimension((int)w, (int)h));
+			// reset resolution
+			sett.setResolution(72);
+			resized = true;
+		}
+
 		// Size only by width?
 		if(sett.isUseOnlyWidth()) {
 			// fixed size for chart or plot
@@ -93,6 +111,11 @@ public class ChartExportUtil {
 		writeChartToImage(chart.getChart(), sett);
 		// reset size
 		sett.setSize(oldSize);
+		sett.setResolution(dpi);
+		if(resized) {
+			// change font size back
+			ChartLogics.scaleFonts(chart.getChart(), 1.0/f);
+		}
 	}
 
 	/**
@@ -108,21 +131,21 @@ public class ChartExportUtil {
 		if(chart.getLegend()!=null)
 			chart.getLegend().setBackgroundPaint(sett.getColorBackground()); 
 		// legends and stuff
-        for(int i=0; i<chart.getSubtitleCount(); i++) 
-        	if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
-        		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(sett.getColorBackground());
-		
+		for(int i=0; i<chart.getSubtitleCount(); i++) 
+			if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
+				((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(sett.getColorBackground());
+
 		// apply bg 
-        chart.getPlot().setBackgroundPaint(sett.getColorBackground());
-        
-        // create folder
-        File f = sett.getFullFilePath();
-        if(!f.exists()) {
-    		if(f.getParentFile()!=null)
-    			f.getParentFile().mkdirs();
-    		// f.createNewFile();
-    	}
-        
+		chart.getPlot().setBackgroundPaint(sett.getColorBackground());
+
+		// create folder
+		File f = sett.getFullFilePath();
+		if(!f.exists()) {
+			if(f.getParentFile()!=null)
+				f.getParentFile().mkdirs();
+			// f.createNewFile();
+		}
+
 		// Format
 		switch (sett.getFormat()) {
 		case PDF:
@@ -150,12 +173,12 @@ public class ChartExportUtil {
 		if(chart.getLegend()!=null)
 			chart.getLegend().setBackgroundPaint(saved); 
 		// legends and stuff
-        for(int i=0; i<chart.getSubtitleCount(); i++) 
-        	if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
-        		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(saved);
-		
+		for(int i=0; i<chart.getSubtitleCount(); i++) 
+			if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
+				((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(saved);
+
 		// apply bg 
-        chart.getPlot().setBackgroundPaint(saved);
+		chart.getPlot().setBackgroundPaint(saved);
 	}
 
 	/**
@@ -204,14 +227,14 @@ public class ChartExportUtil {
 		if(resolution==72)
 			writeChartToPNG(chart, width, height, fileName);
 		else {
-    		OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
-	        try {
-	        	BufferedImage image = paintScaledChartToBufferedImage(chart, out, width, height, resolution, BufferedImage.TYPE_INT_ARGB);
-	            out.write(ChartUtilities.encodeAsPNG(image)); 
-	        }
-	        finally {
-	            out.close(); 
-	        } 
+			OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
+			try {
+				BufferedImage image = paintScaledChartToBufferedImage(chart, out, width, height, resolution, BufferedImage.TYPE_INT_ARGB);
+				out.write(ChartUtilities.encodeAsPNG(image)); 
+			}
+			finally {
+				out.close(); 
+			} 
 		}
 	}
 	public static void writeChartToJPEG(JFreeChart chart, int width, int height, File fileName) throws IOException {
@@ -226,29 +249,29 @@ public class ChartExportUtil {
 			if(chart.getLegend()!=null)
 				chart.getLegend().setBackgroundPaint(Color.WHITE);  
 			// legends and stuff
-	        for(int i=0; i<chart.getSubtitleCount(); i++) 
-	        	if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
-	        		((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(Color.WHITE);
-			
+			for(int i=0; i<chart.getSubtitleCount(); i++) 
+				if(PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) 
+					((PaintScaleLegend)chart.getSubtitle(i)).setBackgroundPaint(Color.WHITE);
+
 			// apply bg 
-	        chart.getPlot().setBackgroundPaint(Color.WHITE);
+			chart.getPlot().setBackgroundPaint(Color.WHITE);
 		}
 		//
 		if(resolution==72)
 			writeChartToJPEG(chart, width, height, fileName);
 		else {
-    		OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
-	        try {
-	        	BufferedImage image = paintScaledChartToBufferedImage(chart, out, width, height, resolution, BufferedImage.TYPE_INT_RGB);
-	            EncoderUtil.writeBufferedImage(image, ImageFormat.JPEG, out, 1.f);
-	        }
-	        finally {
-	            out.close(); 
-	        } 
+			OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
+			try {
+				BufferedImage image = paintScaledChartToBufferedImage(chart, out, width, height, resolution, BufferedImage.TYPE_INT_RGB);
+				EncoderUtil.writeBufferedImage(image, ImageFormat.JPEG, out, 1.f);
+			}
+			finally {
+				out.close(); 
+			} 
 		}
 	}
-	
-	
+
+
 	/**
 	 * Paints a chart with scaling options
 	 * @param chart
@@ -260,36 +283,36 @@ public class ChartExportUtil {
 	 * @throws IOException
 	 */
 	private static BufferedImage paintScaledChartToBufferedImage(JFreeChart chart, OutputStream out, int width, int height, int resolution, int bufferedIType) throws IOException { 
-        ParamChecks.nullNotPermitted(out, "out");
-        ParamChecks.nullNotPermitted(chart, "chart");
+		ParamChecks.nullNotPermitted(out, "out");
+		ParamChecks.nullNotPermitted(chart, "chart");
 
-        double scaleX = resolution/72.0;
-        double scaleY = resolution/72.0;
-        
-        double desiredWidth = width * scaleX;
-        double desiredHeight = height * scaleY;
-        double defaultWidth = width;
-        double defaultHeight = height;
-        boolean scale = false;
+		double scaleX = resolution/72.0;
+		double scaleY = resolution/72.0;
 
-        // get desired width and height from somewhere then...
-        if ((scaleX != 1) || (scaleY != 1)) {
-            scale = true;
-        } 
+		double desiredWidth = width * scaleX;
+		double desiredHeight = height * scaleY;
+		double defaultWidth = width;
+		double defaultHeight = height;
+		boolean scale = false;
 
-        BufferedImage image = new BufferedImage((int) desiredWidth, (int) desiredHeight, bufferedIType);
-        Graphics2D g2 = image.createGraphics();
+		// get desired width and height from somewhere then...
+		if ((scaleX != 1) || (scaleY != 1)) {
+			scale = true;
+		} 
 
-        if (scale) {
-            AffineTransform saved = g2.getTransform();
-            g2.transform(AffineTransform.getScaleInstance(scaleX, scaleY));
-            chart.draw(g2, new Rectangle2D.Double(0, 0, defaultWidth, defaultHeight), null, null);
-            g2.setTransform(saved);
-            g2.dispose();
-        }
-        else {
-            chart.draw(g2, new Rectangle2D.Double(0, 0, defaultWidth, defaultHeight), null, null);
-        }
+		BufferedImage image = new BufferedImage((int) desiredWidth, (int) desiredHeight, bufferedIType);
+		Graphics2D g2 = image.createGraphics();
+
+		if (scale) {
+			AffineTransform saved = g2.getTransform();
+			g2.transform(AffineTransform.getScaleInstance(scaleX, scaleY));
+			chart.draw(g2, new Rectangle2D.Double(0, 0, defaultWidth, defaultHeight), null);
+			g2.setTransform(saved);
+			g2.dispose();
+		}
+		else {
+			chart.draw(g2, new Rectangle2D.Double(0, 0, defaultWidth, defaultHeight), null, null);
+		}
 		return image;
 	}
 

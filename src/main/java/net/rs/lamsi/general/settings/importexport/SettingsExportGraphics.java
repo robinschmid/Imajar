@@ -11,6 +11,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
@@ -22,7 +23,12 @@ public class SettingsExportGraphics extends Settings {
     	PDF, EMF, EPS, SVG, PNG, JPG;
     	public String toString() {
     		return super.toString().toLowerCase();
-    	};
+    	}
+
+		public boolean isPixel() {
+			return equals(FORMAT.JPG) || 
+					equals(FORMAT.PNG);
+		};
     }
     
     public enum FIXED_SIZE {
