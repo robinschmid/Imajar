@@ -1,6 +1,7 @@
 package net.rs.lamsi.utils.threads;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 import javax.swing.SwingWorker;
 
@@ -37,8 +38,6 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
 			} 
 		});
 	}
-	
-	
 
 	@Override
 	protected void done() {

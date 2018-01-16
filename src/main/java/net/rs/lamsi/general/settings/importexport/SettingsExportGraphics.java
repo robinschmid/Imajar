@@ -164,6 +164,10 @@ public class SettingsExportGraphics extends Settings {
 	public void setSize(double width, double height, DIM_UNIT unit) { 
 		resolution.setSizeAndUnit((float)width, (float)height, unit);
 	}
+	/**
+	 * pixel height
+	 * @param height
+	 */
 	public void setHeight(double height) {
 		resolution.setSize((int)resolution.getSize().getWidth(), (int) height);
 	}  

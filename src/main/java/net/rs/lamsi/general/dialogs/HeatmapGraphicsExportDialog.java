@@ -10,6 +10,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.ui.FloatDimension;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
@@ -33,6 +35,7 @@ import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import visad.Set;
 
 public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements SettingsPanel {
 
@@ -110,38 +113,10 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
 
   @Override
   protected void renewPreview() {
-    // set dimensions to chartpanel
-    // set height
-    try {
-      setAllSettings(SettingsHolder.getSettings());
-      SettingsExportGraphics sett =
-          (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
-
-      DecimalFormat form = new DecimalFormat("#.###");
-      if (sett.isUseOnlyWidth()) {
-        double height =
-            (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth(), false));
-
-        sett.setSize((Float.valueOf(getTxtWidth().getText())),
-            SettingsImageResolution.changeUnit((float) height, DIM_UNIT.PX, sett.getUnit()),
-            sett.getUnit());
-        getTxtHeight().setText("" + form.format(sett.getSizeInUnit().getHeight()));
-
-        chartPanel.setSize(sett.getSize());
-
-        // annotations
-        if (heat != null)
-          heat.showSelectedExcludedRects(sett.isShowAnnotations());
-
-        //
-        getPnChartPreview().repaint();
-      } else {
-        chartPanel.setSize((int) sett.getSize().getWidth(), (int) sett.getSize().getHeight());
-        chartPanel.repaint();
-      }
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
+      // annotations
+      if (heat != null)
+        heat.showSelectedExcludedRects(getCbShowAnnotations().isSelected());
+      super.renewPreview();
   }
 
   @Override
@@ -151,25 +126,20 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
     if (canExport) {
       final SettingsExportGraphics sett =
           (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
+      final EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE) getComboExportStruc().getSelectedItem();
       try {
-        if (selected == null) {
+        if (selected == null || struc.equals(EXPORT_STRUCTURE.IMAGE)) {
           ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(), LOG.MESSAGE);
 
-          // annotations
-          if (heat != null)
-            heat.showSelectedExcludedRects(sett.isShowAnnotations());
-
           applyMaxPathLengthToSett(sett);
-          ChartExportUtil.writeChartToImage(chartPanel, sett);
+          // renew size
+          renewPreview();
+          // export size
+          final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
+          new GraphicsExportThread(chartPanel.getChart(), fsett).start();
+          
         } else {
-
-          new ProgressUpdateTask(1) {
-
-            @Override
-            protected Boolean doInBackground2() throws Exception {
               try {
-                EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE) getComboExportStruc().getSelectedItem();
-
                 switch (struc) {
                   case ALL:
                     File rootPath = (sett.getPath());
@@ -189,9 +159,8 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
                             sett.setPath(
                                 new File(rootPath, c.getImageGroup().getName().replace(".", "_")));
                         }
+                        // show, renew, calc size and save
                         saveCollectable2DGraphics(sett, c, c.getTitle());
-
-                        addProgressStep(1.0 / list.size());
                       }
                     break;
                   case PROJECT:
@@ -202,9 +171,8 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
                       for (ImageGroupMD g : project.getGroups()) {
                         sett.setPath(new File(mainPath, g.getName().replace(".", "_")));
                         for (Collectable2D c : g.getImages()) {
+                            // show, renew, calc size and save
                           saveCollectable2DGraphics(sett, c, c.getTitle());
-
-                          addProgressStep(1.0 / g.getImages().size() / project.getGroups().size());
                         }
                       }
                     }
@@ -214,24 +182,11 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
                       sett.setPath(new File(sett.getPath(),
                           selected.getImageGroup().getName().replace(".", "_")));
                       for (Collectable2D c : selected.getImageGroup().getImages()) {
+                          // show, renew, calc size and save
                         saveCollectable2DGraphics(sett, c, c.getTitle());
-
-                        addProgressStep(1.0 / selected.getImageGroup().getImages().size());
                       }
                     }
-                    break;
-                  case IMAGE:
-                    ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(),
-                        LOG.MESSAGE);
-
-                    // annotations
-                    if (heat != null)
-                      heat.showSelectedExcludedRects(sett.isShowAnnotations());
-
-                    applyMaxPathLengthToSett(sett);
-                    ChartExportUtil.writeChartToImage(chartPanel, sett);
-                    addProgressStep(1.0);
-                    break;
+                    break; 
                 }
                 //
                 ImageEditorWindow.log("File written successfully", LOG.MESSAGE);
@@ -242,9 +197,6 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
                 ImageEditorWindow.log("File not written.", LOG.ERROR);
                 DialogLoggerUtil.showErrorDialog(inst, "File not written. ", e);
               }
-              return true;
-            }
-          }.execute();
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -255,17 +207,11 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
   }
 
   /**
-   * Apply max length to real path
-   * 
+   * change chartpanel, calc size, repaint, export
    * @param sett
+   * @param img
+   * @param title
    */
-  private void applyMaxPathLengthToSett(SettingsExportGraphics sett) {
-    File f = sett.getFullFilePath();
-    f = FileAndPathUtil.applyMaxLength(f);
-    sett.setFileName(FileAndPathUtil.eraseFormat(f.getName()));
-    sett.setPath(f.getParentFile());
-  }
-
   private void saveCollectable2DGraphics(SettingsExportGraphics sett, Collectable2D img,
       String title) {
     // change file name
@@ -286,12 +232,13 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
       // export
       ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(), LOG.MESSAGE);
 
-      // annotations
-      if (heat != null)
-        heat.showSelectedExcludedRects(sett.isShowAnnotations());
-
+      renewPreview();
+      // title as filename
+      sett.setFileName(fileName + title);
       applyMaxPathLengthToSett(sett);
-      ChartExportUtil.writeChartToImage(heat.getChartPanel(), sett);
+      // export size
+      final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
+      new GraphicsExportThread(chartPanel.getChart(), fsett).start();
     } catch (Exception ex) {
       ex.printStackTrace();
       ImageEditorWindow

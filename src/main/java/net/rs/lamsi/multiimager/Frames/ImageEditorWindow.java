@@ -667,7 +667,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		btnLoad.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// load in logicRunner
-				logicRunner.loadImage2DFromFile();
+				logicRunner.loadProjectFromFile();
 			}
 		});
 		moduleTreeImages.getPnOptions().add(btnLoad);
@@ -675,7 +675,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		JButton btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				logicRunner.saveImage2DToFile();
+				logicRunner.saveProjectToFile();
 			}
 		});
 		moduleTreeImages.getPnOptions().add(btnSave);

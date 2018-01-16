@@ -53,14 +53,13 @@ public class ChartExportUtil {
 
   /**
    * takes Only Width in account
-   * 
+   * resize chartpanel before
    * @param chart
    * @param sett
    * @throws Exception
    */
-  public static void writeChartToImage(ChartPanel chart, SettingsExportGraphics sett)
+  public static void writeChartToImageOLD(ChartPanel chart, SettingsExportGraphics sett)
       throws Exception {
-    boolean repaint = false;
     // size for plot or chart
     FIXED_SIZE fixed = sett.getFixedSize();
 
@@ -83,8 +82,7 @@ public class ChartExportUtil {
     // sett.setResolution(72);
     // resized = true;
     // }
-
-    // Size only by width?
+ // Size only by width?
     if (sett.isUseOnlyWidth()) {
       // fixed size for chart or plot
       if (fixed.equals(FIXED_SIZE.CHART)) {
@@ -103,11 +101,7 @@ public class ChartExportUtil {
     chart.setPreferredSize(sett.getSize());
     chart.setMaximumSize(sett.getSize());
     chart.setMinimumSize(sett.getSize());
-    // repaint
-    if (repaint) {
-      chart.revalidate();
-      chart.repaint();
-    }
+    
     writeChartToImage(chart.getChart(), sett);
 
     // NOT WORKING
@@ -127,7 +121,7 @@ public class ChartExportUtil {
    * @param chart
    * @param sett
    */
-  private static void writeChartToImage(JFreeChart chart, SettingsExportGraphics sett)
+  public static void writeChartToImage(JFreeChart chart, SettingsExportGraphics sett)
       throws Exception {
     // Background color
     Paint saved = chart.getBackgroundPaint();

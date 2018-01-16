@@ -142,26 +142,38 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
     // set dimensions to chartpanel
     // set height
     try {
+        
       setAllSettings(SettingsHolder.getSettings());
       SettingsExportGraphics sett =
           (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
 
       DecimalFormat form = new DecimalFormat("#.###");
-      if (sett.isUseOnlyWidth()) {
-        double height =
-            (ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth(), false));
 
-        sett.setSize((Float.valueOf(getTxtWidth().getText())),
-            SettingsImageResolution.changeUnit((float) height, DIM_UNIT.PX, sett.getUnit()),
-            sett.getUnit());
-        getTxtHeight().setText("" + form.format(sett.getSizeInUnit().getHeight()));
+      // Size only by width?
+        if (sett.isUseOnlyWidth()) {
+          // fixed size for chart or plot
+          if (sett.getFixedSize().equals(FIXED_SIZE.CHART)) {
+            sett.setHeight(ChartLogics.calcHeightToWidth(chartPanel, sett.getSize().getWidth(), false));
+          } else {
+            // fixed plot width
+            sett.setSize(ChartLogics.calcSizeForPlotWidth(chartPanel, sett.getSize().getWidth()));
+          }
+          getTxtHeight().setText("" + form.format(sett.getSizeInUnit().getHeight()));
+        } 
+        // width and height size for plot
+        else if (sett.getFixedSize().equals(FIXED_SIZE.PLOT)) {
+          // fixed plot size - width and height are given
+          sett.setSize(ChartLogics.calcSizeForPlotSize(chartPanel, sett.getSize().getWidth(),
+              sett.getSize().getHeight()));
+          getTxtHeight().setText("" + form.format(sett.getSizeInUnit().getHeight()));
+        }
 
-        chartPanel.setSize(sett.getSize());
+        // resize
+        chartPanel.setMaximumSize(sett.getSize());
+        chartPanel.setMinimumSize(sett.getSize());
+        chartPanel.setPreferredSize(sett.getSize());
+        chartPanel.revalidate();
         getPnChartPreview().repaint();
-      } else {
-        chartPanel.setSize((int) sett.getSize().getWidth(), (int) sett.getSize().getHeight());
-        chartPanel.repaint();
-      }
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -213,7 +225,14 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
           (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
       try {
         ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(), LOG.MESSAGE);
-        ChartExportUtil.writeChartToImage(chartPanel, sett);
+
+        applyMaxPathLengthToSett(sett);
+        
+        renewPreview();
+
+        // export size
+        final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
+        new GraphicsExportThread(chartPanel.getChart(), fsett).start();
       } catch (Exception e) {
         e.printStackTrace();
         ImageEditorWindow.log("File not written.", LOG.ERROR);
@@ -587,6 +606,19 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
         buttonPane.add(cancelButton);
       }
     }
+  }
+
+
+  /**
+   * Apply max length to real path
+   * 
+   * @param sett
+   */
+  protected void applyMaxPathLengthToSett(SettingsExportGraphics sett) {
+    File f = sett.getFullFilePath();
+    f = FileAndPathUtil.applyMaxLength(f);
+    sett.setFileName(FileAndPathUtil.eraseFormat(f.getName()));
+    sett.setPath(f.getParentFile());
   }
 
   public JRadioButton getRbPDF() {
