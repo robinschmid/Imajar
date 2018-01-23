@@ -17,7 +17,7 @@ import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.heatmap.IXYZDataset;
-import net.rs.lamsi.general.myfreechart.Plot.image2d.ImageRenderer;
+import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;

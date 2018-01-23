@@ -9,7 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
+import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 

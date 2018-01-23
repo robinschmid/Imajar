@@ -33,7 +33,7 @@ import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;

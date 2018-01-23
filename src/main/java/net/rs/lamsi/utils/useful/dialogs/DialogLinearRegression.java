@@ -11,7 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
-import net.rs.lamsi.general.myfreechart.Plot.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 

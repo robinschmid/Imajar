@@ -7,7 +7,7 @@ import java.text.NumberFormat;
 import java.util.Vector;
 
 import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.myfreechart.Plot.image2d.annot.ScaleInPlot;
+import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;

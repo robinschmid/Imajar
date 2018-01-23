@@ -1,12 +1,12 @@
 package net.rs.lamsi.massimager.MyMZ;
 
-import net.rs.lamsi.general.myfreechart.Plot.xylinechart.PlotXYLineChartPanel;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import net.rs.lamsi.general.myfreechart.plots.xylinechart.PlotXYLineChartPanel;
 
 public class MZChromatogram extends XYSeries {
 	 

@@ -52,7 +52,7 @@ import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.framework.modules.ModuleListWithOptions;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.Plot.spectra.PlotSpectraLineAndShapeRenderer;
+import net.rs.lamsi.general.myfreechart.plots.spectra.PlotSpectraLineAndShapeRenderer;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
