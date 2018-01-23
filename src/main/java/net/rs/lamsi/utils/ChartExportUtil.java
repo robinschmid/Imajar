@@ -17,6 +17,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import javax.swing.JMenuItem;
+
 import org.apache.batik.anim.dom.SVGDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.svggen.SVGGraphics2DIOException;
@@ -38,11 +40,13 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FIXED_SIZE;
 import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
+import net.sf.mzmine.util.files.FileAndPathUtil;
 
 /**
  * only export of charts to images
@@ -51,6 +55,19 @@ import net.sf.epsgraphics.EpsGraphics;
  *
  */
 public class ChartExportUtil {
+
+	  /**
+	   * Add export dialog to popup menu of a chartpanel
+	   * 
+	   * @param plotChartPanel
+	   */
+	  public static void addExportDialogToMenu(final ChartPanel cp) {
+	    JMenuItem exportGraphics = new JMenuItem("Export graphics...");
+	    exportGraphics.addActionListener(e -> GraphicsExportDialog.openDialog(cp.getChart()));
+	    // add to menu
+	    cp.getPopupMenu().add(exportGraphics);
+	  }
+	  
 	// ######################################################################################
 	// VECTORS: PDF uses ITextpdf lib
 
@@ -400,3 +417,4 @@ public class ChartExportUtil {
 		}
 	}
 }
+

@@ -21,9 +21,12 @@ package net.rs.lamsi.general.myfreechart.listener;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+
 import javax.swing.JPanel;
+
 import org.jfree.chart.ChartPanel;
-import net.sf.mzmine.chartbasics.ChartLogics;
+
+import net.rs.lamsi.general.myfreechart.ChartLogics;
 
 /**
  * override component Resize test for resize and call resize fucntion

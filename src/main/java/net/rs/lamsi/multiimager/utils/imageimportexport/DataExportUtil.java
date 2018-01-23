@@ -292,7 +292,7 @@ public class DataExportUtil {
         total += realtitle + "\n";
       }
       // content
-      total += ClipboardWriter.dataToTabSepString(data);
+      total += ClipboardWriter.dataToTabSepString(data, true);
       ClipboardWriter.writeToClipBoard(total);
 
       DialogLoggerUtil.showMessageDialogForTime(null, "Succeed",
@@ -317,7 +317,7 @@ public class DataExportUtil {
       if (title != null)
         xwriter.writeLine(sheet, title, 0, 0);
       // write data
-      xwriter.writeDataArrayToSheet(sheet, data, 0, title == null ? 0 : 1);
+      xwriter.writeDataArrayToSheet(sheet, data, 0, title == null ? 0 : 1, true);
       // final
       lastwb = wb;
       if (lastFile || !sett.isSavesAllFilesToOneXLS()) {
@@ -454,7 +454,7 @@ public class DataExportUtil {
             addProgressStep(1.0 / tableRows.size());
           }
 
-          String s = ClipboardWriter.dataToTabSepString(erows);
+          String s = ClipboardWriter.dataToTabSepString(erows, true);
           s = s + "\n\nOnly selected, not excluded data points\n"
               + ClipboardWriter.dataToTabSepString(dataSelected);
 

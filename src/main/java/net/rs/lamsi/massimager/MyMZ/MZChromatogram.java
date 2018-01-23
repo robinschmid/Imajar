@@ -6,7 +6,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import net.rs.lamsi.general.myfreechart.plots.xylinechart.PlotXYLineChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
 
 public class MZChromatogram extends XYSeries {
 	 
@@ -34,15 +34,15 @@ public class MZChromatogram extends XYSeries {
 
 	
 	// create a chart image
-	public PlotXYLineChartPanel getChromChartPanel(String title, String xtitle, String ytitle) {
-		PlotXYLineChartPanel myChart = new PlotXYLineChartPanel(getChromChart(title, xtitle, ytitle)); 
+	public EChartPanel getChromChartPanel(String title, String xtitle, String ytitle) {
+		EChartPanel myChart = new EChartPanel(getChromChart(title, xtitle, ytitle)); 
         myChart.setMouseWheelEnabled(true); 
         return myChart;
 	} 
 
 	// create a chart image
-	public static PlotXYLineChartPanel getChromChartPanelFromVector(String title, String xtitle, String ytitle, MZChromatogram[] listMZChrom) { 
-		PlotXYLineChartPanel myChart = new PlotXYLineChartPanel(getChromChartFromVector(title, xtitle, ytitle, listMZChrom)); 
+	public static EChartPanel getChromChartPanelFromVector(String title, String xtitle, String ytitle, MZChromatogram[] listMZChrom) { 
+		EChartPanel myChart = new EChartPanel(getChromChartFromVector(title, xtitle, ytitle, listMZChrom)); 
         myChart.setMouseWheelEnabled(true); 
         return myChart;
 	}

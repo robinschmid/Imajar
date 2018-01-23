@@ -513,11 +513,11 @@ public class SettingsSelections extends Settings implements Serializable, Image2
 
 			// write xyz matrix
 			if(sett.isX())
-				xwriter.writeDataArrayToSheet(shX, x, 0, 0);
+				xwriter.writeDataArrayToSheet(shX, x, 0, 0, true);
 			if(sett.isY())
-				xwriter.writeDataArrayToSheet(shY, y, 0, 0);
+				xwriter.writeDataArrayToSheet(shY, y, 0, 0, true);
 			if(sett.isZ())
-				xwriter.writeDataArrayToSheet(shZ, z, 0, 0);
+				xwriter.writeDataArrayToSheet(shZ, z, 0, 0, true);
 			//
 			boolean usey = y[0]==y[1];
 			// count excluded and selected

@@ -24,20 +24,21 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.TitleEntity;
 import org.jfree.data.Range;
 
+import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Button;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Entity;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Event;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Key;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureDragDiffHandler.Orientation;
+import net.rs.lamsi.general.myfreechart.gestures.def.DragGestureHandlerDef;
+import net.rs.lamsi.general.myfreechart.gestures.def.GestureHandlerDef;
 import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
-import net.rs.lamsi.general.myfreechart.gestures.standard.DragGestureHandlerDef;
-import net.rs.lamsi.general.myfreechart.gestures.standard.GestureHandlerDef;
 import net.rs.lamsi.general.myfreechart.listener.ZoomHistory;
-import net.sf.mzmine.chartbasics.ChartLogics;
 
 /**
  * The handler processes {@link ChartGestureEvent}s in a {@link Consumer}. Pre-defined handlers and

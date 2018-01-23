@@ -5,7 +5,6 @@ import java.awt.Color;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
@@ -15,8 +14,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import net.sf.mzmine.chartbasics.ChartLogics;
-import net.sf.mzmine.chartbasics.EChartPanel;
+import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
 
 public class XYSquaredPlotDemo {
 	/** Creates a new instance of SquaredXYPlotDemo */

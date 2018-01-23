@@ -21,6 +21,7 @@ package net.rs.lamsi.general.myfreechart.gestures;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
@@ -28,10 +29,10 @@ import org.jfree.chart.entity.AxisEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.plot.PlotOrientation;
 
+import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Entity;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Event;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Key;
-import net.sf.mzmine.chartbasics.ChartLogics;
 
 /**
  * {@link ChartGesture}s are part of {@link ChartGestureEvent} which are generated and processed by

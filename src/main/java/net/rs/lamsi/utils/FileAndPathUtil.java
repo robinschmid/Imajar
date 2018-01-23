@@ -6,52 +6,50 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+
 import org.apache.commons.io.FilenameUtils;
+
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
+/**
+ * Simple file operations
+ * 
+ * @author Robin Schmid (robinschmid@uni-muenster.de)
+ */
 public class FileAndPathUtil {
 
-  public static final int MAX_LENGTH = 255;
-
-  public static void main(String[] args) {
-    File f = new File("D://test/t1.png");
-    System.out.println(f);
-    f = applyMaxLength(f);
-    System.out.println(f.getAbsolutePath());
-  }
-
-  /**
-   * Limits a path (file and all parent folders) to a chars limit
-   * 
-   * @param f
-   * @return
-   */
-  public static File applyMaxLength(File f) {
-    File parent = f.getParentFile();
-    String name = f.getName();
-    // apply max length to parent
-    if (parent != null)
-      parent = applyMaxLength(parent);
-    // apply length to f name
-    if (name.length() > MAX_LENGTH) {
-      if (f.isFile()) {
-        String ext = FilenameUtils.getExtension(name);
-        name = eraseFormat(name);
-        int end = MAX_LENGTH - ext.length() - 1;
-        name = name.substring(0, end) + "." + ext;
-      }
-    }
-    // return new file
-    if (parent == null)
-      if (name == null || name.isEmpty())
-        return f;
-      else
-        return new File(name);
-    else
-      return new File(parent, name);
-  }
-
+	  public static final int MAX_LENGTH = 255;
+	  /**
+	   * Limits a path (file and all parent folders) to a chars limit
+	   * 
+	   * @param f
+	   * @return
+	   */
+	  public static File applyMaxLength(File f) {
+	    File parent = f.getParentFile();
+	    String name = f.getName();
+	    // apply max length to parent
+	    if (parent != null)
+	      parent = applyMaxLength(parent);
+	    // apply length to f name
+	    if (name.length() > MAX_LENGTH) {
+	      if (f.isFile()) {
+	        String ext = FilenameUtils.getExtension(name);
+	        name = eraseFormat(name);
+	        int end = MAX_LENGTH - ext.length() - 1;
+	        name = name.substring(0, end) + "." + ext;
+	      }
+	    }
+	    // return new file
+	    if (parent == null)
+	      if (name == null || name.isEmpty())
+	        return f;
+	      else
+	        return new File(name);
+	    else
+	      return new File(parent, name);
+	  }
   /**
    * Returns the real file path as path/filename.fileformat
    * 
@@ -73,13 +71,8 @@ public class FileAndPathUtil {
    * @return
    * @throws Exception if there is no filname (selected path = folder)
    */
-  public static File getRealFilePath(File filepath, String format) throws Exception {
-    if (!isOnlyAFolder(filepath)) {
-      return new File(getFileAsFolder(filepath),
-          getRealFileName(getFileNameFromPath(filepath), format));
-    } else {
-      throw new Exception("No filename. selected path = folder");
-    }
+  public static File getRealFilePath(File filepath, String format) {
+    return new File(filepath.getParentFile(), getRealFileName(filepath.getName(), format));
   }
 
   /**
@@ -175,7 +168,7 @@ public class FileAndPathUtil {
   }
 
   /**
-   * Returns the file if it is already a folder. Or the parent folder if file is a data file
+   * Returns the file if it is already a folder. Or the parent folder if the file is a data file
    * 
    * @param file
    * @return
@@ -188,7 +181,7 @@ public class FileAndPathUtil {
   }
 
   /**
-   * Returns the file name from a given file. If file is a folder it returns an empty String
+   * Returns the file name from a given file. If file is a folder an empty String is returned
    * 
    * @param file
    * @return
@@ -201,7 +194,7 @@ public class FileAndPathUtil {
   }
 
   /**
-   * Returns the file name from a given file. If file is a folder it returns an empty String
+   * Returns the file name from a given file. If the file is a folder an empty String is returned
    * 
    * @param file
    * @return
@@ -211,14 +204,14 @@ public class FileAndPathUtil {
   }
 
   /**
-   * Checks if given File is a folder or a data file
+   * Checks if a given File is a folder or a data file
    */
   public static boolean isOnlyAFolder(File file) {
     return isOnlyAFolder(file.getAbsolutePath());
   }
 
   /**
-   * Checks if given File is a folder or a data file
+   * Checks if a given File is a folder or a data file
    */
   public static boolean isOnlyAFolder(String file) {
     String realPath = file;
@@ -240,10 +233,10 @@ public class FileAndPathUtil {
   }
 
   /**
-   * creates a new directory
+   * Creates a new directory.
    * 
    * @param theDir
-   * @return false only if directory was not created
+   * @return false if directory was not created
    */
   public static boolean createDirectory(File theDir) {
     // if the directory does not exist, create it
@@ -262,7 +255,7 @@ public class FileAndPathUtil {
 
 
   /**
-   * sort an array of files these files must have an number at the end
+   * Sort an array of files These files have to start or end with a number
    * 
    * @param files
    * @return
@@ -335,7 +328,7 @@ public class FileAndPathUtil {
   }
 
   /**
-   * only all directories in the dir f will be returned
+   * Lists all directories in directory f
    * 
    * @param f
    * @return
@@ -368,45 +361,45 @@ public class FileAndPathUtil {
   }
 
   public static List<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter,
-      boolean searchSubdir, boolean filesInSeparateFolders) {
-    DebugStopWatch t = new DebugStopWatch();
-    File[] subDir = FileAndPathUtil.getSubDirectories(dir);
-    t.stopAndLOG(" found " + subDir.length + " sub directories in " + dir.getName());
-    // result: each vector element stands for one img
-    ArrayList<File[]> list = new ArrayList<File[]>();
-    // add all files as first image
-    // sort all files and return them
-    t.setNewStartTime();
-    File[] files = dir.listFiles(fileFilter);
-    t.stopAndLOG(" listing all " + files.length + " files in " + dir.getName());
-    t.setNewStartTime();
-    files = FileAndPathUtil.sortFilesByNumber(files);
-    t.stopAndLOG(" sorting all " + files.length + " files in " + dir.getName());
-    if (files != null && files.length > 0)
-      list.add(files);
+	      boolean searchSubdir, boolean filesInSeparateFolders) {
+	    DebugStopWatch t = new DebugStopWatch();
+	    File[] subDir = FileAndPathUtil.getSubDirectories(dir);
+	    t.stopAndLOG(" found " + subDir.length + " sub directories in " + dir.getName());
+	    // result: each vector element stands for one img
+	    ArrayList<File[]> list = new ArrayList<File[]>();
+	    // add all files as first image
+	    // sort all files and return them
+	    t.setNewStartTime();
+	    File[] files = dir.listFiles(fileFilter);
+	    t.stopAndLOG(" listing all " + files.length + " files in " + dir.getName());
+	    t.setNewStartTime();
+	    files = FileAndPathUtil.sortFilesByNumber(files);
+	    t.stopAndLOG(" sorting all " + files.length + " files in " + dir.getName());
+	    if (files != null && files.length > 0)
+	      list.add(files);
 
-    if (subDir == null || subDir.length <= 0 || !searchSubdir) {
-      // no subdir end directly
-      return list;
-    } else {
-      // sort dirs
-      t.setNewStartTime();
-      subDir = FileAndPathUtil.sortFilesByNumber(subDir);
-      t.stopAndLOG(" sorting all " + subDir.length + " sub directories in " + dir.getName());
-      // go in all sub and subsub... folders to find files
-      if (filesInSeparateFolders) {
-        t.setNewStartTime();
-        findFilesInSubDirSeparatedFolders(dir, subDir, list, fileFilter);
-        t.stopAndLOG(" finding files in sub directories (FILES IN SEPARATE FOLDERS)");
-      } else {
-        t.setNewStartTime();
-        findFilesInSubDir(subDir, list, fileFilter);
-        t.stopAndLOG(" finding files in sub directories");
-      }
-      // return as array (unsorted because they are sorted folder wise)
-      return list;
-    }
-  }
+	    if (subDir == null || subDir.length <= 0 || !searchSubdir) {
+	      // no subdir end directly
+	      return list;
+	    } else {
+	      // sort dirs
+	      t.setNewStartTime();
+	      subDir = FileAndPathUtil.sortFilesByNumber(subDir);
+	      t.stopAndLOG(" sorting all " + subDir.length + " sub directories in " + dir.getName());
+	      // go in all sub and subsub... folders to find files
+	      if (filesInSeparateFolders) {
+	        t.setNewStartTime();
+	        findFilesInSubDirSeparatedFolders(dir, subDir, list, fileFilter);
+	        t.stopAndLOG(" finding files in sub directories (FILES IN SEPARATE FOLDERS)");
+	      } else {
+	        t.setNewStartTime();
+	        findFilesInSubDir(subDir, list, fileFilter);
+	        t.stopAndLOG(" finding files in sub directories");
+	      }
+	      // return as array (unsorted because they are sorted folder wise)
+	      return list;
+	    }
+	  }
 
   /**
    * go into all subfolders and find all files and go in further subfolders files stored in separate
@@ -450,8 +443,7 @@ public class FileAndPathUtil {
 
 
   /**
-   * go into all subfolders and find all files and go in further subfolders files stored one image
-   * in one folder!
+   * Go into all sub-folders and find all files files stored one image in one folder!
    * 
    * @param dir musst be sorted!
    * @param list
@@ -474,7 +466,7 @@ public class FileAndPathUtil {
   }
 
   /**
-   * returns the Path of Jar
+   * The Path of the Jar.
    * 
    * @return
    */

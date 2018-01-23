@@ -706,18 +706,18 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 			XSSFWorkbook wb = new XSSFWorkbook();
 			// write table 
 			XSSFSheet sheet = writer.getSheet(wb, "table"); 
-			writer.writeDataArrayToSheet(sheet, tableModel.toArray(true), 0, 0);
+			writer.writeDataArrayToSheet(sheet, tableModel.toArray(true), 0, 0, true);
 			
 			// map
 			updateMap();
 			sheet = writer.getSheet(wb, "map");
-			writer.writeDataArrayToSheet(sheet, map, 0, 0);
+			writer.writeDataArrayToSheet(sheet, map, 0, 0, true);
 
 			// multi map 
 			if(isBinaryMapAvailable()) {
 				sheet = writer.getSheet(wb, "multimap");
 				Object[][] bmap = group.createBinaryMap(); 
-				writer.writeDataArrayToSheet(sheet, bmap, 0, 0); 
+				writer.writeDataArrayToSheet(sheet, bmap, 0, 0, true); 
 			}
 
 			// write all images 
@@ -725,7 +725,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 				updateChart(i);
 				// export to new file
 				sheet = writer.getSheet(wb, i+" "+group.get(i).getTitle());
-				writer.writeDataArrayToSheet(sheet, ((Image2D)group.get(i)).toIMatrix(true,map), 0, 0); 
+				writer.writeDataArrayToSheet(sheet, ((Image2D)group.get(i)).toIMatrix(true,map), 0, 0, true); 
 			}
 
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);
@@ -766,7 +766,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 			XSSFExcelWriterReader writer = new XSSFExcelWriterReader();
 			XSSFWorkbook wb = new XSSFWorkbook();
 			XSSFSheet sheet = writer.getSheet(wb, "map");
-			writer.writeDataArrayToSheet(sheet, map, 0, 0);
+			writer.writeDataArrayToSheet(sheet, map, 0, 0, true);
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);
 			writer.closeAllWorkbooks();
 			// show dialog
@@ -806,7 +806,7 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 			XSSFExcelWriterReader writer = new XSSFExcelWriterReader();
 			XSSFWorkbook wb = new XSSFWorkbook();
 			XSSFSheet sheet = writer.getSheet(wb, "map");
-			writer.writeDataArrayToSheet(sheet, bmap, 0, 0);
+			writer.writeDataArrayToSheet(sheet, bmap, 0, 0, true);
 			writer.saveWbToFile(new File(FileAndPathUtil.getRealFileName(file, "xlsx")), wb);
 			writer.closeAllWorkbooks();
 			// show dialog
