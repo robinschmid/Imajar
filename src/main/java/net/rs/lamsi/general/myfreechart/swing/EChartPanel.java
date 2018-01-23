@@ -16,7 +16,7 @@
  * USA
  */
 
-package net.rs.lamsi.general.myfreechart.plots;
+package net.rs.lamsi.general.myfreechart.swing;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,21 +31,24 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYAnnotation;
+import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.data.Range;
 import org.jfree.data.RangeType;
 import org.jfree.data.xy.XYDataset;
 
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
 import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
-import net.rs.lamsi.general.myfreechart.listener.AspectRatioListener;
 import net.rs.lamsi.general.myfreechart.listener.AxesRangeChangedListener;
+import net.rs.lamsi.general.myfreechart.listener.AxisRangeChangedEvent;
 import net.rs.lamsi.general.myfreechart.listener.AxisRangeChangedListener;
-import net.rs.lamsi.general.myfreechart.listener.ZoomHistory;
+import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.menus.MenuExportToClipboard;
 import net.rs.lamsi.general.myfreechart.menus.MenuExportToExcel;
+import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
@@ -60,7 +63,6 @@ public class EChartPanel extends ChartPanel {
 
   protected ZoomHistory zoomHistory;
   protected List<AxesRangeChangedListener> axesRangeListener;
-  protected AspectRatioListener aspectRatioListener;
   protected boolean isMouseZoomable = true;
   protected ChartGestureMouseAdapter mouseAdapter;
 
@@ -137,6 +139,21 @@ public class EChartPanel extends ChartPanel {
     // add gestures
     if (standardGestures)
       addStandardGestures();
+    
+    // images only
+	// try to find in plot scale
+    // set this chart panel
+	List list = chart.getXYPlot().getAnnotations();
+	for(int i=0; i<list.size(); i++) {
+		XYAnnotation ann = (XYAnnotation) list.get(i); 
+		if(XYTitleAnnotation.class.isInstance(ann)) {
+			XYTitleAnnotation annt = (XYTitleAnnotation)ann;
+			if(ScaleInPlot.class.isInstance(annt.getTitle())) {
+				((ScaleInPlot)annt.getTitle()).setChartPanel(this);
+				break;
+			}
+		}
+	}
   }
 
   /**
@@ -177,32 +194,10 @@ public class EChartPanel extends ChartPanel {
     ValueAxis rangeAxis = this.getChart().getXYPlot().getRangeAxis();
     ValueAxis domainAxis = this.getChart().getXYPlot().getDomainAxis();
     if (rangeAxis != null) {
-      rangeAxis.addChangeListener(new AxisRangeChangedListener(this) {
-        @Override
-        public void axisRangeChanged(ChartPanel chart, ValueAxis axis, Range lastR, Range newR) {
-          // resize according to aspect ratio of domain to range axis
-          if (aspectRatioListener != null)
-            aspectRatioListener.resize(chartPanel);
-          // notify listeners of changed range
-          if (axesRangeListener != null)
-            for (AxesRangeChangedListener l : axesRangeListener)
-              l.axesRangeChanged(chartPanel, axis, lastR, newR);
-        }
-      });
+      rangeAxis.addChangeListener(new AxisRangeChangedListener(this, e -> axesRangeChanged(e)));
     }
     if (domainAxis != null) {
-      domainAxis.addChangeListener(new AxisRangeChangedListener(this) {
-        @Override
-        public void axisRangeChanged(ChartPanel chart, ValueAxis axis, Range lastR, Range newR) {
-          // resize according to aspect ratio of domain to range axis
-          if (aspectRatioListener != null)
-            aspectRatioListener.resize(chartPanel);
-          // notify listeners of changed range
-          if (axesRangeListener != null)
-            for (AxesRangeChangedListener l : axesRangeListener)
-              l.axesRangeChanged(chartPanel, axis, lastR, newR);
-        }
-      });
+      domainAxis.addChangeListener(new AxisRangeChangedListener(this, e -> axesRangeChanged(e)));
     }
 
     // mouse adapter for scrolling and zooming
@@ -211,6 +206,16 @@ public class EChartPanel extends ChartPanel {
     this.addMouseListener(mouseAdapter);
     this.addMouseMotionListener(mouseAdapter);
     this.addMouseWheelListener(mouseAdapter);
+  }
+  
+  /**
+   * notify listeners of changed range
+   * @param e
+   */
+  private void axesRangeChanged(AxisRangeChangedEvent e) {
+      if (axesRangeListener != null)
+        for (AxesRangeChangedListener l : axesRangeListener)
+          l.axesRangeChanged(e);
   }
 
   @Override
@@ -267,7 +272,7 @@ public class EChartPanel extends ChartPanel {
     this.getPopupMenu().addSeparator();
     if (graphics) {
       // Graphics Export
-      ChartExportUtil.addExportDialogToMenu(this);
+      ChartExportUtil.addExportDialogToMenu(this, e -> openGraphicsExportDialog());
     }
     if (data) {
       // General data export
@@ -284,7 +289,11 @@ public class EChartPanel extends ChartPanel {
     }
   }
 
-  public void addPopupMenuItem(JMenuItem item) {
+  protected void openGraphicsExportDialog() {
+	  GraphicsExportDialog.openDialog(this.getChart());
+  }
+
+public void addPopupMenuItem(JMenuItem item) {
     this.getPopupMenu().add(item);
   }
 
@@ -317,19 +326,6 @@ public class EChartPanel extends ChartPanel {
           ChartUtils.saveChartAsPNG(new File(filename), getChart(),
                   getWidth(), getHeight(), getChartRenderingInfo());
       }
-  }
-
-  /**
-   * AspectRatioListener needed if domain and range axes share the same dimension
-   * 
-   * @param listener
-   */
-  public void setAspectRatioListener(AspectRatioListener listener) {
-    aspectRatioListener = listener;
-  }
-
-  public AspectRatioListener getAspectRatioListener() {
-    return aspectRatioListener;
   }
 
   public void addAxesRangeChangedListener(AxesRangeChangedListener l) {

@@ -6,7 +6,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 
 public class MZChromatogram extends XYSeries {
 	 

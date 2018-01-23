@@ -23,13 +23,13 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
@@ -267,7 +267,7 @@ public class HeatmapFactory {
 		chart.setBorderVisible(true); 
 
 		// ChartPanel
-		PlotChartPanel chartPanel = new PlotChartPanel(chart); 
+		EChartPanel chartPanel = new EChartPanel(chart); 
 
 		// add scale legend
 		ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);

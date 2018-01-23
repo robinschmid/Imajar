@@ -18,20 +18,29 @@
 
 package net.rs.lamsi.general.myfreechart.listener;
 
+import java.util.function.Consumer;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.AxisChangeEvent;
 import org.jfree.chart.event.AxisChangeListener;
 import org.jfree.data.Range;
 
-public abstract class AxisRangeChangedListener implements AxisChangeListener {
+public class AxisRangeChangedListener implements AxisChangeListener {
 
   // last lower / upper range
   private Range lastRange = null;
   private ChartPanel chart;
+  private Consumer<AxisRangeChangedEvent> c;
 
-  public AxisRangeChangedListener(ChartPanel cp) {
+  /**
+   * Only if newRange is different to lastRange
+   * @param cp
+   * @param c Consumer of AxisRangeChangedEvents
+   */
+  public AxisRangeChangedListener(ChartPanel cp, Consumer<AxisRangeChangedEvent> c) {
     chart = cp;
+    this.c = c;
   }
 
   @Override
@@ -41,7 +50,7 @@ public abstract class AxisRangeChangedListener implements AxisChangeListener {
 
     if (r != null && (lastRange == null || !r.equals(lastRange))) {
       // range has changed
-      axisRangeChanged(chart, a, lastRange, r);
+      axisRangeChanged(new AxisRangeChangedEvent(chart, a, lastRange, r));
     }
     lastRange = r;
   }
@@ -53,5 +62,7 @@ public abstract class AxisRangeChangedListener implements AxisChangeListener {
    * @param lastR
    * @param newR
    */
-  public abstract void axisRangeChanged(ChartPanel chart, ValueAxis axis, Range lastR, Range newR);
+  public void axisRangeChanged(AxisRangeChangedEvent e) {
+	  c.accept(e);
+  }
 }

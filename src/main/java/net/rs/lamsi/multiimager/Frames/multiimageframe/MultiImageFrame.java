@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -32,6 +31,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.Range;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
@@ -41,11 +47,9 @@ import net.rs.lamsi.general.framework.basics.RangeSliderColumn;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
-import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
-import net.rs.lamsi.general.myfreechart.plots.image2d.listener.AspectRatioListener;
-import net.rs.lamsi.general.myfreechart.plots.image2d.listener.AxesRangeChangedListener;
-import net.rs.lamsi.general.myfreechart.plots.image2d.listener.AspectRatioListener.RATIO;
+import net.rs.lamsi.general.myfreechart.listener.AspectRatioListener;
+import net.rs.lamsi.general.myfreechart.listener.ChartZoomConnector;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -54,14 +58,9 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
+import net.sf.mzmine.framework.chartbasics.PlotChartPanel;
 
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.Range;
-
-public class MultiImageFrame extends JFrame implements AxesRangeChangedListener {
+public class MultiImageFrame extends JFrame {
 
 	private JFrame thisframe;
 	private JPanel contentPane;
@@ -80,6 +79,9 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 	private Heatmap[] heat;
 	// panels in each grid
 	private JPanel pn[];
+	
+	// same zoom
+	private ChartZoomConnector zoomConnect;
 
 	// boolean map for visible pixel according to range limitations of other images
 	// map[lines][dp]
@@ -559,11 +561,10 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		// add to grid view
 		if(heat[imgIndex]!=null) { 
 			final Heatmap h = heat[imgIndex];
-			PlotChartPanel cp = h.getChartPanel();
+			EChartPanel cp = h.getChartPanel();
 			cp.setPreferredSize(new Dimension(50,50)); 
 			pn[gi].add(cp, BorderLayout.CENTER);
 		}
-		doNotListenForAxesRanges = false;
 		if(repaint) {
 			getPnGridImg().revalidate();
 			getPnGridImg().repaint();
@@ -598,14 +599,21 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		try {
 				// generate heat if not already
 				if(heat[i]==null) {
+					if(zoomConnect==null)
+						zoomConnect = new ChartZoomConnector(e -> resizeHeatmaps());
+					zoomConnect.clear();
+					
 					heat[i] = HeatmapFactory.generateHeatmap(group.get(i)); 
+					
+					// add all charts
+					// set all to the same zoom factor
+					for(Heatmap h : heat)
+						if(h!=null)
+							zoomConnect.add(h.getChartPanel());
 					
 					// show axes?
 					heat[i].getPlot().getDomainAxis().setVisible(getCbShowAxes().isSelected());
 					heat[i].getPlot().getRangeAxis().setVisible(getCbShowAxes().isSelected());
-					
-					// listen for range changes
-					heat[i].getChartPanel().addAxesRangeChangedListener(this);
 					
 					// title?
 					XYPlot plot = heat[i].getPlot();
@@ -623,30 +631,6 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		}
 	}
 
-
-	private boolean doNotListenForAxesRanges = false;
-	@Override
-	public void axesRangeChanged(PlotChartPanel chart, ValueAxis axis, boolean isDomainAxis, Range lastR, Range newR) {
-		if(!doNotListenForAxesRanges) {
-			doNotListenForAxesRanges = true;
-			
-			for(Heatmap map : heat) {
-				PlotChartPanel pn = map.getChartPanel();
-				XYPlot plot = pn.getChart().getXYPlot();
-				if(!pn.equals(chart)) {
-					if(isDomainAxis) {
-						plot.getDomainAxis().setRange(newR);
-					}
-					else {
-						plot.getRangeAxis().setRange(newR);
-					}
-				}
-			}
-			doNotListenForAxesRanges = false;
-			resizeHeatmaps();
-		}
-	}
-	
 	/**
 	 * creates new chart for i
 	 * gets called after change in update grid view 
@@ -859,4 +843,5 @@ public class MultiImageFrame extends JFrame implements AxesRangeChangedListener 
 		}
 		return false;
 	}
+
 }

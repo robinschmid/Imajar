@@ -5,37 +5,33 @@ import java.awt.Font;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.ui.FloatDimension;
+
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
-import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FIXED_SIZE;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
-import net.rs.lamsi.general.settings.importexport.SettingsImageResolution;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
-import net.rs.lamsi.utils.threads.ProgressUpdateTask;
-import visad.Set;
 
 public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements SettingsPanel {
 
@@ -104,7 +100,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
         heat = HeatmapFactory.generateHeatmap(selected);
         addChartToPanel(heat.getChartPanel(), true);
       } else
-        addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()), true);
+        addChartToPanel(new EChartPanel((JFreeChart) chart.clone()), true);
       setVisible(true);
     } catch (Exception e) {
       e.printStackTrace();

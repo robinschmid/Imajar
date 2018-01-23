@@ -12,30 +12,29 @@ import org.jfree.chart.JFreeChart;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 
-public class PlotImage2DChartPanel extends PlotChartPanel {
+public class PlotImage2DChartPanel extends EChartPanel {
 	private Collectable2D img;
 
 	public PlotImage2DChartPanel(JFreeChart chart, Collectable2D img) {
 		super(chart, false);
 		this.img = img;
-		addExportMenu();
 	}
 
-	protected void exportGraphics() {
-		// open export Graphics dialog 
-		HeatmapGraphicsExportDialog.openDialog(getChart(), img); 
-	}
+	  protected void openGraphicsExportDialog() {
+			HeatmapGraphicsExportDialog.openDialog(getChart(), img); 
+	  }
 
 	@Override
-	protected void addExportMenu() {
-		super.addExportMenu();
+	protected void addExportMenu(boolean graphics, boolean data) {
+		super.addExportMenu(graphics, data);
 		
 		final PlotImage2DChartPanel thispanel = this;
 		

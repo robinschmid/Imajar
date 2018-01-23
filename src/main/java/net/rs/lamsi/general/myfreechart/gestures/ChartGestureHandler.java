@@ -38,7 +38,7 @@ import net.rs.lamsi.general.myfreechart.gestures.ChartGestureDragDiffHandler.Ori
 import net.rs.lamsi.general.myfreechart.gestures.def.DragGestureHandlerDef;
 import net.rs.lamsi.general.myfreechart.gestures.def.GestureHandlerDef;
 import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
-import net.rs.lamsi.general.myfreechart.listener.ZoomHistory;
+import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 
 /**
  * The handler processes {@link ChartGestureEvent}s in a {@link Consumer}. Pre-defined handlers and

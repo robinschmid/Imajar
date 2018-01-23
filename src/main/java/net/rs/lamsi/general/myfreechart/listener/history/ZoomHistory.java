@@ -16,12 +16,16 @@
  * USA
  */
 
-package net.rs.lamsi.general.myfreechart.listener;
+package net.rs.lamsi.general.myfreechart.listener.history;
 
 import java.util.LinkedList;
+
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.JFreeChart;
 import org.jfree.data.Range;
+
+import net.rs.lamsi.general.myfreechart.listener.AxesRangeChangedListener;
+import net.rs.lamsi.general.myfreechart.listener.AxisRangeChangedEvent;
 
 /**
  * The ZoomHistory stores all zoom states which are active for at least 1 second. It allows to jump
@@ -65,7 +69,7 @@ public class ZoomHistory extends AxesRangeChangedListener implements Runnable {
    * @param maxSize
    */
   public ZoomHistory(ChartPanel cp, int maxSize) {
-    super(cp);
+    super(cp, null);
     cp.putClientProperty(PROPERTY_NAME, this);
     history = new LinkedList<Range[]>();
     // max
@@ -73,10 +77,11 @@ public class ZoomHistory extends AxesRangeChangedListener implements Runnable {
   }
 
   @Override
-  public void axesRangeChanged(ChartPanel chart, ValueAxis axis, Range lastR, Range newR) {
+  public void axesRangeChanged(AxisRangeChangedEvent e) {
+	  JFreeChart chart = e.getChart().getChart();
     // ranges
-    Range dom = chart.getChart().getXYPlot().getDomainAxis().getRange();
-    Range ran = chart.getChart().getXYPlot().getRangeAxis().getRange();
+    Range dom = chart.getXYPlot().getDomainAxis().getRange();
+    Range ran = chart.getXYPlot().getRangeAxis().getRange();
     newRange = new Range[] {dom, ran};
 
     // set time
@@ -120,7 +125,10 @@ public class ZoomHistory extends AxesRangeChangedListener implements Runnable {
       Range[] r = history.get(i);
       if (newRange[0].equals(r[0]) && newRange[1].equals(r[1])) {
         found = true;
+        // jumpt to the position
         currentI = i;
+        // fire event
+        d
       }
     }
     if (!found) {
@@ -129,9 +137,12 @@ public class ZoomHistory extends AxesRangeChangedListener implements Runnable {
         history.removeFirst();
       history.addFirst(newRange);
 
+      // only keep maxSize steps
       if (history.size() > maxSize)
         history.removeLast();
       currentI = 0;
+      
+      // TODO fire event
     }
   }
 
@@ -177,6 +188,7 @@ public class ZoomHistory extends AxesRangeChangedListener implements Runnable {
     currentI++;
     if (currentI >= getSize())
       currentI = getSize() - 1;
+    // TODO fire event
     return getCurrentRange();
   }
 
@@ -189,6 +201,7 @@ public class ZoomHistory extends AxesRangeChangedListener implements Runnable {
     currentI--;
     if (currentI < 0)
       currentI = 0;
+    // TODO fire event 
     return getCurrentRange();
   }
 

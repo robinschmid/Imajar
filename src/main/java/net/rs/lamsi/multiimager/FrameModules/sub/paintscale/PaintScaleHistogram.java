@@ -16,7 +16,7 @@ import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.TextAnchor;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -26,7 +26,7 @@ public class PaintScaleHistogram extends JPanel {
 
 	private Image2D lastImg;
 	private SettingsPaintScale lastPS = null;
-	private PlotChartPanel chart =null;
+	private EChartPanel chart =null;
 	
 	private boolean isUptodate = false;
 	private double lastMin = Double.NaN, lastMax = Double.NaN;
@@ -127,7 +127,7 @@ public class PaintScaleHistogram extends JPanel {
 						
 											JFreeChart c = new JFreeChart(combined);
 											c.getLegend().setVisible(false);
-											chart = new PlotChartPanel(c);
+											chart = new EChartPanel(c);
 											
 											// add to panel
 											removeAll();

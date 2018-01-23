@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -55,15 +56,18 @@ import net.sf.mzmine.util.files.FileAndPathUtil;
  *
  */
 public class ChartExportUtil {
-
+	
 	  /**
 	   * Add export dialog to popup menu of a chartpanel
 	   * 
 	   * @param plotChartPanel
 	   */
 	  public static void addExportDialogToMenu(final ChartPanel cp) {
+		addExportDialogToMenu(cp, e -> GraphicsExportDialog.openDialog(cp.getChart()));
+	}
+	  public static void addExportDialogToMenu(final ChartPanel cp, ActionListener al) {
 	    JMenuItem exportGraphics = new JMenuItem("Export graphics...");
-	    exportGraphics.addActionListener(e -> GraphicsExportDialog.openDialog(cp.getChart()));
+	    exportGraphics.addActionListener(al);
 	    // add to menu
 	    cp.getPopupMenu().add(exportGraphics);
 	  }

@@ -18,6 +18,8 @@
 
 package net.rs.lamsi.general.myfreechart.listener;
 
+import java.util.function.Consumer;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.AxisChangeEvent;
@@ -29,19 +31,21 @@ import org.jfree.data.Range;
  * 
  * @author Robin Schmid (robinschmid@uni-muenster.de)
  */
-public abstract class AxesRangeChangedListener implements AxisChangeListener {
+public class AxesRangeChangedListener implements AxisChangeListener {
 
   // last lower / upper range
   private ValueAxis[] axis;
   private Range[] lastRange = null;
   private ChartPanel chart;
+  private Consumer<AxisRangeChangedEvent> c;
 
   /**
    * Creates no listeners. Needs to by notified by external AxisRangeChangedListeners
    */
-  public AxesRangeChangedListener(int axiscount) {
+  public AxesRangeChangedListener(int axiscount, Consumer<AxisRangeChangedEvent> c) {
     axis = new ValueAxis[axiscount];
     lastRange = new Range[axiscount];
+    this.c = c;
   }
 
   /**
@@ -49,8 +53,8 @@ public abstract class AxesRangeChangedListener implements AxisChangeListener {
    * 
    * @param cp
    */
-  public AxesRangeChangedListener(ChartPanel cp) {
-    this(2);
+  public AxesRangeChangedListener(ChartPanel cp, Consumer<AxisRangeChangedEvent> c) {
+    this(2, c);
     chart = cp;
     if (chart != null) {
       chart.getChart().getXYPlot().getDomainAxis().addChangeListener(this);
@@ -83,17 +87,19 @@ public abstract class AxesRangeChangedListener implements AxisChangeListener {
 
     if (r != null && (lastRange[i] == null || !r.equals(lastRange[i]))) {
       // range has changed
-      axesRangeChanged(chart, a, lastRange[i], r);
+      axesRangeChanged(new AxisRangeChangedEvent(chart, a, lastRange[i], r));
     }
     lastRange[i] = r;
   }
 
   /**
-   * only if axis range has changed
+   * only if an axis range has changed
    * 
    * @param axis
    * @param lastR
    * @param newR
    */
-  public abstract void axesRangeChanged(ChartPanel chart, ValueAxis axis, Range lastR, Range newR);
+  public void axesRangeChanged(AxisRangeChangedEvent e) {
+	  c.accept(e);
+  }
 }

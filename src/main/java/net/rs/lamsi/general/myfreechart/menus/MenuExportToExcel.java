@@ -29,7 +29,7 @@ import javax.swing.JMenuItem;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 

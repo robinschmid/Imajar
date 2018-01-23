@@ -11,16 +11,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
-import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 
 public class DialogLinearRegression extends JFrame {
 
@@ -125,7 +126,7 @@ public class DialogLinearRegression extends JFrame {
 		renderer.setDrawYError(true);
 		renderer.setDrawXError(false);
 		
-		PlotChartPanel pn = new PlotChartPanel(chart);
+		ChartPanel pn = new EChartPanel(chart);
 		d.getPnChartView().add(pn, BorderLayout.CENTER);
 		return d;
 	}

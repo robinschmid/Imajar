@@ -23,7 +23,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JMenuItem;
 
-import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
 
 

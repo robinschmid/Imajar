@@ -10,7 +10,6 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -56,9 +55,6 @@ import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.data.Range;
-
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
@@ -74,10 +70,10 @@ import net.rs.lamsi.general.framework.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
-import net.rs.lamsi.general.myfreechart.plots.image2d.listener.AspectRatioListener;
-import net.rs.lamsi.general.myfreechart.plots.image2d.listener.AxesRangeChangedListener;
-import net.rs.lamsi.general.myfreechart.plots.image2d.listener.AspectRatioListener.RATIO;
+import net.rs.lamsi.general.myfreechart.listener.AspectRatioListener;
+import net.rs.lamsi.general.myfreechart.listener.AxesRangeChangedListener;
+import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
@@ -155,8 +151,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	// Image2d history for import/export
 	private JMenuItem[] menuItemHistoryImg2D = null; 
 	
-	private AspectRatioListener aspectRatioListener;
-	
 	// AUTOGEN 
 	//
 	private ModuleTreeWithOptions<Collectable2D> moduleTreeImages;
@@ -179,9 +173,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	private JTextField txtDirectStartsWith;
 	private JCheckBox cbSumTasks;
 	private JCheckBoxMenuItem cbDebug, cbMenuNorth;
-	private JCheckBoxMenuItem cbKeepAspectRatio;
 	private JCheckBoxMenuItem cbCreateImageIcons;
-	private JPanel pnChartAspectRatio;
 	private JTextField txtDirectAutoScale;
 	private JCheckBox cbDirectAutoScale;
 	private JPanel pnNorth;
@@ -555,16 +547,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		cbCreateImageIcons.setSelected(true);
 		mnWindow.add(cbCreateImageIcons);
 		
-		cbKeepAspectRatio = new JCheckBoxMenuItem("Keep aspect ratio");
-		cbKeepAspectRatio.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) { 
-				logicRunner.renewImage2DView();
-				aspectRatioListener.setKeepRatio(cbKeepAspectRatio.isSelected());
-			}
-		});
-		cbKeepAspectRatio.setSelected(true);
-		mnWindow.add(cbKeepAspectRatio);
-
 		cbMenuNorth = new JCheckBoxMenuItem("Show quick menu bar");
 		cbMenuNorth.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) { 
@@ -694,15 +676,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		center.setLayout(new BorderLayout(0, 0));
 
 		pnCenterImageView = new JPanel();
-		pnCenterImageView.addComponentListener(aspectRatioListener = new AspectRatioListener(pnCenterImageView, true,  RATIO.LIMIT_TO_PARENT_SIZE) { 
-			@Override
-			public void componentResized(ComponentEvent e) {
-				// resize chart
-				if(pnChartAspectRatio !=null && (logicRunner).getCurrentHeat()!=null) { 
-					resize(getLogicRunner().getCurrentHeat().getChartPanel());
-				}
-			}
-		});
 		center.add(pnCenterImageView, BorderLayout.CENTER); 
 		pnCenterImageView.setLayout(new BorderLayout(0, 0));
 		
@@ -1145,48 +1118,30 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		ImageEditorWindow.log("Add Heatmap to panel", LOG.DEBUG); 
 		
 		getPnCenterImageView().removeAll(); 
-		if(getCbKeepAspectRatio().isSelected()) {
-			if(pnChartAspectRatio==null) {
-				pnChartAspectRatio = new JPanel(); 
-				pnChartAspectRatio.setLayout(new GridBagLayout());
-			}
-			// 
-			getPnCenterImageView().add(pnChartAspectRatio,BorderLayout.CENTER);  
-			pnChartAspectRatio.removeAll();
-			pnChartAspectRatio.add(heat.getChartPanel());
-			// add aspect ratio listener
-			heat.getChartPanel().setAspectRatioListener(aspectRatioListener);
+		getPnCenterImageView().add(heat.getChartPanel(),BorderLayout.CENTER); 
+		
 			// resize listener
-			heat.getChartPanel().addAxesRangeChangedListener(new AxesRangeChangedListener() {
-				@Override
-				public void axesRangeChanged(PlotChartPanel chart, ValueAxis axis,
-						boolean isDomainAxis, Range lastR, Range newR) {
-					// save to zoom settings
-					logicRunner.setIS_UPDATING(false);
-					if(isDomainAxis)
-						heat.getImage().getSettZoom().setXrange(newR);
-					else 
-						heat.getImage().getSettZoom().setYrange(newR);
-					
-					// set to module
-					ModuleZoom moduleZoom = getModuleZoom();
-					if(moduleZoom!=null) {
-						moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
-					}
-					logicRunner.setIS_UPDATING(true);
-				}
-			});
+			EChartPanel cp = heat.getChartPanel();
+			ZoomHistory history = new ZoomHistory(cp, 20);
 			
-			// set width and height
-			Dimension dim = ChartLogics.calcMaxSize(heat.getChartPanel(), getPnCenterImageView().getWidth(), getPnCenterImageView().getHeight());
-			heat.getChartPanel().setPreferredSize(dim);
-			logicRunner.getCurrentHeat().getChartPanel().setSize(dim);
-			//pnChartAspectRatio.setSize(dim);
-		}
-		else {
-			getPnCenterImageView().add(heat.getChartPanel(),BorderLayout.CENTER); 
-		} 
-		//
+			AxesRangeChangedListener listener = new AxesRangeChangedListener(cp, 
+					e -> {
+						// save to zoom settings
+						logicRunner.setIS_UPDATING(false);
+						if(isDomainAxis)
+							heat.getImage().getSettZoom().setXrange(newR);
+						else 
+							heat.getImage().getSettZoom().setYrange(newR);
+						
+						// set to module
+						ModuleZoom moduleZoom = getModuleZoom();
+						if(moduleZoom!=null) {
+							moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+						}
+						logicRunner.setIS_UPDATING(true);
+				});
+			cp.addAxesRangeChangedListener(listener);
+			
 		getPnCenterImageView().revalidate();
 		getPnCenterImageView().repaint();
 		
@@ -1386,9 +1341,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public JCheckBoxMenuItem getCbDebug() {
 		return cbDebug;
 	}
-	public JCheckBoxMenuItem getCbKeepAspectRatio() {
-		return cbKeepAspectRatio;
-	} 
 	public JTextField getTxtDirectAutoScale() {
 		return txtDirectAutoScale;
 	}
@@ -1401,11 +1353,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 	public boolean isCreatingImageIcons() {
 		return cbCreateImageIcons.isSelected();
 	}
-
-	public AspectRatioListener getAspectRatioListener() {
-		return aspectRatioListener;
-	}
-
 	public JPanel getPnNorth() {
 		return pnNorth;
 	}

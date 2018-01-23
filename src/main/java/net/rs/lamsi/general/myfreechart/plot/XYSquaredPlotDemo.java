@@ -15,7 +15,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 
 public class XYSquaredPlotDemo {
 	/** Creates a new instance of SquaredXYPlotDemo */

@@ -17,7 +17,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.Range;
 
-import net.rs.lamsi.general.myfreechart.plots.EChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.myfreechart.themes.FontResizeTheme;
 
 /**

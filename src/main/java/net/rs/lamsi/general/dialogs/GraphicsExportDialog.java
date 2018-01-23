@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.text.DecimalFormat;
+
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -26,25 +27,25 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.ui.FloatDimension;
+
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FIXED_SIZE;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
-import net.rs.lamsi.general.settings.importexport.SettingsImageResolution;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
@@ -121,7 +122,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
   protected void openDialogI(JFreeChart chart) {
     try {
-      addChartToPanel(new PlotChartPanel((JFreeChart) chart.clone()), true);
+      addChartToPanel(new EChartPanel((JFreeChart) chart.clone()), true);
       setVisible(true);
     } catch (Exception e) {
       e.printStackTrace();

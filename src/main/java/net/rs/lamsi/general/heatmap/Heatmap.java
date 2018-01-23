@@ -5,24 +5,25 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.ImageOverlay;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
-import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
-import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
-import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
-import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
-import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
-import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
-
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.title.PaintScaleLegend;
+
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageOverlay;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
+import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
+import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
+import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
+import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
+import net.sf.mzmine.framework.chartbasics.PlotChartPanel;
 
 
 public class Heatmap {
@@ -31,7 +32,7 @@ public class Heatmap {
 	// Title
 	 
 	// just a bunch of visual stuff
-	private PlotChartPanel chartPanel;
+	private EChartPanel chartPanel;
 	private PaintScale[] paintScale;
 	private JFreeChart chart;
 	private ImageRenderer renderer;
@@ -70,7 +71,7 @@ public class Heatmap {
 			showBlankMinMax(image.getSettings().getOperations().getBlankQuantifier().isShowInChart());
 	}
 	
-	public Heatmap(IXYZDataset dataset, PlotChartPanel chartPanel,
+	public Heatmap(IXYZDataset dataset, EChartPanel chartPanel,
 			PaintScale[] paintScale, JFreeChart chart, XYPlot plot,
 			//PaintScaleLegend legend, 
 			ImageOverlay image, ImageRenderer renderer, ScaleInPlot scaleInPlot, ImageTitle shortTitle2) {
@@ -95,7 +96,7 @@ public class Heatmap {
 		this.dataset = dataset;
 	} 
 
-	public PlotChartPanel getChartPanel() {
+	public EChartPanel getChartPanel() {
 		return chartPanel;
 	}
 
