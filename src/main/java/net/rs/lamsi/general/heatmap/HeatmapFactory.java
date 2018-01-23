@@ -1,15 +1,28 @@
 package net.rs.lamsi.general.heatmap;
 import java.awt.Color;
 import java.awt.Image;
-import java.util.ArrayList;
 import java.util.Vector;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYImageAnnotation;
+import org.jfree.chart.annotations.XYTitleAnnotation;
+import org.jfree.chart.axis.AxisLabelLocation;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.PaintScale;
+import org.jfree.chart.title.PaintScaleLegend;
+import org.jfree.chart.ui.Layer;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleInsets;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
-import net.rs.lamsi.general.heatmap.dataoperations.interpolation.BicubicInterpolator;
 import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
@@ -25,21 +38,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
-
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYImageAnnotation;
-import org.jfree.chart.annotations.XYTitleAnnotation;
-import org.jfree.chart.axis.AxisLabelLocation;
-import org.jfree.chart.axis.AxisLocation;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.PaintScale;
-import org.jfree.chart.title.PaintScaleLegend;
-import org.jfree.ui.Layer;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleInsets;
 
 
 

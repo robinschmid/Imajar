@@ -4,14 +4,13 @@ import java.awt.Color;
 import java.awt.Font;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.ui.RectangleInsets;
+import org.jfree.chart.ui.RectangleInsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 
 public class SettingsThemesContainer extends SettingsContainerSettings {

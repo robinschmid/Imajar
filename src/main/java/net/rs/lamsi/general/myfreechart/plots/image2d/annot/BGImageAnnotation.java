@@ -5,8 +5,6 @@ import java.awt.Image;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
-
 import org.jfree.chart.annotations.XYImageAnnotation;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.ValueAxis;
@@ -14,8 +12,10 @@ import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.RectangleEdge;
+
+import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 
 public class BGImageAnnotation extends XYImageAnnotation {
 	/**
@@ -91,7 +91,7 @@ public class BGImageAnnotation extends XYImageAnnotation {
 	        h = (int) (h/fh);
 	        
 	        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, w, h);
-	        Point2D anchorPoint = RectangleAnchor.coordinates(imageRect, getImageAnchor());
+	        Point2D anchorPoint =  getImageAnchor().getAnchorPoint(imageRect);
 	        xx = xx - (float) anchorPoint.getX();
 	        yy = yy - (float) anchorPoint.getY();
 	

@@ -3,7 +3,7 @@ package net.rs.lamsi.general.myfreechart.themes;
 import java.awt.geom.AffineTransform;
 import java.util.Iterator;
 import java.util.List;
-import org.jfree.chart.ChartTheme;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYAnnotation;
 import org.jfree.chart.annotations.XYTextAnnotation;
@@ -38,7 +38,8 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
-import org.jfree.chart.util.ParamChecks;
+import org.jfree.chart.util.Args;
+import org.jfree.chart.util.Args;
 
 public class FontResizeTheme {
 
@@ -66,7 +67,7 @@ public class FontResizeTheme {
 	 * @param chart  the chart ({@code null} not permitted).
 	 */
 	public void apply(JFreeChart chart) {
-		ParamChecks.nullNotPermitted(chart, "chart");
+		Args.nullNotPermitted(chart, "chart");
 		TextTitle title = chart.getTitle();
 		if (title != null) {
 			title.setFont(title.getFont().deriveFont(at));
@@ -156,7 +157,7 @@ public class FontResizeTheme {
 	 * @param plot  the plot ({@code null}).
 	 */
 	protected void applyToPlot(Plot plot) {
-		ParamChecks.nullNotPermitted(plot, "plot");
+		Args.nullNotPermitted(plot, "plot");
 
 		// now handle specific plot types (and yes, I know this is some
 		// really ugly code that has to be manually updated any time a new
@@ -455,9 +456,9 @@ public class FontResizeTheme {
 	 * @param renderer  the renderer ({@code null} not permitted).
 	 */
 	protected void applyToCategoryItemRenderer(CategoryItemRenderer renderer) {
-		ParamChecks.nullNotPermitted(renderer, "renderer");
+		Args.nullNotPermitted(renderer, "renderer");
 
-		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(at));
+		renderer.setDefaultItemLabelFont(renderer.getDefaultItemLabelFont().deriveFont(at));
 	}
 
 	/**
@@ -466,8 +467,8 @@ public class FontResizeTheme {
 	 * @param renderer  the renderer ({@code null} not permitted).
 	 */
 	protected void applyToXYItemRenderer(XYItemRenderer renderer) {
-		ParamChecks.nullNotPermitted(renderer, "renderer");
-		renderer.setBaseItemLabelFont(renderer.getBaseItemLabelFont().deriveFont(at));
+		Args.nullNotPermitted(renderer, "renderer");
+		renderer.setDefaultItemLabelFont(renderer.getDefaultItemLabelFont().deriveFont(at));
 	}
 
 	/**
@@ -476,7 +477,7 @@ public class FontResizeTheme {
 	 * @param annotation  the annotation.
 	 */
 	protected void applyToXYAnnotation(XYAnnotation annotation) {
-		ParamChecks.nullNotPermitted(annotation, "annotation");
+		Args.nullNotPermitted(annotation, "annotation");
 		if (annotation instanceof XYTextAnnotation) {
 			XYTextAnnotation xyta = (XYTextAnnotation) annotation;
 			xyta.setFont(xyta.getFont().deriveFont(at));

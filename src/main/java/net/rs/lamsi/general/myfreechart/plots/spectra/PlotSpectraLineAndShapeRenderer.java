@@ -20,8 +20,8 @@ import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.text.TextUtils;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.text.TextUtilities;
 
 public class PlotSpectraLineAndShapeRenderer extends XYLineAndShapeRenderer {
 
@@ -43,23 +43,23 @@ public class PlotSpectraLineAndShapeRenderer extends XYLineAndShapeRenderer {
 		chart.getChart().getXYPlot().setRenderer(this);
 		// Label generator
 		PlotSpectraLabelGenerator labelGenerator = new PlotSpectraLabelGenerator(chart);
-		this.setBaseItemLabelGenerator(labelGenerator); 
-		this.setBaseItemLabelsVisible(true);
+		this.setDefaultItemLabelGenerator(labelGenerator); 
+		this.setDefaultItemLabelsVisible(true);
 		
 		// Set painting color
-		setBasePaint(color);
-		setBaseFillPaint(color);
+		setDefaultPaint(color);
+		setDefaultFillPaint(color);
 		setUseFillPaint(true);
 		
 		// Set shape properties
-		setBaseShape(dataPointsShape);
-		setBaseShapesFilled(true);
-		setBaseShapesVisible(false);
+		setDefaultShape(dataPointsShape);
+		setDefaultShapesFilled(true);
+		setDefaultShapesVisible(false);
 		setDrawOutlines(false);
 				
 		// Set the tooltip generator
 		PlotSpectraToolTipGenerator tooltipGenerator = new PlotSpectraToolTipGenerator();
-		setBaseToolTipGenerator(tooltipGenerator);
+		setDefaultToolTipGenerator(tooltipGenerator);
 		
 	}
 
@@ -87,8 +87,8 @@ public class PlotSpectraLineAndShapeRenderer extends XYLineAndShapeRenderer {
      * @param g2  the graphics device.
      * @param orientation  the orientation.
      * @param dataset  the dataset.
-     * @param series  the series index (zero-based).
-     * @param item  the item index (zero-based).
+     * @param series  the series index (zero-Defaultd).
+     * @param item  the item index (zero-Defaultd).
      * @param x  the x coordinate (in Java2D space).
      * @param y  the y coordinate (in Java2D space).
      * @param negative  indicates a negative value (which affects the item
@@ -130,7 +130,7 @@ public class PlotSpectraLineAndShapeRenderer extends XYLineAndShapeRenderer {
 	            	// draw more than one row
 	            	for(int i=0; i<splitted.length; i++) {
 	            		int offset = -13* (splitted.length-i-1);
-	            		TextUtilities.drawRotatedString(splitted[i], g2,
+	            		TextUtils.drawRotatedString(splitted[i], g2,
 	                            (float) anchorPoint.getX(), (float) anchorPoint.getY()+offset,
 	                            position.getTextAnchor(), position.getAngle(),
 	                            position.getRotationAnchor());
@@ -138,7 +138,7 @@ public class PlotSpectraLineAndShapeRenderer extends XYLineAndShapeRenderer {
 	            }
 	            else {
 	            	// one row 
-	                TextUtilities.drawRotatedString(label, g2,
+	                TextUtils.drawRotatedString(label, g2,
 	                        (float) anchorPoint.getX(), (float) anchorPoint.getY(),
 	                        position.getTextAnchor(), position.getAngle(),
 	                        position.getRotationAnchor());

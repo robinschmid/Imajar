@@ -1,55 +1,29 @@
 package net.rs.lamsi.multiimager.FrameModules.sub.theme;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ResourceBundle;
 
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.jfree.chart.editor.ChartEditor;
-import org.jfree.chart.editor.ChartEditorManager;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.chart.util.ResourceBundleWrapper;
-import org.jfree.ui.RectangleInsets;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.framework.basics.JColorPickerButton;
-import net.rs.lamsi.general.framework.basics.JFontSpecs;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
-import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
-import net.rs.lamsi.general.framework.modules.Module;
-import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
-import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsScaleInPlot;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsTheme;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
-import javax.swing.Box;
 
 public class ModulePaintscaleTheme extends Collectable2DSettingsModule<SettingsPaintscaleTheme, Collectable2D>  {
 	// mystuff

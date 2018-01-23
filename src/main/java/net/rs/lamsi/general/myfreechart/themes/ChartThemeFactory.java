@@ -7,7 +7,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 
 import org.jfree.chart.plot.DefaultDrawingSupplier;
-import org.jfree.ui.RectangleInsets;
+import org.jfree.chart.ui.RectangleInsets;
 
 public class ChartThemeFactory { 
 	
@@ -109,7 +109,6 @@ public class ChartThemeFactory {
                 new Stroke[] {new BasicStroke(2.0f)},
                 new Stroke[] {new BasicStroke(0.5f)},
                 DefaultDrawingSupplier.DEFAULT_SHAPE_SEQUENCE));
-        theme.setWallPaint(Color.darkGray);
         theme.setErrorIndicatorPaint(Color.black);
         theme.setGridBandPaint(new Color(255, 255, 255, 20));
         theme.setGridBandAlternatePaint(new Color(255, 255, 255, 40)); 
@@ -168,7 +167,6 @@ public class ChartThemeFactory {
                 new Stroke[] {new BasicStroke(2.0f)},
                 new Stroke[] {new BasicStroke(0.5f)},
                 DefaultDrawingSupplier.DEFAULT_SHAPE_SEQUENCE));
-        theme.setWallPaint(Color.darkGray);
         theme.setErrorIndicatorPaint(Color.lightGray);
         theme.setGridBandPaint(new Color(255, 255, 255, 20));
         theme.setGridBandAlternatePaint(new Color(255, 255, 255, 40));
@@ -228,7 +226,6 @@ public class ChartThemeFactory {
                 new Stroke[] {new BasicStroke(2.0f)},
                 new Stroke[] {new BasicStroke(0.5f)},
                 DefaultDrawingSupplier.DEFAULT_SHAPE_SEQUENCE));
-        theme.setWallPaint(Color.darkGray);
         theme.setErrorIndicatorPaint(Color.lightGray);
         theme.setGridBandPaint(new Color(255, 255, 255, 20));
         theme.setGridBandAlternatePaint(new Color(255, 255, 255, 40));

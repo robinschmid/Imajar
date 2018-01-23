@@ -5,13 +5,6 @@ import java.awt.Color;
 
 import javax.swing.JPanel;
 
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
-import net.rs.lamsi.utils.threads.DelayedProgressUpdateTask;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
@@ -19,8 +12,15 @@ import org.jfree.chart.plot.CombinedRangeXYPlot;
 import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.ui.TextAnchor;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.TextAnchor;
+
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.myfreechart.plots.PlotChartPanel;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import net.rs.lamsi.utils.threads.DelayedProgressUpdateTask;
 
 public class PaintScaleHistogram extends JPanel {
 

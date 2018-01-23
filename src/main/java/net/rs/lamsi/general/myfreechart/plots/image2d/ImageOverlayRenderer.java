@@ -7,9 +7,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
-import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
-
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.CrosshairState;
@@ -20,6 +17,10 @@ import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYZDataset;
+
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
+
 
 public class ImageOverlayRenderer extends ImageRenderer {
 	
@@ -175,10 +176,9 @@ public class ImageOverlayRenderer extends ImageRenderer {
 	                plot.getDomainAxisEdge());
 	        double transY = rangeAxis.valueToJava2D(y, dataArea,
 	                plot.getRangeAxisEdge());        
-	        // TODO ERROR DATASET INDEX TWICE
-	        // still seems to work fine
+	        
 	        updateCrosshairValues(crosshairState, x, y, datasetIndex,
-	                datasetIndex, transX, transY, orientation);
+	                transX, transY, orientation);
 	
 	        EntityCollection entities = state.getEntityCollection();
 	        if (entities != null) {

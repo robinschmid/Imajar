@@ -131,7 +131,12 @@
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-			<version>1.0.19</version>
+			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart-fx</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		<!-- Google API for Strings and other stuff -->
 		<dependency>

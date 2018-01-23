@@ -1,16 +1,8 @@
 package net.rs.lamsi.general.myfreechart.plots.image2d.annot;
 
-import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DBlankSubtraction;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsScaleInPlot;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
@@ -18,8 +10,12 @@ import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.Title;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.RectangleEdge;
+
+import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsScaleInPlot;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
 public class ScaleInPlot extends Title {
 
