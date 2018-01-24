@@ -26,6 +26,7 @@ import org.jfree.chart.ui.Align;
 
 public class JFreeSquaredChart extends JFreeChart {
 
+	private int iterations = 0;
 
 	public JFreeSquaredChart(String title, XYSquaredPlot plot) {
 		super(title, plot);
@@ -146,8 +147,13 @@ public class JFreeSquaredChart extends JFreeChart {
 		}
 		XYSquaredPlot plot = (XYSquaredPlot) this.getPlot();
 		Rectangle2D newChartArea = plot.calc(g2, chartArea, plotArea, plotInfo);
-		if(newChartArea.equals(chartArea))
+		iterations++;
+		if(newChartArea.equals(chartArea)) {
+			// final paint
+			System.out.println("PAINT iterations: "+iterations);
+			iterations = 0;
 			this.getPlot().draw(g2, plotArea, anchor, null, plotInfo);
+		}
 		else {
 			// chart area has changed repaint!
 			Composite tmp = g2.getComposite();

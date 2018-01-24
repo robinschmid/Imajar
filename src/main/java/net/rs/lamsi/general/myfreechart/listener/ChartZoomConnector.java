@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.Range;
 
 public class ChartZoomConnector {
@@ -13,8 +14,8 @@ public class ChartZoomConnector {
 	private Range lastXRange = null;
 	private Range lastYRange = null;
 	private Consumer<AxisRangeChangedEvent> c;
-	
-	
+
+
 	public ChartZoomConnector(Consumer<AxisRangeChangedEvent> c) {
 		this.c = c;
 	}
@@ -28,10 +29,13 @@ public class ChartZoomConnector {
 			charts = new ArrayList<ChartPanel>();
 		charts.add(chart);
 
-		chart.getChart().getXYPlot().getDomainAxis().addChangeListener(new AxisRangeChangedListener(chart, e -> setXRange(e)));
-		chart.getChart().getXYPlot().getRangeAxis().addChangeListener(new AxisRangeChangedListener(chart, e -> setYRange(e)));
+		XYPlot plot = chart.getChart().getXYPlot();
+		if(plot!=null) {
+			plot.getDomainAxis().addChangeListener(new AxisRangeChangedListener(plot, e -> setXRange(e)));
+			plot.getRangeAxis().addChangeListener(new AxisRangeChangedListener(plot, e -> setYRange(e)));
+		}
 	}
-	
+
 	public void clear() {
 		charts.clear();
 	}

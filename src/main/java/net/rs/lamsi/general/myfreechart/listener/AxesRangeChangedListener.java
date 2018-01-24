@@ -24,6 +24,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.AxisChangeEvent;
 import org.jfree.chart.event.AxisChangeListener;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.Range;
 
 /**
@@ -36,7 +37,7 @@ public class AxesRangeChangedListener implements AxisChangeListener {
   // last lower / upper range
   private ValueAxis[] axis;
   private Range[] lastRange = null;
-  private ChartPanel chart;
+  private XYPlot plot;
   private Consumer<AxisRangeChangedEvent> c;
 
   /**
@@ -53,12 +54,14 @@ public class AxesRangeChangedListener implements AxisChangeListener {
    * 
    * @param cp
    */
-  public AxesRangeChangedListener(ChartPanel cp, Consumer<AxisRangeChangedEvent> c) {
+  public AxesRangeChangedListener(XYPlot plot, Consumer<AxisRangeChangedEvent> c) {
     this(2, c);
-    chart = cp;
-    if (chart != null) {
-      chart.getChart().getXYPlot().getDomainAxis().addChangeListener(this);
-      chart.getChart().getXYPlot().getRangeAxis().addChangeListener(this);
+    this.plot = plot;
+    if (plot != null) {
+    	if(plot.getDomainAxis()!=null)
+    		plot.getDomainAxis().addChangeListener(this);
+    	if(plot.getRangeAxis()!=null)
+    		plot.getRangeAxis().addChangeListener(this);
     }
   }
 
@@ -87,7 +90,7 @@ public class AxesRangeChangedListener implements AxisChangeListener {
 
     if (r != null && (lastRange[i] == null || !r.equals(lastRange[i]))) {
       // range has changed
-      axesRangeChanged(new AxisRangeChangedEvent(chart, a, lastRange[i], r));
+      axesRangeChanged(new AxisRangeChangedEvent(plot, a, lastRange[i], r));
     }
     lastRange[i] = r;
   }

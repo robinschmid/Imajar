@@ -35,6 +35,7 @@ import org.jfree.chart.annotations.XYAnnotation;
 import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.RangeType;
 import org.jfree.data.xy.XYDataset;
 
@@ -188,20 +189,23 @@ public class EChartPanel extends ChartPanel {
     }
 
     // zoom history
-    zoomHistory = new ZoomHistory(this, 20);
+    zoomHistory = ZoomHistory.create(this, 20);
+    addPropertyChangeListener(ZoomHistory.PROPERTY_NAME, e -> zoomHistory = (ZoomHistory)e.getNewValue());
 
-    // axis range changed listener for zooming and more
-    ValueAxis rangeAxis = this.getChart().getXYPlot().getRangeAxis();
-    ValueAxis domainAxis = this.getChart().getXYPlot().getDomainAxis();
+    // axis range changed listener for gestures etc
+    XYPlot p = this.getChart().getXYPlot();
+    ValueAxis rangeAxis = p.getRangeAxis();
+    ValueAxis domainAxis = p.getDomainAxis();
     if (rangeAxis != null) {
-      rangeAxis.addChangeListener(new AxisRangeChangedListener(this, e -> axesRangeChanged(e)));
+      rangeAxis.addChangeListener(new AxisRangeChangedListener(p, e -> axesRangeChanged(e)));
     }
     if (domainAxis != null) {
-      domainAxis.addChangeListener(new AxisRangeChangedListener(this, e -> axesRangeChanged(e)));
+      domainAxis.addChangeListener(new AxisRangeChangedListener(p, e -> axesRangeChanged(e)));
     }
 
     // mouse adapter for scrolling and zooming
     mouseAdapter = new ChartGestureMouseAdapter();
+    mouseAdapter.addDebugHandler();
     // mouseAdapter.addDebugHandler();
     this.addMouseListener(mouseAdapter);
     this.addMouseMotionListener(mouseAdapter);

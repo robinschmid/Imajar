@@ -55,6 +55,8 @@ import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.jfree.chart.plot.XYPlot;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
@@ -70,8 +72,7 @@ import net.rs.lamsi.general.framework.modules.listeners.HideShowChangedListener;
 import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.listener.AspectRatioListener;
-import net.rs.lamsi.general.myfreechart.listener.AxesRangeChangedListener;
+import net.rs.lamsi.general.myfreechart.listener.AxisRangeChangedListener;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.Settings;
@@ -1122,25 +1123,37 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		
 			// resize listener
 			EChartPanel cp = heat.getChartPanel();
-			ZoomHistory history = new ZoomHistory(cp, 20);
-			
-			AxesRangeChangedListener listener = new AxesRangeChangedListener(cp, 
-					e -> {
-						// save to zoom settings
-						logicRunner.setIS_UPDATING(false);
-						if(isDomainAxis)
-							heat.getImage().getSettZoom().setXrange(newR);
-						else 
-							heat.getImage().getSettZoom().setYrange(newR);
-						
-						// set to module
+			ZoomHistory history = cp.getZoomHistory();
+					if(history!=null) {
 						ModuleZoom moduleZoom = getModuleZoom();
 						if(moduleZoom!=null) {
-							moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+							moduleZoom.setCurrentHistory(history);
 						}
-						logicRunner.setIS_UPDATING(true);
-				});
-			cp.addAxesRangeChangedListener(listener);
+					}
+
+			// zoom link to settings
+					XYPlot plot = cp.getChart().getXYPlot();
+			plot.getDomainAxis().addChangeListener(
+					new AxisRangeChangedListener(plot, 
+							e -> {
+								heat.getImage().getSettZoom().setXrange(e.getNewR());
+								
+								ModuleZoom moduleZoom = getModuleZoom();
+								if(moduleZoom!=null) {
+									moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+								}
+							}));
+			plot.getRangeAxis().addChangeListener(
+					new AxisRangeChangedListener(plot, 
+							e -> {
+								heat.getImage().getSettZoom().setYrange(e.getNewR());
+								
+								ModuleZoom moduleZoom = getModuleZoom();
+								if(moduleZoom!=null) {
+									moduleZoom.setAllViaExistingSettings(heat.getImage().getSettZoom());
+								}
+							}));
+			
 			
 		getPnCenterImageView().revalidate();
 		getPnCenterImageView().repaint();

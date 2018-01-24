@@ -574,8 +574,10 @@ public class ChartLogics {
 			upper += dist * yzoom / 2;
 		}
 
+		if(lower<upper) {
 		Range range = new Range(lower, upper);
 		setZoomAxis(rangeAxis, keepRangeWithinAutoBounds(rangeAxis, range));
+		}
 	}
 
 	/**
@@ -597,8 +599,10 @@ public class ChartLogics {
 			upper += dist * zoom / 2;
 		}
 
+		if(lower<upper) {
 		Range range = new Range(lower, upper);
 		setZoomAxis(axis, keepRangeWithinAutoBounds(axis, range));
+		}
 	}
 
 	/**
@@ -617,10 +621,10 @@ public class ChartLogics {
 		lower -= dist * zoom * f;
 		upper += dist * zoom * (1 - f);
 
-		if (upper < lower)
-			lower = upper;
+		if(lower<upper) {
 		Range range = new Range(lower, upper);
 		setZoomAxis(axis, keepRangeWithinAutoBounds(axis, range));
+		}
 	}
 
 	/**

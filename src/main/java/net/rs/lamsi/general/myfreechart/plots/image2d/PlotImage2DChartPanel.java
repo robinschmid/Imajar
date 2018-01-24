@@ -14,6 +14,14 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Button;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Entity;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Event;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Key;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler.Handler;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
+import net.rs.lamsi.general.myfreechart.gestures.def.GestureHandlerDef;
+import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -27,7 +35,21 @@ public class PlotImage2DChartPanel extends EChartPanel {
 		super(chart, false);
 		this.img = img;
 	}
+	
+	@Override
+	public void addStandardGestures() {
+		super.addStandardGestures();
+		ChartGestureMouseAdapter g = getGestureAdapter();
+		if(g!=null) {
+			// XYItems cover the whole plot
+			g.addGestureHandler(Handler.PREVIOUS_ZOOM_HISTORY, Entity.XY_ITEM,
+			          new Event[] {Event.DOUBLE_CLICK}, Button.BUTTON1, Key.NONE, null);
+			g.addGestureHandler(Handler.NEXT_ZOOM_HISTORY, Entity.XY_ITEM,
+		          new Event[] {Event.DOUBLE_CLICK}, Button.BUTTON1, Key.CTRL, null);
+		}
+	}
 
+	@Override
 	  protected void openGraphicsExportDialog() {
 			HeatmapGraphicsExportDialog.openDialog(getChart(), img); 
 	  }

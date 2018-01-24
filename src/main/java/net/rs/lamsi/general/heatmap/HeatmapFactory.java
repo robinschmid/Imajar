@@ -23,6 +23,8 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
+import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
@@ -352,7 +354,7 @@ public class HeatmapFactory {
 			
 			
 			// Plot erstellen mit daten
-			XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
+			XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
 			plot.setBackgroundPaint(Color.lightGray);
 			plot.setDomainGridlinesVisible(false);
 			plot.setRangeGridlinePaint(Color.white);
@@ -369,7 +371,7 @@ public class HeatmapFactory {
 			}
 
 			// create chart
-			JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
+			JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
 			// remove lower legend - wie farbskala rein? TODO
 			chart.removeLegend();
 			chart.setBackgroundPaint(Color.white);

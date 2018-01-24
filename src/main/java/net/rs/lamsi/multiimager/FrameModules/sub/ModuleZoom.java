@@ -5,6 +5,8 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import java.util.LinkedList;
+import java.util.function.Consumer;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -13,23 +15,26 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 
+import org.jfree.data.Range;
+
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
+import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistoryEvent;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
-import org.jfree.data.Range;
-
-public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collectable2D> { 
+public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collectable2D> implements Consumer<ZoomHistoryEvent> { 
 	//
 	private JTextField txtXLower;
 	private JTextField txtXUpper;
 	private JTextField txtYLower;
 	private JTextField txtYUpper;
+	
+	private ZoomHistory history;
 	
 	// AUTOGEN
 
@@ -122,7 +127,7 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
 			si.resetAll();
 		} 
 		
-		if(si.getXrange()!=null && si.getXrange()!=null) {
+		if(si.getXrange()!=null && si.getYrange()!=null) {
 			getTxtXLower().setText(String.valueOf(si.getXrange().getLowerBound()));
 			getTxtXUpper().setText(String.valueOf(si.getXrange().getUpperBound()));
 			getTxtYLower().setText(String.valueOf(si.getYrange().getLowerBound()));
@@ -150,14 +155,46 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
 				xu = Double.valueOf(getTxtYUpper().getText());
 				changed = si.setYrange(new Range(xl, xu)) || changed;
 				
-				// add preset if changed
-				if(changed)
-					addPreset(si, si.toString());
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}
 		}
 		return si;
+	}
+
+	/**
+	 * Updates the zoom history presets as menu items
+	 * @param e
+	 */
+	public void updateZoomPresets(ZoomHistory h) {
+		if(h==null || h.getCurrentRange()==null) {
+			removeAllPresets();
+			return;
+		}
+		// added?
+		boolean added = ((getPresets()==null || getPresets().size()==0) && h.getSize()==1) 
+				|| (getPresets()!=null && h.getSize()-1 == getPresets().size());
+		
+		if(added && h.getCurrentRange()!=null) {
+			// add only
+			SettingsZoom zoom = new SettingsZoom();
+			Range[] r = h.getCurrentRange().clone();
+			zoom.setAll(r[0], r[1]);
+			addPreset(zoom, zoom.toString());
+		}
+		else {
+			// replace all
+			removeAllPresets();
+			// add all again
+			LinkedList<Range[]> ranges = h.getHistory();
+			// add last (oldest) first
+			for(int i=ranges.size()-1; i>=0; i--) {
+				Range[] r = ranges.get(i);
+				SettingsZoom zoom = new SettingsZoom();
+				zoom.setAll(r[0], r[1]);
+				addPreset(zoom, zoom.toString());
+			}
+		}
 	}
 	
 	//################################################################################################
@@ -173,5 +210,23 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
 	}
 	public JTextField getTxtYUpper() {
 		return txtYUpper;
+	}
+
+	/**
+	 * 
+	 * @param history
+	 */
+	public void setCurrentHistory(ZoomHistory history) {
+		if(this.history!=null)
+			history.setOnZoomHistoryChanged(null);
+		this.history = history;
+		// set as listener
+		history.setOnZoomHistoryChanged(this); 
+		updateZoomPresets(history);
+	}
+
+	@Override
+	public void accept(ZoomHistoryEvent e) {
+		this.updateZoomPresets(e.getHistory());
 	}
 }

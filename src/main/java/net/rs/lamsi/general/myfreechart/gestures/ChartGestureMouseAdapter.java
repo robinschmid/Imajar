@@ -56,6 +56,7 @@ public class ChartGestureMouseAdapter extends MouseAdapter {
   // listen for
   private HashMap<Event, Boolean> listensFor = new HashMap<Event, Boolean>(Event.values().length);
 
+  
   /**
    * True if Event.ALL or e was added as part of a gesture handler
    * 
@@ -250,16 +251,18 @@ public class ChartGestureMouseAdapter extends MouseAdapter {
       return;
 
     if (e.getComponent() instanceof ChartPanel) {
-      ChartPanel chartPanel = (ChartPanel) e.getComponent();
-      // keep the same chartEntity
-      ChartEntity entity = lastDragEvent.getEntity();
-      ChartGesture.Entity gestureEntity = lastDragEvent.getGesture().getEntity();
-      Button button = lastDragEvent.getGesture().getButton();
-
-      // handle event
-      lastDragEvent = new ChartGestureEvent(chartPanel, e, entity,
-          new ChartGesture(gestureEntity, Event.DRAGGED, button));
-      handleEvent(lastDragEvent);
+        ChartPanel chartPanel = (ChartPanel) e.getComponent();
+    	if(lastDragEvent!=null) {
+	      // keep the same chartEntity
+	      ChartEntity entity = lastDragEvent.getEntity();
+	      ChartGesture.Entity gestureEntity = lastDragEvent.getGesture().getEntity();
+	      Button button = lastDragEvent.getGesture().getButton();
+	
+	      // handle event
+	      lastDragEvent = new ChartGestureEvent(chartPanel, e, entity,
+	          new ChartGesture(gestureEntity, Event.DRAGGED, button));
+	      handleEvent(lastDragEvent);
+    	}
     }
   }
 

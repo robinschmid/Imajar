@@ -262,10 +262,11 @@ public class MultiImageFrame extends JFrame {
 		cbKeepAspectRatio.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				// TODO
 				for(Heatmap map : heat) {
-					AspectRatioListener listener = map.getChartPanel().getAspectRatioListener();
-					if(listener!=null)
-						listener.setKeepRatio(cbKeepAspectRatio.isSelected());
+//					AspectRatioListener listener = map.getChartPanel().getAspectRatioListener();
+//					if(listener!=null)
+//						listener.setKeepRatio(cbKeepAspectRatio.isSelected());
 				}
 
 				updateGridView();

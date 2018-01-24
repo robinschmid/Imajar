@@ -182,6 +182,17 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 		return addPreset(menu, settings, title);
 	}
 
+	/**
+	 * remove all preset menu items
+	 */
+	public void removeAllPresets() {
+		if(presets!=null) {
+			while(presets.size()>0) {
+				JMenuItem i = presets.remove(0);
+				menu.removeMenuItem(i);
+			}
+		}
+	}
 
 	// settings changed via load --> menu
 	@Override
@@ -269,6 +280,10 @@ public abstract class SettingsModule<T extends Settings> extends Module implemen
 		return classsettings;
 	}
 
+	public List<JMenuItem> getPresets() {
+		return presets;
+	}
+	
 	public int getMaxPresets() {
 		return maxPresets;
 	}

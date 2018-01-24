@@ -2,27 +2,28 @@ package net.rs.lamsi.general.myfreechart.listener;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.Range;
 
 public class AxisRangeChangedEvent {
 
 	
-	private ChartPanel chart;
+	private XYPlot plot;
 	private ValueAxis axis;
 	private Range lastR, newR;
 	
-	public AxisRangeChangedEvent(ChartPanel chart, ValueAxis axis, Range lastR, Range newR) {
+	public AxisRangeChangedEvent(XYPlot plot, ValueAxis axis, Range lastR, Range newR) {
 		super();
-		this.chart = chart;
+		this.plot = plot;
 		this.axis = axis;
 		this.lastR = lastR;
 		this.newR = newR;
 	}
-	public ChartPanel getChart() {
-		return chart;
+	public XYPlot getPlot() {
+		return plot;
 	}
-	public void setChart(ChartPanel chart) {
-		this.chart = chart;
+	public void setPlot(ChartPanel chart) {
+		this.plot = plot;
 	}
 	public ValueAxis getAxis() {
 		return axis;
