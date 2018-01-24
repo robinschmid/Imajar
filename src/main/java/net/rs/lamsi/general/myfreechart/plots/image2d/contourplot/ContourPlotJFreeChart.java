@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.jfree.chart.JFreeChart;
 
 
-public class ContourPlotJFreeChart extends PlotImage2DChartPanel {
+public class ContourPlotJFreeChart extends EImage2DChartPanel {
 
 	/**
 	 * 

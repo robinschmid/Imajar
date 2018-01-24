@@ -28,13 +28,56 @@ import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.Mod
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 
-public class PlotImage2DChartPanel extends EChartPanel {
+public class EImage2DChartPanel extends EChartPanel {
 	private Collectable2D img;
 
-	public PlotImage2DChartPanel(JFreeChart chart, Collectable2D img) {
-		super(chart, false);
-		this.img = img;
+	public EImage2DChartPanel(JFreeChart chart, Collectable2D img) {
+		this(chart, img, true, true, true);
 	}
+	
+	  /**
+	   * Enhanced ChartPanel with extra scrolling methods, zoom history, graphics and data export<br>
+	   * stickyZeroForRangeAxis = false
+	   * 
+	   * @param chart
+	   * @param graphicsExportMenu adds graphics export menu
+	   * @param standardGestures adds the standard ChartGestureHandlers
+	   * @param dataExportMenu adds data export menu
+	   */
+	  public EImage2DChartPanel(JFreeChart chart, Collectable2D img, boolean graphicsExportMenu, boolean dataExportMenu,
+	      boolean standardGestures) {
+	    this(chart, img, graphicsExportMenu, dataExportMenu, standardGestures, false);
+	  }
+
+	  /**
+	   * Enhanced ChartPanel with extra scrolling methods, zoom history, graphics and data export<br>
+	   * stickyZeroForRangeAxis = false
+	   * 
+	   * @param chart
+	   * @param graphicsExportMenu adds graphics export menu
+	   * @param standardGestures adds the standard ChartGestureHandlers
+	   * @param dataExportMenu adds data export menu
+	   */
+	  public EImage2DChartPanel(JFreeChart chart, Collectable2D img, boolean useBuffer, boolean graphicsExportMenu,
+	      boolean dataExportMenu, boolean standardGestures) {
+	    this(chart, img, useBuffer, graphicsExportMenu, dataExportMenu, standardGestures, false);
+
+	  }
+
+	  /**
+	   * Enhanced ChartPanel with extra scrolling methods, zoom history, graphics and data export
+	   * 
+	   * @param chart
+	   * @param graphicsExportMenu adds graphics export menu
+	   * @param dataExportMenu adds data export menu
+	   * @param standardGestures adds the standard ChartGestureHandlers
+	   * @param stickyZeroForRangeAxis
+	   */
+	  public EImage2DChartPanel(JFreeChart chart, Collectable2D img, boolean useBuffer, boolean graphicsExportMenu,
+	      boolean dataExportMenu, boolean standardGestures, boolean stickyZeroForRangeAxis) {
+		  super(chart, useBuffer, graphicsExportMenu, dataExportMenu, standardGestures, stickyZeroForRangeAxis);
+			this.img = img;
+	  }
 	
 	@Override
 	public void addStandardGestures() {
@@ -58,8 +101,8 @@ public class PlotImage2DChartPanel extends EChartPanel {
 	protected void addExportMenu(boolean graphics, boolean data) {
 		super.addExportMenu(graphics, data);
 		
-		final PlotImage2DChartPanel thispanel = this;
-		
+		final EImage2DChartPanel thispanel = this;
+		if(data) {
 		if(img!=null && img.isImage2D()) {
 			this.getPopupMenu().addSeparator();
 			// Data Export 
@@ -160,5 +203,6 @@ public class PlotImage2DChartPanel extends EChartPanel {
 			// add to panel
 			exportDataMenu.add(exportDataCB2); 
 		}
+	}
 	}
 }

@@ -16,7 +16,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
-import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
@@ -52,7 +52,7 @@ public class Heatmap {
 	private ValueMarker lowerMarker, upperMarker;
 	
 	// Construct
-	public Heatmap(IXYZDataset dataset, int colorSteps, PlotImage2DChartPanel chartPanel,
+	public Heatmap(IXYZDataset dataset, int colorSteps, EImage2DChartPanel chartPanel,
 			PaintScale paintScale, JFreeChart chart, XYPlot plot,
 			PaintScaleLegend legend, Image2D image, ImageRenderer renderer, ScaleInPlot scaleInPlot, ImageTitle shortTitle) {
 		super();
@@ -100,7 +100,7 @@ public class Heatmap {
 		return chartPanel;
 	}
 
-	public void setChartPanel(PlotImage2DChartPanel chartPanel) {
+	public void setChartPanel(EImage2DChartPanel chartPanel) {
 		this.chartPanel = chartPanel;
 	}
 

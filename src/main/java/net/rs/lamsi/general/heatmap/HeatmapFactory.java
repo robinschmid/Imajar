@@ -25,9 +25,9 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
 import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
+import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
-import net.rs.lamsi.general.myfreechart.plots.image2d.PlotImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
@@ -242,7 +242,7 @@ public class HeatmapFactory {
 		renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 
 		// Plot erstellen mit daten
-		XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
+		XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
 		plot.setBackgroundPaint(Color.BLACK);
 		plot.setDomainGridlinesVisible(false);
 		plot.setRangeGridlinePaint(Color.white);
@@ -260,7 +260,7 @@ public class HeatmapFactory {
 		}
 
 		// create chart
-		JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
+		JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
 		// remove lower legend - wie farbskala rein? TODO
 		//	        chart.removeLegend();
 		chart.setBackgroundPaint(Color.white);
@@ -269,7 +269,7 @@ public class HeatmapFactory {
 		chart.setBorderVisible(true); 
 
 		// ChartPanel
-		EChartPanel chartPanel = new EChartPanel(chart); 
+		EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, img, true, true, false, true); 
 
 		// add scale legend
 		ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
@@ -391,7 +391,7 @@ public class HeatmapFactory {
 
 
 			// ChartPanel
-			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, img); 
+			EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, img); 
 
 			// add scale legend
 			ScaleInPlot	scaleInPlot = addScaleInPlot(setTheme, chartPanel);
@@ -557,13 +557,13 @@ public class HeatmapFactory {
 			
 			
 			// Plot erstellen mit daten
-			XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
+			XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
 			plot.setBackgroundPaint(Color.lightGray);
 			plot.setDomainGridlinesVisible(false);
 			plot.setRangeGridlinePaint(Color.white);
 
 			// create chart
-			JFreeChart chart = new JFreeChart("XYBlockChartDemo1", plot);
+			JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
 			// remove lower legend - wie farbskala rein? TODO
 			chart.removeLegend();
 			chart.setBackgroundPaint(Color.white);
@@ -578,7 +578,7 @@ public class HeatmapFactory {
 
 
 			// ChartPanel
-			PlotImage2DChartPanel chartPanel = new PlotImage2DChartPanel(chart, null); 
+			EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, null); 
 
 
 			//ChartUtilities.applyCurrentTheme(chart);

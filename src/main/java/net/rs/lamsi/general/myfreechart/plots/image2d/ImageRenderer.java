@@ -371,7 +371,7 @@ implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
     	}
     }
     
-    public void drawBlockItem(Graphics2D g2, XYItemRendererState state,
+    protected void drawBlockItem(Graphics2D g2, XYItemRendererState state,
             Rectangle2D dataArea, PlotRenderingInfo info, XYPlot plot,
             ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
             int series, int item, CrosshairState crosshairState, int pass) {
@@ -382,14 +382,14 @@ implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
             z = ((XYZDataset) dataset).getZValue(series, item);
         }
 
-        Paint p = this.getPaintScale().getPaint(z);
+        Paint p = this.getPaintScale(series).getPaint(z);
         double xx0 = domainAxis.valueToJava2D(x + this.xOffset, dataArea,
                 plot.getDomainAxisEdge());
         double yy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea,
                 plot.getRangeAxisEdge());
-        double xx1 = domainAxis.valueToJava2D(x + this.blockWidth
+        double xx1 = domainAxis.valueToJava2D(x + this.getBlockWidth(series)
                 + this.xOffset, dataArea, plot.getDomainAxisEdge());
-        double yy1 = rangeAxis.valueToJava2D(y + this.blockHeight
+        double yy1 = rangeAxis.valueToJava2D(y + this.getBlockHeight(series)
                 + this.yOffset, dataArea, plot.getRangeAxisEdge());
         Rectangle2D block;
         PlotOrientation orientation = plot.getOrientation();
@@ -407,9 +407,11 @@ implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
         // do only paint if inside rect
         if(dataArea.intersects(block)) {
 	        g2.setPaint(p);
-	        g2.fill(block);
-	        g2.setStroke(new BasicStroke(1.0f));
-	        g2.draw(block);
+	        g2.fillRect((int)Math.round(block.getX()),(int)Math.round(block.getY()),
+	        		(int)Math.ceil(block.getWidth())+1,(int)Math.ceil(block.getHeight())+1);
+//	        g2.fill(block);
+//	        g2.setStroke(new BasicStroke(1.0f));
+//	        g2.draw(block);
 
 	        if (isItemLabelVisible(series, item)) {
 	            drawItemLabel(g2, orientation, dataset, series, item, 
@@ -457,4 +459,15 @@ implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
 	public void setMapLinear(boolean[] maplinear) {
 		map = maplinear;
 	} 
+
+	public PaintScale getPaintScale(int i) {
+		return paintScale;
+	}
+
+	public double getBlockWidth(int i) {
+		return getBlockWidth();
+	}
+	public double getBlockHeight(int i) {
+		return getBlockHeight();
+	}
 }
