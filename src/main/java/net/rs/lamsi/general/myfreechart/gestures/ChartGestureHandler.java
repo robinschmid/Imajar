@@ -168,15 +168,19 @@ public class ChartGestureHandler {
 				}
 				else {
 					// event not on an axis (e.g. on plot)
-					int x = e.getLatestEvent().getX()-e.getLastEvent().getX();
-					int y = e.getLatestEvent().getY()-e.getLastEvent().getY();
+					double x = (e.getLatestEvent().getX()-e.getLastEvent().getX())*-1;
+					double y = e.getLatestEvent().getY()-e.getLastEvent().getY();
 					//		        	  // apply xy diff to range and domain axis
 					XYPlot p = e.getChartPanel().getChart().getXYPlot();
 					if(p.getOrientation().equals(PlotOrientation.VERTICAL)) {
+						x = ChartLogics.screenValueToPlotValue(e.getChartPanel(), (int)x).getX();
+						y = ChartLogics.screenValueToPlotValue(e.getChartPanel(), (int)y).getY();
 						ChartLogics.offsetAxisAbsolute(p.getDomainAxis(), x);
 						ChartLogics.offsetAxisAbsolute(p.getRangeAxis(), y);
 					}
 					else {
+						x = ChartLogics.screenValueToPlotValue(e.getChartPanel(), (int)x).getY();
+						y = ChartLogics.screenValueToPlotValue(e.getChartPanel(), (int)y).getX();
 						ChartLogics.offsetAxisAbsolute(p.getDomainAxis(), y);
 						ChartLogics.offsetAxisAbsolute(p.getRangeAxis(), x);
 					}
@@ -407,7 +411,7 @@ public class ChartGestureHandler {
 	 */
 	public static List<GestureHandlerFactory> getStandardGestures() {
 		if (standardGestures == null)
-			initStandardGestures(true, true, true, true, true);
+			initStandardGestures(true, true, true, true, false, true, true, true);
 		return standardGestures;
 	}
 
@@ -422,25 +426,61 @@ public class ChartGestureHandler {
 	 * @return
 	 */
 	public static List<GestureHandlerFactory> initStandardGestures(boolean axisDrag,
-			boolean axisWheel, boolean titleRemover, boolean zoomHistory, boolean axisAutoRange) {
+			boolean axisWheel, boolean zoom, boolean scrollX, boolean scrollY, boolean titleRemover, boolean zoomHistory, boolean axisAutoRange) {
 		standardGestures = new ArrayList<GestureHandlerFactory>();
-		if (axisDrag) {
+		
+		DragHandler[] dhx = null;
+		Key[] kx = null;
+		DragHandler[] dhy = null;
+		Key[] ky = null;
+		
+		if(zoom && scrollX) {
+			dhx = new DragHandler[]{DragHandler.SCROLL_AXIS, DragHandler.SCROLL_AXIS_AND_AUTO_ZOOM,
+					DragHandler.ZOOM_AXIS_CENTER, DragHandler.ZOOM_AXIS_CENTER,
+					DragHandler.AUTO_ZOOM_OPPOSITE_AXIS};
+			kx = new Key[]{Key.NONE, Key.SHIFT, Key.CTRL, Key.CTRL_SHIFT, Key.CTRL_SHIFT};
+		}
+		else if(zoom) {
+			dhx = new DragHandler[]{DragHandler.ZOOM_AXIS_CENTER, DragHandler.ZOOM_AXIS_CENTER,
+					DragHandler.AUTO_ZOOM_OPPOSITE_AXIS};
+			kx = new Key[]{Key.CTRL, Key.CTRL_SHIFT, Key.CTRL_SHIFT};
+		}
+		else if(scrollX) {
+			dhx = new DragHandler[]{DragHandler.SCROLL_AXIS, DragHandler.SCROLL_AXIS_AND_AUTO_ZOOM};
+			kx = new Key[]{Key.NONE, Key.SHIFT};
+		}
+		
+		if(zoom && scrollY) {
+			dhy = new DragHandler[]{DragHandler.SCROLL_AXIS, DragHandler.SCROLL_AXIS_AND_AUTO_ZOOM,
+					DragHandler.ZOOM_AXIS_CENTER, DragHandler.ZOOM_AXIS_CENTER,
+					DragHandler.AUTO_ZOOM_OPPOSITE_AXIS};
+			ky = new Key[]{Key.NONE, Key.SHIFT, Key.CTRL, Key.CTRL_SHIFT, Key.CTRL_SHIFT};
+		}
+		else if(zoom) {
+			dhy = new DragHandler[]{DragHandler.ZOOM_AXIS_INCLUDE_ZERO, DragHandler.ZOOM_AXIS_CENTER,
+					DragHandler.AUTO_ZOOM_OPPOSITE_AXIS};
+			ky = new Key[]{Key.NONE, Key.CTRL_SHIFT, Key.CTRL_SHIFT};
+		}
+		else if(scrollY) {
+			dhy = new DragHandler[]{DragHandler.SCROLL_AXIS, DragHandler.SCROLL_AXIS_AND_AUTO_ZOOM};
+			ky = new Key[]{Key.NONE, Key.SHIFT};
+		}
+		
+		if (axisDrag && (zoom || scrollX || scrollY)) {
 			// adds multiple gestures to one domain axis drag handler
 			// Scroll axis: DRAG mouse over domain axis
 			// Scroll + auto zoom: SHIFT + DRAG
 			// Zoom axis centered: CTRL + DRAG
 			// Zoom + auto zoom range axis: CTRL + SHIFT + DRAG
-			standardGestures.add(new DragGestureHandlerDef(
-					new DragHandler[] {DragHandler.SCROLL_AXIS, DragHandler.SCROLL_AXIS_AND_AUTO_ZOOM,
-							DragHandler.ZOOM_AXIS_CENTER, DragHandler.ZOOM_AXIS_CENTER,
-							DragHandler.AUTO_ZOOM_OPPOSITE_AXIS},
-					new Key[] {Key.NONE, Key.SHIFT, Key.CTRL, Key.CTRL_SHIFT, Key.CTRL_SHIFT},
+			if(kx!=null)
+				standardGestures.add(new DragGestureHandlerDef(
+					dhx,
+					kx,
 					Entity.DOMAIN_AXIS, Button.BUTTON1, null, null));
 
 			// Zoom range axis (include zero): DRAG
-			standardGestures
-			.add(new DragGestureHandlerDef(new DragHandler[] {DragHandler.ZOOM_AXIS_INCLUDE_ZERO},
-					new Key[] {Key.ALL}, Entity.RANGE_AXIS, Button.BUTTON1, null, null));
+			if(ky!=null)
+				standardGestures.add(new DragGestureHandlerDef(dhy, ky, Entity.RANGE_AXIS, Button.BUTTON1, null, null));
 		}
 		if (axisWheel) {
 			// MOUSE WHEEL on domain axis
@@ -448,19 +488,34 @@ public class ChartGestureHandler {
 			// Scroll + auto zoom: SHIFT + WHEEL
 			// Zoom axis centered: CTRL + WHEEL
 			// Zoom + auto zoom range axis: CTRL + SHIFT + WHEEL
-			standardGestures.add(new GestureHandlerDef(Handler.SCROLL_AXIS, Entity.DOMAIN_AXIS,
-					new Event[] {Event.MOUSE_WHEEL}, null, Key.NONE, null));
-			standardGestures.add(new GestureHandlerDef(Handler.SCROLL_AXIS_AND_AUTO_ZOOM,
-					Entity.DOMAIN_AXIS, new Event[] {Event.MOUSE_WHEEL}, null, Key.SHIFT, null));
-			standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_CENTER, Entity.DOMAIN_AXIS,
-					new Event[] {Event.MOUSE_WHEEL}, null, Key.CTRL, null));
-			standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_CENTER, Entity.DOMAIN_AXIS,
-					new Event[] {Event.MOUSE_WHEEL}, null, Key.CTRL_SHIFT, null));
-			standardGestures.add(new GestureHandlerDef(Handler.AUTO_ZOOM_OPPOSITE_AXIS,
-					Entity.DOMAIN_AXIS, new Event[] {Event.MOUSE_WHEEL}, null, Key.CTRL_SHIFT, null));
-			// Zoom range axis (include zero): MOUSE WHEEL
-			standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_INCLUDE_ZERO, Entity.RANGE_AXIS,
-					new Event[] {Event.MOUSE_WHEEL}, null, Key.ALL, null));
+			if(scrollX) {
+				standardGestures.add(new GestureHandlerDef(Handler.SCROLL_AXIS, Entity.DOMAIN_AXIS,
+						new Event[] {Event.MOUSE_WHEEL}, null, Key.NONE, null));
+				standardGestures.add(new GestureHandlerDef(Handler.SCROLL_AXIS_AND_AUTO_ZOOM,
+						Entity.DOMAIN_AXIS, new Event[] {Event.MOUSE_WHEEL}, null, Key.SHIFT, null));
+			}
+			if(zoom) {
+				standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_CENTER, Entity.DOMAIN_AXIS,
+						new Event[] {Event.MOUSE_WHEEL}, null, Key.CTRL, null));
+				standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_CENTER, Entity.DOMAIN_AXIS,
+						new Event[] {Event.MOUSE_WHEEL}, null, Key.CTRL_SHIFT, null));
+				standardGestures.add(new GestureHandlerDef(Handler.AUTO_ZOOM_OPPOSITE_AXIS,
+						Entity.DOMAIN_AXIS, new Event[] {Event.MOUSE_WHEEL}, null, Key.CTRL_SHIFT, null));
+				// Zoom range axis (include zero): MOUSE WHEEL
+				if(scrollY) 
+					standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_CENTER, Entity.RANGE_AXIS,
+							new Event[] {Event.MOUSE_WHEEL}, null, Key.ALL, null));
+				else
+					standardGestures.add(new GestureHandlerDef(Handler.ZOOM_AXIS_INCLUDE_ZERO, Entity.RANGE_AXIS,
+							new Event[] {Event.MOUSE_WHEEL}, null, Key.ALL, null));
+			}
+
+			if(scrollY) {
+				standardGestures.add(new GestureHandlerDef(Handler.SCROLL_AXIS, Entity.RANGE_AXIS,
+						new Event[] {Event.MOUSE_WHEEL}, null, Key.NONE, null));
+				standardGestures.add(new GestureHandlerDef(Handler.SCROLL_AXIS_AND_AUTO_ZOOM,
+						Entity.RANGE_AXIS, new Event[] {Event.MOUSE_WHEEL}, null, Key.SHIFT, null));
+			}
 		}
 		if (zoomHistory) {
 			// Previous zoom history: DOUBLE CLICK on plot
@@ -483,5 +538,9 @@ public class ChartGestureHandler {
 					new Event[] {Event.DOUBLE_CLICK}, Button.BUTTON1, null, null));
 		}
 		return standardGestures;
+	}
+
+	public boolean filter(ChartGesture g) {
+		return getGesture().filter(g);
 	}
 }

@@ -75,7 +75,7 @@ public class ChartGestureMouseAdapter extends MouseAdapter {
    */
   private void handleEvent(final ChartGestureEvent e) {
     if (gestureHandlers != null)
-      gestureHandlers.stream().filter(handler -> handler.getGesture().filter(e.getGesture()))
+      gestureHandlers.stream().filter(handler -> handler.filter(e.getGesture()))
           .forEach(handler -> handler.accept(e));
   }
 

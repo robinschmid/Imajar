@@ -10,23 +10,20 @@ import javax.swing.JMenuItem;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jfree.chart.JFreeChart;
 
-import com.orsoncharts.util.Orientation;
-
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Button;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Entity;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Event;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Key;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGestureDragDiffHandler.Orientation;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler.DragHandler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler.Handler;
+import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
-import net.rs.lamsi.general.myfreechart.gestures.def.DragGestureHandlerDef;
-import net.rs.lamsi.general.myfreechart.gestures.def.GestureHandlerDef;
-import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -51,7 +48,7 @@ public class EImage2DChartPanel extends EChartPanel {
 	   */
 	  public EImage2DChartPanel(JFreeChart chart, Collectable2D img, boolean graphicsExportMenu, boolean dataExportMenu,
 	      boolean standardGestures) {
-	    this(chart, img, graphicsExportMenu, dataExportMenu, standardGestures, false);
+	    this(chart, img, false, graphicsExportMenu, dataExportMenu, standardGestures);
 	  }
 
 	  /**
@@ -86,8 +83,15 @@ public class EImage2DChartPanel extends EChartPanel {
 	
 	@Override
 	public void addStandardGestures() {
-		super.addStandardGestures();
-		ChartGestureMouseAdapter g = getGestureAdapter();
+//		super.addStandardGestures();
+
+	    // add ChartGestureHandlers
+	    ChartGestureMouseAdapter g = getGestureAdapter();
+	    if (g != null) {
+	      for (GestureHandlerFactory f : ChartGestureHandler.initStandardGestures(true, true, false, true, true, true, true, true))
+	        g.addGestureHandler(f.createHandler());
+	    }
+	    
 		if(g!=null) {
 			// XYItems cover the whole plot
 			g.addGestureHandler(Handler.PREVIOUS_ZOOM_HISTORY, Entity.XY_ITEM,
@@ -96,8 +100,10 @@ public class EImage2DChartPanel extends EChartPanel {
 		          new Event[] {Event.DOUBLE_CLICK}, Button.BUTTON1, Key.CTRL, null);
 			
 			// drag zoomstandardGestures
-//	        g.addDragGestureHandler(new DragHandler[] {DragHandler.SCROLL_AXIS},
-//	                  new Key[] {Key.ALL}, Entity.XY_ITEM, Button.BUTTON1, null, null);
+	        g.addDragGestureHandler(new DragHandler[] {DragHandler.SCROLL_AXIS},
+	                  new Key[] {Key.CTRL}, Entity.XY_ITEM, Button.BUTTON1, Orientation.HORIZONTAL, null);
+	        g.addDragGestureHandler(new DragHandler[] {DragHandler.SCROLL_AXIS},
+	                  new Key[] {Key.CTRL}, Entity.PLOT, Button.BUTTON1, Orientation.HORIZONTAL, null);
 		}
 	}
 

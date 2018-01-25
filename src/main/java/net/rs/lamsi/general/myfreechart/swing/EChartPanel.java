@@ -196,7 +196,7 @@ public class EChartPanel extends ChartPanel {
 
     // mouse adapter for scrolling and zooming
     mouseAdapter = new ChartGestureMouseAdapter();
-    mouseAdapter.addDebugHandler();
+//    mouseAdapter.addDebugHandler();
     this.addMouseListener(mouseAdapter);
     this.addMouseMotionListener(mouseAdapter);
     this.addMouseWheelListener(mouseAdapter);
