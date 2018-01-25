@@ -172,6 +172,7 @@ public class XYSquaredPlot extends XYPlot {
             case FIXED_WIDTH:
             	double dh = dataArea.getHeight()- dataArea.getWidth() / xrange*yrange;
             	h -= dh;
+            	break;
             case FIXED_HEIGHT:
             	double dw = dataArea.getWidth()- dataArea.getHeight() / yrange*xrange;
             	w -= dw;
