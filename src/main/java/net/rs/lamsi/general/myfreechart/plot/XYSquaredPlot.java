@@ -25,6 +25,9 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYDataset;
+import org.junit.Ignore;
+
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 
 /**
  * This plot keeps one axis at static range and scales 
@@ -35,15 +38,30 @@ import org.jfree.data.xy.XYDataset;
  *
  */
 public class XYSquaredPlot extends XYPlot {
+	
+	public final static double MAX_DIFF = 0.05;
+	
+	/**
+	 * the scaling mode
+	 */
+	public enum Scale {
+		IGNORE, 	// standard jfreechart behaviour
+		DYNAMIC, 	// scale to limiting factor (width or height)
+		FIXED_WIDTH,
+		FIXED_HEIGHT;
+	}
     
-    protected boolean squareToRange;
-    
-    /*public SquaredXYPlot()
-     *default constructor
-     */
-    public XYSquaredPlot(){
+	// the scaling mode
+	private Scale smode;
+	// set a fixed mode after first iteration
+	private Scale modeSecondIteration = Scale.FIXED_WIDTH;
+	
+	 public XYSquaredPlot(){
+		 this(Scale.DYNAMIC);
+	    }
+    public XYSquaredPlot(Scale smode){
         super();
-        squareToRange = true;
+        this.smode = smode;
     }
     
     /*public SquaredXYPlot(XYDataset dataset,
@@ -55,28 +73,15 @@ public class XYSquaredPlot extends XYPlot {
             ValueAxis domainAxis,
             ValueAxis rangeAxis,
             XYItemRenderer renderer) {
+        this(dataset, domainAxis, rangeAxis, renderer, Scale.DYNAMIC);
+    }
+    public XYSquaredPlot(XYDataset dataset,
+            ValueAxis domainAxis,
+            ValueAxis rangeAxis,
+            XYItemRenderer renderer, 
+            Scale smode) {
         super(dataset, domainAxis, rangeAxis, renderer);
-        squareToRange = true;
-    }
-    
-    /*public void setSquaredToRange(boolean squareToRange)
-     *determines which axis is changed so the axis end up squared
-     *
-     *squareToRange is true if the y-axis is left alone and the
-     *     x-axis is adjusted to match
-     *squareToRange is false if the x-axis is left alone and the
-     *    y-axis is adjusted
-     */
-    public void setSquaredToRange(boolean squareToRange){
-        this.squareToRange = squareToRange;
-    }
-    
-    /*public boolean getSquaredToRange()
-     *returns the squareToRange
-     *see setSquaredToRange()
-     */
-    public boolean getSquaredToRange(){
-        return this.squareToRange;
+        this.smode = smode;
     }
     
     /**
@@ -89,7 +94,11 @@ public class XYSquaredPlot extends XYPlot {
      * @param info
      * @return
      */
-    public Rectangle2D calc(Graphics2D g2, Rectangle2D chartarea, Rectangle2D plotarea, PlotRenderingInfo info) {
+    public Rectangle2D calc(Graphics2D g2, Rectangle2D chartarea, Rectangle2D plotarea, PlotRenderingInfo info, int iteration) {
+    	// standard jfreechart behaviour
+    	if(smode.equals(Scale.IGNORE))
+    		return chartarea;
+    	
     	Rectangle2D area = (Rectangle2D) plotarea.clone();
         boolean b1 = (area.getWidth() <= MINIMUM_WIDTH_TO_DRAW);
         boolean b2 = (area.getHeight() <= MINIMUM_HEIGHT_TO_DRAW);
@@ -97,7 +106,6 @@ public class XYSquaredPlot extends XYPlot {
             return chartarea;
         }
 
-        System.out.println("DRAW previous");
         printInfo(info);
         // record the plot area...
         if (info != null) {
@@ -117,10 +125,7 @@ public class XYSquaredPlot extends XYPlot {
             return chartarea;
         }
         createAndAddEntity((Rectangle2D) dataArea.clone(), info, null, null);
-        if (info != null) {
-            info.setDataArea(dataArea);
-        }
-        System.out.println("DRAW data area calc");
+        
         printInfo(info);
         System.out.println();
         
@@ -138,7 +143,7 @@ public class XYSquaredPlot extends XYPlot {
 
         System.out.println(ratioAxis-ratioArea+" ratio\n");
         // the same ratio?
-        if(Math.abs(ratioAxis-ratioArea)<0.1)
+        if(Math.abs(ratioAxis-ratioArea)<MAX_DIFF)
         	return chartarea;
         else {
             // else change size
@@ -147,23 +152,39 @@ public class XYSquaredPlot extends XYPlot {
             double w = chartarea.getWidth();
             double h = chartarea.getHeight();
             
-            // height is limiting factor?
-            if(ratioArea<ratioAxis) {
-            	// reduce chart width
-            	double dw = dataArea.getWidth()- dataArea.getHeight() / yrange*xrange;
-            	w -= dw;
-            }
-            else {
-            	// reduce chart height
+            Scale m = (smode==Scale.DYNAMIC && iteration>1)? modeSecondIteration : smode;
+            switch(m) {
+            case DYNAMIC:
+            	// height is limiting factor?
+                if(ratioArea<ratioAxis) {
+                	// reduce chart width
+                	double dw = dataArea.getWidth()- dataArea.getHeight() / yrange*xrange;
+                	w -= dw;
+                	modeSecondIteration = Scale.FIXED_HEIGHT;
+                }
+                else {
+                	// reduce chart height
+                	double dh = dataArea.getHeight()- dataArea.getWidth() / xrange*yrange;
+                	h -= dh;
+                	modeSecondIteration = Scale.FIXED_WIDTH;
+                }
+            	break;
+            case FIXED_WIDTH:
             	double dh = dataArea.getHeight()- dataArea.getWidth() / xrange*yrange;
             	h -= dh;
+            case FIXED_HEIGHT:
+            	double dw = dataArea.getWidth()- dataArea.getHeight() / yrange*xrange;
+            	w -= dw;
+            	break;
             }
+            
             return new Rectangle2D.Double(x, y, w, h);
         }
     }
     
     
     private void printInfo(PlotRenderingInfo info) {
+    	if(true)return ;
     	if(info==null)
     		return;
     	if(info.getOwner()!=null)
@@ -188,4 +209,15 @@ public class XYSquaredPlot extends XYPlot {
         int y1 = (int) Math.floor(rect.getMaxY());
         return new Rectangle(x0, y0, (x1 - x0), (y1 - y0));
     }
+    
+    /**
+     * Returns true if mode has changed
+     * @param scale
+     * @return
+     */
+	public boolean setScaleMode(Scale scale) {
+		boolean notify = scale.equals(this.smode);
+		smode = scale;
+		return notify;
+	}
 }

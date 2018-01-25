@@ -1,7 +1,6 @@
 package net.rs.lamsi.general.myfreechart.plot;
 
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -12,8 +11,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.jfree.chart.ChartHints;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.EntityCollection;
@@ -25,14 +27,33 @@ import org.jfree.chart.title.Title;
 import org.jfree.chart.ui.Align;
 
 public class JFreeSquaredChart extends JFreeChart {
-
-	private int iterations = 0;
+	private static final long serialVersionUID = 1L;
+	private static final int MAX_ITERATIONS = 10;
+	// is only reset after finished paint
+	private int iteration = 0;
+	private Rectangle2D size;
+	private Predicate<Rectangle2D> sizeChangedListener;
+	
 
 	public JFreeSquaredChart(String title, XYSquaredPlot plot) {
 		super(title, plot);
 	}
-
-	private static final long serialVersionUID = 1L;
+	
+	public void setScaleMode(XYSquaredPlot.Scale scale) {
+		if(getXYPlot() instanceof XYSquaredPlot){
+			boolean repaint = ((XYSquaredPlot)getXYPlot()).setScaleMode(scale);
+			if(repaint) fireChartChanged();
+		}
+	}
+	
+	/**
+	 * Listen for size changes e.g. to resize ChartPanel/ChartView
+	 * @param sizeChangedListener if this predicate returns false the iteration counter is reset. True for keeping the interation counter. 
+	 * Could be false if the whole charpanel/chartViewer size was changed to restart the process
+	 */
+	public void addSizeChangedListener(Predicate<Rectangle2D> sizeChangedListener) {
+		this.sizeChangedListener = sizeChangedListener;
+	}
 
 	/**
 	 * Draws the chart on a Java 2D graphics device (such as the screen or a
@@ -146,12 +167,16 @@ public class JFreeSquaredChart extends JFreeChart {
 			plotInfo = info.getPlotInfo();
 		}
 		XYSquaredPlot plot = (XYSquaredPlot) this.getPlot();
-		Rectangle2D newChartArea = plot.calc(g2, chartArea, plotArea, plotInfo);
-		iterations++;
-		if(newChartArea.equals(chartArea)) {
+		iteration++; // first iteration in plot is 1
+		if(iteration>MAX_ITERATIONS)
+			System.out.println("MAX IT 10");
+		else System.out.println("IT "+iteration);
+			
+		Rectangle2D newChartArea = plot.calc(g2, chartArea, plotArea, plotInfo, iteration);
+		if(newChartArea.equals(chartArea) || iteration>MAX_ITERATIONS) {
 			// final paint
-			System.out.println("PAINT iterations: "+iterations);
-			iterations = 0;
+			System.out.println("PAINT iterations: "+iteration);
+			iteration = 0;
 			this.getPlot().draw(g2, plotArea, anchor, null, plotInfo);
 		}
 		else {
@@ -164,6 +189,8 @@ public class JFreeSquaredChart extends JFreeChart {
 			double x = chartArea.getX() + (chartArea.getWidth()-newChartArea.getWidth())/2.0;
 			double y = chartArea.getY() + (chartArea.getHeight()-newChartArea.getHeight())/2.0;
 			newChartArea.setRect(x, y, newChartArea.getWidth(), newChartArea.getHeight());
+			
+			// else draw chart with new size
 			draw(g2, newChartArea, anchor, info);
 			return;
 		}
@@ -176,4 +203,5 @@ public class JFreeSquaredChart extends JFreeChart {
 		notifyListeners(new ChartProgressEvent(this, this,
 				ChartProgressEvent.DRAWING_FINISHED, 100));
 	}
+
 }

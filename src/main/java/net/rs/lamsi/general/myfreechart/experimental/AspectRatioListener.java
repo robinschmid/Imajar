@@ -16,7 +16,7 @@
  * USA
  */
 
-package net.rs.lamsi.general.myfreechart.listener;
+package net.rs.lamsi.general.myfreechart.experimental;
 
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;

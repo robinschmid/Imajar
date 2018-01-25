@@ -10,16 +10,21 @@ import javax.swing.JMenuItem;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jfree.chart.JFreeChart;
 
+import com.orsoncharts.util.Orientation;
+
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
+import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Button;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Entity;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Event;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Key;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler.DragHandler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler.Handler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
+import net.rs.lamsi.general.myfreechart.gestures.def.DragGestureHandlerDef;
 import net.rs.lamsi.general.myfreechart.gestures.def.GestureHandlerDef;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
@@ -61,7 +66,6 @@ public class EImage2DChartPanel extends EChartPanel {
 	  public EImage2DChartPanel(JFreeChart chart, Collectable2D img, boolean useBuffer, boolean graphicsExportMenu,
 	      boolean dataExportMenu, boolean standardGestures) {
 	    this(chart, img, useBuffer, graphicsExportMenu, dataExportMenu, standardGestures, false);
-
 	  }
 
 	  /**
@@ -77,6 +81,7 @@ public class EImage2DChartPanel extends EChartPanel {
 	      boolean dataExportMenu, boolean standardGestures, boolean stickyZeroForRangeAxis) {
 		  super(chart, useBuffer, graphicsExportMenu, dataExportMenu, standardGestures, stickyZeroForRangeAxis);
 			this.img = img;
+			ChartLogics.makeChartResizable(this);
 	  }
 	
 	@Override
@@ -89,6 +94,10 @@ public class EImage2DChartPanel extends EChartPanel {
 			          new Event[] {Event.DOUBLE_CLICK}, Button.BUTTON1, Key.NONE, null);
 			g.addGestureHandler(Handler.NEXT_ZOOM_HISTORY, Entity.XY_ITEM,
 		          new Event[] {Event.DOUBLE_CLICK}, Button.BUTTON1, Key.CTRL, null);
+			
+			// drag zoomstandardGestures
+//	        g.addDragGestureHandler(new DragHandler[] {DragHandler.SCROLL_AXIS},
+//	                  new Key[] {Key.ALL}, Entity.XY_ITEM, Button.BUTTON1, null, null);
 		}
 	}
 

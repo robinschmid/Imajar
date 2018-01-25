@@ -73,6 +73,13 @@ public class ChartGestureEvent {
       gesture.setKey(Key.fromList(keys));
     }
   }
+  
+  public int getX() {
+	  return mouseEvent.getX();
+  }
+  public int getY() {
+	  return mouseEvent.getY();
+  }
 
   public ChartGesture getGesture() {
     return gesture;

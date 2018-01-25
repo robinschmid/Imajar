@@ -68,8 +68,6 @@ public class XYSquaredPlotDemo {
         XYSquaredPlot squarePlot = new XYSquaredPlot(dataset, domainAx, rangeAx, r);
         squarePlot.setOrientation(PlotOrientation.VERTICAL);
         
-        //define x-axis, and square y-axis to it
-        squarePlot.setSquaredToRange(true);
 
         //connect plot and renderer
         r.setPlot(squarePlot);

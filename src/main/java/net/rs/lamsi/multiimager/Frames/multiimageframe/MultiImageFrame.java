@@ -47,7 +47,7 @@ import net.rs.lamsi.general.framework.basics.RangeSliderColumn;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.listener.AspectRatioListener;
+import net.rs.lamsi.general.myfreechart.experimental.AspectRatioListener;
 import net.rs.lamsi.general.myfreechart.listener.ChartZoomConnector;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;

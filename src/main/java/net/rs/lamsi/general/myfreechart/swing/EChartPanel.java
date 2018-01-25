@@ -40,6 +40,7 @@ import org.jfree.data.RangeType;
 import org.jfree.data.xy.XYDataset;
 
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
+import net.rs.lamsi.general.myfreechart.experimental.ChartSizeChangedListener;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
 import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
@@ -49,6 +50,7 @@ import net.rs.lamsi.general.myfreechart.listener.AxisRangeChangedListener;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.menus.MenuExportToClipboard;
 import net.rs.lamsi.general.myfreechart.menus.MenuExportToExcel;
+import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
@@ -156,18 +158,7 @@ public class EChartPanel extends ChartPanel {
 		}
 	}
   }
-
-  /**
-   * Adds all standard gestures defined in {@link ChartGestureHandler#getStandardGestures()}
-   */
-  public void addStandardGestures() {
-    // add ChartGestureHandlers
-    ChartGestureMouseAdapter m = getGestureAdapter();
-    if (m != null) {
-      for (GestureHandlerFactory f : ChartGestureHandler.getStandardGestures())
-        m.addGestureHandler(f.createHandler());
-    }
-  }
+  
 
   /**
    * Init ChartPanel Mouse Listener For MouseDraggedOverAxis event For scrolling X-Axis und zooming
@@ -206,10 +197,21 @@ public class EChartPanel extends ChartPanel {
     // mouse adapter for scrolling and zooming
     mouseAdapter = new ChartGestureMouseAdapter();
     mouseAdapter.addDebugHandler();
-    // mouseAdapter.addDebugHandler();
     this.addMouseListener(mouseAdapter);
     this.addMouseMotionListener(mouseAdapter);
     this.addMouseWheelListener(mouseAdapter);
+  }
+
+  /**
+   * Adds all standard gestures defined in {@link ChartGestureHandler#getStandardGestures()}
+   */
+  public void addStandardGestures() {
+    // add ChartGestureHandlers
+    ChartGestureMouseAdapter m = getGestureAdapter();
+    if (m != null) {
+      for (GestureHandlerFactory f : ChartGestureHandler.getStandardGestures())
+        m.addGestureHandler(f.createHandler());
+    }
   }
   
   /**

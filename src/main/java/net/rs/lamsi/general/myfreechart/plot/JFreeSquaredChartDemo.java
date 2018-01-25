@@ -1,7 +1,10 @@
 package net.rs.lamsi.general.myfreechart.plot;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -14,6 +17,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 
 public class JFreeSquaredChartDemo {
@@ -22,13 +26,28 @@ public class JFreeSquaredChartDemo {
         XYDataset dataset = createDataset();
         JPanel chartPanel = createChartPanel(dataset);
         JFrame frame = new JFrame("Squared XY Plot Demo");
+        frame.setSize(1000, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(chartPanel);
+
+        JPanel border = new JPanel(new BorderLayout());
+        FlowLayout l = new FlowLayout();
+        l.setHgap(0);
+        l.setVgap(0);
+        
+        
+        JPanel flow = new JPanel(l);
+        
+
+        BoxLayout b = new BoxLayout(flow, BoxLayout.Y_AXIS);
+        
+        
+        border.add(chartPanel, BorderLayout.CENTER);
+        
+        frame.getContentPane().add(border);
         //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.pack();
         //frame.setLocation((screenSize.width - frame.getWidth()) / 2,
         //        (screenSize.height - frame.getHeight()) / 2);
-        frame.show();
+        frame.setVisible(true);
     }
     
     private XYDataset createDataset(){
@@ -64,11 +83,10 @@ public class JFreeSquaredChartDemo {
         r.setBaseShapesVisible(true);
         
         //create a SquaredXYPlot with above data
-        XYSquaredPlot squarePlot = new XYSquaredPlot(dataset, domainAx, rangeAx, r);
+        XYSquaredPlot squarePlot = new XYSquaredPlot(dataset, domainAx, rangeAx, r, Scale.DYNAMIC);
         squarePlot.setOrientation(PlotOrientation.VERTICAL);
         
         //define x-axis, and square y-axis to it
-        squarePlot.setSquaredToRange(true);
 
         //connect plot and renderer
         r.setPlot(squarePlot);
