@@ -37,7 +37,8 @@ public class ChartZoomConnector {
 	}
 
 	public void clear() {
-		charts.clear();
+		if(charts!=null)
+			charts.clear();
 	}
 	public List<ChartPanel> getCharts() {
 		return charts;

@@ -1737,12 +1737,20 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public double getMaxBlockWidth() {
-		return getMaxBlockWidth(getSettings().getSettImage().getRotationOfData());
+		return getMaxBlockWidth(getSettings().getSettImage());
 	}
-	public double getMaxBlockWidth(int rotation) {
-		if(rotation!=0 && rotation!=180) return getMaxBlockHeight(0);
+
+	public double getMaxBlockWidth(SettingsGeneralImage settImg) {
+		double interpolation = settImg.isUseInterpolation()? settImg.getInterpolation() : 1;
+		return getMaxBlockWidth(settImg.getRotationOfData(), interpolation);
+	}
+	public double getMaxBlockWidth(int rotation, double interpolation) {
+		if(rotation!=0 && rotation!=180) return getMaxBlockHeight(0, interpolation);
 		else {
-			return data.getMaxXDPWidth()*settings.getSettImage().getVelocity();
+			int red = interpolation!=0? (int)(1/interpolation) : 0;
+			int inter = (int) interpolation;
+			double f = red==0? 1.0/inter : red;
+			return data.getMaxXDPWidth()*settings.getSettImage().getVelocity()*f;
 		}
 	}
 	/**
@@ -1751,11 +1759,19 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 	 * @return
 	 */
 	public double getMaxBlockHeight() {
-		return getMaxBlockHeight(getSettings().getSettImage().getRotationOfData());
+		return getMaxBlockHeight(getSettings().getSettImage());
 	}
-	public double getMaxBlockHeight(int rotation) {
-		if(rotation!=0 && rotation!=180) return getMaxBlockWidth(0);
+	public double getMaxBlockHeight(SettingsGeneralImage settImg) {
+		double interpolation = settImg.isUseInterpolation()? settImg.getInterpolation() : 1;
+		return getMaxBlockHeight(settImg.getRotationOfData(), interpolation);
+	}
+	public double getMaxBlockHeight(int rotation, double interpolation) {
+		if(rotation!=0 && rotation!=180) return getMaxBlockWidth(0, interpolation);
 		else { 
+			// height is not changed when reducing data points
+			int red = interpolation!=0? (int)(1/interpolation) : 0;
+			int inter = (int) interpolation;
+			double f = red==0? 1.0/inter : 1;
 			return settings.getSettImage().getSpotsize();
 		}
 	}

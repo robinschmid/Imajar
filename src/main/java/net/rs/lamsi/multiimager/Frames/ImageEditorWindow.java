@@ -696,17 +696,36 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 		fl_pnNorthMenu.setHgap(4);
 		fl_pnNorthMenu.setAlignment(FlowLayout.LEFT);
 		
-		JButton button = new JButton("");
-		button.addActionListener(new ActionListener() {
+		JButton btnROI = new JButton("");
+		btnROI.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				openDataSelectionDialog();
 			}
 		});
-		button.setPreferredSize(new Dimension(31, 31));
-		button.setIcon(new ImageIcon(
+		btnROI.setPreferredSize(new Dimension(31, 31));
+		btnROI.setIcon(new ImageIcon(
 				new ImageIcon(Module.class.getResource("/img/btnROI.png")).getImage().
 				getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+		pnNorthMenu.add(btnROI);
+		
+
+		JButton button = new JButton("");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// show dialog with mutliple image view
+					ImageGroupMD img = getModuleTreeImages().getSelectedGroup();
+					if(img!=null) {
+						MultiImageFrame frame = new MultiImageFrame();
+						frame.init(img); 
+					}
+				}
+		});
+		button.setPreferredSize(new Dimension(31, 31));
+		button.setIcon(new ImageIcon(
+				new ImageIcon(Module.class.getResource("/img/btn_MultiImage.png")).getImage().
+				getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
 		pnNorthMenu.add(button);
+		
 
 		JPanel north = new JPanel();
 		pnNorthContent.add(north, BorderLayout.NORTH);

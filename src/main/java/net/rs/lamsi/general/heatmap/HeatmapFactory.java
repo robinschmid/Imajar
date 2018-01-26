@@ -133,7 +133,7 @@ public class HeatmapFactory {
 			// get matrices
 			XYIDataMatrix data = image.toXYIDataMatrix(false, true);
 			// interpolate to array [3][n]
-			dat = DataInterpolator.interpolateToArray(data, f);
+			dat = DataInterpolator.interpolateToArray(data, sett.getInterpolation());
 		}
 		else {
 			// get rotated and reflected dataset
@@ -223,8 +223,8 @@ public class HeatmapFactory {
 
 				// TODO nicht feste Blockwidth!
 				// erstmal feste BlockWidth 
-				renderer.setBlockWidth(counter, cimg.getMaxBlockWidth(cimg.getSettings().getSettImage().getRotationOfData())); 
-				renderer.setBlockHeight(counter, cimg.getMaxBlockHeight(cimg.getSettings().getSettImage().getRotationOfData())); 
+				renderer.setBlockWidth(counter, cimg.getMaxBlockWidth()); 
+				renderer.setBlockHeight(counter, cimg.getMaxBlockHeight()); 
 
 
 				renderer.setSeriesPaint(counter, ps.getMinColor());
@@ -347,10 +347,10 @@ public class HeatmapFactory {
 			renderer.setPaintScale(scale);
 			renderer.setAutoPopulateSeriesFillPaint(true);
 			renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+			
 			// TODO change to dynamic block width
-			double f = settImage.isUseInterpolation()? settImage.getInterpolation() : 1;
-			renderer.setBlockWidth(img.getMaxBlockWidth(settImage.getRotationOfData()) /f); 
-			renderer.setBlockHeight(img.getMaxBlockHeight(settImage.getRotationOfData())/f); 
+			renderer.setBlockWidth(img.getMaxBlockWidth(settImage)); 
+			renderer.setBlockHeight(img.getMaxBlockHeight(settImage)); 
 			
 			
 			// Plot erstellen mit daten

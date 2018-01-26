@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.rs.lamsi</groupId>
 	<artifactId>MassImager</artifactId>
-	<version>3.2b</version>
+	<version>3.39b</version>
 	<build>
 		<resources>
 			<resource>

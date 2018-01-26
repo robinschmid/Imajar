@@ -55,6 +55,7 @@ public class XYSquaredPlot extends XYPlot {
 	private Scale smode;
 	// set a fixed mode after first iteration
 	private Scale modeSecondIteration = Scale.FIXED_WIDTH;
+	private int maxW=4000, maxH = 4000;
 	
 	 public XYSquaredPlot(){
 		 this(Scale.DYNAMIC);
@@ -153,6 +154,11 @@ public class XYSquaredPlot extends XYPlot {
             double h = chartarea.getHeight();
             
             Scale m = (smode==Scale.DYNAMIC && iteration>1)? modeSecondIteration : smode;
+            // if the maximum height or width was reached after some iterations - switch to dynamic
+            if(iteration>1 && ((m.equals(Scale.FIXED_WIDTH) && Math.abs(h-maxH)<1) ||
+            		(m.equals(Scale.FIXED_HEIGHT) && Math.abs(w-maxW)<1)))
+            	m = Scale.DYNAMIC;
+            
             switch(m) {
             case DYNAMIC:
             	// height is limiting factor?
@@ -172,10 +178,16 @@ public class XYSquaredPlot extends XYPlot {
             case FIXED_WIDTH:
             	double dh = dataArea.getHeight()- dataArea.getWidth() / xrange*yrange;
             	h -= dh;
+            	if(h>maxH) {
+            		h = maxH;
+            	}
             	break;
             case FIXED_HEIGHT:
             	double dw = dataArea.getWidth()- dataArea.getHeight() / yrange*xrange;
             	w -= dw;
+            	if(w>maxW) {
+            		w = maxW;
+            	}
             	break;
             }
             
@@ -220,5 +232,19 @@ public class XYSquaredPlot extends XYPlot {
 		boolean notify = scale.equals(this.smode);
 		smode = scale;
 		return notify;
+	}
+	/**
+	 * is only used in Scale.FIXED_WIDTH mode
+	 * @param i
+	 */
+	public void setMaximumHeight(int i) {
+		maxH = i;
+	}
+	/**
+	 * is only used in Scale.FIXED_WIDTH mode
+	 * @param i
+	 */
+	public void setMaximumWidth(int i) {
+		maxW = i;
 	}
 }

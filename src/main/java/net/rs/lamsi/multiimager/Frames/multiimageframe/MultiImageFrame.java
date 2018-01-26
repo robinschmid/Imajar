@@ -49,6 +49,8 @@ import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.experimental.AspectRatioListener;
 import net.rs.lamsi.general.myfreechart.listener.ChartZoomConnector;
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -58,15 +60,14 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
-import net.sf.mzmine.framework.chartbasics.PlotChartPanel;
 
 public class MultiImageFrame extends JFrame {
-
+	private static final long serialVersionUID = 1L;
 	private JFrame thisframe;
 	private JPanel contentPane;
 	private JSplitPane split;
 	private JPanel pnGridImg;
-	private int GRID_COL = 2;
+	private int GRID_COL = 4;
 	// data table
 	private JTable table;
 	private MultiImageTableModel tableModel;
@@ -262,11 +263,14 @@ public class MultiImageFrame extends JFrame {
 		cbKeepAspectRatio.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				// TODO
+				boolean keepRatio = cbKeepAspectRatio.isSelected();
 				for(Heatmap map : heat) {
-//					AspectRatioListener listener = map.getChartPanel().getAspectRatioListener();
-//					if(listener!=null)
-//						listener.setKeepRatio(cbKeepAspectRatio.isSelected());
+					XYPlot plot = map.getChart().getXYPlot();
+					if(plot instanceof XYSquaredPlot) {
+						XYSquaredPlot sp = ((XYSquaredPlot)plot);
+						sp.setScaleMode(keepRatio? Scale.FIXED_WIDTH : Scale.IGNORE);
+						sp.setMaximumHeight(600);
+					}
 				}
 
 				updateGridView();
@@ -274,12 +278,13 @@ public class MultiImageFrame extends JFrame {
 		});
 
 		spinnerColumns = new JSpinner();
+		
 		spinnerColumns.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				setColumns((int) spinnerColumns.getValue());
 			}
 		});
-		spinnerColumns.setModel(new SpinnerNumberModel(3, 1, 10, 1));
+		spinnerColumns.setModel(new SpinnerNumberModel(GRID_COL, 1, 20, 1));
 		panel_2.add(spinnerColumns);
 
 		lblCol = new JLabel("col");
@@ -359,7 +364,7 @@ public class MultiImageFrame extends JFrame {
 		for(int i=0; i<size; i++) {
 			JPanel p = pn[i];
 			if(p.getComponents().length>0) {
-				PlotChartPanel cp = (PlotChartPanel) p.getComponent(0);
+				EChartPanel cp = (EChartPanel) p.getComponent(0);
 				
 				// calculate height if keep aspect ratio==true
 				if(getCbKeepAspectRatio().isSelected()) {
@@ -561,7 +566,7 @@ public class MultiImageFrame extends JFrame {
 			updateChart(imgIndex);
 		// add to grid view
 		if(heat[imgIndex]!=null) { 
-			final Heatmap h = heat[imgIndex];
+			Heatmap h = heat[imgIndex];
 			EChartPanel cp = h.getChartPanel();
 			cp.setPreferredSize(new Dimension(50,50)); 
 			pn[gi].add(cp, BorderLayout.CENTER);

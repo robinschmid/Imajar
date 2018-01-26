@@ -138,8 +138,8 @@ public class TestImage2DRotationOverlay extends JFrame {
 					        renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 					        // TODO nicht feste Blockwidth!
 					        // erstmal feste BlockWidth 
-					        renderer.setBlockWidth(img.getMaxBlockWidth(0)); 
-					        renderer.setBlockHeight(img.getMaxBlockHeight(0)); 
+					        renderer.setBlockWidth(img.getMaxBlockWidth(0,1)); 
+					        renderer.setBlockHeight(img.getMaxBlockHeight(0,1)); 
 							
 							
 							map.getPlot().setDomainAxis(1, xAxis);
