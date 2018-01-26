@@ -78,6 +78,7 @@ public class EImage2DChartPanel extends EChartPanel {
 	      boolean dataExportMenu, boolean standardGestures, boolean stickyZeroForRangeAxis) {
 		  super(chart, useBuffer, graphicsExportMenu, dataExportMenu, standardGestures, stickyZeroForRangeAxis);
 			this.img = img;
+			addExtraExportMenu(graphicsExportMenu, dataExportMenu);
 			ChartLogics.makeChartResizable(this);
 	  }
 	
@@ -112,10 +113,7 @@ public class EImage2DChartPanel extends EChartPanel {
 			HeatmapGraphicsExportDialog.openDialog(getChart(), img); 
 	  }
 
-	@Override
-	protected void addExportMenu(boolean graphics, boolean data) {
-		super.addExportMenu(graphics, data);
-		
+	protected void addExtraExportMenu(boolean graphics, boolean data) {
 		final EImage2DChartPanel thispanel = this;
 		if(data) {
 		if(img!=null && img.isImage2D()) {

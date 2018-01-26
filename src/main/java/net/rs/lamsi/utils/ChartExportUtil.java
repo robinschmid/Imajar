@@ -76,69 +76,6 @@ public class ChartExportUtil {
 	// VECTORS: PDF uses ITextpdf lib
 
 	/**
-	 * takes Only Width in account
-	 * resize chartpanel before
-	 * @param chart
-	 * @param sett
-	 * @throws Exception
-	 */
-	public static void writeChartToImageOLD(ChartPanel chart, SettingsExportGraphics sett)
-			throws Exception {
-		// size for plot or chart
-		FIXED_SIZE fixed = sett.getFixedSize();
-
-		// NOT WORKING
-		// // factor
-		// Dimension oldSize = sett.getSize();
-		// int dpi = sett.getResolution();
-		// double f = dpi/72.0;
-		// boolean resized = false;
-		// // pixel graphics and resolution != 72 dpi
-		// if(sett.getFormat().isPixel() && dpi!=72) {
-		// // change font size
-		// ChartLogics.scaleFonts(chart.getChart(), f);
-		//
-		// // change width and height
-		// double w = sett.getSize().getWidth()*f;
-		// double h = sett.getSize().getHeight()*f;
-		// sett.setSize(new Dimension((int)w, (int)h));
-		// // reset resolution
-		// sett.setResolution(72);
-		// resized = true;
-		// }
-		// Size only by width?
-		if (sett.isUseOnlyWidth()) {
-			// fixed size for chart or plot
-			if (fixed.equals(FIXED_SIZE.CHART)) {
-				sett.setHeight(ChartLogics.calcHeightToWidth(chart, sett.getSize().getWidth(), false));
-			} else {
-				// fixed plot width
-				sett.setSize(ChartLogics.calcSizeForPlotWidth(chart, sett.getSize().getWidth()));
-			}
-		} else if (fixed.equals(FIXED_SIZE.PLOT)) {
-			// fixed plot size - width and height are given
-			sett.setSize(ChartLogics.calcSizeForPlotSize(chart, sett.getSize().getWidth(),
-					sett.getSize().getHeight()));
-		}
-
-		// resize
-		chart.setPreferredSize(sett.getSize());
-		chart.setMaximumSize(sett.getSize());
-		chart.setMinimumSize(sett.getSize());
-
-		writeChartToImage(chart.getChart(), sett);
-
-		// NOT WORKING
-		// // reset size
-		// sett.setSize(oldSize);
-		// sett.setResolution(dpi);
-		// if (resized) {
-		// // change font size back
-		// ChartLogics.scaleFonts(chart.getChart(), 1.0 / f);
-		// }
-	}
-
-	/**
 	 * This method is used to save all image formats. it uses the specific methods for each file
 	 * format
 	 * 

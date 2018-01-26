@@ -50,6 +50,20 @@ public class FileAndPathUtil {
 	    else
 	      return new File(parent, name);
 	  }
+
+	  /**
+	   * replace all invalid characters
+	   * title.replaceAll("[:*?\"<>|]", "_");
+	   * title.replace(".", ",");
+	   * @param title
+	   * @return
+	   */
+	public static String replaceInvalidChar(String title) {
+	    title = title.replaceAll("[:*?\"<>|]", "_");
+	    title = title.replace(".", ",");
+		return title;
+	}
+	
   /**
    * Returns the real file path as path/filename.fileformat
    * 

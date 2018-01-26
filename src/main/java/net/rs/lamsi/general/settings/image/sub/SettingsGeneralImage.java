@@ -4,6 +4,8 @@ import java.io.File;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
+import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImageGroup;
@@ -66,6 +68,7 @@ public class SettingsGeneralImage extends Settings {
 	protected double blurRadius;
 	
 	protected boolean isCropDataToMin;
+	protected boolean keepAspectRatio = true;
 
 	public SettingsGeneralImage(String path, String fileEnding) {
 		super("SettingsGeneralImage", path, fileEnding); 
@@ -99,12 +102,13 @@ public class SettingsGeneralImage extends Settings {
 		blurRadius = 2;
 		isCropDataToMin = true;
 		intensityFactor = 1;
+		keepAspectRatio = true;
 	}
 
 
 	public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos, float velocity, float spotsize,
 			IMAGING_MODE imagingMode, boolean reflectHoriz, boolean reflectVert, int rotationOfData, boolean isBinaryData, 
-			boolean useInterpolation, double interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin) { 
+			boolean useInterpolation, double interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin, boolean keepAspectRatio) { 
 		this.velocity = velocity;
 		this.spotsize = spotsize; 
 		this.isBinaryData = isBinaryData; 
@@ -119,6 +123,7 @@ public class SettingsGeneralImage extends Settings {
 		this.blurRadius = blurRadius;
 		this.useBlur = useBlur;
 		this.isCropDataToMin = isCropDataToMin;
+		this.keepAspectRatio = keepAspectRatio;
 	}
 
 
@@ -144,6 +149,11 @@ public class SettingsGeneralImage extends Settings {
 		super.applyToHeatMap(heat);
 		// TODO apply to title in heat
 		heat.setShortTitle(xPosTitle, yPosTitle, showShortTitle);
+			
+		// Square plot
+		XYPlot p = heat.getChart().getXYPlot();
+		if(p instanceof XYSquaredPlot)
+			((XYSquaredPlot)p).setScaleMode(keepAspectRatio? Scale.DYNAMIC : Scale.IGNORE);
 	}
 	
 	//##########################################################
@@ -168,6 +178,7 @@ public class SettingsGeneralImage extends Settings {
 		toXML(elParent, doc, "blurRadius", blurRadius); 
 		toXML(elParent, doc, "isCropDataToMin", isCropDataToMin); 
 		toXML(elParent, doc, "intensityFactor", intensityFactor); 
+		toXML(elParent, doc, "keepAspectRatio", keepAspectRatio); 
 		
 		rotation.appendSettingsToXML(elParent, doc);
 	}
@@ -197,6 +208,7 @@ public class SettingsGeneralImage extends Settings {
 				else if(paramName.equals("useBlur"))useBlur = booleanFromXML(nextElement);  
 				else if(paramName.equals("filepath"))filepath = nextElement.getTextContent(); 
 				else if(paramName.equals("isCropDataToMin"))isCropDataToMin = booleanFromXML(nextElement);  
+				else if(paramName.equals("keepAspectRatio"))keepAspectRatio = booleanFromXML(nextElement);  
 				else if(isSettingsNode(nextElement, rotation.getSuperClass()))
 					rotation.loadValuesFromXML(nextElement, doc);
 			}
@@ -210,9 +222,16 @@ public class SettingsGeneralImage extends Settings {
 	public void setVelocity(float velocity) {
 		this.velocity = velocity;
 	}
-
 	public float getSpotsize() {
 		return spotsize;
+	}
+
+	public boolean isKeepAspectRatio() {
+		return keepAspectRatio;
+	}
+
+	public void setKeepAspectRatio(boolean keepAspectRatio) {
+		this.keepAspectRatio = keepAspectRatio;
 	}
 
 	public void setSpotsize(float spotsize) {

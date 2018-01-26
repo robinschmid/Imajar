@@ -221,8 +221,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
       addChartToPanel(heat.getChartPanel(), false);
       // set the name and path
       // replace
-      title = title.replaceAll("[:*?\"<>|]", "_");
-      title = title.replace(".", ",");
+      title = FileAndPathUtil.replaceInvalidChar(title);
       // title as filename
       sett.setFileName(fileName + title);
       // export

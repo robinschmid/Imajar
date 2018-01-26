@@ -4,6 +4,7 @@ import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.interf.GroupSettings;
+import net.rs.lamsi.utils.FileAndPathUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -68,7 +69,7 @@ public class SettingsImageGroup extends SettingsContainerSettings implements Gro
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = FileAndPathUtil.replaceInvalidChar(name);
 	}
 
 	public String getPathData() {

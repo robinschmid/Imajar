@@ -5,6 +5,7 @@ import java.io.File;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
+import net.rs.lamsi.utils.FileAndPathUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,6 +58,6 @@ public class SettingsImagingProject extends SettingsContainerSettings {
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = FileAndPathUtil.replaceInvalidChar(name);
 	}
 }
