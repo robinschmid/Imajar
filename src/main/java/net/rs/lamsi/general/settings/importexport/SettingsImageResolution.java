@@ -2,17 +2,15 @@ package net.rs.lamsi.general.settings.importexport;
 
 import java.awt.Dimension;
 
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
-import net.rs.lamsi.utils.useful.FloatDim;
-
-import org.jfree.ui.FloatDimension;
+import org.jfree.chart.ui.Size2D;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.itextpdf.text.Utilities;
+
+import net.rs.lamsi.general.settings.Settings;
 
 public class SettingsImageResolution extends Settings { 
 	// do not change the version!
@@ -86,14 +84,14 @@ public class SettingsImageResolution extends Settings {
 	 * 
 	 * @return size in given unit
 	 */
-	public FloatDimension getSizeInUnit() {
+	public Size2D getSizeInUnit() {
 		return getSizeInUnit(size, unit);
 	}  
 	/**
 	 * 
 	 * @return size in given unit
 	 */
-	public static FloatDimension getSizeInUnit(Dimension size, DIM_UNIT unit) {
+	public static Size2D getSizeInUnit(Dimension size, DIM_UNIT unit) {
 		float w=0, h=0;
 		switch(unit) {
 		case CM:
@@ -113,7 +111,7 @@ public class SettingsImageResolution extends Settings {
 			w = (float) size.getWidth();
 			h = (float) size.getHeight();
 		}
-		return new FloatDimension(w, h);
+		return new Size2D(w, h);
 	} 
 	/**
 	 * Sets the size in inches by given width and height

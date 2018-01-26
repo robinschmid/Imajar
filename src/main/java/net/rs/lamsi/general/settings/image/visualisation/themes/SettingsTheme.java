@@ -2,29 +2,18 @@ package net.rs.lamsi.general.settings.image.visualisation.themes;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Vector;
-
-import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
-import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
-import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
-import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.SettingsContainerSettings;
-import net.rs.lamsi.general.settings.image.SettingsContainerCollectable2D;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLabelLocation;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.title.PaintScaleLegend;
-import org.jfree.ui.RectangleInsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
+import net.rs.lamsi.general.settings.Settings;
 
 public class SettingsTheme extends Settings {
 	// do not change the version!

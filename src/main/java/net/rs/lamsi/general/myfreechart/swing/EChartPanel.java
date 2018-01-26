@@ -168,15 +168,26 @@ public class EChartPanel extends ChartPanel {
     final EChartPanel chartPanel = this;
 
     // set sticky zero
-    if (stickyZeroForRangeAxis) {
-      ValueAxis rangeAxis = chartPanel.getChart().getXYPlot().getRangeAxis();
+    XYPlot p = this.getChart().getXYPlot();
+      ValueAxis rangeAxis = p.getRangeAxis();
+      ValueAxis domainAxis = p.getDomainAxis();
       if (rangeAxis instanceof NumberAxis) {
-        NumberAxis axis = (NumberAxis) rangeAxis;
-        axis.setAutoRangeIncludesZero(true);
-        axis.setAutoRange(true);
-        axis.setAutoRangeStickyZero(true);
-        axis.setRangeType(RangeType.POSITIVE);
+//    	    if (stickyZeroForRangeAxis) {
+		        NumberAxis axis = (NumberAxis) rangeAxis;
+		        axis.setAutoRangeIncludesZero(stickyZeroForRangeAxis);
+		        axis.setAutoRange(true);
+		        axis.setAutoRangeStickyZero(stickyZeroForRangeAxis);
+//		        axis.setRangeType(RangeType.POSITIVE);
+//    	    }
       }
+      if (domainAxis instanceof NumberAxis) {
+//  	    if (stickyZeroForRangeAxis) {
+		        NumberAxis axis = (NumberAxis) rangeAxis;
+		        axis.setAutoRangeIncludesZero(stickyZeroForRangeAxis);
+		        axis.setAutoRange(true);
+		        axis.setAutoRangeStickyZero(stickyZeroForRangeAxis);
+//		        axis.setRangeType(RangeType.POSITIVE);
+//  	    }
     }
 
     // zoom history
@@ -184,9 +195,6 @@ public class EChartPanel extends ChartPanel {
     addPropertyChangeListener(ZoomHistory.PROPERTY_NAME, e -> zoomHistory = (ZoomHistory)e.getNewValue());
 
     // axis range changed listener for gestures etc
-    XYPlot p = this.getChart().getXYPlot();
-    ValueAxis rangeAxis = p.getRangeAxis();
-    ValueAxis domainAxis = p.getDomainAxis();
     if (rangeAxis != null) {
       rangeAxis.addChangeListener(new AxisRangeChangedListener(p, e -> axesRangeChanged(e)));
     }

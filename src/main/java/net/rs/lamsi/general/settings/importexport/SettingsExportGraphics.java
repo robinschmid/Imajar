@@ -4,14 +4,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 
-import org.jfree.ui.FloatDimension;
+import org.jfree.chart.ui.Size2D;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
@@ -143,7 +142,7 @@ public class SettingsExportGraphics extends Settings {
 	 * width and height in DIM_UNIT
 	 * @return
 	 */
-	public FloatDimension getSizeInUnit() {
+	public Size2D getSizeInUnit() {
 		return resolution.getSizeInUnit();
 	} 
 	/**

@@ -13,7 +13,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.ui.FloatDimension;
+import org.jfree.chart.ui.Size2D;
 
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
@@ -318,7 +318,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
     getTxtManualRes().setText("" + sett.getResolution());
     getComboSizeUnit().setSelectedItem(sett.getUnit());
     DecimalFormat form = new DecimalFormat("#.###");
-    FloatDimension size = sett.getSizeInUnit();
+    Size2D size = sett.getSizeInUnit();
     getTxtWidth().setText("" + form.format(size.getWidth()));
     getTxtHeight().setText("" + form.format(size.getHeight()));
 

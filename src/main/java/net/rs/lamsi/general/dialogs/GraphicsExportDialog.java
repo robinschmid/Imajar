@@ -31,8 +31,7 @@ import javax.swing.border.EmptyBorder;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.ui.FloatDimension;
+import org.jfree.chart.ui.Size2D;
 
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
@@ -341,7 +340,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 		getTxtManualRes().setText("" + sett.getResolution());
 		getComboSizeUnit().setSelectedItem(sett.getUnit());
 		DecimalFormat form = new DecimalFormat("#.###");
-		FloatDimension size = sett.getSizeInUnit();
+		Size2D size = sett.getSizeInUnit();
 		getTxtWidth().setText("" + form.format(size.getWidth()));
 		getTxtHeight().setText("" + form.format(size.getHeight()));
 
