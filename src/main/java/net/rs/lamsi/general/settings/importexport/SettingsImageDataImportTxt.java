@@ -44,12 +44,11 @@ public class SettingsImageDataImportTxt extends Settings {
 	// exclude data
 	protected String excludeColumns;
 	protected boolean noXData;
+	protected boolean isShiftXValues;
 	
- 
 	public IMPORT getModeImport() {
 		return modeImport;
 	}
-
 
 	public void setModeImport(IMPORT modeImport) {
 		this.modeImport = modeImport;
@@ -78,7 +77,6 @@ public class SettingsImageDataImportTxt extends Settings {
 		this(modeImport, isSearchingForMetaData, sSeparation, new FileNameExtFilter("", ""), isFilesInSeparateFolders);
 	}
 
-
 	public SettingsImageDataImportTxt(IMPORT oneFile2dIntensity,
 			boolean checkformeta, String separation, ModeData mode,
 			FileNameExtFilter filter2, boolean isFilesInSeparateFolders, int startLine, int endLine, int startDP, int endDP) { 
@@ -93,7 +91,7 @@ public class SettingsImageDataImportTxt extends Settings {
 			boolean checkformeta, String separation, ModeData mode,
 			FileNameExtFilter filter2, boolean isFilesInSeparateFolders, int startLine, int endLine, int startDP, int endDP,
 			XUNIT unit, float splitStart, float splitAfter, boolean useHardSplit,
-			String excludeColumns, boolean noXData) { 
+			String excludeColumns, boolean noXData, boolean isShiftXValues) { 
 		this(oneFile2dIntensity, checkformeta, separation, mode, filter2, isFilesInSeparateFolders, startLine,endLine,startDP,endDP);
 		this.splitUnit = unit;
 		if(noXData) splitUnit = XUNIT.DP;
@@ -102,6 +100,7 @@ public class SettingsImageDataImportTxt extends Settings {
 		this.useHardSplit = useHardSplit;
 		this.noXData = noXData;
 		this.excludeColumns = excludeColumns.replaceAll(" ", "");
+		this.isShiftXValues = isShiftXValues;
 	}
 
 
@@ -112,6 +111,7 @@ public class SettingsImageDataImportTxt extends Settings {
 		sSeparation = ",";
 		modeData = ModeData.X_MATRIX_STANDARD;
 		isFilesInSeparateFolders = false;
+		isShiftXValues = true;
 	}
 
 	//##########################################################
@@ -123,6 +123,7 @@ public class SettingsImageDataImportTxt extends Settings {
 		toXML(elParent, doc, "splitAfter", splitAfter); 
 		toXML(elParent, doc, "useHardSplit", useHardSplit); 
 		toXML(elParent, doc, "noXData", noXData); 
+		toXML(elParent, doc, "isShiftXValues", isShiftXValues); 
 		toXML(elParent, doc, "excludeColumns", excludeColumns); 
 		
 		toXML(elParent, doc, "modeData", modeData); 
@@ -150,6 +151,7 @@ public class SettingsImageDataImportTxt extends Settings {
 				else if(paramName.equals("splitAfter"))splitAfter = floatFromXML(nextElement);  
 				else if(paramName.equals("useHardSplit"))useHardSplit = booleanFromXML(nextElement);  
 				else if(paramName.equals("noXData"))noXData = booleanFromXML(nextElement);  
+				else if(paramName.equals("isShiftXValues"))isShiftXValues = booleanFromXML(nextElement);  
 				else if(paramName.equals("excludeColumns"))excludeColumns = nextElement.getTextContent();  
 				
 				else if(paramName.equals("modeData"))modeData = ModeData.valueOf(nextElement.getTextContent());  
@@ -352,5 +354,11 @@ public class SettingsImageDataImportTxt extends Settings {
 	}
 	public void setSearchingForMetaData(boolean isSearchingForMetaData) {
 		this.isSearchingForMetaData = isSearchingForMetaData;
+	}
+	public boolean isShiftXValues() {
+		return isShiftXValues;
+	}
+	public void setShiftXValues(boolean isShiftXValues) {
+		this.isShiftXValues = isShiftXValues;
 	}
 }

@@ -112,6 +112,9 @@ public class ImportDataDialog extends JDialog {
 	private JRadioButton rbiCAPQOneRow;
 	private JComboBox comboSeparationSpecial;
 	private JRadioButton rbShimadzuICPMS;
+	private JPanel panel_4;
+	private JPanel panel_5;
+	private JCheckBox cbShiftXValues;
 
 	/**
 	 * Launch the application.
@@ -394,70 +397,86 @@ public class ImportDataDialog extends JDialog {
 			getContentPane().add(south, BorderLayout.SOUTH);
 			south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
 			{
-				panel_2 = new JPanel();
-				panel_2.setAlignmentX(Component.RIGHT_ALIGNMENT);
-				south.add(panel_2);
-				panel_2.setLayout(new MigLayout("", "[][][][]", "[][][]"));
+				panel_4 = new JPanel();
+				south.add(panel_4);
+				panel_4.setLayout(new BorderLayout(0, 0));
 				{
-					lblFilter = new JLabel("Filter:");
-					lblFilter.setFont(new Font("Tahoma", Font.BOLD, 11));
-					panel_2.add(lblFilter, "cell 0 0,alignx left");
+					panel_2 = new JPanel();
+					panel_4.add(panel_2, BorderLayout.WEST);
+					panel_2.setAlignmentX(Component.RIGHT_ALIGNMENT);
+					panel_2.setLayout(new MigLayout("", "[][][][]", "[][][]"));
+					{
+						lblFilter = new JLabel("Filter:");
+						lblFilter.setFont(new Font("Tahoma", Font.BOLD, 11));
+						panel_2.add(lblFilter, "cell 0 0,alignx left");
+					}
+					{
+						lblFirst = new JLabel("first");
+						panel_2.add(lblFirst, "cell 1 0,alignx center");
+					}
+					{
+						lblLast = new JLabel("last");
+						panel_2.add(lblLast, "cell 3 0,alignx center");
+					}
+					{
+						lblScanLines = new JLabel("Scan lines:");
+						lblScanLines.setHorizontalAlignment(SwingConstants.TRAILING);
+						panel_2.add(lblScanLines, "cell 0 1,alignx trailing");
+					}
+					{
+						txtFirstLine = new JTextField();
+						txtFirstLine.setHorizontalAlignment(SwingConstants.RIGHT);
+						txtFirstLine.setToolTipText("First scan line to import (use 0 or no input for no filtering)");
+						txtFirstLine.setText("0");
+						panel_2.add(txtFirstLine, "cell 1 1,growx");
+						txtFirstLine.setColumns(5);
+					}
+					{
+						lblTo = new JLabel("to");
+						panel_2.add(lblTo, "cell 2 1,alignx trailing");
+					}
+					{
+						txtLastLine = new JTextField();
+						txtLastLine.setToolTipText("Last scan line to import (use no input for no filtering)");
+						txtLastLine.setHorizontalAlignment(SwingConstants.RIGHT);
+						txtLastLine.setColumns(5);
+						panel_2.add(txtLastLine, "cell 3 1,growx");
+					}
+					{
+						lblDataPoints = new JLabel("Data points:");
+						lblDataPoints.setHorizontalAlignment(SwingConstants.TRAILING);
+						panel_2.add(lblDataPoints, "cell 0 2,alignx trailing");
+					}
+					{
+						txtFirstDP = new JTextField();
+						txtFirstDP.setHorizontalAlignment(SwingConstants.RIGHT);
+						txtFirstDP.setToolTipText("First data point in a scan line to import (use 0 or no input for no filtering)");
+						txtFirstDP.setText("0");
+						panel_2.add(txtFirstDP, "cell 1 2,growx");
+						txtFirstDP.setColumns(5);
+					}
+					{
+						lblTo_1 = new JLabel("to");
+						panel_2.add(lblTo_1, "cell 2 2,alignx trailing");
+					}
+					{
+						txtLastDP = new JTextField();
+						txtLastDP.setHorizontalAlignment(SwingConstants.RIGHT);
+						txtLastDP.setToolTipText("Last data point in a scan line to import (use no input for no filtering)");
+						txtLastDP.setColumns(5);
+						panel_2.add(txtLastDP, "cell 3 2,growx");
+					}
 				}
 				{
-					lblFirst = new JLabel("first");
-					panel_2.add(lblFirst, "cell 1 0,alignx center");
-				}
-				{
-					lblLast = new JLabel("last");
-					panel_2.add(lblLast, "cell 3 0,alignx center");
-				}
-				{
-					lblScanLines = new JLabel("Scan lines:");
-					lblScanLines.setHorizontalAlignment(SwingConstants.TRAILING);
-					panel_2.add(lblScanLines, "cell 0 1,alignx trailing");
-				}
-				{
-					txtFirstLine = new JTextField();
-					txtFirstLine.setHorizontalAlignment(SwingConstants.RIGHT);
-					txtFirstLine.setToolTipText("First scan line to import (use 0 or no input for no filtering)");
-					txtFirstLine.setText("0");
-					panel_2.add(txtFirstLine, "cell 1 1,growx");
-					txtFirstLine.setColumns(5);
-				}
-				{
-					lblTo = new JLabel("to");
-					panel_2.add(lblTo, "cell 2 1,alignx trailing");
-				}
-				{
-					txtLastLine = new JTextField();
-					txtLastLine.setToolTipText("Last scan line to import (use no input for no filtering)");
-					txtLastLine.setHorizontalAlignment(SwingConstants.RIGHT);
-					txtLastLine.setColumns(5);
-					panel_2.add(txtLastLine, "cell 3 1,growx");
-				}
-				{
-					lblDataPoints = new JLabel("Data points:");
-					lblDataPoints.setHorizontalAlignment(SwingConstants.TRAILING);
-					panel_2.add(lblDataPoints, "cell 0 2,alignx trailing");
-				}
-				{
-					txtFirstDP = new JTextField();
-					txtFirstDP.setHorizontalAlignment(SwingConstants.RIGHT);
-					txtFirstDP.setToolTipText("First data point in a scan line to import (use 0 or no input for no filtering)");
-					txtFirstDP.setText("0");
-					panel_2.add(txtFirstDP, "cell 1 2,growx");
-					txtFirstDP.setColumns(5);
-				}
-				{
-					lblTo_1 = new JLabel("to");
-					panel_2.add(lblTo_1, "cell 2 2,alignx trailing");
-				}
-				{
-					txtLastDP = new JTextField();
-					txtLastDP.setHorizontalAlignment(SwingConstants.RIGHT);
-					txtLastDP.setToolTipText("Last data point in a scan line to import (use no input for no filtering)");
-					txtLastDP.setColumns(5);
-					panel_2.add(txtLastDP, "cell 3 2,growx");
+					panel_5 = new JPanel();
+					panel_4.add(panel_5, BorderLayout.CENTER);
+					panel_5.setLayout(new MigLayout("", "[]", "[]"));
+					{
+						cbShiftXValues = new JCheckBox("shift x values to zero");
+						cbShiftXValues.setToolTipText("If a line's x values start at x0, this values is subtracted from all other values to shift the x-axis to 0. (Useful for time or lateral dimensions)");
+						cbShiftXValues.setSelected(true);
+						panel_5.add(cbShiftXValues, "cell 0 0");
+					}
 				}
 			}
 			{
@@ -570,6 +589,9 @@ public class ImportDataDialog extends JDialog {
 			getTxtLastLine().setText(String.valueOf(s.getEndLine()));
 			getTxtFirstDP().setText(String.valueOf(s.getStartDP()));
 			getTxtLastDP().setText(String.valueOf(s.getEndDP()));
+			
+			getCbShiftXValues().setSelected(sett.isShiftXValues());
+			
 			// mode = tab
 			IMPORT mode = s.getModeImport();
 			switch(mode) {
@@ -728,6 +750,8 @@ public class ImportDataDialog extends JDialog {
 		int startDP = Module.intFromTxt(getTxtFirstDP());
 		int endDP = Module.intFromTxt(getTxtLastDP());
 		
+		boolean isShiftXValues = getCbShiftXValues().isSelected();
+		
 		// text file
 		if(getTabbedPane().getSelectedComponent().equals(getTabTXT())) {
 			// seperation
@@ -750,7 +774,7 @@ public class ImportDataDialog extends JDialog {
 					checkformeta, separation, null, filter, isFilesInSeparateFolders,
 					startLine, endLine, startDP, endDP,
 					unit, startSplitX, splitAfter, useHardSplit,
-					excludeColumns, usesXData);
+					excludeColumns, usesXData, isShiftXValues);
 		}
 		else if(getTabbedPane().getSelectedComponent().equals(getTab2DIntensity())) {
 			// seperation
@@ -907,5 +931,8 @@ public class ImportDataDialog extends JDialog {
 	}
 	public JRadioButton getRbiCAPQOneRow() {
 		return rbiCAPQOneRow;
+	}
+	public JCheckBox getCbShiftXValues() {
+		return cbShiftXValues;
 	}
 }

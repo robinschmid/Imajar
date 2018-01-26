@@ -723,7 +723,7 @@ public class Image2DImportExportUtil {
                   && (sett.getEndLine() == 0 || i < sett.getEndLine()); i++) {
                 if (x[c] == null) {
                   x[c] = new ArrayList<Float>();
-                  startXValue[c] = Float.valueOf(sep[i]);
+                  startXValue[c] = sett.isShiftXValues()? Float.valueOf(sep[i]) : 0;
                 }
                 x[c].add(Float.valueOf(sep[i]) - startXValue[c]);
                 c++;
@@ -983,7 +983,7 @@ public class Image2DImportExportUtil {
   private static String title = "";
 
   /**
-   * 
+   * One file One line
    * @param files
    * @param sett
    * @param separation
@@ -1102,7 +1102,7 @@ public class Image2DImportExportUtil {
             if (!sett.isNoXData()) {
               x = new ArrayList<Float>();
               // startX for hardsplit
-              startX = Float.valueOf(sep[firstCol]);
+              startX = sett.isShiftXValues()? Float.valueOf(sep[firstCol]) : 0;
             }
             // Image creation
             for (int img = 0; img < iList.length; img++) {
@@ -1142,7 +1142,7 @@ public class Image2DImportExportUtil {
             // has X data?
             if (!sett.isNoXData()) {
               if (x.size() == 0)
-                startX = Float.valueOf(sep[firstCol]);
+                startX = sett.isShiftXValues()? Float.valueOf(sep[firstCol]) : 0;
               x.add(Float.valueOf(sep[firstCol]) - startX);
             }
             // add Data Points to all images
@@ -1304,7 +1304,9 @@ public class Image2DImportExportUtil {
 
     List<Double>[] z = null;
     List<Float> x = new ArrayList<Float>();
-    float startx = Float.NaN;
+    // set start to 0 for no shift
+    // NaN to use first value as start
+    float startx = sett.isShiftXValues()? Float.NaN : 0;
 
     boolean startFound = false;
     String[] titles = null;
@@ -1853,7 +1855,7 @@ public class Image2DImportExportUtil {
 
           // x
           if (xstart == -1)
-            xstart = timeToSeconds(sep[1]);
+            xstart = sett.isShiftXValues()? timeToSeconds(sep[1]) : 0;
           float x = timeToSeconds(sep[1]) - xstart;
           xList.add(x);
           // add Datapoints to all images
