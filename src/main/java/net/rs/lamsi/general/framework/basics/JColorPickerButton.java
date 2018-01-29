@@ -10,107 +10,110 @@ import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
-
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 
-public class JColorPickerButton extends JButton { 
-	JDialog   dialog;
-	JColorChooser chooser = new JColorChooser(); 
-	Component parentFrame; 
-	// changelistener
-	protected ColorChangedListener colorChangedListener;
+public class JColorPickerButton extends JButton {
+  JDialog dialog;
+  JColorChooser chooser = new JColorChooser();
+  Component parentFrame;
+  // changelistener
+  protected ColorChangedListener colorChangedListener;
 
-	public JColorPickerButton(Component parentFrame) {   
-		super();
-		this.parentFrame = parentFrame;   
-		setPreferredSize(new Dimension(25, 25));
-		this.addActionListener(new ActionListener() { 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showDialog();
-			}
-		});
-	}
+  public JColorPickerButton(Component parentFrame) {
+    super();
+    this.parentFrame = parentFrame;
+    setPreferredSize(new Dimension(25, 25));
+    this.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showDialog();
+      }
+    });
+  }
 
-	@Override
-	public void paint(Graphics g) {
-		//super.paint(g);
-		g.setColor(getBackground());
-		g.fillRect(0, 0, getWidth(), getHeight());
+  public JColorPickerButton(Component parentFrame, Color c) {
+    this(parentFrame);
+    setColor(c);
+  }
 
-		g.setColor(Color.BLACK);
-		g.drawRect(0, 0, getWidth()-1, getHeight()-1);
-	}
+  @Override
+  public void paint(Graphics g) {
+    // super.paint(g);
+    g.setColor(getBackground());
+    g.fillRect(0, 0, getWidth(), getHeight());
+
+    g.setColor(Color.BLACK);
+    g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+
+    paintBorder(g);
+  }
 
 
 
+  public void colorChanged(Color color) {
+    this.setBackground(color);
+    if (colorChangedListener != null)
+      colorChangedListener.colorChanged(color);
+  }
 
 
-	public void colorChanged(Color color) {
-		this.setBackground(color);
-		if(colorChangedListener!=null) colorChangedListener.colorChanged(color); 
-	}
-	
+  class OkListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      Color color = chooser.getColor();
+      colorChanged(color);
+    }
+  }
+  class CancelListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {}
+  }
 
-	class OkListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			Color color = chooser.getColor(); 
-			colorChanged(color);
-		}
-	}
-	class CancelListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) { 
-		}
-	} 
-	
-	public void showDialog() {  
-		chooser.setColor(this.getBackground());
-		//
-		// New Dialog
-		try {
-			if(dialog == null)
-				dialog   = JColorChooser.createDialog(
-						parentFrame, // parent comp
-						"Pick A Color",  // dialog title
-						false,        // modality
-						chooser,    
-						new OkListener(), 
-						new CancelListener());
+  public void showDialog() {
+    chooser.setColor(this.getBackground());
+    //
+    // New Dialog
+    try {
+      if (dialog == null)
+        dialog = JColorChooser.createDialog(parentFrame, // parent comp
+            "Pick A Color", // dialog title
+            false, // modality
+            chooser, new OkListener(), new CancelListener());
 
-			dialog.setVisible(true);
-			//  
-		} catch(Exception ex) {
-			ex.printStackTrace(); 
-		}
-		if(dialog!=null) {
-			dialog.setVisible(true);
-		}
-	} 
-	
-	public void addColorChangedListener(ColorChangedListener colorChangedListener) {
-		this.colorChangedListener = colorChangedListener;
-	}
+      dialog.setVisible(true);
+      //
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    if (dialog != null) {
+      dialog.setVisible(true);
+    }
+  }
 
-	public Color getColor() { 
-		return getBackground();
-	}
-	/**
-	 * same as color changed
-	 * @param c
-	 */
-	public void setColor(Color c) {
-		colorChanged(c);
-	}
+  public void addColorChangedListener(ColorChangedListener colorChangedListener) {
+    this.colorChangedListener = colorChangedListener;
+  }
 
-	/**
-	 * same as color changed
-	 * @param c
-	 */
-	public void setColor(Paint c) {
-		setColor((Color)c);
-	}
+  public Color getColor() {
+    return getBackground();
+  }
+
+  /**
+   * same as color changed
+   * 
+   * @param c
+   */
+  public void setColor(Color c) {
+    colorChanged(c);
+  }
+
+  /**
+   * same as color changed
+   * 
+   * @param c
+   */
+  public void setColor(Paint c) {
+    setColor((Color) c);
+  }
 }
