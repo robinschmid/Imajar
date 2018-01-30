@@ -679,19 +679,30 @@ public class SettingsPaintScale extends Settings {
   /**
    * 
    * @param i form 0-1 (0: first color; 1 last color)
-   * @return
+   * @return Color.MAGENTA if color is not specified (empty list, index out of range)
    */
   public Color getListColor(double i) {
+    // list is sorted the opposite way. 0 is last color
     if (list == null || list.isEmpty()) {
       if (getMinColor() != null)
         return getMinColor();
       else
         return Color.MAGENTA;
     } else {
-      list.size()
+      int index = (int) ((list.size() - 1) * (1.0 - i));
+      if (index < list.size() && index >= 0)
+        return list.get(index);
     }
-    return null;
+    return Color.MAGENTA;
   }
 
+  /**
+   * The lists size or 1 for an empty list, as this is not allowed.
+   * 
+   * @return Size will always be >=1
+   */
+  public int getListColorSize() {
+    return list == null || list.isEmpty() ? 1 : list.size();
+  }
 
 }

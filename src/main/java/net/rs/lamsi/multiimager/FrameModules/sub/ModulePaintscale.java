@@ -154,11 +154,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
 
     cbWhiteAsMin = new JCheckBox("White");
     cbWhiteAsMin.setToolTipText("Use white in paintscale");
-    panel.add(cbWhiteAsMin, "cell 0 2");
-
-    cbBlackAsMax = new JCheckBox("Black");
-    cbBlackAsMax.setToolTipText("Use black in paintscale");
-    panel.add(cbBlackAsMax, "cell 1 2");
+    panel.add(cbWhiteAsMin, "flowx,cell 0 2");
 
     pnScaleType = new JPanel();
     panel.add(pnScaleType, "cell 0 3 2 1,grow");
@@ -167,9 +163,6 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
     pnHueScale = new JPanel();
     pnScaleType.add(pnHueScale, BorderLayout.CENTER);
     pnHueScale.setLayout(new MigLayout("", "[grow][][][][grow][]", "[][][][]"));
-
-    cbInvert = new JCheckBox("invert");
-    pnHueScale.add(cbInvert, "cell 2 0");
 
     btnSwitchColors = new JButton("<>");
     pnHueScale.add(btnSwitchColors, "cell 3 0");
@@ -245,6 +238,13 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
     cbUseMinMax.setToolTipText(
         "Set a minimum (limit of detection) and a maximum value. All values beneath or above will be set to minimum or maximum color, respectively.");
     panel.add(cbUseMinMax, "cell 0 5 2 1");
+
+    cbBlackAsMax = new JCheckBox("Black");
+    cbBlackAsMax.setToolTipText("Use black in paintscale");
+    panel.add(cbBlackAsMax, "cell 0 2");
+
+    cbInvert = new JCheckBox("invert");
+    panel.add(cbInvert, "cell 0 2");
 
     pnMonoScale = new JPanel();
     pnMonoScale.setLayout(new MigLayout("", "[grow][][][grow]", "[][]"));
@@ -1039,7 +1039,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
     if (ps != null) {
       try {
         List<Color> list = colorDialog.getColorList();
-        ScaleType type = ScaleType.HUESCALE;
+        ScaleType type = (ScaleType) comboScaleType.getSelectedItem();
         // for abs. and percentile the min max values are absolute
         double min = ps.getModeMin().equals(ValueMode.RELATIVE) ? doubleFromTxt(getTxtMinPerc())
             : doubleFromTxt(getTxtMinimum());

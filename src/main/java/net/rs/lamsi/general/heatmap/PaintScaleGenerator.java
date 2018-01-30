@@ -94,11 +94,12 @@ public class PaintScaleGenerator {
           || (settings.isUsesBAsMax() && !settings.isInverted()))
         lastc = !settings.isInverted() ? Color.BLACK : Color.WHITE;
       // min/max: inverted color as start
-      else
+      else if (isHue)
         lastc = interpolate(settings.getMinColor(), settings.getMaxColor(),
             settings.isInverted() ? 0 : 1);
+      else if (isList)
+        firstc = settings.getListColor(1);
     }
-
 
     // 0 and min to Invis
     if (settings.isUsesMinMax() && settings.isUsesMinAsInvisible())
@@ -112,7 +113,11 @@ public class PaintScaleGenerator {
     i++;
 
     // adding color steps in middle
-    addColorsteps(realmin, realmax, settings, paintScale, i);
+    if (isList) {
+      int size = settings.getListColorSize();
+      addListColorSteps(realmin, realmax, settings, paintScale, i, size);
+    } else
+      addColorsteps(realmin, realmax, settings, paintScale, i);
 
     // add end color step
     if (max > settings.getMaxIAbs(min, max) && settings.isUsesMinMax()) {
@@ -124,6 +129,16 @@ public class PaintScaleGenerator {
     return paintScale;
   }
 
+  private static void addListColorSteps(double realmin, double realmax, SettingsPaintScale settings,
+      LookupPaintScale paintScale, int i, int size) {
+    double s = size;
+    Color c = settings.getListColor(i / s);
+    double value = realmin + (realmax - realmin) * i / s;
+    paintScale.add(value, c);
+    if (i < size - 1)
+      addListColorSteps(realmin, realmax, settings, paintScale, i + 1, size);
+  }
+
   // PaintScales FOR LEGEND
   public static PaintScale generateStepPaintScaleForLegend(double min, double max,
       SettingsPaintScale settings) {
@@ -133,7 +148,7 @@ public class PaintScaleGenerator {
       paintScale.add(max, new Color(0, 0, 0, 0));
       return paintScale;
     } else {
-      // Min und Max das festgelegt ist
+      // set min and max
       double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())
           ? settings.getMinIAbs(min, max)
           : min);
@@ -143,8 +158,14 @@ public class PaintScaleGenerator {
               : max);
       //
       LookupPaintScale paintScale = new LookupPaintScale(realmin, realmax, Color.lightGray);
-      // Index schon festlegen
-      addColorsteps(realmin, realmax, settings, paintScale, 0);
+      // set index to 0
+
+      boolean isList = settings.isListScale();
+      int size = settings.getListColorSize();
+      if (isList)
+        addListColorSteps(realmin, realmax, settings, paintScale, 0, size);
+      else
+        addColorsteps(realmin, realmax, settings, paintScale, 0);
       //
       return paintScale;
     }
