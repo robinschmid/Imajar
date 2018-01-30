@@ -133,6 +133,7 @@ public class ModulePaintscaleOverlay
     SettingsGroupItemSelections sett = img.getSettings().getSettGroupItemSelections();
     if (modPSList == null || modPSList.length != img.size()) {
 
+      int lastSelection = tabbedPaintScales.getSelectedIndex();
       tabbedPaintScales.removeAll();
       modPSList = new ModulePaintscaleOverlaySub[img.size()];
 
@@ -149,6 +150,11 @@ public class ModulePaintscaleOverlay
         } else
           modPSList[i].setVisible(false);
       }
+
+      if (tabbedPaintScales.getTabCount() - 1 < lastSelection)
+        lastSelection = tabbedPaintScales.getTabCount() - 1;
+      tabbedPaintScales.setSelectedIndex(lastSelection);
+
     } else {
       for (int i = 0; i < img.size(); i++) {
         modPSList[i].setCurrentImage(img.get(i), setAllToPanel);
@@ -238,6 +244,7 @@ public class ModulePaintscaleOverlay
         }
 
         if (changed) {
+          int lastSelection = tabbedPaintScales.getSelectedIndex();
           tabbedPaintScales.removeAll();
           // rb
           for (int i = 0; i < modPSList.length; i++) {
@@ -247,6 +254,9 @@ public class ModulePaintscaleOverlay
             } else
               modPSList[i].setVisible(false);
           }
+          if (tabbedPaintScales.getTabCount() - 1 < lastSelection)
+            lastSelection = tabbedPaintScales.getTabCount() - 1;
+          tabbedPaintScales.setSelectedIndex(lastSelection);
         }
         // tabbedPaintScales.revalidate();
         // tabbedPaintScales.repaint();
