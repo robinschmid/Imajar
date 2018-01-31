@@ -176,6 +176,7 @@ public class ModuleSPImage
       txtUpper.setText(String.valueOf(si.getWindow().getUpperBound()));
       txtCenter.setText(String.valueOf(si.getWindow().getCentralValue()));
       txtPM.setText(String.valueOf(si.getWindow().getLength() / 2.0));
+      // stop internal document listener
       ddlCenterPM.stop();
     } else {
       txtLower.setText("0");
