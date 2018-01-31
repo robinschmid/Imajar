@@ -142,7 +142,8 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<version>23.3-jre</version>
+			<!-- <version>18.0</version> -->
 		</dependency>
 
 		<!-- INCLUDE MZJava for mzXML Import -->
