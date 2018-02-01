@@ -4,6 +4,7 @@ package net.rs.lamsi.multiimager.FrameModules.sub.dataoperations;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -23,6 +24,7 @@ import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+import net.rs.lamsi.multiimager.Frames.dialogs.singleparticle.SingleParticleDialog;
 
 public class ModuleSPImage
     extends Collectable2DSettingsModule<SingleParticleSettings, SingleParticleImage> {
@@ -40,6 +42,7 @@ public class ModuleSPImage
   private JLabel lblSplitEventPixel;
   private JLabel lblWindow;
   private JLabel label_1;
+  private JButton btnOpenDialog;
 
   // AUTOGEN
 
@@ -53,6 +56,10 @@ public class ModuleSPImage
     JPanel panel = new JPanel();
     getPnContent().add(panel, BorderLayout.CENTER);
     panel.setLayout(new MigLayout("", "[][][][][grow]", "[][][][][][]"));
+
+    btnOpenDialog = new JButton("Open dialog");
+    btnOpenDialog.addActionListener(e -> openSingleParticleDialog());
+    panel.add(btnOpenDialog, "cell 1 0,growx");
 
     lblWindow = new JLabel("window");
     panel.add(lblWindow, "cell 0 1,alignx trailing");
@@ -127,6 +134,17 @@ public class ModuleSPImage
     txtPM.getDocument().addDocumentListener(ddlCenterPM);
 
     setMaxPresets(15);
+  }
+
+  /**
+   * Open a new single particle dialog
+   */
+  public void openSingleParticleDialog() {
+    if (getCurrentImage() != null) {
+      SingleParticleDialog d = new SingleParticleDialog();
+      d.setSPImage(getCurrentImage());
+      d.setVisible(true);
+    }
   }
 
   @Override
@@ -204,4 +222,7 @@ public class ModuleSPImage
     return si;
   }
 
+  public JButton getBtnOpenDialog() {
+    return btnOpenDialog;
+  }
 }

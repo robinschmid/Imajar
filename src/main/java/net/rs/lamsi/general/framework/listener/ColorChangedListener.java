@@ -1,9 +1,12 @@
 package net.rs.lamsi.general.framework.listener;
 
 import java.awt.Color;
+import java.util.EventListener;
 
-public abstract class ColorChangedListener {
 
-	public abstract void colorChanged(Color color);
+@FunctionalInterface
+public interface ColorChangedListener extends EventListener {
+
+  public void colorChanged(Color color);
 
 }

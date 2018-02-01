@@ -58,6 +58,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
@@ -78,8 +79,10 @@ import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
+import net.rs.lamsi.multiimager.FrameModules.ModuleSingleParticleImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSPImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
@@ -118,6 +121,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   // MODULES
   private ModuleImage2D modImage2D;
   private ModuleImageOverlay modImageOverlay;
+  private ModuleSingleParticleImage modSPImage;
   /**
    * the module container that is active (imageoverlay or image2d) first set the image or
    * imageoverlay and this will be set
@@ -155,6 +159,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   //
   private ModuleTreeWithOptions<Collectable2D> moduleTreeImages;
 
+  // menu
+  private JButton btnSingleParticle;
 
   private JPanel pnCenterImageView;
   private JPanel east;
@@ -590,6 +596,20 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   }
 
   /**
+   * opens the data selection dialog if possible
+   */
+  protected void openSingleParticleDialog() {
+    if (activeModuleContainer != null) {
+      // TODO correct?
+      ModuleSPImage mod =
+          (ModuleSPImage) activeModuleContainer.getModuleByClass(ModuleSPImage.class);
+      if (mod != null) {
+        mod.openSingleParticleDialog();
+      }
+    }
+  }
+
+  /**
    * Initialize the contents of the frame.
    */
   private void initialize() {
@@ -632,6 +652,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
     modImageOverlay = new ModuleImageOverlay(this);
     modImageOverlay.setVisible(false);
+
+    modSPImage = new ModuleSingleParticleImage(this);
+    modSPImage.setVisible(false);
 
     // split pane
     splitPane = new JSplitPane();
@@ -708,19 +731,15 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     fl_pnNorthMenu.setAlignment(FlowLayout.LEFT);
 
     JButton btnROI = new JButton("");
-    btnROI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        openDataSelectionDialog();
-      }
-    });
+    btnROI.addActionListener(e -> openDataSelectionDialog());
     btnROI.setPreferredSize(new Dimension(31, 31));
     btnROI.setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btnROI.png"))
         .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
     pnNorthMenu.add(btnROI);
 
 
-    JButton button = new JButton("");
-    button.addActionListener(new ActionListener() {
+    JButton btnMultiImage = new JButton("");
+    btnMultiImage.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         // show dialog with mutliple image view
         ImageGroupMD img = getModuleTreeImages().getSelectedGroup();
@@ -730,10 +749,17 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         }
       }
     });
-    button.setPreferredSize(new Dimension(31, 31));
-    button.setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_MultiImage.png"))
-        .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
-    pnNorthMenu.add(button);
+    btnMultiImage.setPreferredSize(new Dimension(31, 31));
+    btnMultiImage
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_MultiImage.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    pnNorthMenu.add(btnMultiImage);
+
+
+    btnSingleParticle = new JButton("SP");
+    btnSingleParticle.addActionListener(e -> openSingleParticleDialog());
+    btnSingleParticle.setPreferredSize(new Dimension(31, 31));
+    pnNorthMenu.add(btnSingleParticle);
 
 
     JPanel north = new JPanel();
@@ -1005,6 +1031,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         autoItemL);
     modImageOverlay.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL,
         autoRepColorChangedL, autoRepItemL);
+
+    modSPImage.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL,
+        autoItemL);
+    modSPImage.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL,
+        autoRepColorChangedL, autoRepItemL);
   }
 
   /**
@@ -1126,6 +1157,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
     modImage2D.setAutoUpdating(isauto);
+    updateMenuBar(img);
 
     this.revalidate();
   }
@@ -1157,11 +1189,49 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
     modImageOverlay.setAutoUpdating(isauto);
+    updateMenuBar(img);
 
     this.revalidate();
   }
 
 
+  /**
+   * sets the single particle image
+   * 
+   * @param img
+   */
+  public void setSPImage(SingleParticleImage img) {
+    boolean isauto = modSPImage.isAutoUpdating();
+    modSPImage.setAutoUpdating(false);
+    // finished
+    ImageLogicRunner.setIS_UPDATING(false);
+    // show all modules for ImageOverlays
+    if (activeModuleContainer != null)
+      activeModuleContainer.setVisible(false);
+
+    activeModuleContainer = modSPImage;
+    activeModuleContainer.setVisible(true);
+    east.add(activeModuleContainer, BorderLayout.CENTER);
+
+    // set
+    DebugStopWatch debug = new DebugStopWatch();
+    modSPImage.setCurrentImage(img, true);
+    ImageEditorWindow.log("TIME: " + debug.stop()
+        + "   FOR setting the current image for all SP modules " + debug.stop(), LOG.DEBUG);
+
+    // finished
+    ImageLogicRunner.setIS_UPDATING(true);
+    modSPImage.setAutoUpdating(isauto);
+    updateMenuBar(img);
+
+    this.revalidate();
+  }
+
+  public void updateMenuBar(Collectable2D c) {
+    btnSingleParticle.setVisible(c.isSPImage());
+    pnNorthMenu.revalidate();
+    pnNorthMenu.repaint();
+  }
 
   /**
    * Visualization: Adds a heatmap (Chartpanel) to the center view Adds a heatmap to all

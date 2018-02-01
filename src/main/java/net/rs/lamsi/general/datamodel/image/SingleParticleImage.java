@@ -28,7 +28,6 @@ import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -89,20 +88,6 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
 
   public SingleParticleImage(ImageDataset data, SettingsSPImage sett) {
     this(data, 0, sett);
-  }
-
-  /**
-   * y values in respect to rotation reflection imaging mode
-   * 
-   * @param raw
-   * @param l
-   * @param dp
-   * @return
-   */
-  public float getY(boolean raw, int l, int dp) {
-    return getY(raw, l, dp, settings.getSettImage().getImagingMode(),
-        settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(),
-        settings.getSettImage().isReflectVertical());
   }
 
   /**
@@ -307,6 +292,19 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
       } else
         return Float.NaN;
     }
+  }
+
+  /**
+   * x values with respect to ration
+   * 
+   * @param l
+   * @param dp
+   * @return
+   */
+  public float getY(int l, int dp) {
+    return getY(l, dp, settings.getSettImage().getImagingMode(),
+        settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(),
+        settings.getSettImage().isReflectVertical());
   }
 
   /**
@@ -1499,13 +1497,13 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
    * @param intensity
    * @return the percentile of all intensities (if value is equal to max the result is 100)
    */
-  public double getIPercentile(boolean raw, double intensity, boolean onlySelected) {
+  public double getIPercentile(double intensity, boolean onlySelected) {
     // sort all z values
     double[] z = null;
     if (!onlySelected)
-      toIArray(raw);
+      toIArray();
     else
-      z = getSelectedDataAsArray(raw, true);
+      z = getSelectedDataAsArray(true);
     Arrays.sort(z);
 
     for (int i = 0; i < z.length; i++) {
@@ -1524,7 +1522,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
    * @param line
    * @return
    */
-  public float getMaxXRaw(, int line) {
+  public float getMaxXRaw(int line) {
     return data.getLastXLine(line) * (xFactor());
   }
 
@@ -1536,7 +1534,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
    * @return
    */
   public float getMaxXRaw() {
-    return data.getLastX() * (xFactor(raw));
+    return data.getLastX() * (xFactor());
   }
 
   /**
@@ -1744,13 +1742,13 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
    * 
    * @return
    */
-  public double[] getSelectedDataAsArray(boolean raw, boolean excluded) {
+  public double[] getSelectedDataAsArray(boolean excluded) {
     double[] datasel = new double[getSelectedDPCount(true)];
     int counter = 0;
     for (int l = 0; l < data.getLinesCount(); l++) {
       for (int dp = 0; dp < data.getLineLength(l); dp++) {
         if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) {
-          datasel[counter] = getI(raw, l, dp);
+          datasel[counter] = getI(l, dp);
           counter++;
         }
       }

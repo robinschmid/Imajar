@@ -22,6 +22,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
@@ -35,6 +36,7 @@ import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -274,6 +276,9 @@ public class ImageLogicRunner {
       } else if (ImageOverlay.class.isInstance(c2d)) {
         window.setImageOverlay((ImageOverlay) c2d);
         ImageEditorWindow.log("setImageOverlay took " + debug.stop(), LOG.DEBUG);
+      } else if (SingleParticleImage.class.isInstance(c2d)) {
+        window.setSPImage((SingleParticleImage) c2d);
+        ImageEditorWindow.log("setSPImage took " + debug.stop(), LOG.DEBUG);
       }
 
       // create new heatmap
@@ -845,16 +850,18 @@ public class ImageLogicRunner {
    * @return
    */
   public void createSingleParticleImage() {
-    if (selectedImage != null) {
+    if (selectedImage != null && selectedImage.isImage2D()) {
+      Image2D img = (Image2D) selectedImage;
       try {
         ImageGroupMD group = selectedImage.getImageGroup();
         if (group != null) {
           // add overlay
-          SettingsImageOverlay settings = new SettingsImageOverlay();
-          ImageOverlay ov = new ImageOverlay(group, settings);
-          group.add(ov);
+          SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
+          SingleParticleImage spi =
+              new SingleParticleImage(img.getData(), img.getIndex(), settings);
+          group.add(spi);
 
-          addImageNode(ov, selectedImage.getImageGroup().getNode());
+          addImageNode(spi, group.getNode());
           // update tree
           treeImg.reload();
         }
