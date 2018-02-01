@@ -5,11 +5,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultMutableTreeNode;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.listener.GroupChangedEvent;
+import net.rs.lamsi.general.datamodel.image.listener.GroupChangedListener;
+import net.rs.lamsi.general.datamodel.image.listener.ProjectChangedEvent.Event;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
@@ -23,6 +27,7 @@ public class ImageGroupMD implements Serializable {
   // settings
   protected SettingsImageGroup settings;
 
+  private List<GroupChangedListener> listener;
   // project
   protected ImagingProject project = null;
 
@@ -85,6 +90,8 @@ public class ImageGroupMD implements Serializable {
         if (data.equals(img.getData())) {
           images.add(image2dCount(), img);
           img.setImageGroup(this);
+
+          fireChangeEvent(c2d, Event.ADD);
           // add to all overlays
           for (int i = image2dCount(); i < size(); i++)
             if (ImageOverlay.class.isInstance(get(i)))
@@ -110,6 +117,8 @@ public class ImageGroupMD implements Serializable {
               img.setIndex(data.size() - 1);
               images.add(image2dCount(), img);
               img.setImageGroup(this);
+
+              fireChangeEvent(c2d, Event.ADD);
               // add to all overlays
               for (int i = image2dCount(); i < size(); i++)
                 if (ImageOverlay.class.isInstance(get(i)))
@@ -127,6 +136,8 @@ public class ImageGroupMD implements Serializable {
     } else {
       images.add(c2d);
       c2d.setImageGroup(this);
+
+      fireChangeEvent(c2d, Event.ADD);
     }
   }
 
@@ -150,8 +161,12 @@ public class ImageGroupMD implements Serializable {
             } catch (Exception e) {
               e.printStackTrace();
             }
+
       }
-      return images.remove(index);
+      Collectable2D c = images.remove(index);
+      if (c != null)
+        fireChangeEvent(c, Event.REMOVED);
+      return c;
     } else
       return null;
   }
@@ -486,5 +501,24 @@ public class ImageGroupMD implements Serializable {
       if (!g.get(i).getTitle().equals(this.get(i).getTitle()))
         return false;
     return true;
+  }
+
+  public void fireChangeEvent(Collectable2D img, Event e) {
+    if (listener != null) {
+      GroupChangedEvent event = new GroupChangedEvent(this, img, e);
+      listener.stream().forEach(l -> l.groupChanged(event));
+    }
+  }
+
+  public void addGroupListener(GroupChangedListener listener) {
+    if (this.listener == null)
+      this.listener = new ArrayList<GroupChangedListener>();
+    this.listener.add(listener);
+  }
+
+  public void removeGroupListener(GroupChangedListener listener) {
+    if (this.listener == null)
+      return;
+    this.listener.remove(listener);
   }
 }

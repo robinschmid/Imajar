@@ -1229,38 +1229,38 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
   }
 
   /**
-   * Returns the intensity matrix
+   * Returns the intensity matrix (NaN if pixel is empty)
    * 
    * @param raw
-   * @return [line][dp]
+   * @return [dp][line]
    */
-  public Object[][] toIMatrix(boolean raw, boolean useSettings) {
+  public double[][] toIMatrix(boolean raw, boolean useSettings) {
     // time only once?
     if (useSettings) {
       int cols = getMaxLinesCount();
       int rows = getMaxLineLength();
 
-      Object[][] dataExp = new Object[rows][cols];
+      double[][] dataExp = new double[rows][cols];
       // c for lines
       for (int c = 0; c < cols; c++) {
         // increment l
         for (int r = 0; r < rows; r++) {
           // only if not null: write Intensity
           double tmp = getI(raw, c, r);
-          dataExp[r][c] = !Double.isNaN(tmp) ? tmp : "";
+          dataExp[r][c] = !Double.isNaN(tmp) ? tmp : Double.NaN;
         }
       }
       return dataExp;
     } else {
       int cols = data.getLinesCount();
       int rows = data.getMaxDP();
-      Object[][] dataExp = new Object[rows][cols];
+      double[][] dataExp = new double[rows][cols];
       for (int c = 0; c < cols; c++) {
         int length = data.getLineLength(c);
         // increment l
         for (int r = 0; r < rows; r++) {
           // only if not null: write Intensity
-          dataExp[r][c] = r < length ? getIRaw(c, r) : "";
+          dataExp[r][c] = r < length ? getIRaw(c, r) : Double.NaN;
         }
       }
       return dataExp;
@@ -1268,10 +1268,37 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
   }
 
   /**
+   * Returns the intensity matrix. Always uses the rotation settings etc. Double.NaN for empty or
+   * non-selected or excluded pixel
+   * 
+   * @param raw
+   * @return [dp][line]
+   */
+  public double[][] toIMatrixOfSelected(boolean raw) {
+    int cols = getMaxLinesCount();
+    int rows = getMaxLineLength();
+
+    double[][] dataExp = new double[rows][cols];
+    // c for lines
+    for (int c = 0; c < cols; c++) {
+      // increment l
+      for (int r = 0; r < rows; r++) {
+        // only if not null: write Intensity
+        double tmp;
+        if (!isExcludedDP(c, r) && isSelectedDP(c, r) && !Double.isNaN(tmp = getI(raw, c, r))) {
+          dataExp[r][c] = tmp;
+        } else
+          dataExp[r][c] = Double.NaN;
+      }
+    }
+    return dataExp;
+  }
+
+  /**
    * Returns the intensity only. with boolean map as alpha map
    * 
    * @param sett
-   * @return [line][dp]
+   * @return [dp][line]
    */
   public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
     // time only once?

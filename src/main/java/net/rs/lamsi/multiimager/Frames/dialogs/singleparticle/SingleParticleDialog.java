@@ -23,7 +23,7 @@ public class SingleParticleDialog extends JDialog {
   private ModuleSingleParticleImage module;
   private SingleParticleImage img;
   private DelayedDocumentListener ddlUpdate, ddlRepaint;
-  private EChartPanel pnHisto;
+  private EChartPanel pnHisto, pnHistoFiltered;
   private JPanel southwest;
   private JPanel southeast;
   private JPanel north;
@@ -123,15 +123,18 @@ public class SingleParticleDialog extends JDialog {
       module.setCurrentImage(img, true);
 
       // create histogram
-      double[] data = img.getSelectedDataAsArray(true);
-      JFreeChart histo = EChartFactory.createHistogram(data);
+      double[] data = img.getSelectedDataAsArray(true, true);
+      JFreeChart histo = EChartFactory.createHistogram(data, "I", 2010);
       pnHisto = new EChartPanel(histo);
       southwest.removeAll();
       southwest.add(pnHisto, BorderLayout.CENTER);
       // after removing split events
 
+      double[] filtered = img.getSPDataArray();
+      histo = EChartFactory.createHistogram(filtered, "I", 2010);
+      pnHistoFiltered = new EChartPanel(histo);
       southeast.removeAll();
-      southeast.add(pnHisto, BorderLayout.CENTER);
+      southeast.add(pnHistoFiltered, BorderLayout.CENTER);
 
       // add image
 

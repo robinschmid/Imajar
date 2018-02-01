@@ -9,10 +9,8 @@ import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
-import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneral;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSPImage;
-import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
@@ -20,11 +18,9 @@ public class ModuleSingleParticleImage
     extends MainSettingsModuleContainer<SettingsSPImage, SingleParticleImage> {
   private ImageEditorWindow window;
 
-  private ModuleGeneral moduleGeneral;
   private ModuleZoom moduleZoom;
   private ModuleThemes moduleThemes;
   private ModuleBackgroundImg moduleBG;
-  private ModuleSelectExcludeData moduleSelect;
   private ModuleSPImage moduleSPImage;
   //
 
@@ -53,11 +49,8 @@ public class ModuleSingleParticleImage
 
 
     moduleSPImage = new ModuleSPImage();
+    moduleSPImage.setAlignmentY(Component.TOP_ALIGNMENT);
     addModule(moduleSPImage);
-
-    moduleGeneral = new ModuleGeneral(window);
-    moduleGeneral.setAlignmentY(Component.TOP_ALIGNMENT);
-    addModule(moduleGeneral);
 
     moduleZoom = new ModuleZoom();
     addModule(moduleZoom);
@@ -68,20 +61,12 @@ public class ModuleSingleParticleImage
     moduleThemes = new ModuleThemes();
     addModule(moduleThemes);
 
-    moduleSelect = new ModuleSelectExcludeData(window);
-    addModule(moduleSelect);
-
-    // add all modules for Image settings TODO add all mods
-    listSettingsModules.add(moduleGeneral.getModSplitConImg());
   }
 
 
 
   // ################################################################################################
   // GETTERS AND SETTERS
-  public ModuleGeneral getModuleGeneral() {
-    return moduleGeneral;
-  }
 
   public ModuleZoom getModuleZoom() {
     return moduleZoom;
@@ -93,10 +78,6 @@ public class ModuleSingleParticleImage
 
   public ModuleBackgroundImg getModuleBackground() {
     return moduleBG;
-  }
-
-  public ModuleSelectExcludeData getModuleSelect() {
-    return moduleSelect;
   }
 
   public ModuleSPImage getModuleSPImage() {

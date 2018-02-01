@@ -647,12 +647,13 @@ public class ImageLogicRunner {
   }
 
   // Import data direct with files
-  public void importTextDataToImage(final SettingsImageDataImportTxt settingsDataImport,
-      final File[] files, final ImagingProject project) {
+  public ProgressUpdateTask importTextDataToImage(
+      final SettingsImageDataImportTxt settingsDataImport, final File[] files,
+      final ImagingProject project) {
     // load image
     try {
       if (files.length > 0) {
-        new ProgressUpdateTask(files.length) {
+        ProgressUpdateTask task = new ProgressUpdateTask(files.length) {
           // Load all Files
           @Override
           protected Boolean doInBackground2() throws Exception {
@@ -712,13 +713,16 @@ public class ImageLogicRunner {
 
             return state;
           }
-        }.execute();
+        };
+        task.execute();
+        return task;
       }
 
     } catch (Exception e) {
       e.printStackTrace();
       DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
     }
+    return null;
   }
 
 
@@ -852,16 +856,28 @@ public class ImageLogicRunner {
   public void createSingleParticleImage() {
     if (selectedImage != null && selectedImage.isImage2D()) {
       Image2D img = (Image2D) selectedImage;
+      createSingleParticleImage(img);
+    }
+  }
+
+  /**
+   * Create SP image
+   * 
+   * @return
+   */
+  public void createSingleParticleImage(Image2D img) {
+    if (img != null) {
       try {
-        ImageGroupMD group = selectedImage.getImageGroup();
+        ImageGroupMD group = img.getImageGroup();
         if (group != null) {
           // add overlay
           SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
-          SingleParticleImage spi =
-              new SingleParticleImage(img.getData(), img.getIndex(), settings);
+          SingleParticleImage spi = new SingleParticleImage(img, settings);
           group.add(spi);
 
-          addImageNode(spi, group.getNode());
+          DefaultMutableTreeNode node = group.getNode();
+          if (node != null)
+            addImageNode(spi, node);
           // update tree
           treeImg.reload();
         }
