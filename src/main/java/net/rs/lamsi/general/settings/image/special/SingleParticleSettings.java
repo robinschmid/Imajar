@@ -18,6 +18,8 @@ public class SingleParticleSettings extends Settings {
   private int splitPixel;
   //
   private Range window;
+  // count events in number of pixel
+  private int numberOfPixel = 1000;
 
   public SingleParticleSettings(String path, String fileEnding) {
     super("SPSettings", path, fileEnding);
@@ -35,10 +37,11 @@ public class SingleParticleSettings extends Settings {
   }
 
 
-  public void setAll(double noiseLevel, int splitPixel, Range window) {
+  public void setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel) {
     this.noiseLevel = noiseLevel;
     this.splitPixel = splitPixel;
     this.window = window;
+    this.numberOfPixel = numberOfPixel;
   }
 
   @Override
@@ -54,6 +57,7 @@ public class SingleParticleSettings extends Settings {
     }
     toXML(elParent, doc, "noiseLevel", noiseLevel);
     toXML(elParent, doc, "splitPixel", splitPixel);
+    toXML(elParent, doc, "numberOfPixel", numberOfPixel);
   }
 
   @Override
@@ -73,6 +77,8 @@ public class SingleParticleSettings extends Settings {
           lower = doubleFromXML(nextElement);
         else if (paramName.equals("window.upper"))
           upper = doubleFromXML(nextElement);
+        else if (paramName.equals("numberOfPixel"))
+          numberOfPixel = intFromXML(nextElement);
       }
     }
 
@@ -80,6 +86,14 @@ public class SingleParticleSettings extends Settings {
       setWindow(lower, upper);
   }
 
+
+  public int getNumberOfPixel() {
+    return numberOfPixel;
+  }
+
+  public void setNumberOfPixel(int numberOfPixel) {
+    this.numberOfPixel = numberOfPixel;
+  }
 
   public boolean setWindow(double l, double u) {
     return setWindow(new Range(l, u));

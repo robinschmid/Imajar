@@ -17,7 +17,6 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.dialogs.singleparticle.SingleParticleDialog;
 
 public class TestImagerWithSingleParticleData {
 
@@ -60,10 +59,15 @@ public class TestImagerWithSingleParticleData {
 
               SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
               settings.getSettSingleParticle().setNoiseLevel(3500);
-              SingleParticleImage spi = new SingleParticleImage(img, settings);
-              SingleParticleDialog d = new SingleParticleDialog();
-              d.setSPImage(spi);
-              d.setVisible(true);
+              final SingleParticleImage spi = new SingleParticleImage(img, settings);
+
+              EventQueue.invokeLater(() -> {
+                ImageEditorWindow.getEditor().getLogicRunner().addImage(spi, project.getName(),
+                    img.getImageGroup().getName());
+                // SingleParticleDialog d = new SingleParticleDialog();
+                // d.setSPImage(spi);
+                // d.setVisible(true);
+              });
             }
           };
 

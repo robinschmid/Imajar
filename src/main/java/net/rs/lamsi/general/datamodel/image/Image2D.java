@@ -1272,13 +1272,13 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    * non-selected or excluded pixel
    * 
    * @param raw
-   * @return [dp][line]
+   * @return [line][dp]
    */
   public double[][] toIMatrixOfSelected(boolean raw) {
     int cols = getMaxLinesCount();
     int rows = getMaxLineLength();
 
-    double[][] dataExp = new double[rows][cols];
+    double[][] dataExp = new double[cols][rows];
     // c for lines
     for (int c = 0; c < cols; c++) {
       // increment l
@@ -1286,9 +1286,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
         // only if not null: write Intensity
         double tmp;
         if (!isExcludedDP(c, r) && isSelectedDP(c, r) && !Double.isNaN(tmp = getI(raw, c, r))) {
-          dataExp[r][c] = tmp;
+          dataExp[c][r] = tmp;
         } else
-          dataExp[r][c] = Double.NaN;
+          dataExp[c][r] = Double.NaN;
       }
     }
     return dataExp;
@@ -1298,14 +1298,14 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    * Returns the intensity only. with boolean map as alpha map
    * 
    * @param sett
-   * @return [dp][line]
+   * @return [line][dp]
    */
   public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
     // time only once?
     int cols = getMaxLinesCount();
     int rows = getMaxLineLength();
 
-    Object[][] dataExp = new Object[rows][cols];
+    Object[][] dataExp = new Object[cols][rows];
     // c for lines
     for (int c = 0; c < cols; c++) {
       // r for data points
@@ -1315,9 +1315,9 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
         boolean state = c < map.length && r < map[c].length && map[c][r];
         if (state) {
           double tmp = getI(raw, c, r);
-          dataExp[r][c] = !Double.isNaN(tmp) ? tmp : "";
+          dataExp[c][r] = !Double.isNaN(tmp) ? tmp : "";
         } else
-          dataExp[r][c] = "";
+          dataExp[c][r] = "";
       }
     }
     return dataExp;

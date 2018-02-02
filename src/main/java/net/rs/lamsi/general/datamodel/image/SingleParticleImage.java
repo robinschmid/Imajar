@@ -1,11 +1,15 @@
 package net.rs.lamsi.general.datamodel.image;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import javax.swing.Icon;
+import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -22,6 +26,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
 
   // empty dp == null
   protected double[][] selectedFilteredData;
+  protected double[][] filteredData;
   protected int lastSelectedDPCount;
 
 
@@ -49,12 +54,12 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
    * 
    * @return
    */
-  public double[] getSPDataArray() {
+  public double[] getSPDataArraySelected() {
     SingleParticleSettings sett = getSettings().getSettSingleParticle();
-    return getSPDataArray(sett);
+    return getSPDataArraySelected(sett);
   }
 
-  public double[] getSPDataArray(SingleParticleSettings sett) {
+  public double[] getSPDataArraySelected(SingleParticleSettings sett) {
     // the data
     selectedFilteredData = img.toIMatrixOfSelected(false);
     // filter out split events
@@ -75,10 +80,147 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
     return arr;
   }
 
+
+
+  /**
+   * to xycounts array in regards to the rotation, reflection and imaging mode
+   * 
+   * @return [lines][x,y,z] with z as number of particles
+   */
+  public double[][] toXYCountsArray() {
+    SingleParticleSettings sett = getSettings().getSettSingleParticle();
+    return toXYCountsArray(sett);
+  }
+
+  /**
+   * to xycounts array in regards to the rotation, reflection and imaging mode
+   * 
+   * @return [lines][x,y,z] with z as number of particles
+   */
+  public double[][] toXYCountsArray(SingleParticleSettings sett) {
+    XYIDataMatrix matrix = img.toXYIDataMatrix(false, true);
+    Float[][] x = matrix.getX();
+    Float[][] y = matrix.getY();
+    Double[][] z = matrix.getI();
+    ImageEditorWindow.log("Start SPI counter: ", LOG.MESSAGE);
+
+    filteredData = new double[z.length][];
+    for (int i = 0; i < z.length; i++)
+      filteredData[i] = new double[z[i].length];
+
+    for (int i = 0; i < z.length; i++) {
+      for (int k = 0; k < z[i].length; k++) {
+        filteredData[i][k] = z[i][k];
+      }
+    }
+
+    // filter split pixel events
+    ImageEditorWindow.log("Start SPI counter: Data filtering", LOG.MESSAGE);
+    filteredData = filterOutSplitPixelEvents(sett, filteredData, img.isRotated());
+    ImageEditorWindow.log("Start SPI counter: DONE", LOG.MESSAGE);
+
+    int numberOfPixel = sett.getNumberOfPixel();
+    int ipixel = 0;
+    Range window = sett.getWindow();
+
+    LinkedList<Float> fx = new LinkedList<Float>();
+    LinkedList<Float> fy = new LinkedList<Float>();
+    LinkedList<Double> fz = new LinkedList<Double>();
+
+    float cx = -1;
+    float cy = -1;
+    double counter = 0;
+
+    ImageEditorWindow.log("Start SPI counter: Count particles", LOG.MESSAGE);
+    // count particles in numberOfPixel pixel and in window
+    // TODO line-wise?
+    if (!img.isRotated()) {
+      for (int l = 0; l < filteredData.length; l++) {
+        for (int dp = 0; dp < filteredData[l].length; dp++) {
+          // init with first dp of line
+          if (cx == -1) {
+            cx = x[l][dp];
+            cy = y[l][dp];
+          }
+          // for all dp
+          if (cx != -1) {
+            ipixel++;
+            // in window?
+            if (!Double.isNaN(filteredData[l][dp]) && window.contains(filteredData[l][dp])) {
+              counter++;
+            }
+            // enough pixel?
+            if (ipixel >= numberOfPixel) {
+              // add
+              fx.add(cx);
+              fy.add(cy);
+              fz.add(counter);
+              // reset
+              ipixel = 0;
+              cx = -1;
+              cy = -1;
+              counter = 0;
+            }
+          }
+        }
+      }
+    } else {
+      int max = 0;
+      for (int l = 0; l < filteredData.length; l++)
+        if (filteredData.length > max)
+          max = filteredData.length;
+
+      for (int l = 0; l < max; l++) {
+        for (int dp = 0; dp < filteredData.length; dp++) {
+          if (l < filteredData[dp].length) {
+            // init with first dp of line
+            if (cx == -1) {
+              cx = x[dp][l];
+              cy = y[dp][l];
+            }
+            // for all dp
+            if (cx != -1) {
+              ipixel++;
+              // in window?
+              if (!Double.isNaN(filteredData[dp][l]) && window.contains(filteredData[dp][l])) {
+                counter++;
+              }
+              // enough pixel?
+              if (ipixel >= numberOfPixel) {
+                // add
+                fx.add(cx);
+                fy.add(cy);
+                fz.add(counter);
+                // reset
+                ipixel = 0;
+                cx = -1;
+                cy = -1;
+                counter = 0;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    ImageEditorWindow.log("Start SPI counter: DONE", LOG.MESSAGE);
+    ImageEditorWindow.log("Start SPI counter: Tranfer to array", LOG.MESSAGE);
+    // transform to XYZ array [lines][x,y,z]
+    double[][] arr = new double[3][fx.size()];
+    for (int i = 0; i < fx.size(); i++) {
+      arr[0][i] = fx.get(i);
+      arr[1][i] = fy.get(i);
+      arr[2][i] = fz.get(i);
+    }
+
+    ImageEditorWindow.log("Start SPI counter: FINISHED ALL", LOG.MESSAGE);
+    return arr;
+  }
+
   /**
    * 
-   * @param data [dp][lines]
-   * @param rotated if true data is used as [lines][dp]
+   * @param data [lines][dp]
+   * @param rotated if true data is used as [dp][lines]
    * @return
    */
   private double[][] filterOutSplitPixelEvents(SingleParticleSettings sett, double[][] data,
@@ -103,7 +245,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
       double[] last = new double[pixel];
       int ilast = 0;
       // rotated?
-      if (rotated) {
+      if (!rotated) {
         // [lines][dp]
         // find minimum value as background
         double min = Double.MAX_VALUE;
@@ -164,6 +306,27 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
             if (!Double.isNaN(current))
               lastSelectedDPCount++;
           }
+          // resolve last split event
+          if (ilast > 0) {
+            // finish this split pixel event
+            double sum = 0;
+            int imax = 0;
+            for (int i = 0; i < ilast; i++) {
+              sum += last[i];
+              if (last[imax] < last[i])
+                imax = i;
+            }
+            // add all data points as sum or min
+            for (int i = 0; i < ilast; i++) {
+              if (i == imax)
+                result[l][result[l].length - ilast + i] = sum;
+              else
+                result[l][result[l].length - ilast + i] = min;
+            }
+            // reset
+            ilast = 0;
+            solved++;
+          }
         }
       } else {
         // non rotated [dp][line]
@@ -215,6 +378,27 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
               if (!Double.isNaN(current))
                 lastSelectedDPCount++;
             }
+          }
+          // resolve last split event
+          if (ilast > 0) {
+            // finish this split pixel event
+            double sum = 0;
+            int imax = 0;
+            for (int i = 0; i < ilast; i++) {
+              sum += last[i];
+              if (last[imax] < last[i])
+                imax = i;
+            }
+            // add all data points as sum or min
+            for (int i = 0; i < ilast; i++) {
+              if (i == imax)
+                result[result.length - 1 - ilast + i][l] = sum;
+              else
+                result[result.length - 1 - ilast + i][l] = min;
+            }
+            // reset
+            ilast = 0;
+            solved++;
           }
         }
       }
@@ -277,6 +461,35 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
     return img.getHeightAsMaxDP();
   }
 
+
+
+  public double getMaxBlockWidth() {
+    return getMaxBlockWidth(getSettings().getSettImage());
+  }
+
+  public double getMaxBlockHeight() {
+    return getMaxBlockHeight(getSettings().getSettImage());
+  }
+
+  public double getMaxBlockWidth(SettingsGeneralImage settImage) {
+    int rot = getSettings().getSettImage().getRotationOfData();
+    double f = getSettings().getSettSingleParticle().getNumberOfPixel();
+    return img.getMaxBlockWidth(rot, 1) * f;
+  }
+
+  public double getMaxBlockHeight(SettingsGeneralImage settImage) {
+    int rot = getSettings().getSettImage().getRotationOfData();
+    double f = getSettings().getSettSingleParticle().getNumberOfPixel();
+    return img.getMaxBlockHeight(rot, 1) * f;
+  }
+
+  public float getWidth() {
+    return img.getWidth(false);
+  }
+
+  public float getHeight() {
+    return img.getHeight(false);
+  }
 
   @Override
   public String getTitle() {

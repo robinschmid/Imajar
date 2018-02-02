@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.border.EmptyBorder;
@@ -16,7 +17,7 @@ import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.multiimager.FrameModules.ModuleSingleParticleImage;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
-public class SingleParticleDialog extends JDialog {
+public class SingleParticleDialog extends JFrame {
 
   private final JPanel contentPanel = new JPanel();
 
@@ -34,7 +35,6 @@ public class SingleParticleDialog extends JDialog {
   public static void main(String[] args) {
     try {
       SingleParticleDialog dialog = new SingleParticleDialog();
-      dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
       dialog.setVisible(true);
     } catch (Exception e) {
       e.printStackTrace();
@@ -45,6 +45,7 @@ public class SingleParticleDialog extends JDialog {
    * Create the dialog.
    */
   public SingleParticleDialog() {
+    this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     setBounds(100, 100, 595, 566);
     getContentPane().setLayout(new BorderLayout());
     contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -83,7 +84,6 @@ public class SingleParticleDialog extends JDialog {
       {
         module = new ModuleSingleParticleImage(ImageEditorWindow.getEditor());
         west.add(module, BorderLayout.CENTER);
-        module.setLayout(new BorderLayout(0, 0));
       }
       {
         JPanel panel = new JPanel();
@@ -112,6 +112,7 @@ public class SingleParticleDialog extends JDialog {
         il -> autoUpdate());
     module.addAutoRepainter(al -> repaint(), cl -> repaint(), ddlRepaint, e -> repaint(),
         il -> repaint());
+
   }
 
   public void setSPImage(SingleParticleImage img) {
@@ -121,20 +122,7 @@ public class SingleParticleDialog extends JDialog {
       module.setAutoUpdating(false);
       // set to
       module.setCurrentImage(img, true);
-
-      // create histogram
-      double[] data = img.getSelectedDataAsArray(true, true);
-      JFreeChart histo = EChartFactory.createHistogram(data, "I", 2010);
-      pnHisto = new EChartPanel(histo);
-      southwest.removeAll();
-      southwest.add(pnHisto, BorderLayout.CENTER);
-      // after removing split events
-
-      double[] filtered = img.getSPDataArray();
-      histo = EChartFactory.createHistogram(filtered, "I", 2010);
-      pnHistoFiltered = new EChartPanel(histo);
-      southeast.removeAll();
-      southeast.add(pnHistoFiltered, BorderLayout.CENTER);
+      updateHistograms();
 
       // add image
 
@@ -144,17 +132,39 @@ public class SingleParticleDialog extends JDialog {
   }
 
 
+  private void updateHistograms() {
+    if (img != null) {
+      // create histogram
+      double[] data = img.getSelectedDataAsArray(true, true);
+      JFreeChart histo = EChartFactory.createHistogram(data, "I", 2010);
+      pnHisto = new EChartPanel(histo);
+      southwest.removeAll();
+      southwest.add(pnHisto, BorderLayout.CENTER);
+      // after removing split events
+
+      double[] filtered = img.getSPDataArraySelected();
+      histo = EChartFactory.createHistogram(filtered, "I", 2010);
+      pnHistoFiltered = new EChartPanel(histo);
+      southeast.removeAll();
+      southeast.add(pnHistoFiltered, BorderLayout.CENTER);
+    }
+  }
+
   public void autoUpdate() {
     if (module.isAutoUpdating())
       update();
   }
 
   public void update() {
-
+    if (img != null) {
+      module.writeAllToSettings(img.getSettings());
+      updateHistograms();
+    }
   }
 
   public void repaint() {
-
+    if (img != null)
+      module.writeAllToSettings(img.getSettings());
   }
 
   public JPanel getSouthwest() {

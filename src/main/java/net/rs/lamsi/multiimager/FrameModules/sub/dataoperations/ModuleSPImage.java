@@ -164,15 +164,17 @@ public class ModuleSPImage
   // Autoupdate
   @Override
   public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl,
-      ColorChangedListener ccl, ItemListener il) {}
-
-  @Override
-  public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl,
       ColorChangedListener ccl, ItemListener il) {
     txtLower.getDocument().addDocumentListener(dl);
     txtUpper.getDocument().addDocumentListener(dl);
     txtNoiseLevel.getDocument().addDocumentListener(dl);
     txtSplitPixel.getDocument().addDocumentListener(dl);
+
+  }
+
+  @Override
+  public void addAutoRepainter(ActionListener al, ChangeListener cl, DocumentListener dl,
+      ColorChangedListener ccl, ItemListener il) {
 
   }
 
@@ -214,7 +216,7 @@ public class ModuleSPImage
         Range window = new Range(doubleFromTxt(txtLower), doubleFromTxt(txtUpper));
         int splitPixel = intFromTxt(txtSplitPixel);
         double noiseLevel = doubleFromTxt(txtNoiseLevel);
-        si.setAll(noiseLevel, splitPixel, window);
+        si.setAll(noiseLevel, splitPixel, window, 1000);
       } catch (Exception ex) {
         ex.printStackTrace();
       }

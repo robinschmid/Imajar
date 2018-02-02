@@ -51,16 +51,27 @@ public class EChartFactory {
     return createHistogram(data, bin, yAxisLabel);
   }
 
+  /**
+   * 
+   * @param data
+   * @param yAxisLabel
+   * @param width automatic width if parameter is <=0
+   * @return
+   */
   public static JFreeChart createHistogram(double[] data, String yAxisLabel, double width) {
-    double min = Double.MAX_VALUE;
-    double max = Double.NEGATIVE_INFINITY;
-    for (double d : data) {
-      if (d < min)
-        min = d;
-      if (d > max)
-        max = d;
+    if (width <= 0)
+      return createHistogram(data, yAxisLabel);
+    else {
+      double min = Double.MAX_VALUE;
+      double max = Double.NEGATIVE_INFINITY;
+      for (double d : data) {
+        if (d < min)
+          min = d;
+        if (d > max)
+          max = d;
+      }
+      int bin = (int) ((max - min) / width);
+      return createHistogram(data, bin, yAxisLabel);
     }
-    int bin = (int) ((max - min) / width);
-    return createHistogram(data, bin, yAxisLabel);
   }
 }
