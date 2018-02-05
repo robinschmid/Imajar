@@ -129,7 +129,7 @@ public class ModuleSPImage
         }
       }
     };
-
+    ddlCenterPM.setActive(true);
     txtCenter.getDocument().addDocumentListener(ddlCenterPM);
     txtPM.getDocument().addDocumentListener(ddlCenterPM);
 
@@ -196,14 +196,14 @@ public class ModuleSPImage
       txtUpper.setText(String.valueOf(si.getWindow().getUpperBound()));
       txtCenter.setText(String.valueOf(si.getWindow().getCentralValue()));
       txtPM.setText(String.valueOf(si.getWindow().getLength() / 2.0));
-      // stop internal document listener
-      ddlCenterPM.stop();
     } else {
       txtLower.setText("0");
       txtUpper.setText("0");
       txtCenter.setText("0");
       txtPM.setText("0");
     }
+    // stop internal document listener
+    ddlCenterPM.stop();
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
     // ImageEditorWindow.getEditor().fireUpdateEvent(true);

@@ -4,6 +4,7 @@ package net.rs.lamsi.multiimager.FrameModules;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.Consumer;
 import javax.swing.JButton;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
@@ -28,21 +29,31 @@ public class ModuleSingleParticleImage
    * Create the panel.
    */
   public ModuleSingleParticleImage(ImageEditorWindow wnd) {
+    this(wnd, true, null);
+  }
+
+  public ModuleSingleParticleImage(ImageEditorWindow wnd, boolean applyToAll,
+      Consumer<ActionEvent> updateConsumer) {
     super("", false, SettingsSPImage.class, SingleParticleImage.class, true);
     window = wnd;
 
-    JButton btnApplySettingsToAll = new JButton("apply to all");
-    btnApplySettingsToAll.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        window.getLogicRunner().applySettingsToAllImagesInList();
-      }
-    });
-    getPnTitleCenter().add(btnApplySettingsToAll);
+    if (applyToAll) {
+      JButton btnApplySettingsToAll = new JButton("apply to all");
+      btnApplySettingsToAll.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          window.getLogicRunner().applySettingsToAllImagesInList();
+        }
+      });
+      getPnTitleCenter().add(btnApplySettingsToAll);
+    }
 
     JButton btnUpdate = new JButton("update");
     btnUpdate.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        window.writeAllSettingsFromModules(false);
+        if (updateConsumer != null)
+          updateConsumer.accept(e);
+        else
+          window.writeAllSettingsFromModules(false);
       }
     });
     getPnTitleCenter().add(btnUpdate);

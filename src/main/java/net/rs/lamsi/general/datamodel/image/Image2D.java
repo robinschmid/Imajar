@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -2154,6 +2155,24 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
       }
     }
     return datasel;
+  }
+
+  /**
+   * Returns all selected and not excluded data points to an array
+   * 
+   * @return
+   */
+  public List<Double> getSelectedDataAsList(boolean raw, boolean excluded) {
+    ArrayList<Double> list = new ArrayList<>();
+    int counter = 0;
+    for (int l = 0; l < data.getLinesCount(); l++) {
+      for (int dp = 0; dp < data.getLineLength(l); dp++) {
+        if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) {
+          list.add(getI(raw, l, dp));
+        }
+      }
+    }
+    return list;
   }
 
 

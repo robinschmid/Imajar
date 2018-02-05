@@ -71,6 +71,7 @@ public class DelayedDocumentListener implements DocumentListener, Runnable, Even
         e.printStackTrace();
       }
     }
+    isAutoUpdateStarted = false;
     isStopped = false;
   }
 
