@@ -6,7 +6,9 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -15,12 +17,18 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
+import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.multiimager.FrameModules.ModuleSingleParticleImage;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
@@ -31,12 +39,17 @@ public class SingleParticleDialog extends JFrame {
   private ModuleSingleParticleImage module;
   private SingleParticleImage img;
   private DelayedDocumentListener ddlUpdate, ddlRepaint;
-  private EChartPanel pnHisto, pnHistoFiltered;
+  private EChartPanel pnHisto, pnHistoFiltered, pnHeat;
   private JPanel southwest;
   private JPanel southeast;
   private JPanel north;
   private JTextField txtBinWidth;
-  private JCheckBox cbExcludeSmallerNoise;
+  private JCheckBox cbExcludeSmallerNoise, cbAnnotations;
+  private JLabel lbStats;
+  private JTextField txtRangeX;
+  private JTextField txtRangeY;
+  private JTextField txtRangeXEnd;
+  private JTextField txtRangeYEnd;
 
   /**
    * Launch the application.
@@ -55,7 +68,7 @@ public class SingleParticleDialog extends JFrame {
    */
   public SingleParticleDialog() {
     this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    setBounds(100, 100, 872, 707);
+    setBounds(100, 100, 903, 952);
     getContentPane().setLayout(new BorderLayout());
     contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
     getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -104,27 +117,113 @@ public class SingleParticleDialog extends JFrame {
         }
       }
       {
-        JPanel pnHistoSett = new JPanel();
-        center1.add(pnHistoSett, BorderLayout.SOUTH);
+        JPanel box = new JPanel();
+        center1.add(box, BorderLayout.SOUTH);
+        box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
         {
-          cbExcludeSmallerNoise = new JCheckBox("exclude <noise level");
-          cbExcludeSmallerNoise.setSelected(true);
-          pnHistoSett.add(cbExcludeSmallerNoise);
+          JPanel pnstats = new JPanel();
+          box.add(pnstats);
+          {
+            lbStats = new JLabel("last stats:");
+            pnstats.add(lbStats);
+          }
         }
         {
-          Component horizontalStrut = Box.createHorizontalStrut(20);
-          pnHistoSett.add(horizontalStrut);
+          JPanel pnHistoSett = new JPanel();
+          box.add(pnHistoSett);
+          {
+            cbExcludeSmallerNoise = new JCheckBox("exclude <noise level");
+            cbExcludeSmallerNoise.setSelected(true);
+            pnHistoSett.add(cbExcludeSmallerNoise);
+          }
+          {
+            cbAnnotations = new JCheckBox("annotations");
+            cbAnnotations.setSelected(true);
+            pnHistoSett.add(cbAnnotations);
+          }
+          {
+            Component horizontalStrut = Box.createHorizontalStrut(20);
+            pnHistoSett.add(horizontalStrut);
+          }
+          {
+            JLabel lblBinWidth = new JLabel("bin width");
+            pnHistoSett.add(lblBinWidth);
+          }
+          {
+            txtBinWidth = new JTextField();
+            txtBinWidth.setText("2030");
+            pnHistoSett.add(txtBinWidth);
+            txtBinWidth.setColumns(7);
+          }
         }
         {
-          JLabel lblBinWidth = new JLabel("bin width");
-          pnHistoSett.add(lblBinWidth);
+          JPanel third = new JPanel();
+          box.add(third);
+          {
+            JLabel lblRanges = new JLabel("x-range");
+            third.add(lblRanges);
+          }
+          {
+            txtRangeX = new JTextField();
+            third.add(txtRangeX);
+            txtRangeX.setToolTipText("Set the x-range for both histograms");
+            txtRangeX.setText("0");
+            txtRangeX.setColumns(6);
+          }
+          {
+            JLabel label = new JLabel("-");
+            third.add(label);
+          }
+          {
+            txtRangeXEnd = new JTextField();
+            txtRangeXEnd.setToolTipText("Set the x-range for both histograms");
+            txtRangeXEnd.setText("0");
+            txtRangeXEnd.setColumns(6);
+            third.add(txtRangeXEnd);
+          }
+          {
+            JButton btnApplyX = new JButton("Apply");
+            btnApplyX.addActionListener(e -> applyXRange());
+            third.add(btnApplyX);
+          }
+          {
+            JPanel panel = new JPanel();
+            box.add(panel);
+            {
+              JLabel label = new JLabel("x-range");
+              panel.add(label);
+            }
+            {
+              txtRangeY = new JTextField();
+              panel.add(txtRangeY);
+              txtRangeY.setText("0");
+              txtRangeY.setToolTipText("Set the y-range for both histograms");
+              txtRangeY.setColumns(6);
+            }
+            {
+              JLabel label = new JLabel("-");
+              panel.add(label);
+            }
+            {
+              txtRangeYEnd = new JTextField();
+              txtRangeYEnd.setToolTipText("Set the x-range for both histograms");
+              txtRangeYEnd.setText("0");
+              txtRangeYEnd.setColumns(6);
+              panel.add(txtRangeYEnd);
+            }
+            {
+              JButton btnApplyY = new JButton("Apply");
+              btnApplyY.addActionListener(e -> applyYRange());
+              panel.add(btnApplyY);
+            }
+          }
         }
-        {
-          txtBinWidth = new JTextField();
-          txtBinWidth.setText("2030");
-          pnHistoSett.add(txtBinWidth);
-          txtBinWidth.setColumns(7);
-        }
+
+        // histogram settings
+        cbAnnotations.addItemListener(e -> updateAnnotations());
+        cbExcludeSmallerNoise.addItemListener(e -> updateHistograms());
+        txtBinWidth.getDocument()
+            .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
       }
     }
     {
@@ -150,12 +249,48 @@ public class SingleParticleDialog extends JFrame {
     module.addAutoRepainter(al -> repaint(), cl -> repaint(), ddlRepaint, e -> repaint(),
         il -> repaint());
 
-    // histogram settings
-    cbExcludeSmallerNoise.addItemListener(e -> updateHistograms());
-    txtBinWidth.getDocument()
-        .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
+    // ranges
+    DelayedDocumentListener ddlx = new DelayedDocumentListener(e -> applyXRange());
+    DelayedDocumentListener ddly = new DelayedDocumentListener(e -> applyYRange());
+
+    txtRangeX.getDocument().addDocumentListener(ddlx);
+    txtRangeXEnd.getDocument().addDocumentListener(ddlx);
+    txtRangeY.getDocument().addDocumentListener(ddly);
+    txtRangeYEnd.getDocument().addDocumentListener(ddly);
   }
 
+  private void applyYRange() {
+    try {
+      double y = Double.parseDouble(txtRangeY.getText());
+      double ye = Double.parseDouble(txtRangeYEnd.getText());
+      if (pnHisto != null)
+        pnHisto.getChart().getXYPlot().getDomainAxis().setRange(y, ye);
+      if (pnHistoFiltered != null)
+        pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(y, ye);
+    } catch (Exception e2) {
+      e2.printStackTrace();
+    }
+  }
+
+  private void applyXRange() {
+    try {
+      double x = Double.parseDouble(txtRangeX.getText());
+      double xe = Double.parseDouble(txtRangeXEnd.getText());
+      if (pnHisto != null)
+        pnHisto.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
+      if (pnHistoFiltered != null)
+        pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
+    } catch (Exception e2) {
+      e2.printStackTrace();
+    }
+  }
+
+
+  /**
+   * initialise dialog and module
+   * 
+   * @param img
+   */
   public void setSPImage(SingleParticleImage img) {
     this.img = img;
     if (img != null) {
@@ -163,54 +298,175 @@ public class SingleParticleDialog extends JFrame {
       module.setAutoUpdating(false);
       // set to
       module.setCurrentImage(img, true);
+      ddlUpdate.stop();
+      ddlRepaint.stop();
       updateHistograms();
-
       // add image
+      updateHeatmap();
+
 
       module.setAutoUpdating(auto);
       contentPanel.revalidate();
+      contentPanel.repaint();
     }
   }
 
-
-  private void updateHistograms() {
+  /**
+   * Create new histograms
+   */
+  private void updateHeatmap() {
     if (img != null) {
-      double binwidth = Double.NaN;
       try {
-        binwidth = Double.parseDouble(txtBinWidth.getText());
+
+        new SwingWorker<ChartPanel, Void>() {
+          @Override
+          protected ChartPanel doInBackground() throws Exception {
+            return null;
+            // return pnHeat = HeatmapFactory.generateHeatmap(img).getChartPanel();
+          }
+
+          @Override
+          protected void done() {
+            north.removeAll();
+            if (pnHeat != null)
+              north.add(pnHeat, BorderLayout.CENTER);
+            north.revalidate();
+            north.repaint();
+          }
+        }.execute();
       } catch (Exception e) {
-      }
-      if (!Double.isNaN(binwidth)) {
-        double noise = img.getSettings().getSettSingleParticle().getNoiseLevel();
-        // create histogram
-        double[] data = null;
-        if (cbExcludeSmallerNoise.isSelected()) {
-          List<Double> dlist = img.getSelectedDataAsList(true, true);
-          data = dlist.stream().mapToDouble(d -> d).filter(d -> d >= noise).toArray();
-        } else
-          data = img.getSelectedDataAsArray(true, true);
-
-        JFreeChart histo = EChartFactory.createHistogram(data, "I", binwidth);
-        pnHisto = new EChartPanel(histo);
-        southwest.removeAll();
-        southwest.add(pnHisto, BorderLayout.CENTER);
-        // after removing split events
-
-        double[] filtered = img.getSPDataArraySelected();
-
-        // do not show noise
-        if (cbExcludeSmallerNoise.isSelected())
-          filtered = Arrays.stream(filtered).filter(d -> d >= noise).toArray();
-
-        histo = EChartFactory.createHistogram(filtered, "I", binwidth);
-        pnHistoFiltered = new EChartPanel(histo);
-        southeast.removeAll();
-        southeast.add(pnHistoFiltered, BorderLayout.CENTER);
-
-        southeast.getParent().revalidate();
-        southeast.getParent().repaint();
+        e.printStackTrace();
       }
     }
+  }
+
+  /**
+   * Create new histograms
+   * 
+   * @throws Exception
+   */
+  private void updateHistograms() {
+    if (img != null) {
+      double binwidth2 = Double.NaN;
+      try {
+        binwidth2 = Double.parseDouble(txtBinWidth.getText());
+      } catch (Exception e) {
+      }
+      if (!Double.isNaN(binwidth2)) {
+        SingleParticleSettings sett;
+        try {
+          sett = (SingleParticleSettings) getSettings().copy();
+          final double binwidth = binwidth2;
+          new SwingWorker<JFreeChart, Void>() {
+            @Override
+            protected JFreeChart doInBackground() throws Exception {
+              double noise = sett.getNoiseLevel();
+              Range window = sett.getWindow();
+              // create histogram
+              double[] data = null;
+              if (cbExcludeSmallerNoise.isSelected()) {
+                List<Double> dlist = img.getSelectedDataAsList(false, true);
+                data = dlist.stream().mapToDouble(d -> d).filter(d -> d >= noise).toArray();
+              } else
+                data = img.getSelectedDataAsArray(false, true);
+              return EChartFactory.createHistogram(data, "I", binwidth);
+            }
+
+            @Override
+            protected void done() {
+              JFreeChart histo;
+              try {
+                histo = get();
+                pnHisto = new EChartPanel(histo);
+                southwest.removeAll();
+                southwest.add(pnHisto, BorderLayout.CENTER);
+                updateAnnotations();
+                southwest.getParent().revalidate();
+                southwest.getParent().repaint();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              } catch (ExecutionException e) {
+                e.printStackTrace();
+              }
+            }
+          }.execute();
+
+          new SwingWorker<JFreeChart, Void>() {
+            @Override
+            protected JFreeChart doInBackground() throws Exception {
+              double noise = sett.getNoiseLevel();
+              Range window = sett.getWindow();
+
+              double[] filtered = img.getSPDataArraySelected();
+              // do not show noise
+              if (cbExcludeSmallerNoise.isSelected())
+                filtered = Arrays.stream(filtered).filter(d -> d >= noise).toArray();
+
+              return EChartFactory.createHistogram(filtered, "I", binwidth);
+            }
+
+            @Override
+            protected void done() {
+              JFreeChart histo;
+              try {
+                histo = get();
+                pnHistoFiltered = new EChartPanel(histo);
+                southeast.removeAll();
+                southeast.add(pnHistoFiltered, BorderLayout.CENTER);
+                updateAnnotations();
+                southeast.getParent().revalidate();
+                southeast.getParent().repaint();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              } catch (ExecutionException e) {
+                e.printStackTrace();
+              }
+            }
+          }.execute();
+        } catch (Exception e1) {
+          e1.printStackTrace();
+        }
+
+      }
+    }
+  }
+
+  /**
+   * Clear and add annotations if cbAnnotations is selected
+   */
+  private void updateAnnotations() {
+    if (img != null && pnHisto != null && pnHistoFiltered != null) {
+      SingleParticleSettings sett = getSettings();
+      double noise = sett.getNoiseLevel();
+      Range window = sett.getWindow();
+
+      XYPlot[] plots =
+          new XYPlot[] {pnHisto.getChart().getXYPlot(), pnHistoFiltered.getChart().getXYPlot()};
+
+      for (XYPlot p : plots) {
+        // remove old
+        p.clearDomainMarkers();
+
+        if (cbAnnotations.isSelected()) {
+          // add
+          p.addDomainMarker(new ValueMarker(window.getLowerBound(), p.getDomainCrosshairPaint(),
+              p.getDomainCrosshairStroke()));
+          p.addDomainMarker(new ValueMarker(window.getUpperBound(), p.getDomainCrosshairPaint(),
+              p.getDomainCrosshairStroke()));
+        }
+      }
+    }
+  }
+
+  /**
+   * Settings of current sp image
+   * 
+   * @return
+   */
+  public SingleParticleSettings getSettings() {
+    if (img == null)
+      return null;
+    return img.getSettings().getSettSingleParticle();
   }
 
   public void autoUpdate() {
@@ -222,6 +478,7 @@ public class SingleParticleDialog extends JFrame {
     if (img != null) {
       module.writeAllToSettings(img.getSettings());
       updateHistograms();
+      updateHeatmap();
     }
   }
 
@@ -248,5 +505,25 @@ public class SingleParticleDialog extends JFrame {
 
   public JCheckBox getCbExcludeSmallerNoise() {
     return cbExcludeSmallerNoise;
+  }
+
+  public JLabel getLbStats() {
+    return lbStats;
+  }
+
+  public JTextField getTxtRangeX() {
+    return txtRangeX;
+  }
+
+  public JTextField getTxtRangeY() {
+    return txtRangeY;
+  }
+
+  public JTextField getTxtRangeYEnd() {
+    return txtRangeYEnd;
+  }
+
+  public JTextField getTxtRangeXEnd() {
+    return txtRangeXEnd;
   }
 }

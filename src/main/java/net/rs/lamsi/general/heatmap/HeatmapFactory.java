@@ -35,6 +35,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.image.visualisation.paintscales.SingleColorPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
@@ -484,66 +485,74 @@ public class HeatmapFactory {
     double zmin = dataset.getZMin();
     double zmax = dataset.getZMax();
     // no data!
-    if (zmin == zmax || zmax == 0) {
-      throw new Exception("Every data point has the same intensity of " + zmin);
-    } else {
-      SettingsThemesContainer setTheme = img.getSettTheme();
-      SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
-      // XAchse
-      NumberAxis xAxis = new NumberAxis(xTitle);
-      xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
-      xAxis.setLowerMargin(0.0);
-      xAxis.setUpperMargin(0.0);
-      // Y Achse
-      NumberAxis yAxis = new NumberAxis(yTitle);
-      yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
-      yAxis.setLowerMargin(0.0);
-      yAxis.setUpperMargin(0.0);
-      // XYBlockRenderer
-      ImageRenderer renderer = new ImageRenderer();
+    SettingsThemesContainer setTheme = img.getSettTheme();
+    SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
+    // XAchse
+    NumberAxis xAxis = new NumberAxis(xTitle);
+    xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+    xAxis.setLowerMargin(0.0);
+    xAxis.setUpperMargin(0.0);
+    // Y Achse
+    NumberAxis yAxis = new NumberAxis(yTitle);
+    yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+    yAxis.setLowerMargin(0.0);
+    yAxis.setUpperMargin(0.0);
+    // XYBlockRenderer
+    ImageRenderer renderer = new ImageRenderer();
 
-      // creation of scale
-      // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
-      PaintScale scale = null;
+    // creation of scale
+    // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
+    PaintScale scale = null;
+    if (zmin != zmax)
       scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, settings);
-      renderer.setPaintScale(scale);
-      renderer.setAutoPopulateSeriesFillPaint(true);
-      renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+    else
+      scale = new SingleColorPaintScale(zmin, zmin + 1, Color.MAGENTA);
+    renderer.setPaintScale(scale);
+    renderer.setAutoPopulateSeriesFillPaint(true);
+    renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 
-      // TODO change to dynamic block width
-      renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
-      renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
+    // TODO change to dynamic block width
+    renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
+    renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
 
 
-      // Plot erstellen mit daten
-      XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
-      plot.setBackgroundPaint(Color.lightGray);
-      plot.setDomainGridlinesVisible(false);
-      plot.setRangeGridlinePaint(Color.white);
+    // Plot erstellen mit daten
+    XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
+    plot.setBackgroundPaint(Color.lightGray);
+    plot.setDomainGridlinesVisible(false);
+    plot.setRangeGridlinePaint(Color.white);
 
-      // set background image
-      if (img.getImageGroup() != null) {
-        Image bg = img.getImageGroup().getBGImage();
-        if (bg != null) {
-          // plot.setBackgroundImage(bg);
-          XYImageAnnotation ann = new BGImageAnnotation(bg,
-              img.getImageGroup().getSettings().getSettBGImg(), img.getWidth(), img.getHeight());
+    // set background image
+    if (img.getImageGroup() != null) {
+      Image bg = img.getImageGroup().getBGImage();
+      if (bg != null) {
+        // plot.setBackgroundImage(bg);
+        XYImageAnnotation ann = new BGImageAnnotation(bg,
+            img.getImageGroup().getSettings().getSettBGImg(), img.getWidth(), img.getHeight());
 
-          renderer.addAnnotation(ann, Layer.BACKGROUND);
-        }
+        renderer.addAnnotation(ann, Layer.BACKGROUND);
       }
+    }
 
-      // create chart
-      JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
-      // remove lower legend - wie farbskala rein? TODO
-      chart.removeLegend();
-      chart.setBackgroundPaint(Color.white);
+    // create chart
+    JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
+    // remove lower legend - wie farbskala rein? TODO
+    chart.removeLegend();
+    chart.setBackgroundPaint(Color.white);
 
-      // Legend Generieren
-      PaintScale scaleBar =
-          PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings);
-      PaintScaleLegend legend = createScaleLegend(img, scaleBar,
-          createScaleAxis(settings, setTheme, dataset), settings.getLevels());
+    // Legend Generieren
+    PaintScale scaleBar = null;
+    if (zmin != zmax)
+      scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings);
+    else
+      scaleBar = new SingleColorPaintScale(zmin, zmin + 1, Color.MAGENTA);
+
+
+    PaintScaleLegend legend = null;
+
+    if (zmin != zmax) {
+      legend = createScaleLegend(img, scaleBar, createScaleAxis(settings, setTheme, dataset),
+          settings.getLevels());
       // adding legend in plot or outside
       if (psTheme.isPaintScaleInPlot()) { // inplot
         XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend, RectangleAnchor.BOTTOM_RIGHT);
@@ -551,38 +560,38 @@ public class HeatmapFactory {
         plot.addAnnotation(ta);
       } else
         chart.addSubtitle(legend);
-      //
-      chart.setBorderVisible(true);
-
-
-      // ChartPanel
-      EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, img);
-
-      // add scale legend
-      ScaleInPlot scaleInPlot = addScaleInPlot(setTheme, chartPanel);
-
-      // add short title
-      ImageTitle shortTitle = new ImageTitle(img, setTheme.getTheme().getFontShortTitle(),
-          setTheme.getTheme().getcShortTitle(), setTheme.getTheme().getcBGShortTitle(),
-          settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
-      plot.addAnnotation(shortTitle.getAnnotation());
-
-      // theme
-      img.getSettTheme().applyToChart(chart);
-
-      // ChartUtilities.applyCurrentTheme(chart);
-      // defaultChartTheme.apply(chart);
-      chart.fireChartChanged();
-
-      chart.setBorderVisible(false);
-
-      // Heatmap
-      Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot,
-          legend, img, renderer, scaleInPlot, shortTitle);
-
-      // return Heatmap
-      return heat;
     }
+    //
+    chart.setBorderVisible(true);
+
+
+    // ChartPanel
+    EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, img);
+
+    // add scale legend
+    ScaleInPlot scaleInPlot = addScaleInPlot(setTheme, chartPanel);
+
+    // add short title
+    ImageTitle shortTitle = new ImageTitle(img, setTheme.getTheme().getFontShortTitle(),
+        setTheme.getTheme().getcShortTitle(), setTheme.getTheme().getcBGShortTitle(),
+        settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
+    plot.addAnnotation(shortTitle.getAnnotation());
+
+    // theme
+    img.getSettTheme().applyToChart(chart);
+
+    // ChartUtilities.applyCurrentTheme(chart);
+    // defaultChartTheme.apply(chart);
+    chart.fireChartChanged();
+
+    chart.setBorderVisible(false);
+
+    // Heatmap
+    Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot,
+        legend, img, renderer, scaleInPlot, shortTitle);
+
+    // return Heatmap
+    return heat;
   }
 
 

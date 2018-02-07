@@ -52,7 +52,6 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
   protected Boolean doInBackground() throws Exception {
     wasStarted();
     boolean result = doInBackground2();
-    done();
     return result;
   }
 

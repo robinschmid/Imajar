@@ -34,7 +34,6 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
   // empty dp == null
   protected double[][] selectedFilteredData;
   protected double[][] filteredData;
-  protected int lastSelectedDPCount;
 
 
   public SingleParticleImage(Image2D img) {
@@ -70,7 +69,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
     // the data
     DebugStopWatch timer = new DebugStopWatch();
 
-    // if not yet filtered or setings have changed
+    // if not yet filtered or settings have changed
     if (selectedFilteredData == null || lastSelected.getSplitPixel() != sett.getSplitPixel()
         || Double.compare(lastSelected.getNoiseLevel(), sett.getNoiseLevel()) != 0
         || !img.getSettings().getSettSelections().equals(lastSelections)) {
@@ -90,8 +89,14 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
       }
     }
     // to array
+    int size = 0;
+    for (int x = 0; x < selectedFilteredData.length; x++)
+      for (int y = 0; y < selectedFilteredData[x].length; y++)
+        if (!Double.isNaN(selectedFilteredData[x][y]))
+          size++;
+
     int i = 0;
-    double[] arr = new double[lastSelectedDPCount];
+    double[] arr = new double[size];
 
     for (int x = 0; x < selectedFilteredData.length; x++) {
       for (int y = 0; y < selectedFilteredData[x].length; y++) {
@@ -101,7 +106,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
         }
       }
     }
-    timer.stopAndLOG("2D array to 1D");
+    timer.stopAndLOG("2D array to 1D of " + size + " selected");
     return arr;
   }
 
@@ -150,6 +155,8 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
     int numberOfPixel = sett.getNumberOfPixel();
     int ipixel = 0;
     Range window = sett.getWindow();
+    if (window == null)
+      window = new Range(0, 0);
 
     LinkedList<Float> fx = new LinkedList<Float>();
     LinkedList<Float> fy = new LinkedList<Float>();
@@ -164,12 +171,15 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
       for (int l = 0; l < filteredData.length; l++) {
         float cx = -1;
         float cy = -1;
+        ipixel = 0;
+        counter = 0;
         for (int dp = 0; dp < filteredData[l].length; dp++) {
           // init with first dp of line
           if (cx == -1) {
             cx = x[l][dp];
             cy = y[l][dp];
           }
+
           // for all dp
           if (cx != -1) {
             ipixel++;
@@ -201,6 +211,8 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
       for (int l = 0; l < max; l++) {
         float cx = -1;
         float cy = -1;
+        ipixel = 0;
+        counter = 0;
         for (int dp = 0; dp < filteredData.length; dp++) {
           if (l < filteredData[dp].length) {
             // init with first dp of line
@@ -260,7 +272,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
         LOG.MESSAGE);
 
     int solved = 0;
-    lastSelectedDPCount = 0;
+    int lastSelectedDPCount = 0;
     if (data != null && data.length > 0) {
       int maxlength = 0;
       double[][] result = new double[data.length][];

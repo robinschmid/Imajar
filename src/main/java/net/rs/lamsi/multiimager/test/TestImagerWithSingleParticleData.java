@@ -79,11 +79,25 @@ public class TestImagerWithSingleParticleData {
               project3);
 
           project3.addProjectListener(e -> {
-            SettingsGeneralImage simg = (SettingsGeneralImage) project3.get(0).get(0)
-                .getSettingsByClass(SettingsGeneralImage.class);
+            final ImagingProject pro = e.getProject();
+            final Image2D img = (Image2D) pro.get(0).get(0);
+            SettingsGeneralImage simg =
+                (SettingsGeneralImage) img.getSettingsByClass(SettingsGeneralImage.class);
             simg.setInterpolation(0.001);
             simg.setUseInterpolation(true);
             simg.setVelocity(0.05f);
+
+            SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
+            settings.getSettSingleParticle().setNoiseLevel(3500);
+            final SingleParticleImage spi = new SingleParticleImage(img, settings);
+
+            EventQueue.invokeLater(() -> {
+              ImageEditorWindow.getEditor().getLogicRunner().addImage(spi, pro.getName(),
+                  e.getGroup().getName());
+              // SingleParticleDialog d = new SingleParticleDialog();
+              // d.setSPImage(spi);
+              // d.setVisible(true);
+            });
           });
 
 

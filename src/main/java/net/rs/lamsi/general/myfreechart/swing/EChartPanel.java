@@ -22,12 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -36,11 +34,8 @@ import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.RangeType;
 import org.jfree.data.xy.XYDataset;
-
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
-import net.rs.lamsi.general.myfreechart.experimental.ChartSizeChangedListener;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
 import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
@@ -50,8 +45,8 @@ import net.rs.lamsi.general.myfreechart.listener.AxisRangeChangedListener;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.myfreechart.menus.MenuExportToClipboard;
 import net.rs.lamsi.general.myfreechart.menus.MenuExportToExcel;
-import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
 import net.rs.lamsi.utils.ChartExportUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
@@ -142,23 +137,25 @@ public class EChartPanel extends ChartPanel {
     // add gestures
     if (standardGestures)
       addStandardGestures();
-    
+
     // images only
-	// try to find in plot scale
+    // try to find in plot scale
     // set this chart panel
-	List list = chart.getXYPlot().getAnnotations();
-	for(int i=0; i<list.size(); i++) {
-		XYAnnotation ann = (XYAnnotation) list.get(i); 
-		if(XYTitleAnnotation.class.isInstance(ann)) {
-			XYTitleAnnotation annt = (XYTitleAnnotation)ann;
-			if(ScaleInPlot.class.isInstance(annt.getTitle())) {
-				((ScaleInPlot)annt.getTitle()).setChartPanel(this);
-				break;
-			}
-		}
-	}
+    List list = chart.getXYPlot().getAnnotations();
+    for (int i = 0; i < list.size(); i++) {
+      XYAnnotation ann = (XYAnnotation) list.get(i);
+      if (XYTitleAnnotation.class.isInstance(ann)) {
+        XYTitleAnnotation annt = (XYTitleAnnotation) ann;
+        if (ScaleInPlot.class.isInstance(annt.getTitle())) {
+          ((ScaleInPlot) annt.getTitle()).setChartPanel(this);
+          break;
+        }
+      }
+    }
+
+    ChartThemeFactory.getStandardTheme().apply(getChart());
   }
-  
+
 
   /**
    * Init ChartPanel Mouse Listener For MouseDraggedOverAxis event For scrolling X-Axis und zooming
@@ -169,30 +166,31 @@ public class EChartPanel extends ChartPanel {
 
     // set sticky zero
     XYPlot p = this.getChart().getXYPlot();
-      ValueAxis rangeAxis = p.getRangeAxis();
-      ValueAxis domainAxis = p.getDomainAxis();
-      if (rangeAxis instanceof NumberAxis) {
-//    	    if (stickyZeroForRangeAxis) {
-		        NumberAxis axis = (NumberAxis) rangeAxis;
-		        axis.setAutoRangeIncludesZero(stickyZeroForRangeAxis);
-		        axis.setAutoRange(true);
-		        axis.setAutoRangeStickyZero(stickyZeroForRangeAxis);
-//		        axis.setRangeType(RangeType.POSITIVE);
-//    	    }
-      }
-      if (domainAxis instanceof NumberAxis) {
-//  	    if (stickyZeroForRangeAxis) {
-		        NumberAxis axis = (NumberAxis) rangeAxis;
-		        axis.setAutoRangeIncludesZero(stickyZeroForRangeAxis);
-		        axis.setAutoRange(true);
-		        axis.setAutoRangeStickyZero(stickyZeroForRangeAxis);
-//		        axis.setRangeType(RangeType.POSITIVE);
-//  	    }
+    ValueAxis rangeAxis = p.getRangeAxis();
+    ValueAxis domainAxis = p.getDomainAxis();
+    if (rangeAxis instanceof NumberAxis) {
+      // if (stickyZeroForRangeAxis) {
+      NumberAxis axis = (NumberAxis) rangeAxis;
+      axis.setAutoRangeIncludesZero(stickyZeroForRangeAxis);
+      axis.setAutoRange(true);
+      axis.setAutoRangeStickyZero(stickyZeroForRangeAxis);
+      // axis.setRangeType(RangeType.POSITIVE);
+      // }
+    }
+    if (domainAxis instanceof NumberAxis) {
+      // if (stickyZeroForRangeAxis) {
+      NumberAxis axis = (NumberAxis) rangeAxis;
+      axis.setAutoRangeIncludesZero(stickyZeroForRangeAxis);
+      axis.setAutoRange(true);
+      axis.setAutoRangeStickyZero(stickyZeroForRangeAxis);
+      // axis.setRangeType(RangeType.POSITIVE);
+      // }
     }
 
     // zoom history
     zoomHistory = ZoomHistory.create(this, 20);
-    addPropertyChangeListener(ZoomHistory.PROPERTY_NAME, e -> zoomHistory = (ZoomHistory)e.getNewValue());
+    addPropertyChangeListener(ZoomHistory.PROPERTY_NAME,
+        e -> zoomHistory = (ZoomHistory) e.getNewValue());
 
     // axis range changed listener for gestures etc
     if (rangeAxis != null) {
@@ -204,7 +202,7 @@ public class EChartPanel extends ChartPanel {
 
     // mouse adapter for scrolling and zooming
     mouseAdapter = new ChartGestureMouseAdapter();
-//    mouseAdapter.addDebugHandler();
+    // mouseAdapter.addDebugHandler();
     this.addMouseListener(mouseAdapter);
     this.addMouseMotionListener(mouseAdapter);
     this.addMouseWheelListener(mouseAdapter);
@@ -221,15 +219,16 @@ public class EChartPanel extends ChartPanel {
         m.addGestureHandler(f.createHandler());
     }
   }
-  
+
   /**
    * notify listeners of changed range
+   * 
    * @param e
    */
   private void axesRangeChanged(AxisRangeChangedEvent e) {
-      if (axesRangeListener != null)
-        for (AxesRangeChangedListener l : axesRangeListener)
-          l.axesRangeChanged(e);
+    if (axesRangeListener != null)
+      for (AxesRangeChangedListener l : axesRangeListener)
+        l.axesRangeChanged(e);
   }
 
   @Override
@@ -304,42 +303,41 @@ public class EChartPanel extends ChartPanel {
   }
 
   protected void openGraphicsExportDialog() {
-	  GraphicsExportDialog.openDialog(this.getChart());
+    GraphicsExportDialog.openDialog(this.getChart());
   }
 
-public void addPopupMenuItem(JMenuItem item) {
+  public void addPopupMenuItem(JMenuItem item) {
     this.getPopupMenu().add(item);
   }
 
   public void addPopupMenu(JMenu menu) {
     this.getPopupMenu().add(menu);
   }
-  
+
   /**
-   * Opens a file chooser and gives the user an opportunity to save the chart
-   * in PNG format.
+   * Opens a file chooser and gives the user an opportunity to save the chart in PNG format.
    *
    * @throws IOException if there is an I/O error.
    */
   public void doSaveAs() throws IOException {
-      JFileChooser fileChooser = new JFileChooser();
-      fileChooser.setCurrentDirectory(this.getDefaultDirectoryForSaveAs());
-      FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                  localizationResources.getString("PNG_Image_Files"), "png");
-      fileChooser.addChoosableFileFilter(filter);
-      fileChooser.setFileFilter(filter);
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setCurrentDirectory(this.getDefaultDirectoryForSaveAs());
+    FileNameExtensionFilter filter =
+        new FileNameExtensionFilter(localizationResources.getString("PNG_Image_Files"), "png");
+    fileChooser.addChoosableFileFilter(filter);
+    fileChooser.setFileFilter(filter);
 
-      int option = fileChooser.showSaveDialog(this);
-      if (option == JFileChooser.APPROVE_OPTION) {
-          String filename = fileChooser.getSelectedFile().getPath();
-          if (isEnforceFileExtensions()) {
-              if (!filename.endsWith(".png")) {
-                  filename = filename + ".png";
-              }
-          }
-          ChartUtils.saveChartAsPNG(new File(filename), getChart(),
-                  getWidth(), getHeight(), getChartRenderingInfo());
+    int option = fileChooser.showSaveDialog(this);
+    if (option == JFileChooser.APPROVE_OPTION) {
+      String filename = fileChooser.getSelectedFile().getPath();
+      if (isEnforceFileExtensions()) {
+        if (!filename.endsWith(".png")) {
+          filename = filename + ".png";
+        }
       }
+      ChartUtils.saveChartAsPNG(new File(filename), getChart(), getWidth(), getHeight(),
+          getChartRenderingInfo());
+    }
   }
 
   public void addAxesRangeChangedListener(AxesRangeChangedListener l) {

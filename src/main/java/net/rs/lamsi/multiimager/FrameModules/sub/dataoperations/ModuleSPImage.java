@@ -2,6 +2,7 @@ package net.rs.lamsi.multiimager.FrameModules.sub.dataoperations;
 
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import javax.swing.JButton;
@@ -43,6 +44,9 @@ public class ModuleSPImage
   private JLabel lblWindow;
   private JLabel label_1;
   private JButton btnOpenDialog;
+  private JTextField txtNPixel;
+  private JLabel lblCountInPixel;
+  private JLabel lblSplitPixelFilter;
 
   // AUTOGEN
 
@@ -55,7 +59,7 @@ public class ModuleSPImage
 
     JPanel panel = new JPanel();
     getPnContent().add(panel, BorderLayout.CENTER);
-    panel.setLayout(new MigLayout("", "[][][][][grow]", "[][][][][][]"));
+    panel.setLayout(new MigLayout("", "[][][][][grow]", "[][][][][][][]"));
 
     btnOpenDialog = new JButton("Open dialog");
     btnOpenDialog.addActionListener(e -> openSingleParticleDialog());
@@ -95,23 +99,35 @@ public class ModuleSPImage
     txtPM.setColumns(10);
     panel.add(txtPM, "cell 3 2,growx");
 
+    lblCountInPixel = new JLabel("count in pixel");
+    panel.add(lblCountInPixel, "cell 0 3,alignx trailing");
+
+    txtNPixel = new JTextField();
+    txtNPixel.setText("1000");
+    panel.add(txtNPixel, "cell 1 3,growx");
+    txtNPixel.setColumns(10);
+
+    lblSplitPixelFilter = new JLabel("Split pixel filter:");
+    lblSplitPixelFilter.setFont(new Font("Tahoma", Font.BOLD, 11));
+    panel.add(lblSplitPixelFilter, "cell 0 4 2 1");
+
     lblNoiseLevel = new JLabel("noise level");
-    panel.add(lblNoiseLevel, "cell 0 4,alignx right");
+    panel.add(lblNoiseLevel, "cell 0 5,alignx right");
 
     txtNoiseLevel = new JTextField();
     txtNoiseLevel.setText("0");
     txtNoiseLevel.setToolTipText("Noise level intensity as threshold");
-    panel.add(txtNoiseLevel, "cell 1 4,growx");
+    panel.add(txtNoiseLevel, "cell 1 5,growx");
     txtNoiseLevel.setColumns(10);
 
     lblSplitEventPixel = new JLabel("split event pixel");
-    panel.add(lblSplitEventPixel, "cell 0 5,alignx right");
+    panel.add(lblSplitEventPixel, "cell 0 6,alignx right");
 
     txtSplitPixel = new JTextField();
     txtSplitPixel.setToolTipText(
         "How many pixels should be recognised as split particle events? (integers)");
     txtSplitPixel.setText("2");
-    panel.add(txtSplitPixel, "cell 1 5,growx");
+    panel.add(txtSplitPixel, "cell 1 6,growx");
     txtSplitPixel.setColumns(10);
 
 
@@ -169,7 +185,7 @@ public class ModuleSPImage
     txtUpper.getDocument().addDocumentListener(dl);
     txtNoiseLevel.getDocument().addDocumentListener(dl);
     txtSplitPixel.getDocument().addDocumentListener(dl);
-
+    txtNPixel.getDocument().addDocumentListener(dl);
   }
 
   @Override
@@ -202,6 +218,10 @@ public class ModuleSPImage
       txtCenter.setText("0");
       txtPM.setText("0");
     }
+
+    txtNoiseLevel.setText(String.valueOf(si.getNoiseLevel()));
+    txtSplitPixel.setText(String.valueOf(si.getSplitPixel()));
+    txtNPixel.setText(String.valueOf(si.getNumberOfPixel()));
     // stop internal document listener
     ddlCenterPM.stop();
     // finished
@@ -216,7 +236,8 @@ public class ModuleSPImage
         Range window = new Range(doubleFromTxt(txtLower), doubleFromTxt(txtUpper));
         int splitPixel = intFromTxt(txtSplitPixel);
         double noiseLevel = doubleFromTxt(txtNoiseLevel);
-        si.setAll(noiseLevel, splitPixel, window, 1000);
+        int numberOfPixel = intFromTxt(txtNPixel);
+        si.setAll(noiseLevel, splitPixel, window, numberOfPixel);
       } catch (Exception ex) {
         ex.printStackTrace();
       }
@@ -226,5 +247,9 @@ public class ModuleSPImage
 
   public JButton getBtnOpenDialog() {
     return btnOpenDialog;
+  }
+
+  public JTextField getTxtNPixel() {
+    return txtNPixel;
   }
 }

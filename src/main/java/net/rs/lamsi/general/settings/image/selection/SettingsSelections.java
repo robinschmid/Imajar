@@ -195,6 +195,16 @@ public class SettingsSelections extends Settings implements Serializable,
         // calculates statistics and frees memory
         s.calculateStatistics();
       }
+
+      hasExclusions = false;
+      hasSelections = false;
+      for (int i = 0; i < selections.size() && !hasExclusions; i++) {
+        if (selections.get(i).getMode().equals(SelectionMode.EXCLUDE))
+          hasExclusions = true;
+        if (selections.get(i).getMode().equals(SelectionMode.SELECT))
+          hasSelections = true;
+      }
+
       // update quantifier
       updateRegression = true;
     }
