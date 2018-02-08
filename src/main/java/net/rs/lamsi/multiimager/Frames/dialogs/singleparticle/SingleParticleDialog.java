@@ -43,8 +43,8 @@ public class SingleParticleDialog extends JFrame {
   private JPanel southwest;
   private JPanel southeast;
   private JPanel north;
-  private JTextField txtBinWidth;
-  private JCheckBox cbExcludeSmallerNoise, cbAnnotations;
+  private JTextField txtBinWidth, txtBinShift;
+  private JCheckBox cbExcludeSmallerNoise, cbThirdSQRT, cbAnnotations;
   private JLabel lbStats;
   private JTextField txtRangeX;
   private JTextField txtRangeY;
@@ -137,6 +137,11 @@ public class SingleParticleDialog extends JFrame {
             pnHistoSett.add(cbExcludeSmallerNoise);
           }
           {
+            cbThirdSQRT = new JCheckBox("cube root(I)");
+            cbThirdSQRT.setSelected(true);
+            pnHistoSett.add(cbThirdSQRT);
+          }
+          {
             cbAnnotations = new JCheckBox("annotations");
             cbAnnotations.setSelected(true);
             pnHistoSett.add(cbAnnotations);
@@ -154,6 +159,20 @@ public class SingleParticleDialog extends JFrame {
             txtBinWidth.setText("2030");
             pnHistoSett.add(txtBinWidth);
             txtBinWidth.setColumns(7);
+          }
+          {
+            Component horizontalStrut = Box.createHorizontalStrut(20);
+            pnHistoSett.add(horizontalStrut);
+          }
+          {
+            JLabel lblBinWidth = new JLabel("shift bins by");
+            pnHistoSett.add(lblBinWidth);
+          }
+          {
+            txtBinShift = new JTextField();
+            txtBinShift.setText("500");
+            pnHistoSett.add(txtBinShift);
+            txtBinShift.setColumns(7);
           }
         }
         {
@@ -190,7 +209,7 @@ public class SingleParticleDialog extends JFrame {
             JPanel panel = new JPanel();
             box.add(panel);
             {
-              JLabel label = new JLabel("x-range");
+              JLabel label = new JLabel("y-range");
               panel.add(label);
             }
             {
@@ -206,7 +225,7 @@ public class SingleParticleDialog extends JFrame {
             }
             {
               txtRangeYEnd = new JTextField();
-              txtRangeYEnd.setToolTipText("Set the x-range for both histograms");
+              txtRangeYEnd.setToolTipText("Set the y-range for both histograms");
               txtRangeYEnd.setText("0");
               txtRangeYEnd.setColumns(6);
               panel.add(txtRangeYEnd);
@@ -218,12 +237,6 @@ public class SingleParticleDialog extends JFrame {
             }
           }
         }
-
-        // histogram settings
-        cbAnnotations.addItemListener(e -> updateAnnotations());
-        cbExcludeSmallerNoise.addItemListener(e -> updateHistograms());
-        txtBinWidth.getDocument()
-            .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
       }
     }
     {
@@ -241,6 +254,10 @@ public class SingleParticleDialog extends JFrame {
       }
     }
 
+    addListener();
+  }
+
+  private void addListener() {
     ddlUpdate = new DelayedDocumentListener(e -> autoUpdate());
     ddlRepaint = new DelayedDocumentListener(e -> repaint());
     //
@@ -257,20 +274,17 @@ public class SingleParticleDialog extends JFrame {
     txtRangeXEnd.getDocument().addDocumentListener(ddlx);
     txtRangeY.getDocument().addDocumentListener(ddly);
     txtRangeYEnd.getDocument().addDocumentListener(ddly);
+
+    // histogram settings
+    cbAnnotations.addItemListener(e -> updateAnnotations());
+    cbThirdSQRT.addItemListener(e -> updateHistograms());
+    cbExcludeSmallerNoise.addItemListener(e -> updateHistograms());
+    txtBinWidth.getDocument()
+        .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
+    txtBinShift.getDocument()
+        .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
   }
 
-  private void applyYRange() {
-    try {
-      double y = Double.parseDouble(txtRangeY.getText());
-      double ye = Double.parseDouble(txtRangeYEnd.getText());
-      if (pnHisto != null)
-        pnHisto.getChart().getXYPlot().getDomainAxis().setRange(y, ye);
-      if (pnHistoFiltered != null)
-        pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(y, ye);
-    } catch (Exception e2) {
-      e2.printStackTrace();
-    }
-  }
 
   private void applyXRange() {
     try {
@@ -280,6 +294,19 @@ public class SingleParticleDialog extends JFrame {
         pnHisto.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
       if (pnHistoFiltered != null)
         pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
+    } catch (Exception e2) {
+      e2.printStackTrace();
+    }
+  }
+
+  private void applyYRange() {
+    try {
+      double y = Double.parseDouble(txtRangeY.getText());
+      double ye = Double.parseDouble(txtRangeYEnd.getText());
+      if (pnHisto != null)
+        pnHisto.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
+      if (pnHistoFiltered != null)
+        pnHistoFiltered.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
     } catch (Exception e2) {
       e2.printStackTrace();
     }
@@ -348,8 +375,10 @@ public class SingleParticleDialog extends JFrame {
   private void updateHistograms() {
     if (img != null) {
       double binwidth2 = Double.NaN;
+      double binShift2 = Double.NaN;
       try {
         binwidth2 = Double.parseDouble(txtBinWidth.getText());
+        binShift2 = Double.parseDouble(txtBinShift.getText());
       } catch (Exception e) {
       }
       if (!Double.isNaN(binwidth2)) {
@@ -357,11 +386,11 @@ public class SingleParticleDialog extends JFrame {
         try {
           sett = (SingleParticleSettings) getSettings().copy();
           final double binwidth = binwidth2;
+          final double binShift = Math.abs(binShift2);
           new SwingWorker<JFreeChart, Void>() {
             @Override
             protected JFreeChart doInBackground() throws Exception {
               double noise = sett.getNoiseLevel();
-              Range window = sett.getWindow();
               // create histogram
               double[] data = null;
               if (cbExcludeSmallerNoise.isSelected()) {
@@ -369,15 +398,35 @@ public class SingleParticleDialog extends JFrame {
                 data = dlist.stream().mapToDouble(d -> d).filter(d -> d >= noise).toArray();
               } else
                 data = img.getSelectedDataAsArray(false, true);
-              return EChartFactory.createHistogram(data, "I", binwidth);
+
+              Range r = EChartFactory.getBounds(data);
+              JFreeChart chart = EChartFactory.createHistogram(data, "I", binwidth,
+                  r.getLowerBound() - binShift, r.getUpperBound(), val -> Math.cbrt(val));
+
+              if (cbThirdSQRT.isSelected()) {
+                // calc third root of all bins
+                // HistogramDataset dataset = (HistogramDataset) chart.getXYPlot().getDataset();
+              }
+
+              return chart;
             }
 
             @Override
             protected void done() {
               JFreeChart histo;
               try {
+                Range x = null, y = null;
+                if (pnHisto != null) {
+                  x = pnHisto.getChart().getXYPlot().getDomainAxis().getRange();
+                  y = pnHisto.getChart().getXYPlot().getRangeAxis().getRange();
+                }
                 histo = get();
-                pnHisto = new EChartPanel(histo);
+                if (x != null)
+                  histo.getXYPlot().getDomainAxis().setRange(x);
+                if (y != null)
+                  histo.getXYPlot().getRangeAxis().setRange(y);
+                pnHisto = new EChartPanel(histo, true, true, true, true, true);
+
                 southwest.removeAll();
                 southwest.add(pnHisto, BorderLayout.CENTER);
                 updateAnnotations();
@@ -402,15 +451,27 @@ public class SingleParticleDialog extends JFrame {
               if (cbExcludeSmallerNoise.isSelected())
                 filtered = Arrays.stream(filtered).filter(d -> d >= noise).toArray();
 
-              return EChartFactory.createHistogram(filtered, "I", binwidth);
+              Range r = EChartFactory.getBounds(filtered);
+              return EChartFactory.createHistogram(filtered, "I", binwidth,
+                  r.getLowerBound() - binShift, r.getUpperBound());
             }
 
             @Override
             protected void done() {
               JFreeChart histo;
               try {
+                Range x = null, y = null;
+                if (pnHistoFiltered != null) {
+                  x = pnHistoFiltered.getChart().getXYPlot().getDomainAxis().getRange();
+                  y = pnHistoFiltered.getChart().getXYPlot().getRangeAxis().getRange();
+                }
                 histo = get();
-                pnHistoFiltered = new EChartPanel(histo);
+                if (x != null)
+                  histo.getXYPlot().getDomainAxis().setRange(x);
+                if (y != null)
+                  histo.getXYPlot().getRangeAxis().setRange(y);
+                pnHistoFiltered = new EChartPanel(histo, true, true, true, true, true);
+
                 southeast.removeAll();
                 southeast.add(pnHistoFiltered, BorderLayout.CENTER);
                 updateAnnotations();

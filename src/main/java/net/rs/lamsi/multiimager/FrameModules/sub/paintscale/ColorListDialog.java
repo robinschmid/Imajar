@@ -80,7 +80,7 @@ public class ColorListDialog extends JDialog {
   }
 
   public void setColorList(List<Color> colorList, boolean notify) {
-    boolean hasChanged = !acceptedList.equals(colorList);
+    boolean hasChanged = acceptedList == null || !acceptedList.equals(colorList);
     acceptedList = colorList;
     if (notify && hasChanged && listener != null)
       listener.accept(getColorList());
