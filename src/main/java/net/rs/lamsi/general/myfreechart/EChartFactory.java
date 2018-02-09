@@ -41,16 +41,19 @@ public class EChartFactory {
       XYSeries series = new XYSeries("histo", true, true);
       for (int i = 0; i < bins.length; i++) {
         if (bins[i] > 0) {
-          series.add(function.apply(min + i * binwidth).doubleValue(), bins[i]);
-          series.add(function.apply(min + (i + 1) * binwidth).doubleValue(), bins[i]);
-        }dada
+          double x = function.apply(min + i * binwidth).doubleValue();
+          double xe = function.apply(min + (i + 1) * binwidth).doubleValue();
+          series.add(x, bins[i]);
+          // if (xe > x)
+          series.add(xe, bins[i]);
+        }
       }
 
       XYSeriesCollection xydata = new XYSeriesCollection(series);
       XYBarDataset dataset = new XYBarDataset(xydata, binwidth);
 
       // HistogramDataset dataset = new HistogramDataset();
-      // dataset.addSeries("histo", data, bin, min, max);
+      // dataset.addSeries("histo", data, cbin, min, max);
 
       // JFreeChart chart = ChartFactory.createHistogram("", yAxisLabel, "n", dataset,
       // PlotOrientation.VERTICAL, true, false, false);

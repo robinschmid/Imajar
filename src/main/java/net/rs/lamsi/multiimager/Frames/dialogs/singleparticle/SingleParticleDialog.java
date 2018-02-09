@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.DoubleFunction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -400,13 +401,12 @@ public class SingleParticleDialog extends JFrame {
                 data = img.getSelectedDataAsArray(false, true);
 
               Range r = EChartFactory.getBounds(data);
-              JFreeChart chart = EChartFactory.createHistogram(data, "I", binwidth,
-                  r.getLowerBound() - binShift, r.getUpperBound(), val -> Math.cbrt(val));
 
-              if (cbThirdSQRT.isSelected()) {
-                // calc third root of all bins
-                // HistogramDataset dataset = (HistogramDataset) chart.getXYPlot().getDataset();
-              }
+              DoubleFunction<Double> f =
+                  cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
+
+              JFreeChart chart = EChartFactory.createHistogram(data, "I", binwidth,
+                  r.getLowerBound() - binShift, r.getUpperBound(), f);
 
               return chart;
             }
@@ -452,8 +452,12 @@ public class SingleParticleDialog extends JFrame {
                 filtered = Arrays.stream(filtered).filter(d -> d >= noise).toArray();
 
               Range r = EChartFactory.getBounds(filtered);
+
+              DoubleFunction<Double> f =
+                  cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
+
               return EChartFactory.createHistogram(filtered, "I", binwidth,
-                  r.getLowerBound() - binShift, r.getUpperBound());
+                  r.getLowerBound() - binShift, r.getUpperBound(), f);
             }
 
             @Override
