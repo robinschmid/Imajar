@@ -24,9 +24,12 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.Range;
+import org.jfree.data.xy.XYDataset;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
+import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
@@ -51,6 +54,10 @@ public class SingleParticleDialog extends JFrame {
   private JTextField txtRangeY;
   private JTextField txtRangeXEnd;
   private JTextField txtRangeYEnd;
+  private JTextField txtGaussianLower;
+  private JTextField txtGaussianUpper;
+  private JTextField txtPrecision;
+  private JCheckBox cbGaussianFit;
 
   /**
    * Launch the application.
@@ -177,6 +184,57 @@ public class SingleParticleDialog extends JFrame {
           }
         }
         {
+          JPanel secondGaussian = new JPanel();
+          box.add(secondGaussian);
+          {
+            JButton btnToggleLegend = new JButton("Toggle legend");
+            btnToggleLegend.addActionListener(e -> toggleLegends());
+            btnToggleLegend.setToolTipText("Show/hide legend");
+            secondGaussian.add(btnToggleLegend);
+          }
+          {
+            cbGaussianFit = new JCheckBox("Gaussian fit");
+            secondGaussian.add(cbGaussianFit);
+          }
+          {
+            JLabel lblFrom = new JLabel("from");
+            secondGaussian.add(lblFrom);
+          }
+          {
+            txtGaussianLower = new JTextField();
+            txtGaussianLower.setToolTipText("The lower bound (domain axis) for the Gaussian fit");
+            txtGaussianLower.setText("0");
+            secondGaussian.add(txtGaussianLower);
+            txtGaussianLower.setColumns(7);
+          }
+          {
+            JLabel label = new JLabel("-");
+            secondGaussian.add(label);
+          }
+          {
+            txtGaussianUpper = new JTextField();
+            txtGaussianUpper
+                .setToolTipText("The upper bound (domain axis, x) for the Gaussian fit");
+            txtGaussianUpper.setText("0");
+            txtGaussianUpper.setColumns(7);
+            secondGaussian.add(txtGaussianUpper);
+          }
+          {
+            Component horizontalStrut = Box.createHorizontalStrut(20);
+            secondGaussian.add(horizontalStrut);
+          }
+          {
+            JLabel lblSignificantFigures = new JLabel("significant figures");
+            secondGaussian.add(lblSignificantFigures);
+          }
+          {
+            txtPrecision = new JTextField();
+            txtPrecision.setText("4");
+            secondGaussian.add(txtPrecision);
+            txtPrecision.setColumns(3);
+          }
+        }
+        {
           JPanel third = new JPanel();
           box.add(third);
           {
@@ -258,6 +316,22 @@ public class SingleParticleDialog extends JFrame {
     addListener();
   }
 
+  /**
+   * Toggles visibility of legends
+   */
+  private void toggleLegends() {
+    if (pnHisto != null) {
+      LegendTitle legend = pnHisto.getChart().getLegend();
+      if (legend != null)
+        legend.setVisible(!legend.isVisible());
+    }
+    if (pnHistoFiltered != null) {
+      LegendTitle legend = pnHistoFiltered.getChart().getLegend();
+      if (legend != null)
+        legend.setVisible(!legend.isVisible());
+    }
+  }
+
   private void addListener() {
     ddlUpdate = new DelayedDocumentListener(e -> autoUpdate());
     ddlRepaint = new DelayedDocumentListener(e -> repaint());
@@ -284,6 +358,15 @@ public class SingleParticleDialog extends JFrame {
         .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
     txtBinShift.getDocument()
         .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
+
+
+    // add gaussian?
+    cbGaussianFit.addItemListener(e -> {
+      if (cbGaussianFit.isSelected())
+        addGaussianCurves();
+      else
+        hideGaussianCurves();
+    });
   }
 
 
@@ -407,7 +490,10 @@ public class SingleParticleDialog extends JFrame {
 
               JFreeChart chart = EChartFactory.createHistogram(data, "I", binwidth,
                   r.getLowerBound() - binShift, r.getUpperBound(), f);
-
+              // add gaussian?
+              if (cbGaussianFit.isSelected()) {
+                addGaussianCurve(chart.getXYPlot());
+              }
               return chart;
             }
 
@@ -426,6 +512,7 @@ public class SingleParticleDialog extends JFrame {
                 if (y != null)
                   histo.getXYPlot().getRangeAxis().setRange(y);
                 pnHisto = new EChartPanel(histo, true, true, true, true, true);
+                histo.getLegend().setVisible(true);
 
                 southwest.removeAll();
                 southwest.add(pnHisto, BorderLayout.CENTER);
@@ -456,8 +543,14 @@ public class SingleParticleDialog extends JFrame {
               DoubleFunction<Double> f =
                   cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
 
-              return EChartFactory.createHistogram(filtered, "I", binwidth,
+              JFreeChart chart = EChartFactory.createHistogram(filtered, "I", binwidth,
                   r.getLowerBound() - binShift, r.getUpperBound(), f);
+
+              // add gaussian?
+              if (cbGaussianFit.isSelected()) {
+                addGaussianCurve(chart.getXYPlot());
+              }
+              return chart;
             }
 
             @Override
@@ -475,6 +568,7 @@ public class SingleParticleDialog extends JFrame {
                 if (y != null)
                   histo.getXYPlot().getRangeAxis().setRange(y);
                 pnHistoFiltered = new EChartPanel(histo, true, true, true, true, true);
+                histo.getLegend().setVisible(true);
 
                 southeast.removeAll();
                 southeast.add(pnHistoFiltered, BorderLayout.CENTER);
@@ -494,6 +588,45 @@ public class SingleParticleDialog extends JFrame {
 
       }
     }
+  }
+
+  protected void addGaussianCurves() {
+    if (pnHisto != null)
+      addGaussianCurve(pnHisto.getChart().getXYPlot());
+    if (pnHistoFiltered != null)
+      addGaussianCurve(pnHistoFiltered.getChart().getXYPlot());
+  }
+
+  /**
+   * Add Gaussian curve to the plot
+   * 
+   * @param p
+   */
+  protected void addGaussianCurve(XYPlot p) {
+    try {
+      double gMin = Module.doubleFromTxt(txtGaussianLower);
+      double gMax = Module.doubleFromTxt(txtGaussianUpper);
+      int sigDigits = Module.intFromTxt(getTxtPrecision());
+
+      XYDataset data = p.getDataset(0);
+      hideGaussianCurve(p);
+
+      EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  protected void hideGaussianCurves() {
+    if (pnHisto != null)
+      hideGaussianCurve(pnHisto.getChart().getXYPlot());
+    if (pnHistoFiltered != null)
+      hideGaussianCurve(pnHistoFiltered.getChart().getXYPlot());
+  }
+
+  protected void hideGaussianCurve(XYPlot p) {
+    if (p.getDatasetCount() > 1)
+      p.setRenderer(p.getDatasetCount() - 1, null);
   }
 
   /**
@@ -590,5 +723,21 @@ public class SingleParticleDialog extends JFrame {
 
   public JTextField getTxtRangeXEnd() {
     return txtRangeXEnd;
+  }
+
+  public JCheckBox getCbGaussianFit() {
+    return cbGaussianFit;
+  }
+
+  public JTextField getTxtGaussianLower() {
+    return txtGaussianLower;
+  }
+
+  public JTextField getTxtGaussianUpper() {
+    return txtGaussianUpper;
+  }
+
+  public JTextField getTxtPrecision() {
+    return txtPrecision;
   }
 }

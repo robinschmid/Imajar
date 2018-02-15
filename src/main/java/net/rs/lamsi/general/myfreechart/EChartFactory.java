@@ -15,10 +15,173 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.Range;
 import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.xy.XYBarDataset;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import net.rs.lamsi.utils.math.Precision;
 
 public class EChartFactory {
+
+
+
+  /**
+   * Performs Gaussian fit on XYSeries
+   * 
+   * @param series the data
+   * @param gMin lower bound of Gaussian fit
+   * @param gMax upper bound of Gaussian fit
+   * @param sigDigits number of significant digits
+   * @return double[] {normFactor, mean, sigma} as a result of
+   *         GaussianCurveFitter.create().fit(obs.toList())
+   */
+  public static double[] gaussianFit(XYSeries series, double gMin, double gMax) {
+    // gaussian fit
+    WeightedObservedPoints obs = new WeightedObservedPoints();
+
+    for (int i = 0; i < series.getItemCount(); i++) {
+      double x = series.getX(i).doubleValue();
+      if (x >= gMin && x <= gMax)
+        obs.add(x, series.getY(i).doubleValue());
+    }
+
+    double[] fit = GaussianCurveFitter.create().fit(obs.toList());
+    return fit;
+  }
+
+  /**
+   * Performs Gaussian fit on XYSeries
+   * 
+   * @param data the data
+   * @param series the series index
+   * @param gMin lower bound of Gaussian fit
+   * @param gMax upper bound of Gaussian fit
+   * @param sigDigits number of significant digits
+   * @return double[] {normFactor, mean, sigma} as a result of
+   *         GaussianCurveFitter.create().fit(obs.toList())
+   */
+  public static double[] gaussianFit(XYDataset data, int series, double gMin, double gMax) {
+    // gaussian fit
+    WeightedObservedPoints obs = new WeightedObservedPoints();
+
+    for (int i = 0; i < data.getItemCount(series); i++) {
+      double x = data.getXValue(series, i);
+      if (x >= gMin && x <= gMax)
+        obs.add(x, data.getYValue(series, i));
+    }
+
+    double[] fit = GaussianCurveFitter.create().fit(obs.toList());
+    return fit;
+  }
+
+  /**
+   * Adds a Gaussian curve to the plot
+   * 
+   * @param plot
+   * @param series the data
+   * @param gMin lower bound of Gaussian fit
+   * @param gMax upper bound of Gaussian fit
+   * @param sigDigits number of significant digits
+   * @return
+   */
+  public static double[] addGaussianFit(XYPlot plot, XYSeries series, double gMin, double gMax,
+      int sigDigits) {
+    double[] fit = gaussianFit(series, gMin, gMax);
+    double minval = series.getX(0).doubleValue();
+    double maxval = series.getX(series.getItemCount() - 1).doubleValue();
+    return addGaussianFit(plot, fit, minval, maxval, gMin, gMax, sigDigits);
+  }
+
+  /**
+   * Adds a Gaussian curve to the plot
+   * 
+   * @param plot
+   * @param data the data
+   * @param series the series index
+   * @param gMin lower bound of Gaussian fit
+   * @param gMax upper bound of Gaussian fit
+   * @param sigDigits number of significant digits
+   * @return
+   */
+  public static double[] addGaussianFit(XYPlot plot, XYDataset data, int series, double gMin,
+      double gMax, int sigDigits) {
+    double[] fit = gaussianFit(data, series, gMin, gMax);
+    double minval = data.getX(series, 0).doubleValue();
+    double maxval = data.getX(series, data.getItemCount(series) - 1).doubleValue();
+    return addGaussianFit(plot, fit, minval, maxval, gMin, gMax, sigDigits);
+  }
+
+  /**
+   * Adds a Gaussian curve to the plot
+   * 
+   * @param plot
+   * @param fit double[] {normFactor, mean, sigma}
+   * @param drawStart start of curve
+   * @param drawEnd end of curve
+   * @param sigDigits number of significant digits
+   * @return
+   */
+  public static double[] addGaussianFit(XYPlot plot, double[] fit, double drawStart, double drawEnd,
+      int sigDigits) {
+    return addGaussianFit(plot, fit, drawStart, drawEnd, drawStart, drawEnd, sigDigits);
+  }
+
+  /**
+   * Adds a Gaussian curve to the plot
+   * 
+   * @param plot
+   * @param fit double[] {normFactor, mean, sigma}
+   * @param drawStart start of curve
+   * @param drawEnd end of curve
+   * @param gMin lower bound of Gaussian fit
+   * @param gMax upper bound of Gaussian fit
+   * @param sigDigits number of significant digits
+   * @return
+   */
+  public static double[] addGaussianFit(XYPlot plot, double[] fit, double drawStart, double drawEnd,
+      double gMin, double gMax, int sigDigits) {
+    double gWidth = gMax - gMin;
+
+    Gaussian g = new Gaussian(fit[0], fit[1], fit[2]);
+
+    // create xy series for gaussian
+    String mean = Precision.toString(fit[1], sigDigits, 7);
+    String sigma = Precision.toString(fit[2], sigDigits, 7);
+    String norm = Precision.toString(fit[0], sigDigits, 7);
+    XYSeries gs = new XYSeries("Gaussian: " + mean + "\u00B1" + sigma + " [" + norm
+        + "] (mean\u00B1sigma [normalisation])");
+    // add lower dp number out of gaussian fit range
+    int steps = 100;
+    if (gMin > drawStart) {
+      for (int i = 0; i <= steps; i++) {
+        double x = drawStart + ((gMin - drawStart) / steps) * i;
+        double y = g.value(x);
+        gs.add(x, y);
+      }
+    }
+    // add high resolution in gaussian fit area
+    steps = 1000;
+    for (int i = 0; i <= steps; i++) {
+      double x = gMin + (gWidth / steps) * i;
+      double y = g.value(x);
+      gs.add(x, y);
+    }
+    // add lower dp number out of gaussian fit range
+    steps = 100;
+    if (gMax < drawEnd) {
+      for (int i = 0; i <= steps; i++) {
+        double x = gMax + ((drawEnd - gMax) / steps) * i;
+        double y = g.value(x);
+        gs.add(x, y);
+      }
+    }
+    // add gaussian
+    XYSeriesCollection gsdata = new XYSeriesCollection(gs);
+    int index = plot.getDatasetCount();
+    plot.setDataset(index, gsdata);
+    plot.setRenderer(index, new XYLineAndShapeRenderer(true, false));
+    return fit;
+  }
+
 
   public static JFreeChart createHistogram(double[] data, double binwidth) {
     return createHistogram(data, binwidth, null);
@@ -45,13 +208,6 @@ public class EChartFactory {
         bins[i]++;
       }
 
-      // gaussian fit
-      GaussianCurveFitter fitter = GaussianCurveFitter.create();
-      WeightedObservedPoints obs = new WeightedObservedPoints();
-
-      double gMin = 35, gMax = 55;
-      double gWidth = gMax - gMin;
-
       int sum = 0;
       XYSeries series = new XYSeries("histo", true, true);
       for (int i = 0; i < bins.length; i++) {
@@ -59,26 +215,8 @@ public class EChartFactory {
           double x = function.apply(min + (binwidth / 2.0) + i * binwidth).doubleValue();
           series.add(x, bins[i]);
           sum += bins[i];
-          // add to gaussian
-          if (x >= gMin && x <= gMax)
-            obs.add(x, bins[i]);
         }
       }
-
-
-      double[] bestFit = fitter.fit(obs.toList());
-
-      Gaussian g = new Gaussian(bestFit[0], bestFit[1], bestFit[2]);
-
-      XYSeries gs = new XYSeries("Gaussian");
-      int steps = 1000;
-      for (int i = 0; i <= steps; i++) {
-        double x = gMin + (gWidth / steps) * i;
-        double y = normal.value(x);
-        gs.add(x, y);
-      }
-      XYSeriesCollection gsdata = new XYSeriesCollection(gs);
-
 
       // see when 98% of the data is displayed
       int sum2 = 0;
@@ -95,24 +233,10 @@ public class EChartFactory {
 
       XYSeriesCollection xydata = new XYSeriesCollection(series);
       XYBarDataset dataset = new XYBarDataset(xydata, barwidth);
-
-      // HistogramDataset dataset = new HistogramDataset();
-      // dataset.addSeries("histo", data, cbin, min, max);
-
-      // JFreeChart chart = ChartFactory.createHistogram("", yAxisLabel, "n", dataset,
-      // PlotOrientation.VERTICAL, true, false, false);
       JFreeChart chart = ChartFactory.createXYBarChart("", yAxisLabel, false, "n", dataset,
-          PlotOrientation.VERTICAL, true, false, false);
+          PlotOrientation.VERTICAL, true, true, false);
 
       XYPlot xyplot = chart.getXYPlot();
-      // add gaussian
-      xyplot.setDataset(1, gsdata);
-      xyplot.setRenderer(1, new XYLineAndShapeRenderer(true, false));
-
-      // JFreeChart chart = ChartFactory.createXYLineChart("", yAxisLabel, "n", xydata,
-      // PlotOrientation.VERTICAL, true, false, false);
-
-
       chart.setBackgroundPaint(new Color(230, 230, 230));
       chart.getLegend().setVisible(false);
       xyplot.setForegroundAlpha(0.7F);
@@ -129,6 +253,7 @@ public class EChartFactory {
     } else
       return null;
   }
+
 
   public static JFreeChart createHistogramOld(double[] data, int bin, String yAxisLabel, double min,
       double max) {
