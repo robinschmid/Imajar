@@ -1,6 +1,8 @@
 package net.rs.lamsi.general.myfreechart;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Paint;
 import java.util.function.DoubleFunction;
 import org.apache.commons.math3.analysis.function.Gaussian;
 import org.apache.commons.math3.fitting.GaussianCurveFitter;
@@ -8,6 +10,7 @@ import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -84,11 +87,11 @@ public class EChartFactory {
    * @return
    */
   public static double[] addGaussianFit(XYPlot plot, XYSeries series, double gMin, double gMax,
-      int sigDigits) {
+      int sigDigits, boolean annotations) {
     double[] fit = gaussianFit(series, gMin, gMax);
     double minval = series.getX(0).doubleValue();
     double maxval = series.getX(series.getItemCount() - 1).doubleValue();
-    return addGaussianFit(plot, fit, minval, maxval, gMin, gMax, sigDigits);
+    return addGaussianFit(plot, fit, minval, maxval, gMin, gMax, sigDigits, annotations);
   }
 
   /**
@@ -103,11 +106,11 @@ public class EChartFactory {
    * @return
    */
   public static double[] addGaussianFit(XYPlot plot, XYDataset data, int series, double gMin,
-      double gMax, int sigDigits) {
+      double gMax, int sigDigits, boolean annotations) {
     double[] fit = gaussianFit(data, series, gMin, gMax);
     double minval = data.getX(series, 0).doubleValue();
     double maxval = data.getX(series, data.getItemCount(series) - 1).doubleValue();
-    return addGaussianFit(plot, fit, minval, maxval, gMin, gMax, sigDigits);
+    return addGaussianFit(plot, fit, minval, maxval, gMin, gMax, sigDigits, annotations);
   }
 
   /**
@@ -121,8 +124,9 @@ public class EChartFactory {
    * @return
    */
   public static double[] addGaussianFit(XYPlot plot, double[] fit, double drawStart, double drawEnd,
-      int sigDigits) {
-    return addGaussianFit(plot, fit, drawStart, drawEnd, drawStart, drawEnd, sigDigits);
+      int sigDigits, boolean annotations) {
+    return addGaussianFit(plot, fit, drawStart, drawEnd, drawStart, drawEnd, sigDigits,
+        annotations);
   }
 
   /**
@@ -138,7 +142,7 @@ public class EChartFactory {
    * @return
    */
   public static double[] addGaussianFit(XYPlot plot, double[] fit, double drawStart, double drawEnd,
-      double gMin, double gMax, int sigDigits) {
+      double gMin, double gMax, int sigDigits, boolean annotations) {
     double gWidth = gMax - gMin;
 
     Gaussian g = new Gaussian(fit[0], fit[1], fit[2]);
@@ -147,8 +151,8 @@ public class EChartFactory {
     String mean = Precision.toString(fit[1], sigDigits, 7);
     String sigma = Precision.toString(fit[2], sigDigits, 7);
     String norm = Precision.toString(fit[0], sigDigits, 7);
-    XYSeries gs = new XYSeries("Gaussian: " + mean + "\u00B1" + sigma + " [" + norm
-        + "] (mean\u00B1sigma [normalisation])");
+    XYSeries gs = new XYSeries("Gaussian: " + mean + " \u00B1 " + sigma + " [" + norm
+        + "] (mean \u00B1 sigma [normalisation])");
     // add lower dp number out of gaussian fit range
     int steps = 100;
     if (gMin > drawStart) {
@@ -179,7 +183,28 @@ public class EChartFactory {
     int index = plot.getDatasetCount();
     plot.setDataset(index, gsdata);
     plot.setRenderer(index, new XYLineAndShapeRenderer(true, false));
+
+    if (annotations)
+      addGaussianFitAnnotations(plot, fit);
+
     return fit;
+  }
+
+
+  /**
+   * Adds annotations to the Gaussian fit parameters
+   * 
+   * @param plot
+   * @param fit Gaussian fit {normalisation factor, mean, sigma}
+   */
+  public static void addGaussianFitAnnotations(XYPlot plot, double[] fit) {
+    Paint c = plot.getDomainCrosshairPaint();
+    BasicStroke s = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1,
+        new float[] {5f, 2.5f}, 0);
+
+    plot.addDomainMarker(new ValueMarker(fit[1], c, s));
+    plot.addDomainMarker(new ValueMarker(fit[1] - fit[2], c, s));
+    plot.addDomainMarker(new ValueMarker(fit[1] + fit[2], c, s));
   }
 
 

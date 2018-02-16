@@ -29,6 +29,7 @@ import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2D
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
@@ -212,19 +213,25 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
     // check for update in parent i processing
     checkForUpdateInParentIProcessing();
 
+    SettingsGeneralImage sett = settings.getSettImage();
     // get raw i
     double i = !useSettings ? getIRaw(l, dp)
-        : getI(l, dp, settings.getSettImage().getImagingMode(),
-            settings.getSettImage().getRotationOfData(),
-            settings.getSettImage().isReflectHorizontal(),
-            settings.getSettImage().isReflectVertical());
+        : getI(l, dp, settings.getSettImage().getImagingMode(), sett.getRotationOfData(),
+            sett.isReflectHorizontal(), sett.isReflectVertical());
 
     // TODO process intensity
     if (raw || Double.isNaN(i))
       return i;
     else {
       // intensity factor
-      i *= settings.getSettImage().getIntensityFactor();
+
+      i *= sett.getIntensityFactor();
+
+      // transformation
+      if (!sett.getTransform().equals(Transformation.NONE)) {
+        i = sett.getTransform().apply(i);
+      }
+
       // subtract blank
       SettingsSelections sel = settings.getSettSelections();
       if (sel != null) {

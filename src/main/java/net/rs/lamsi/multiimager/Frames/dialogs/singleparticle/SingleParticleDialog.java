@@ -193,6 +193,12 @@ public class SingleParticleDialog extends JFrame {
             secondGaussian.add(btnToggleLegend);
           }
           {
+            JButton btnUpdateGaussian = new JButton("Update");
+            btnUpdateGaussian.addActionListener(e -> updateGaussian());
+            btnUpdateGaussian.setToolTipText("Update Gaussian fit");
+            secondGaussian.add(btnUpdateGaussian);
+          }
+          {
             cbGaussianFit = new JCheckBox("Gaussian fit");
             secondGaussian.add(cbGaussianFit);
           }
@@ -361,12 +367,7 @@ public class SingleParticleDialog extends JFrame {
 
 
     // add gaussian?
-    cbGaussianFit.addItemListener(e -> {
-      if (cbGaussianFit.isSelected())
-        addGaussianCurves();
-      else
-        hideGaussianCurves();
-    });
+    cbGaussianFit.addItemListener(e -> updateGaussian());
   }
 
 
@@ -374,10 +375,12 @@ public class SingleParticleDialog extends JFrame {
     try {
       double x = Double.parseDouble(txtRangeX.getText());
       double xe = Double.parseDouble(txtRangeXEnd.getText());
-      if (pnHisto != null)
-        pnHisto.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
-      if (pnHistoFiltered != null)
-        pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
+      if (x < xe) {
+        if (pnHisto != null)
+          pnHisto.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
+        if (pnHistoFiltered != null)
+          pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
+      }
     } catch (Exception e2) {
       e2.printStackTrace();
     }
@@ -387,10 +390,12 @@ public class SingleParticleDialog extends JFrame {
     try {
       double y = Double.parseDouble(txtRangeY.getText());
       double ye = Double.parseDouble(txtRangeYEnd.getText());
-      if (pnHisto != null)
-        pnHisto.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
-      if (pnHistoFiltered != null)
-        pnHistoFiltered.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
+      if (y < ye) {
+        if (pnHisto != null)
+          pnHisto.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
+        if (pnHistoFiltered != null)
+          pnHistoFiltered.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
+      }
     } catch (Exception e2) {
       e2.printStackTrace();
     }
@@ -414,7 +419,6 @@ public class SingleParticleDialog extends JFrame {
       updateHistograms();
       // add image
       updateHeatmap();
-
 
       module.setAutoUpdating(auto);
       contentPanel.revalidate();
@@ -590,6 +594,13 @@ public class SingleParticleDialog extends JFrame {
     }
   }
 
+  protected void updateGaussian() {
+    if (cbGaussianFit.isSelected())
+      addGaussianCurves();
+    else
+      hideGaussianCurves();
+  }
+
   protected void addGaussianCurves() {
     if (pnHisto != null)
       addGaussianCurve(pnHisto.getChart().getXYPlot());
@@ -611,7 +622,7 @@ public class SingleParticleDialog extends JFrame {
       XYDataset data = p.getDataset(0);
       hideGaussianCurve(p);
 
-      EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits);
+      EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits, cbAnnotations.isSelected());
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -625,8 +636,10 @@ public class SingleParticleDialog extends JFrame {
   }
 
   protected void hideGaussianCurve(XYPlot p) {
-    if (p.getDatasetCount() > 1)
+    if (p.getDatasetCount() > 1) {
       p.setRenderer(p.getDatasetCount() - 1, null);
+      p.setDataset(p.getDatasetCount() - 1, null);
+    }
   }
 
   /**

@@ -11,9 +11,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -34,6 +36,7 @@ import net.rs.lamsi.general.framework.modules.menu.ModuleMenuApplyToImage;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
@@ -72,6 +75,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
   private JTextField txtIntensityFactor;
   private JLabel lblIntensityFactor;
   private JCheckBox cbKeepAspectRatio;
+  private JComboBox<Transformation> comboTransform;
+  private JLabel lblTransformation;
 
   /**
    * Create the panel.
@@ -86,7 +91,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
     JPanel pnTitleANdLaser = new JPanel();
     pnNorth.add(pnTitleANdLaser, BorderLayout.NORTH);
-    pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][][][][][]"));
+    pnTitleANdLaser.setLayout(new MigLayout("", "[][]", "[][][][][][][][][][][][][]"));
 
     JLabel lblTitle = new JLabel("title");
     pnTitleANdLaser.add(lblTitle, "cell 0 0,alignx trailing");
@@ -137,45 +142,54 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     pnTitleANdLaser.add(txtIntensityFactor, "cell 1 5,alignx left");
     txtIntensityFactor.setColumns(10);
 
+    lblTransformation = new JLabel("transformation");
+    pnTitleANdLaser.add(lblTransformation, "cell 0 6,alignx trailing");
+
+    comboTransform = new JComboBox<>();
+    comboTransform
+        .setToolTipText("Transformation of intensity values is applied after the intensity factor");
+    comboTransform.setModel(new DefaultComboBoxModel<Transformation>(Transformation.values()));
+    pnTitleANdLaser.add(comboTransform, "cell 1 6,alignx left");
+
     cbKeepAspectRatio = new JCheckBox("keep aspect ratio");
     cbKeepAspectRatio.setToolTipText(
         "Check if X and Y have the same dimension units. Uncheck to get maximum scaling.");
-    pnTitleANdLaser.add(cbKeepAspectRatio, "cell 0 6 2 1");
+    pnTitleANdLaser.add(cbKeepAspectRatio, "cell 0 7 2 1");
 
     cbCropDataToMin = new JCheckBox("crop data to minimum");
     cbCropDataToMin.setToolTipText("Crops all lines to the length of the shortest line.");
-    pnTitleANdLaser.add(cbCropDataToMin, "cell 0 7 2 1");
+    pnTitleANdLaser.add(cbCropDataToMin, "cell 0 8 2 1");
 
     cbInterpolate = new JCheckBox("interpolate");
     cbInterpolate
         .setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
-    pnTitleANdLaser.add(cbInterpolate, "cell 0 8");
+    pnTitleANdLaser.add(cbInterpolate, "cell 0 9");
 
     txtInterpolate = new JTextField();
     txtInterpolate
         .setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
     txtInterpolate.setText("1");
-    pnTitleANdLaser.add(txtInterpolate, "cell 1 8,alignx left");
+    pnTitleANdLaser.add(txtInterpolate, "cell 1 9,alignx left");
     txtInterpolate.setColumns(10);
 
     cbBlurRadius = new JCheckBox("use blur radius");
     cbBlurRadius.setToolTipText(
         "Approximation of the Gaussian blur by applying a box blur three times. Always performs \"crop data to minimum\".");
-    pnTitleANdLaser.add(cbBlurRadius, "cell 0 9");
+    pnTitleANdLaser.add(cbBlurRadius, "cell 0 10");
 
     txtBlurRadius = new JTextField();
     txtBlurRadius
         .setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
     txtBlurRadius.setText("1");
     txtBlurRadius.setColumns(10);
-    pnTitleANdLaser.add(txtBlurRadius, "cell 1 9,alignx left");
+    pnTitleANdLaser.add(txtBlurRadius, "cell 1 10,alignx left");
 
     JButton btnCommentary = new JButton("Commentary");
-    pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 10");
+    pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 11");
     btnCommentary.setToolTipText("Commentary with dates");
 
     JButton btnMetadata = new JButton("Metadata");
-    pnTitleANdLaser.add(btnMetadata, "cell 1 10");
+    pnTitleANdLaser.add(btnMetadata, "cell 1 11");
     btnMetadata.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     btnMetadata.setAlignmentX(Component.RIGHT_ALIGNMENT);
     btnMetadata.setToolTipText("Metadata such as used instruments and methods");
@@ -183,7 +197,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     cbBiaryData = new JCheckBox("binary data");
     cbBiaryData.setSelected(true);
     cbBiaryData.setToolTipText("Is data binary? Like binary map export from multi view window.");
-    pnTitleANdLaser.add(cbBiaryData, "cell 0 11 2 1");
+    pnTitleANdLaser.add(cbBiaryData, "cell 0 12 2 1");
 
     txtXPosTitle = new JTextField();
     txtXPosTitle.setToolTipText("X position in percent");
@@ -399,6 +413,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     getTxtBlurRadius().getDocument().addDocumentListener(dl);
 
     cbCropDataToMin.addItemListener(il);
+    comboTransform.addItemListener(il);
   }
 
   @Override
@@ -433,6 +448,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
       getTxtBlurRadius().setText(String.valueOf(si.getBlurRadius()));
       getCbBlurRadius().setSelected(si.isUseBlur());
       getCbKeepAspectRatio().setSelected(si.isKeepAspectRatio());
+
+      comboTransform.setSelectedItem(si.getTransform());
 
       //
       this.getTxtTitle().setText(si.getTitle());
@@ -507,7 +524,10 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
             doubleFromTxt(getTxtBlurRadius()), getCbCropDataToMin().isSelected(),
             getCbKeepAspectRatio().isSelected());
 
+        // update intensity processing
         update = update || settings.setIntensityFactor(doubleFromTxt(getTxtIntensityFactor()));
+        update = update || settings.setTransform((Transformation) comboTransform.getSelectedItem());
+
         SettingsThemesContainer s = currentImage.getSettTheme();
         s.getTheme().setcShortTitle(fontShortTitle.getColor());
         s.getTheme().setcBGShortTitle(colorBGShortTitle.getColor());
@@ -631,5 +651,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
   public JCheckBox getCbKeepAspectRatio() {
     return cbKeepAspectRatio;
+  }
+
+  public JComboBox getComboTransform() {
+    return comboTransform;
   }
 }
