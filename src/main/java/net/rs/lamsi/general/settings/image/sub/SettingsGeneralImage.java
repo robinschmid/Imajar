@@ -7,14 +7,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
-import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
-import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
-import net.rs.lamsi.general.settings.Settings;
 
 
-public class SettingsGeneralImage extends Settings {
+public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
   public enum XUNIT {
     DP, s
@@ -59,7 +56,7 @@ public class SettingsGeneralImage extends Settings {
         case CUBEROOT:
           return val -> Math.cbrt(val);
         case LOG10:
-          return val -> Math.log10(val);
+          return val -> val >= 0 ? Math.log10(val) : Double.NaN;
         case INVERSE:
           return val -> val != 0 ? 1.0 / val : Double.NaN;
         case NONE:
@@ -75,7 +72,7 @@ public class SettingsGeneralImage extends Settings {
         case CUBEROOT:
           return Math.cbrt(val);
         case LOG10:
-          return Math.log10(val);
+          return val >= 0 ? Math.log10(val) : Double.NaN;
         case INVERSE:
           return val != 0 ? 1.0 / val : Double.NaN;
         case NONE:
@@ -87,9 +84,7 @@ public class SettingsGeneralImage extends Settings {
 
   public static int MODE_SCANS_PER_LINE = 0, MODE_TIME_PER_LINE = 1;
 
-  protected String title = "NODEF", shortTitle = "", filepath = "";
-  protected boolean showShortTitle = true;
-  protected float xPosTitle = 0.9f, yPosTitle = 0.9f;
+  protected String filepath = "";
 
   protected float velocity, spotsize;
   protected double intensityFactor;
@@ -115,7 +110,6 @@ public class SettingsGeneralImage extends Settings {
   protected double blurRadius;
 
   protected boolean isCropDataToMin;
-  protected boolean keepAspectRatio = true;
 
   protected Transformation trans = Transformation.NONE;
 
@@ -127,16 +121,16 @@ public class SettingsGeneralImage extends Settings {
   }
 
   public SettingsGeneralImage() {
-    this("/Settings/OESImage/", "setGIMG");
+    this("/Settings/GeneralImage/", "setGIMG");
   }
 
   @Override
   public void resetAll() {
+    super.resetAll();
     velocity = 50;
     spotsize = 50;
     allFiles = true;
     title = "";
-    shortTitle = "";
     showShortTitle = true;
     isTriggered = false;
     timePerLine = 60;
@@ -144,15 +138,12 @@ public class SettingsGeneralImage extends Settings {
 
     rotation.resetAll();
     isBinaryData = false;
-    xPosTitle = 0.9f;
-    yPosTitle = 0.9f;
     interpolation = 1;
     useInterpolation = false;
     useBlur = false;
     blurRadius = 2;
     isCropDataToMin = true;
     intensityFactor = 1;
-    keepAspectRatio = true;
     trans = Transformation.NONE;
   }
 
@@ -165,73 +156,52 @@ public class SettingsGeneralImage extends Settings {
     this.velocity = velocity;
     this.spotsize = spotsize;
     this.isBinaryData = isBinaryData;
-    this.shortTitle = shortTitle;
-    this.title = title;
-    this.showShortTitle = useShortTitle;
-    this.xPosTitle = xPos;
-    this.yPosTitle = yPos;
     rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
     this.interpolation = interpolation;
     this.useInterpolation = useInterpolation;
     this.blurRadius = blurRadius;
     this.useBlur = useBlur;
     this.isCropDataToMin = isCropDataToMin;
-    this.keepAspectRatio = keepAspectRatio;
+
+    super.setAll(title, shortTitle, useShortTitle, xPos, yPos, keepAspectRatio);
   }
 
 
   @Override
-  public void applyToImage(Image2D img) throws Exception {
-    // dont copy name
-    String name = img.getTitle();
-    String shortTitle = img.getSettings().getSettImage().getShortTitle();
-    String path = img.getSettings().getSettImage().getRAWFilepath();
-    super.applyToImage(img);
+  public void applyToImage(Collectable2D c) throws Exception {
+    SettingsGeneralImage old =
+        (SettingsGeneralImage) c.getSettingsByClass(SettingsGeneralImage.class);
 
-    // reset to old short title only if not the same title
-    if (!name.equals(img.getTitle()))
-      img.getSettings().getSettImage().setShortTitle(shortTitle);
-    // reset to old title
-    img.getSettings().getSettImage().setTitle(name);
+    super.applyToImage(c);
 
-    img.getSettings().getSettImage().setRAWFilepath(path);
-  }
+    if (old != null) {
+      // new settings object
+      SettingsGeneralImage sett =
+          (SettingsGeneralImage) c.getSettingsByClass(SettingsGeneralImage.class);
 
-  @Override
-  public void applyToHeatMap(Heatmap heat) {
-    super.applyToHeatMap(heat);
-    // TODO apply to title in heat
-    heat.setShortTitle(xPosTitle, yPosTitle, showShortTitle);
-
-    // Square plot
-    XYPlot p = heat.getChart().getXYPlot();
-    if (p instanceof XYSquaredPlot)
-      ((XYSquaredPlot) p).setScaleMode(keepAspectRatio ? Scale.DYNAMIC : Scale.IGNORE);
+      String path = old.getRAWFilepath();
+      sett.setRAWFilepath(path);
+    }
   }
 
   // ##########################################################
   // xml input/output
   @Override
   public void appendSettingsValuesToXML(Element elParent, Document doc) {
+    super.appendSettingsValuesToXML(elParent, doc);
     toXML(elParent, doc, "velocity", velocity);
     toXML(elParent, doc, "spotsize", spotsize);
     toXML(elParent, doc, "allFiles", allFiles);
-    toXML(elParent, doc, "title", title);
     toXML(elParent, doc, "isTriggered", isTriggered);
     toXML(elParent, doc, "timePerLine", timePerLine);
     toXML(elParent, doc, "isBinaryData", isBinaryData);
     toXML(elParent, doc, "filepath", filepath);
-    toXML(elParent, doc, "shortTitle", shortTitle);
-    toXML(elParent, doc, "showShortTitle", showShortTitle);
-    toXML(elParent, doc, "xPosTitle", xPosTitle);
-    toXML(elParent, doc, "yPosTitle", yPosTitle);
     toXML(elParent, doc, "interpolation", interpolation);
     toXML(elParent, doc, "useInterpolation", useInterpolation);
     toXML(elParent, doc, "useBlur", useBlur);
     toXML(elParent, doc, "blurRadius", blurRadius);
     toXML(elParent, doc, "isCropDataToMin", isCropDataToMin);
     toXML(elParent, doc, "intensityFactor", intensityFactor);
-    toXML(elParent, doc, "keepAspectRatio", keepAspectRatio);
     toXML(elParent, doc, "trans", trans);
 
     rotation.appendSettingsToXML(elParent, doc);
@@ -239,6 +209,7 @@ public class SettingsGeneralImage extends Settings {
 
   @Override
   public void loadValuesFromXML(Element el, Document doc) {
+    super.loadValuesFromXML(el, doc);
     NodeList list = el.getChildNodes();
     for (int i = 0; i < list.getLength(); i++) {
       if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
@@ -252,22 +223,12 @@ public class SettingsGeneralImage extends Settings {
           spotsize = floatFromXML(nextElement);
         else if (paramName.equals("intensityFactor"))
           intensityFactor = doubleFromXML(nextElement);
-        else if (paramName.equals("xPosTitle"))
-          xPosTitle = floatFromXML(nextElement);
-        else if (paramName.equals("yPosTitle"))
-          yPosTitle = floatFromXML(nextElement);
-        else if (paramName.equals("title"))
-          title = nextElement.getTextContent();
-        else if (paramName.equals("shortTitle"))
-          shortTitle = nextElement.getTextContent();
         else if (paramName.equals("isTriggered"))
           isTriggered = booleanFromXML(nextElement);
         else if (paramName.equals("timePerLine"))
           timePerLine = doubleFromXML(nextElement);
         else if (paramName.equals("isBinaryData"))
           isBinaryData = booleanFromXML(nextElement);
-        else if (paramName.equals("showShortTitle"))
-          showShortTitle = booleanFromXML(nextElement);
         else if (paramName.equals("interpolation"))
           interpolation = doubleFromXML(nextElement);
         else if (paramName.equals("useInterpolation"))
@@ -280,8 +241,6 @@ public class SettingsGeneralImage extends Settings {
           filepath = nextElement.getTextContent();
         else if (paramName.equals("isCropDataToMin"))
           isCropDataToMin = booleanFromXML(nextElement);
-        else if (paramName.equals("keepAspectRatio"))
-          keepAspectRatio = booleanFromXML(nextElement);
         else if (isSettingsNode(nextElement, rotation.getSuperClass()))
           rotation.loadValuesFromXML(nextElement, doc);
         else if (paramName.equals("trans"))
@@ -339,14 +298,6 @@ public class SettingsGeneralImage extends Settings {
     this.allFiles = allFiles;
   }
 
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
   public String getRAWFilepath() {
     return filepath;
   }
@@ -369,6 +320,7 @@ public class SettingsGeneralImage extends Settings {
     this.filepath = filepath;
   }
 
+  @Override
   public String toListName() {
     return getTitle() + "; " + getRAWFileName() + "; " + getRAWFilepath();
   }
@@ -469,23 +421,6 @@ public class SettingsGeneralImage extends Settings {
   }
 
 
-
-  public String getShortTitle() {
-    return shortTitle;
-  }
-
-  public boolean isShowShortTitle() {
-    return showShortTitle;
-  }
-
-  public void setShortTitle(String shortTitle) {
-    this.shortTitle = shortTitle;
-  }
-
-  public void setShowShortTitle(boolean showShortTitle) {
-    this.showShortTitle = showShortTitle;
-  }
-
   /**
    * the raw file name of the raw path file.extension
    * 
@@ -503,22 +438,6 @@ public class SettingsGeneralImage extends Settings {
 
   public void setBinaryData(boolean isBinaryData) {
     this.isBinaryData = isBinaryData;
-  }
-
-  public float getXPosTitle() {
-    return xPosTitle;
-  }
-
-  public float getYPosTitle() {
-    return yPosTitle;
-  }
-
-  public void setXPosTitle(float xPosTitle) {
-    this.xPosTitle = xPosTitle;
-  }
-
-  public void setYPosTitle(float yPosTitle) {
-    this.yPosTitle = yPosTitle;
   }
 
   public boolean isUseInterpolation() {

@@ -871,7 +871,9 @@ public class ImageLogicRunner {
         ImageGroupMD group = img.getImageGroup();
         if (group != null) {
           // add overlay
-          SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
+          SettingsSPImage settings = new SettingsSPImage();
+          settings.getSettImage().setTitle(img.getTitle() + "sp");
+          settings.getSettImage().setShortTitle(img.getShortTitle() + "sp");
           SingleParticleImage spi = new SingleParticleImage(img, settings);
           group.add(spi);
 

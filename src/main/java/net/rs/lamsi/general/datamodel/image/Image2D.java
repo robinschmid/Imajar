@@ -1292,8 +1292,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
       // increment l
       for (int r = 0; r < rows; r++) {
         // only if not null: write Intensity
-        double tmp;
-        if (!isExcludedDP(c, r) && isSelectedDP(c, r) && !Double.isNaN(tmp = getI(raw, c, r))) {
+        double tmp = getI(raw, c, r);
+        if (!isExcludedDP(c, r) && isSelectedDP(c, r) && !Double.isNaN(tmp)) {
           dataExp[c][r] = tmp;
         } else
           dataExp[c][r] = Double.NaN;

@@ -14,6 +14,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
@@ -896,11 +897,13 @@ public class SettingsSelections extends Settings implements Serializable,
   }
 
   @Override
-  public void applyToImage(Image2D img) throws Exception {
-    super.applyToImage(img);
-    SettingsSelections sel = img.getSettings().getSettSelections();
-    sel.setCurrentImage(img);
-    sel.updateStatistics();
+  public void applyToImage(Collectable2D c) throws Exception {
+    super.applyToImage(c);
+    SettingsSelections sel = (SettingsSelections) c.getSettingsByClass(SettingsSelections.class);
+    if (sel != null && c instanceof Image2D) {
+      sel.setCurrentImage((Image2D) c);
+      sel.updateStatistics();
+    }
   }
 }
 
