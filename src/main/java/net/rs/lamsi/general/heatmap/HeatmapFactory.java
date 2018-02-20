@@ -31,6 +31,7 @@ import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralCollecable2D;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
@@ -183,7 +184,6 @@ public class HeatmapFactory {
    * @return
    */
   private static IXYZDataset createDataset(SingleParticleImage image) {
-    SettingsGeneralImage sett = image.getSettings().getSettImage();
     double[][] dat = null;
     // get matrices
     dat = image.toXYCountsArray();
@@ -472,14 +472,14 @@ public class HeatmapFactory {
   private static Heatmap createChart(SingleParticleImage img, IXYZDataset dataset)
       throws Exception {
     return createChart(img, SettingsPaintScale.createStandardSettings(),
-        (SettingsGeneralImage) img.getSettingsByClass(SettingsGeneralImage.class), dataset, "x",
-        "y");
+        (SettingsGeneralCollecable2D) img.getSettingsByClass(SettingsGeneralCollecable2D.class),
+        dataset, "x", "y");
   }
 
   // erstellt ein JFreeChart Plot der heatmap
   // bwidth und bheight (BlockWidth) sind die Maximalwerte
   private static Heatmap createChart(final SingleParticleImage img, SettingsPaintScale settings,
-      SettingsGeneralImage settImage, IXYZDataset dataset, String xTitle, String yTitle)
+      SettingsGeneralCollecable2D settImage, IXYZDataset dataset, String xTitle, String yTitle)
       throws Exception {
     // this min max values in array
     double zmin = dataset.getZMin();
@@ -512,8 +512,8 @@ public class HeatmapFactory {
     renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 
     // TODO change to dynamic block width
-    renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
-    renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
+    renderer.setBlockWidth(img.getMaxBlockWidth());
+    renderer.setBlockHeight(img.getMaxBlockHeight());
 
 
     // Plot erstellen mit daten

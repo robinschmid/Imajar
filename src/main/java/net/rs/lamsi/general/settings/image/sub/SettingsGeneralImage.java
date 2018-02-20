@@ -136,7 +136,10 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     timePerLine = 60;
     deleteCropMarks();
 
-    rotation.resetAll();
+    if (rotation == null)
+      rotation = new SettingsGeneralRotation();
+    else
+      rotation.resetAll();
     isBinaryData = false;
     interpolation = 1;
     useInterpolation = false;

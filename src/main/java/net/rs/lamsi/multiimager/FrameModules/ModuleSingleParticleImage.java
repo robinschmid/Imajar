@@ -10,6 +10,7 @@ import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneralCollectable2D;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSPImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
@@ -19,6 +20,7 @@ public class ModuleSingleParticleImage
     extends MainSettingsModuleContainer<SettingsSPImage, SingleParticleImage> {
   private ImageEditorWindow window;
 
+  private ModuleGeneralCollectable2D moduleGeneral;
   private ModuleZoom moduleZoom;
   private ModuleThemes moduleThemes;
   private ModuleBackgroundImg moduleBG;
@@ -58,9 +60,11 @@ public class ModuleSingleParticleImage
     });
     getPnTitleCenter().add(btnUpdate);
 
+    moduleGeneral = new ModuleGeneralCollectable2D();
+    moduleGeneral.setAlignmentY(Component.TOP_ALIGNMENT);
+    addModule(moduleGeneral);
 
     moduleSPImage = new ModuleSPImage();
-    moduleSPImage.setAlignmentY(Component.TOP_ALIGNMENT);
     addModule(moduleSPImage);
 
     moduleZoom = new ModuleZoom();
@@ -71,7 +75,6 @@ public class ModuleSingleParticleImage
 
     moduleThemes = new ModuleThemes();
     addModule(moduleThemes);
-
   }
 
 
@@ -93,5 +96,9 @@ public class ModuleSingleParticleImage
 
   public ModuleSPImage getModuleSPImage() {
     return moduleSPImage;
+  }
+
+  public ModuleGeneralCollectable2D getModuleGeneral() {
+    return moduleGeneral;
   }
 }

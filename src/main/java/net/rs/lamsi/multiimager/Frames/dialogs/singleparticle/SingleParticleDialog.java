@@ -100,28 +100,14 @@ public class SingleParticleDialog extends JFrame {
       center1.setLayout(new BorderLayout(0, 0));
       {
         JSplitPane splitPane = new JSplitPane();
-        center1.add(splitPane, BorderLayout.CENTER);
+        splitPane.setVisible(false);
+        center1.add(splitPane, BorderLayout.NORTH);
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(0.5);
         {
           north = new JPanel();
           splitPane.setLeftComponent(north);
           north.setLayout(new BorderLayout(0, 0));
-        }
-        {
-          JPanel south = new JPanel();
-          splitPane.setRightComponent(south);
-          south.setLayout(new GridLayout(0, 2, 0, 0));
-          {
-            southwest = new JPanel();
-            south.add(southwest);
-            southwest.setLayout(new BorderLayout(0, 0));
-          }
-          {
-            southeast = new JPanel();
-            south.add(southeast);
-            southeast.setLayout(new BorderLayout(0, 0));
-          }
         }
       }
       {
@@ -301,6 +287,21 @@ public class SingleParticleDialog extends JFrame {
               panel.add(btnApplyY);
             }
           }
+        }
+      }
+      {
+        JPanel south = new JPanel();
+        center1.add(south, BorderLayout.CENTER);
+        south.setLayout(new GridLayout(0, 2, 0, 0));
+        {
+          southwest = new JPanel();
+          south.add(southwest);
+          southwest.setLayout(new BorderLayout(0, 0));
+        }
+        {
+          southeast = new JPanel();
+          south.add(southeast);
+          southeast.setLayout(new BorderLayout(0, 0));
         }
       }
     }

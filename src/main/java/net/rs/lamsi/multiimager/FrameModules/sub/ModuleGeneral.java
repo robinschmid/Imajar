@@ -27,6 +27,7 @@ import javax.swing.event.DocumentListener;
 import org.jfree.chart.plot.XYPlot;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.basics.JFontSpecs;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -34,6 +35,7 @@ import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenuApplyToImage;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralCollecable2D;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
@@ -82,7 +84,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
    * Create the panel.
    */
   public ModuleGeneral(ImageEditorWindow wnd) {
-    super("General", false, SettingsGeneralImage.class, Image2D.class);
+    super("General", false, SettingsGeneralCollecable2D.class, Image2D.class);
     window = wnd;
 
     JPanel pnNorth = new JPanel();
@@ -373,7 +375,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     // apply to Listener
     getPopupMenu().addApplyToImageListener(new ModuleMenuApplyToImage() {
       @Override
-      public void applyToImage(Settings sett, Image2D img) {
+      public void applyToImage(Settings sett, Collectable2D img) {
         // also set short title to theme
         img.getSettTheme().getTheme().setShortTitle(fontShortTitle.getColor(),
             getColorBGShortTitle().getColor(), fontShortTitle.getSelectedFont());

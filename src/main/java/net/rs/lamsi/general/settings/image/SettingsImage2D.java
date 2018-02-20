@@ -11,6 +11,7 @@ import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2D
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierLinear;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralCollecable2D;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
@@ -126,7 +127,12 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
   }
 
   public SettingsGeneralImage getSettImage() {
-    return (SettingsGeneralImage) list.get(SettingsGeneralImage.class);
+    SettingsGeneralCollecable2D s =
+        (SettingsGeneralCollecable2D) list.get(SettingsGeneralCollecable2D.class);
+    if (s != null && s instanceof SettingsGeneralImage)
+      return (SettingsGeneralImage) s;
+    else
+      return null;
   }
 
   public SettingsThemesContainer getSettTheme() {

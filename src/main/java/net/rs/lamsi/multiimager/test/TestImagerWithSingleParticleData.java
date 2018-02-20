@@ -57,7 +57,7 @@ public class TestImagerWithSingleParticleData {
               simg.setUseInterpolation(true);
               simg.setVelocity(0.05f);
 
-              SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
+              SettingsSPImage settings = new SettingsSPImage();
               settings.getSettSingleParticle().setNoiseLevel(3500);
               final SingleParticleImage spi = new SingleParticleImage(img, settings);
 
@@ -87,7 +87,7 @@ public class TestImagerWithSingleParticleData {
             simg.setUseInterpolation(true);
             simg.setVelocity(0.05f);
 
-            SettingsSPImage settings = new SettingsSPImage(img.getSettings().getSettImage());
+            SettingsSPImage settings = new SettingsSPImage();
             settings.getSettSingleParticle().setNoiseLevel(3500);
             final SingleParticleImage spi = new SingleParticleImage(img, settings);
 

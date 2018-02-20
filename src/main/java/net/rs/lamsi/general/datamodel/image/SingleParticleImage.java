@@ -516,21 +516,21 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
 
 
   public double getMaxBlockWidth() {
-    return getMaxBlockWidth(getSettings().getSettImage());
+    return getMaxBlockWidth(img.getSettings().getSettImage());
   }
 
   public double getMaxBlockHeight() {
-    return getMaxBlockHeight(getSettings().getSettImage());
+    return getMaxBlockHeight(img.getSettings().getSettImage());
   }
 
   public double getMaxBlockWidth(SettingsGeneralImage settImage) {
-    int rot = getSettings().getSettImage().getRotationOfData();
+    int rot = settImage.getRotationOfData();
     double f = getSettings().getSettSingleParticle().getNumberOfPixel();
     return img.getMaxBlockWidth(rot, 1) * f;
   }
 
   public double getMaxBlockHeight(SettingsGeneralImage settImage) {
-    int rot = getSettings().getSettImage().getRotationOfData();
+    int rot = settImage.getRotationOfData();
     return img.getMaxBlockHeight(rot, 1);
   }
 
