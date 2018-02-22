@@ -1785,8 +1785,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    * @return
    */
   public float getWidth(boolean raw) {
-    int rot = settings.getSettImage().getRotationOfData();
-    if (rot == 0 || rot == 180)
+    if (!isRotated())
       return data.getWidthX() * xFactor(raw);
     else
       return getYRaw(raw, data.getLinesCount());
@@ -1799,8 +1798,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    * @return
    */
   public float getHeight(boolean raw) {
-    int rot = settings.getSettImage().getRotationOfData();
-    if (rot == 90 || rot == 270)
+    if (isRotated())
       return data.getWidthX() * xFactor(raw);
     else
       return getYRaw(raw, data.getLinesCount());
@@ -1892,9 +1890,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
       return getMaxBlockWidth(0, interpolation);
     else {
       // height is not changed when reducing data points
-      int red = interpolation != 0 ? (int) (1 / interpolation) : 0;
-      int inter = (int) interpolation;
-      double f = red == 0 ? 1.0 / inter : 1;
       return settings.getSettImage().getSpotsize();
     }
   }
