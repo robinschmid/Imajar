@@ -2,10 +2,10 @@ package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
 public class XYIDataMatrix {
 
-  protected Double[][] i;
-  protected Float[][] x, y;
+  protected double[][] i;
+  protected float[][] x, y;
 
-  public XYIDataMatrix(Float[][] x, Float[][] y, Double[][] i) {
+  public XYIDataMatrix(float[][] x, float[][] y, double[][] i) {
     super();
     this.x = x;
     this.y = y;
@@ -18,33 +18,33 @@ public class XYIDataMatrix {
     return "[" + String.valueOf(x) + "; " + String.valueOf(y) + "; " + String.valueOf(i) + "]";
   }
 
-  public Double[][] getI() {
+  public double[][] getI() {
     return i;
   }
 
-  public Float[][] getX() {
+  public float[][] getX() {
     return x;
   }
 
-  public Float[][] getY() {
+  public float[][] getY() {
     return y;
   }
 
-  public void setI(Double[][] i) {
+  public void setI(double[][] i) {
     this.i = i;
   }
 
-  public void setX(Float[][] x) {
+  public void setX(float[][] x) {
     this.x = x;
   }
 
-  public void setY(Float[][] y) {
+  public void setY(float[][] y) {
     this.y = y;
   }
 
   public int getMinimumLineLength() {
     int min = Integer.MAX_VALUE;
-    for (Double[] d : i) {
+    for (double[] d : i) {
       int length = lineLength(d);
       if (length < min)
         min = length;
@@ -54,7 +54,7 @@ public class XYIDataMatrix {
 
   public int getMaximumLineLength() {
     int max = 0;
-    for (Double[] d : i) {
+    for (double[] d : i) {
       int length = lineLength(d);
       if (length > max)
         max = length;
@@ -64,7 +64,7 @@ public class XYIDataMatrix {
 
   public int getAverageLineLength() {
     int max = 0;
-    for (Double[] d : i) {
+    for (double[] d : i) {
       int length = lineLength(d);
       max += length;
     }
@@ -78,7 +78,7 @@ public class XYIDataMatrix {
     return lineLength(i[line]);
   }
 
-  private int lineLength(Double[] l) {
+  private int lineLength(double[] l) {
     for (int i = l.length - 1; i >= 0; i--) {
       if (!Double.isNaN(l[i]))
         return i + 1;
@@ -89,7 +89,7 @@ public class XYIDataMatrix {
 
   public double getMinI() {
     double min = Double.MAX_VALUE;
-    for (Double[] d : i) {
+    for (double[] d : i) {
       for (int f = 0; f < d.length; f++) {
         if (!Double.isNaN(d[f]) && d[f] < min)
           min = d[f];
@@ -101,7 +101,7 @@ public class XYIDataMatrix {
 
   public double getMaxI() {
     double max = Double.NEGATIVE_INFINITY;
-    for (Double[] d : i) {
+    for (double[] d : i) {
       for (int f = 0; f < d.length; f++) {
         if (!Double.isNaN(d[f]) && d[f] > max)
           max = d[f];
@@ -119,7 +119,7 @@ public class XYIDataMatrix {
    */
   public double[][] toLinearArray() {
     int size = 0;
-    for (Double[] d : i) {
+    for (double[] d : i) {
       size += d.length;
     }
 

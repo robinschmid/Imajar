@@ -525,9 +525,9 @@ public class SettingsSelections extends Settings implements Serializable,
 
       // do statistics for all shape selections
       XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
-      Float[][] x = data.getX();
-      Float[][] y = data.getY();
-      Double[][] z = data.getI();
+      float[][] x = data.getX();
+      float[][] y = data.getY();
+      double[][] z = data.getI();
 
       // write xyz matrix
       if (sett.isX())
@@ -712,9 +712,9 @@ public class SettingsSelections extends Settings implements Serializable,
     if (currentImg != null && selections != null && selections.size() > 0) {
       // do statistics for all shape selections
       XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
-      Float[][] x = data.getX();
-      Float[][] y = data.getY();
-      Double[][] z = data.getI();
+      float[][] x = data.getX();
+      float[][] y = data.getY();
+      double[][] z = data.getI();
 
       Boolean[][] map = new Boolean[z.length][];
 

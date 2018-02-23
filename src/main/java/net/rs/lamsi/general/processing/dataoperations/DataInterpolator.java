@@ -16,9 +16,9 @@ public class DataInterpolator {
    */
   public static double[][] interpolateToArray(XYIDataMatrix data, double f) {
 
-    Float[][] x = data.getX();
-    Float[][] y = data.getY();
-    Double[][] z = data.getI();
+    float[][] x = data.getX();
+    float[][] y = data.getY();
+    double[][] z = data.getI();
     // get data and interpolate/reduce
     ArrayList<Double> zz = new ArrayList<Double>();
     ArrayList<Double> xx = new ArrayList<Double>();

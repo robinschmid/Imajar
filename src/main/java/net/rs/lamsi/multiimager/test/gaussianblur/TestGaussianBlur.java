@@ -12,7 +12,7 @@ import javax.swing.border.EmptyBorder;
 import org.jfree.chart.ChartPanel;
 
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
-import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
+import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextField;
 import javax.swing.JLabel;

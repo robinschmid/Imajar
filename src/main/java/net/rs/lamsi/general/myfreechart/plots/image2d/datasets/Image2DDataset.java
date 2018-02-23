@@ -1,12 +1,14 @@
 package net.rs.lamsi.general.myfreechart.plots.image2d.datasets;
 
+import java.util.List;
 import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
 import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYZDataset;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
-import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
+import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
+import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 
@@ -18,6 +20,7 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
   private static final long serialVersionUID = 1L;
 
   private Image2D img;
+
 
   public Image2DDataset(Image2D img) {
     super();
@@ -95,6 +98,11 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
   // interpolation and gaussian blur
   public void applyPostProcessing() {
     SettingsGeneralImage sett = img.getSettings().getSettImage();
+    List<PostProcessingOp> op = sett.getPostProcessingOp();
+    if (op.size() > 0) {
+      XYIDataMatrix data = img.toXYIDataMatrix(false, true);
+
+    }
     double[][] dat = null;
     // interpolation
     int f = (int) sett.getInterpolation();

@@ -21,6 +21,9 @@ public class FastGaussianBlur2 {
     boxesForGauss(5, 3);
     boxesForGauss(6, 3);
     boxesForGauss(7, 3);
+
+    double[][] data = new double[10][10];
+
   }
 
   // tcl is empty at start

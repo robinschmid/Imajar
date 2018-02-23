@@ -129,9 +129,9 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
    */
   public double[][] toXYCountsArray(SingleParticleSettings sett) {
     XYIDataMatrix matrix = img.toXYIDataMatrix(false, true);
-    Float[][] x = matrix.getX();
-    Float[][] y = matrix.getY();
-    Double[][] z = matrix.getI();
+    float[][] x = matrix.getX();
+    float[][] y = matrix.getY();
+    double[][] z = matrix.getI();
     ImageEditorWindow.log("Start SPI counter: ", LOG.MESSAGE);
 
     DebugStopWatch timer = new DebugStopWatch();

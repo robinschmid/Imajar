@@ -20,7 +20,7 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.heatmap.dataoperations.blur.FastGaussianBlur;
+import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
 import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
@@ -590,6 +590,7 @@ public class HeatmapFactory {
       Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot,
           legend, img, renderer, scaleInPlot, shortTitle);
 
+      renderer.applyPostProcessing();
       // return Heatmap
       return heat;
     }

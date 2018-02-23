@@ -961,8 +961,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
         // shift by start x and y
         float startx = x[firstLine][firstDP], starty = y[firstLine][firstDP];
 
-        Double[][] newz = new Double[h][w];
-        Float[][] newx = new Float[h][w], newy = new Float[h][w];
+        double[][] newz = new double[h][w];
+        float[][] newx = new float[h][w], newy = new float[h][w];
 
         for (int l = 0; l < h; l++) {
           for (int dp = 0; dp < w; dp++) {
@@ -978,8 +978,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
         int cols = getMaxLinesCount();
         int rows = getMaxLineLength();
 
-        Double[][] z = new Double[cols][rows];
-        Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
+        double[][] z = new double[cols][rows];
+        float[][] x = new float[cols][rows], y = new float[cols][rows];
 
         // c for lines
         for (int c = 0; c < cols; c++) {
@@ -998,14 +998,14 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
     } else {
       int cols = data.getLinesCount();
 
-      Float[][] x = new Float[cols][], y = new Float[cols][];
-      Double[][] z = new Double[cols][];
+      float[][] x = new float[cols][], y = new float[cols][];
+      double[][] z = new double[cols][];
 
       for (int c = 0; c < cols; c++) {
         int length = data.getLineLength(c);
-        x[c] = new Float[length];
-        y[c] = new Float[length];
-        z[c] = new Double[length];
+        x[c] = new float[length];
+        y[c] = new float[length];
+        z[c] = new double[length];
         // increment l
         for (int r = 0; r < length; r++) {
           // only if not null: write Intensity

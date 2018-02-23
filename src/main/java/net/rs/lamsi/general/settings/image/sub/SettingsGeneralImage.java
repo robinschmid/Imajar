@@ -1,6 +1,8 @@
 package net.rs.lamsi.general.settings.image.sub;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.DoubleFunction;
 import org.jfree.chart.plot.XYPlot;
 import org.w3c.dom.Document;
@@ -9,6 +11,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.heatmap.dataoperations.BilinearInterpolator;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
+import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
+import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 
 
 public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
@@ -400,6 +407,9 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     rotation.setRotationOfData(rotationOfData);
   }
 
+  public boolean isRotated() {
+    return rotation.isRotated();
+  }
 
   public void deleteCropMarks() {
     x0 = 0;
@@ -503,6 +513,28 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
       return true;
     }
     return false;
+  }
+
+  /**
+   * List of post processing operations, e.g., blur, interpolation, reduction ...
+   * 
+   * @return
+   */
+  public List<PostProcessingOp> getPostProcessingOp() {
+    List<PostProcessingOp> op = new LinkedList<>();
+    int f = (int) getInterpolation();
+    int red = (int) (1.0 / getInterpolation());
+    if (isUseInterpolation() && (f > 1 || red > 1)) {
+      if (f > 1)
+        op.add(new BilinearInterpolator(f));
+      if (red > 1)
+        op.add(new DPReduction(red, Mode.AVG, isRotated()));
+    }
+    // blur
+    if (isUseBlur()) {
+      op.add(new FastGaussianBlur(getBlurRadius()));
+    }
+    return op;
   }
 
 }
