@@ -111,7 +111,12 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
   // interpolation and data reduction
   protected boolean useInterpolation;
-  protected double interpolation;
+  protected int interpolation;
+
+  protected boolean useReduction;
+  protected int reduction;
+  protected Mode reductionMode;
+
 
   protected boolean useBlur;
   protected double blurRadius;
@@ -155,14 +160,17 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     isCropDataToMin = true;
     intensityFactor = 1;
     trans = Transformation.NONE;
+    reduction = 1;
+    useReduction = false;
+    reductionMode = Mode.AVG;
   }
 
 
   public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos,
       float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz,
       boolean reflectVert, int rotationOfData, boolean isBinaryData, boolean useInterpolation,
-      double interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin,
-      boolean keepAspectRatio) {
+      int interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin,
+      boolean keepAspectRatio, boolean useReduction, int reduction, Mode redMode) {
     this.velocity = velocity;
     this.spotsize = spotsize;
     this.isBinaryData = isBinaryData;
@@ -172,6 +180,9 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     this.blurRadius = blurRadius;
     this.useBlur = useBlur;
     this.isCropDataToMin = isCropDataToMin;
+    this.reduction = reduction;
+    this.useReduction = useReduction;
+    this.reductionMode = redMode;
 
     super.setAll(title, shortTitle, useShortTitle, xPos, yPos, keepAspectRatio);
   }
@@ -214,6 +225,10 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     toXML(elParent, doc, "intensityFactor", intensityFactor);
     toXML(elParent, doc, "trans", trans);
 
+    toXML(elParent, doc, "reduction", reduction);
+    toXML(elParent, doc, "useReduction", useReduction);
+    toXML(elParent, doc, "reductionMode", reductionMode);
+
     rotation.appendSettingsToXML(elParent, doc);
   }
 
@@ -239,9 +254,21 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
           timePerLine = doubleFromXML(nextElement);
         else if (paramName.equals("isBinaryData"))
           isBinaryData = booleanFromXML(nextElement);
-        else if (paramName.equals("interpolation"))
-          interpolation = doubleFromXML(nextElement);
-        else if (paramName.equals("useInterpolation"))
+        else if (paramName.equals("reduction"))
+          reduction = intFromXML(nextElement);
+        else if (paramName.equals("useReduction"))
+          useReduction = booleanFromXML(nextElement);
+        else if (paramName.equals("reductionMode"))
+          reductionMode = Mode.valueOf(nextElement.getTextContent());
+        else if (paramName.equals("interpolation")) {
+          // until version 3.39: Was double <0 - reduction
+          double r = doubleFromXML(nextElement);
+          if (r < 0) {
+            reduction = (int) (1 / r);
+            interpolation = 1;
+          } else
+            interpolation = intFromXML(nextElement);
+        } else if (paramName.equals("useInterpolation"))
           useInterpolation = booleanFromXML(nextElement);
         else if (paramName.equals("blurRadius"))
           blurRadius = doubleFromXML(nextElement);
@@ -457,7 +484,7 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     return useInterpolation;
   }
 
-  public double getInterpolation() {
+  public int getInterpolation() {
     return interpolation;
   }
 
@@ -465,7 +492,7 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     this.useInterpolation = useInterpolation;
   }
 
-  public void setInterpolation(double interpolation) {
+  public void setInterpolation(int interpolation) {
     this.interpolation = interpolation;
   }
 
@@ -515,6 +542,30 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     return false;
   }
 
+  public boolean isUseReduction() {
+    return useReduction;
+  }
+
+  public int getReduction() {
+    return reduction;
+  }
+
+  public Mode getReductionMode() {
+    return reductionMode;
+  }
+
+  public void setReduction(int reduction) {
+    this.reduction = reduction;
+  }
+
+  public void setReductionMode(Mode reductionMode) {
+    this.reductionMode = reductionMode;
+  }
+
+  public void setUseReduction(boolean useReduction) {
+    this.useReduction = useReduction;
+  }
+
   /**
    * List of post processing operations, e.g., blur, interpolation, reduction ...
    * 
@@ -522,13 +573,14 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
    */
   public List<PostProcessingOp> getPostProcessingOp() {
     List<PostProcessingOp> op = new LinkedList<>();
-    int f = (int) getInterpolation();
-    int red = (int) (1.0 / getInterpolation());
-    if (isUseInterpolation() && (f > 1 || red > 1)) {
-      if (f > 1)
-        op.add(new BilinearInterpolator(f));
-      if (red > 1)
-        op.add(new DPReduction(red, Mode.AVG, isRotated()));
+    // xor
+    boolean inter = isUseInterpolation() && getInterpolation() > 1;
+    boolean red = isUseReduction() && getReduction() > 1;
+    if (inter ^ red) {
+      if (inter)
+        op.add(new BilinearInterpolator(getInterpolation()));
+      else
+        op.add(new DPReduction(getReduction(), getReductionMode(), isRotated()));
     }
     // blur
     if (isUseBlur()) {

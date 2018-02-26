@@ -86,6 +86,10 @@ public class XYIDataMatrix {
     return 0;
   }
 
+  public int lineCount() {
+    return i == null ? 0 : i.length;
+  }
+
 
   public double getMinI() {
     double min = Double.MAX_VALUE;

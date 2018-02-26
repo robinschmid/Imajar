@@ -11,6 +11,7 @@ import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.general.datamodel.image.listener.ProjectChangedEvent;
 import net.rs.lamsi.general.datamodel.image.listener.ProjectChangedListener;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
@@ -53,8 +54,9 @@ public class TestImagerWithSingleParticleData {
               Image2D img = (Image2D) project.get(0).get(0);
               SettingsGeneralImage simg =
                   (SettingsGeneralImage) img.getSettingsByClass(SettingsGeneralImage.class);
-              simg.setInterpolation(0.001);
-              simg.setUseInterpolation(true);
+              simg.setReduction(1000);
+              simg.setUseReduction(true);
+              simg.setReductionMode(Mode.SUM);
               simg.setVelocity(0.05f);
 
               SettingsSPImage settings = new SettingsSPImage();
@@ -83,8 +85,9 @@ public class TestImagerWithSingleParticleData {
             final Image2D img = (Image2D) pro.get(0).get(0);
             SettingsGeneralImage simg =
                 (SettingsGeneralImage) img.getSettingsByClass(SettingsGeneralImage.class);
-            simg.setInterpolation(0.001);
-            simg.setUseInterpolation(true);
+            simg.setReduction(1000);
+            simg.setUseReduction(true);
+            simg.setReductionMode(Mode.SUM);
             simg.setVelocity(0.05f);
 
             SettingsSPImage settings = new SettingsSPImage();

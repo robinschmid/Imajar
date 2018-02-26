@@ -7,9 +7,7 @@ import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYZDataset;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
-import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
-import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 
 /**
@@ -20,7 +18,11 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
   private static final long serialVersionUID = 1L;
 
   private Image2D img;
-
+  // post processed data. Not null if post processing was applied.
+  // otherwise use img as data source
+  protected XYIDataMatrix data;
+  protected List<PostProcessingOp> lastOp;
+  protected int linelength = 0;
 
   public Image2DDataset(Image2D img) {
     super();
@@ -29,7 +31,29 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
 
   @Override
   public int getItemCount(int series) {
-    return img.getData().getMaxDP() * img.getData().getLinesCount();
+    return data == null ? img.getData().getMaxDP() * img.getData().getLinesCount()
+        : linelength * data.lineCount();
+  }
+
+  /**
+   * The linelength to calculate from index to line and dp
+   * 
+   * @return
+   */
+  public int getLineLength() {
+    return data == null ? img.getMaxLineLength() : linelength;
+  }
+
+  public double getZ(boolean raw, int line, int dp) {
+    return data == null ? img.getI(raw, line, dp) : data.getI()[line][dp];
+  }
+
+  public float getX(boolean raw, int line, int dp) {
+    return data == null ? img.getX(raw, line, dp) : data.getX()[line][dp];
+  }
+
+  public float getY(boolean raw, int line, int dp) {
+    return data == null ? img.getY(raw, line, dp) : data.getY()[line][dp];
   }
 
   @Override
@@ -94,46 +118,57 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
     return new Range(getRangeLowerBound(includeInterval), getRangeUpperBound(includeInterval));
   }
 
-
   // interpolation and gaussian blur
-  public void applyPostProcessing() {
+  public boolean applyPostProcessing() {
     SettingsGeneralImage sett = img.getSettings().getSettImage();
     List<PostProcessingOp> op = sett.getPostProcessingOp();
-    if (op.size() > 0) {
-      XYIDataMatrix data = img.toXYIDataMatrix(false, true);
 
-    }
-    double[][] dat = null;
-    // interpolation
-    int f = (int) sett.getInterpolation();
-    // reduction
-    int red = (int) (1 / sett.getInterpolation());
+    // op is different to last op
+    boolean same = lastOp != null && op.size() == lastOp.size();
 
-    // applies cropping filter if needed
-    if (sett.isUseInterpolation() && (f > 1 || red > 1)) {
-      // get matrices
-      XYIDataMatrix data = img.toXYIDataMatrix(false, true);
-      // interpolate to array [3][n]
-      dat = DataInterpolator.interpolateToArray(data, sett.getInterpolation());
-    } else {
-      // get rotated and reflected dataset
-      dat = img.toXYIArray(false, true);
+    if (same && op.size() > 0) {
+      same = op.stream().allMatch(o -> lastOp.stream().anyMatch(last -> o.equals(last)));
     }
-    // blur?
-    if (sett.isUseBlur()) {
-      double[] z = dat[2];
-      double target[] = new double[z.length];
-      int w = img.getMinLineLength();
-      if (sett.isUseInterpolation()) {
-        if (f > 1)
-          w *= f;
-        else if (red > 1)
-          w /= red;
+
+    if (op.size() > 0 && !same) {
+
+      data = img.toXYIDataMatrix(false, true);
+
+      double[][] z = data.getI();
+      float[][] y = data.getY();
+      float[][] x = data.getX();
+
+      double[][] tz = null;
+      float[][] tx = null, ty = null;
+
+      for (PostProcessingOp o : op) {
+        // intensity
+        tz = o.processItensity(tz == null ? z : tz);
+        // xy
+        if (o.isProcessingXY()) {
+          tx = o.processXY(tx == null ? x : tx);
+          ty = o.processXY(ty == null ? y : ty);
+        }
       }
-      int h = z.length / w;
-      FastGaussianBlur.applyBlur(z, target, w, h, sett.getBlurRadius());
-      // set data
-      dat[2] = target;
+
+      // error
+      if (tz == null)
+        return false;
+
+      data.setI(tz);
+      if (tx != null) {
+        data.setX(tx);
+        data.setY(ty);
+      }
+
+      linelength = data.getMaximumLineLength();
+
+      lastOp = op;
+      return true;
+    } else {
+      data = null;
+      linelength = img.getMaxLineLength();
     }
+    return false;
   }
 }

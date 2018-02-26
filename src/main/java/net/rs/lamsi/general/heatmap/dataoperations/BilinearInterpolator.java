@@ -26,30 +26,34 @@ public class BilinearInterpolator extends PostProcessingOp {
 
   @Override
   public double[][] processItensity(double[][] z) {
-    double[][] t = new double[(z.length - 1) * f][];
+    double[][] t = new double[(z.length - 1) * f + 1][];
     for (int i = 0; i < t.length; i++)
-      t[i] = new double[(z[i].length - 1) * f];
+      t[i] = new double[(z[i / f].length - 1) * f + 1];
     return processItensity(z, t);
   }
 
   @Override
   public double[][] processItensity(double[][] z, double[][] target) {
-    int zi = -1;
+    int zi = -1, zj = -1;
     for (int i = 0; i < target.length; i++) {
       int modi = i % f;
-      if (modi == 0)
-        zi++;
-      int zj = -1;
+      zi = i / f;
       for (int j = 0; j < target[i].length; j++) {
         int modj = j % f;
-        if (modj == 0)
-          zj++;
+        zj = j / f;
         // value
-        target[i][j] = calcI(z[zi][zj], z[zi + 1][zj], z[zi][zj + 1], z[zi + 1][zj + 1],
-            modi / (double) f, modj / (double) f);
+        target[i][j] = calcI(getZ(z, zi, zj), getZ(z, zi + 1, zj), getZ(z, zi, zj + 1),
+            getZ(z, zi + 1, zj + 1), modi / (double) f, modj / (double) f);
       }
     }
     return target;
+  }
+
+  private double getZ(double[][] z, int i, int j) {
+    if (i < z.length && j < z[i].length)
+      return z[i][j];
+    else
+      return Double.NaN;
   }
 
   /**
@@ -87,7 +91,6 @@ public class BilinearInterpolator extends PostProcessingOp {
       else
         p2 = Double.NaN;
 
-      double res = 0;
       if (!Double.isNaN(p1) && !Double.isNaN(p2))
         return p1 * (1.0 - fj) + p2 * fj;
       else if (!Double.isNaN(p1))
@@ -110,7 +113,7 @@ public class BilinearInterpolator extends PostProcessingOp {
    * @param fj modj/f
    * @return
    */
-  private float calcI(float x00, float x10, float x01, float x11, float fi, float fj) {
+  private float calcX(float x00, float x10, float x01, float x11, float fi, float fj) {
     if (!Float.isNaN(x00) && !Float.isNaN(x10) && !Float.isNaN(x01) && !Float.isNaN(x11)) {
       return (x00 * (1.f - fi) + x10 * fi) * (1.f - fj) + (x01 * (1.f - fi) + x11 * fi) * fj;
     } else {
@@ -149,9 +152,9 @@ public class BilinearInterpolator extends PostProcessingOp {
 
   @Override
   public float[][] processXY(float[][] x) {
-    float[][] t = new float[(x.length - 1) * f][];
+    float[][] t = new float[(x.length - 1) * f + 1][];
     for (int i = 0; i < t.length; i++)
-      t[i] = new float[(x[i].length - 1) * f];
+      t[i] = new float[(x[i / f].length - 1) * f + 1];
     return processXY(x, t);
   }
 
@@ -168,12 +171,20 @@ public class BilinearInterpolator extends PostProcessingOp {
         if (modj == 0)
           zj++;
         // value
-        target[i][j] = calcI(x[zi][zj], x[zi + 1][zj], x[zi][zj + 1], x[zi + 1][zj + 1],
-            modi / (float) f, modj / (float) f);
+        target[i][j] = calcX(getX(x, zi, zj), getX(x, zi + 1, zj), getX(x, zi, zj + 1),
+            getX(x, zi + 1, zj + 1), modi / (float) f, modj / (float) f);
       }
     }
     return target;
   }
+
+  private float getX(float[][] x, int i, int j) {
+    if (i < x.length && j < x[i].length)
+      return x[i][j];
+    else
+      return Float.NaN;
+  }
+
 
   @Override
   public boolean isProcessingXY() {

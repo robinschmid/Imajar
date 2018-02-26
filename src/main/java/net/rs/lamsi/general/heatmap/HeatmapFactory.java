@@ -477,6 +477,7 @@ public class HeatmapFactory {
       SettingsGeneralImage settImage, String xTitle, String yTitle) throws Exception {
 
     Image2DDataset dataset = new Image2DDataset(img);
+    dataset.applyPostProcessing();
     // absolute min max
     double zmin = img.getMinIntensity(false);
     double zmax = img.getMaxIntensity(false);
@@ -590,7 +591,6 @@ public class HeatmapFactory {
       Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot,
           legend, img, renderer, scaleInPlot, shortTitle);
 
-      renderer.applyPostProcessing();
       // return Heatmap
       return heat;
     }

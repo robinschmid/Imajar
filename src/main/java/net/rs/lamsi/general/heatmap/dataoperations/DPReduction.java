@@ -40,13 +40,13 @@ public class DPReduction extends PostProcessingOp {
   public double[][] processItensity(double[][] z) {
     if (rotated) {
       double[][] t = new double[(z.length) / f][];
-      for (int i = 0; i < t.length; i += f)
-        t[i] = new double[z[i].length];
+      for (int i = 0; i < t.length; i++)
+        t[i] = new double[z[i * f].length];
       return processItensity(z, t);
     } else {
       double[][] t = new double[(z.length)][];
       for (int i = 0; i < t.length; i++)
-        t[i] = new double[z[i].length / f + 1];
+        t[i] = new double[z[i].length / f];
       return processItensity(z, t);
     }
   }
@@ -72,9 +72,9 @@ public class DPReduction extends PostProcessingOp {
             if (counter > 0) {
               if (mode.equals(Mode.AVG))
                 value = value / counter;
-              target[i][(j + 1) / f] = value;
+              target[i][(j + 1) / f - 1] = value;
             } else
-              target[i][(j + 1) / f] = Double.NaN;
+              target[i][(j + 1) / f - 1] = Double.NaN;
 
             counter = 0;
             value = mode.equals(Mode.MAX) ? Double.NEGATIVE_INFINITY : 0;
@@ -106,9 +106,9 @@ public class DPReduction extends PostProcessingOp {
             if (counter > 0) {
               if (mode.equals(Mode.AVG))
                 value = value / counter;
-              target[(i + 1) / f][j] = value;
+              target[(i + 1) / f - 1][j] = value;
             } else
-              target[(i + 1) / f][j] = Double.NaN;
+              target[(i + 1) / f - 1][j] = Double.NaN;
 
             counter = 0;
             value = mode.equals(Mode.MAX) ? Double.NEGATIVE_INFINITY : 0;
@@ -124,13 +124,13 @@ public class DPReduction extends PostProcessingOp {
   public float[][] processXY(float[][] x) {
     if (rotated) {
       float[][] t = new float[(x.length) / f][];
-      for (int i = 0; i < t.length; i += f)
-        t[i] = new float[x[i].length];
+      for (int i = 0; i < t.length; i++)
+        t[i] = new float[x[i * f].length];
       return processXY(x, t);
     } else {
       float[][] t = new float[(x.length)][];
       for (int i = 0; i < t.length; i++)
-        t[i] = new float[x[i].length / f + 1];
+        t[i] = new float[x[i].length / f];
       return processXY(x, t);
     }
   }
@@ -152,7 +152,7 @@ public class DPReduction extends PostProcessingOp {
       for (int j = 0; j < w; j++) {
         for (int i = 0; i < z.length; i += f) {
           float v = j < z[i].length ? z[i][j] : Float.NaN;
-          target[i][j / f] = v;
+          target[i / f][j] = v;
         }
       }
     }
