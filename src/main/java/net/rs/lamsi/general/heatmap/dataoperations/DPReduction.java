@@ -41,7 +41,7 @@ public class DPReduction extends PostProcessingOp {
     if (rotated) {
       double[][] t = new double[(z.length) / f][];
       for (int i = 0; i < t.length; i++)
-        t[i] = new double[z[i * f].length];
+        t[i] = new double[z[i].length];
       return processItensity(z, t);
     } else {
       double[][] t = new double[(z.length)][];
@@ -123,9 +123,9 @@ public class DPReduction extends PostProcessingOp {
   @Override
   public float[][] processXY(float[][] x) {
     if (rotated) {
-      float[][] t = new float[(x.length) / f][];
+      float[][] t = new float[x.length / f][];
       for (int i = 0; i < t.length; i++)
-        t[i] = new float[x[i * f].length];
+        t[i] = new float[x[i].length];
       return processXY(x, t);
     } else {
       float[][] t = new float[(x.length)][];
@@ -138,21 +138,21 @@ public class DPReduction extends PostProcessingOp {
   @Override
   public float[][] processXY(float[][] z, float[][] target) {
     if (!rotated) {
-      for (int i = 0; i < z.length; i++) {
-        for (int j = 0; j < z[i].length; j += f) {
-          target[i][j / f] = z[i][j];
+      for (int i = 0; i < target.length; i++) {
+        for (int j = 0; j < target[i].length; j++) {
+          target[i][j] = z[i][j * f];
         }
       }
     } else {
       int w = 0;
-      for (int i = 0; i < z.length; i++)
-        if (z[i].length > w)
-          w = z[i].length;
+      for (int i = 0; i < target.length; i++)
+        if (target[i].length > w)
+          w = target[i].length;
 
       for (int j = 0; j < w; j++) {
-        for (int i = 0; i < z.length; i += f) {
-          float v = j < z[i].length ? z[i][j] : Float.NaN;
-          target[i / f][j] = v;
+        for (int i = 0; i < target.length; i++) {
+          float v = j < target[i].length ? z[i * f][j] : Float.NaN;
+          target[i][j] = v;
         }
       }
     }

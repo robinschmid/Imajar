@@ -37,6 +37,7 @@ import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsImage2DSetup;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -678,9 +679,13 @@ public class ImageLogicRunner {
                         settingsDataImport, true, this);
 
                     // add to project
-                    if (project != null)
-                      for (ImageGroupMD g : imgs)
+                    if (project != null) {
+                      for (ImageGroupMD g : imgs) {
+                        if (settingsDataImport.isOpenImageSetupDialog())
+                          setUpImage2D(g);
                         project.add(g);
+                      }
+                    }
 
                     ImageEditorWindow.log("Imported image " + i[0].getName(), LOG.DEBUG);
                     for (int coll = 0; coll < imgs.length; coll++) {
@@ -698,9 +703,13 @@ public class ImageLogicRunner {
                   settingsDataImport, true, this);
 
               // add to project
-              if (project != null)
-                for (ImageGroupMD g : imgs)
+              if (project != null) {
+                for (ImageGroupMD g : imgs) {
+                  if (settingsDataImport.isOpenImageSetupDialog())
+                    setUpImage2D(g);
                   project.add(g);
+                }
+              }
 
               // add all
               for (int coll = 0; coll < imgs.length; coll++) {
@@ -710,7 +719,6 @@ public class ImageLogicRunner {
                 }
               }
             }
-
             return state;
           }
         };
@@ -723,6 +731,17 @@ public class ImageLogicRunner {
       DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
     }
     return null;
+  }
+
+  private void setUpImage2D(ImageGroupMD group) throws Exception {
+    if (group != null && group.size() > 0) {
+      window.getImageSetupDialog().setVisible(true);
+      SettingsImage2DSetup sett = window.getImageSetupDialog().getSettings();
+      // turn reduction on if there are 400x more dp than lines
+      Image2D[] imgs = group.getImagesOnly();
+      for (Image2D i : imgs)
+        sett.applyToImage(i);
+    }
   }
 
 

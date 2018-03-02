@@ -1856,17 +1856,16 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
   }
 
   public double getMaxBlockWidth(SettingsGeneralImage settImg) {
-    double interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
-    return getMaxBlockWidth(settImg.getRotationOfData(), interpolation);
+    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
+    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+    return getMaxBlockWidth(settImg.getRotationOfData(), interpolation, reduction);
   }
 
-  public double getMaxBlockWidth(int rotation, double interpolation) {
+  public double getMaxBlockWidth(int rotation, int interpolation, int reduction) {
     if (rotation != 0 && rotation != 180)
-      return getMaxBlockHeight(0, interpolation);
+      return getMaxBlockHeight(0, interpolation, reduction);
     else {
-      int red = interpolation != 0 ? (int) (1 / interpolation) : 0;
-      int inter = (int) interpolation;
-      double f = red == 0 ? 1.0 / inter : red;
+      double f = 1.0 / interpolation * reduction;
       return data.getMaxXDPWidth() * settings.getSettImage().getVelocity() * f;
     }
   }
@@ -1881,13 +1880,14 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
   }
 
   public double getMaxBlockHeight(SettingsGeneralImage settImg) {
-    double interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
-    return getMaxBlockHeight(settImg.getRotationOfData(), interpolation);
+    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
+    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+    return getMaxBlockHeight(settImg.getRotationOfData(), interpolation, reduction);
   }
 
-  public double getMaxBlockHeight(int rotation, double interpolation) {
+  public double getMaxBlockHeight(int rotation, int interpolation, int redcution) {
     if (rotation != 0 && rotation != 180)
-      return getMaxBlockWidth(0, interpolation);
+      return getMaxBlockWidth(0, interpolation, redcution);
     else {
       // height is not changed when reducing data points
       return settings.getSettImage().getSpotsize();

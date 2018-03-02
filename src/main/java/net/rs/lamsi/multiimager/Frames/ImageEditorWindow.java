@@ -89,6 +89,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
+import net.rs.lamsi.multiimager.Frames.dialogs.ImageSetupDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -114,6 +115,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   private ImageLogicRunner logicRunner;
   private ImportDataDialog importDataDialog;
   private DialogPreferences preferencesDialog;
+  private ImageSetupDialog imageSetupDialog;
 
   // save all frames for updating style etc
   private Vector<Component> listFrames = new Vector<Component>();
@@ -235,6 +237,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     preferencesDialog.setVisible(false);
     listFrames.addElement(preferencesDialog);
 
+
+    imageSetupDialog = new ImageSetupDialog();
     // init data import
     importDataDialog = new ImportDataDialog(logicRunner);
     WindowStyleUtil.changeWindowStyle(importDataDialog, WindowStyleUtil.STYLE_SYSTEM);
@@ -1526,5 +1530,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
   public JPanel getPnNorthMenu() {
     return pnNorthMenu;
+  }
+
+  public ImageSetupDialog getImageSetupDialog() {
+    return imageSetupDialog;
   }
 }
