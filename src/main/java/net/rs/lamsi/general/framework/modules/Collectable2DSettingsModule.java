@@ -20,7 +20,12 @@ public abstract class Collectable2DSettingsModule<T extends Settings, S extends 
   protected S currentImage = null;
 
   public Collectable2DSettingsModule(String title, boolean westside, Class settc, Class objclass) {
-    super(title, westside, settc);
+    this(title, false, westside, settc, objclass);
+  }
+
+  public Collectable2DSettingsModule(String title, boolean useCheckBox, boolean westside,
+      Class settc, Class objclass) {
+    super(title, useCheckBox, westside, settc);
     this.objclass = objclass;
     setShowTitleAlways(true);
   }

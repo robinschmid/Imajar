@@ -1,14 +1,5 @@
 package net.rs.lamsi.general.framework.modules;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentListener;
-
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -21,25 +12,31 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
  */
 public abstract class HeatmapSettingsModule<T extends Settings> extends SettingsModule<T> {
 
-	protected Heatmap currentHeat;
+  protected Heatmap currentHeat;
 
-	public HeatmapSettingsModule(String title, boolean westside, Class settc) { 
-		super(title, westside, settc);
-		setShowTitleAlways(true);
-	}
+  public HeatmapSettingsModule(String title, boolean westside, Class settc) {
+    super(title, westside, settc);
+    setShowTitleAlways(true);
+  }
 
-	//################################################################################################
-	// GETTERS and SETTERS
+  public HeatmapSettingsModule(String title, boolean useCheckBox, boolean westside, Class settc) {
+    super(title, useCheckBox, westside, settc);
+    setShowTitleAlways(true);
+  }
 
-	/**
-	 * gets called by {@link ImageEditorWindow#addHeatmapToPanel(Heatmap)}
-	 * @param heat
-	 */
-	public void setCurrentHeatmap(Heatmap heat) {
-		currentHeat = heat;
-	}
+  // ################################################################################################
+  // GETTERS and SETTERS
 
-	public Heatmap getCurrentHeat() {
-		return currentHeat;
-	} 
+  /**
+   * gets called by {@link ImageEditorWindow#addHeatmapToPanel(Heatmap)}
+   * 
+   * @param heat
+   */
+  public void setCurrentHeatmap(Heatmap heat) {
+    currentHeat = heat;
+  }
+
+  public Heatmap getCurrentHeat() {
+    return currentHeat;
+  }
 }

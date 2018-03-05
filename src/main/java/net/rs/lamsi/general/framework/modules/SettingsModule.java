@@ -39,6 +39,13 @@ public abstract class SettingsModule<T extends Settings> extends Module
     setShowTitleAlways(true);
   }
 
+  public SettingsModule(String title, boolean useCheckBox, boolean westside, Class csettings) {
+    super(title, useCheckBox, westside);
+    classsettings = csettings;
+    createMenu(csettings);
+    setShowTitleAlways(true);
+  }
+
   private void createMenu(Class csettings) {
     ModuleMenu menu = ModuleMenu.createLoadSaveOptionsMenu(this, csettings, this);
     // sep

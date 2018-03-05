@@ -17,7 +17,7 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
   private boolean isActive = false;
   // true: visible, false: invisible, null: no data point
   private Boolean[][] map = null;
-  private int realsize = 0;
+  private int realsize = 0, falseCount = 0;
   protected float alpha = 1;
   // settings
   private MultiImageTableModel tableModel;
@@ -38,6 +38,8 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     isActive = false;
     alpha = 1;
     map = null;
+    realsize = 0;
+    falseCount = 0;
   }
 
   @Override
@@ -76,8 +78,10 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     return isActive;
   }
 
-  public void setActive(boolean isActive) {
+  public boolean setActive(boolean isActive) {
+    boolean result = isActive != this.isActive;
     this.isActive = isActive;
+    return result;
   }
 
   /**
@@ -99,10 +103,22 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
 
     if (map != null) {
       for (Boolean[] m : map)
-        for (Boolean b : m)
-          if (b != null)
+        for (Boolean b : m) {
+          if (b != null) {
             realsize++;
+            if (!b)
+              falseCount++;
+          }
+        }
     }
+  }
+
+  public int getFalseCount() {
+    return falseCount;
+  }
+
+  public int getRealsize() {
+    return realsize;
   }
 
   public Boolean getMapValue(int line, int dp) {
@@ -145,7 +161,9 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     return alpha;
   }
 
-  public void setAlpha(float a) {
+  public boolean setAlpha(float a) {
+    boolean result = a != alpha;
     alpha = a;
+    return result;
   }
 }

@@ -396,6 +396,8 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       double yy1 = rangeAxis.valueToJava2D(y + img.getMaxBlockHeight() + this.yOffset, dataArea,
           plot.getRangeAxisEdge());
       Rectangle2D block;
+
+
       PlotOrientation orientation = plot.getOrientation();
       if (orientation.equals(PlotOrientation.HORIZONTAL)) {
         block = new Rectangle2D.Double(Math.min(yy0, yy1), Math.min(xx0, xx1), Math.abs(yy1 - yy0),
@@ -408,9 +410,15 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       // do only paint if inside rect
       if (dataArea.intersects(block)) {
         g2.setPaint(p);
-        g2.fillRect((int) Math.round(block.getX()), (int) Math.round(block.getY()),
-            (int) Math.ceil(block.getWidth()) + 1, (int) Math.ceil(block.getHeight()) + 1);
-        // g2.fill(block);
+
+
+        // ALTERNATIVE
+        // int fx = (int) Math.round(Math.min(xx0, xx1));
+        // int fy = (int) Math.round(Math.min(yy0, yy1));
+        // int w = (int) Math.round(Math.max(xx0, xx1)) - fx;
+        // int h = (int) Math.round(Math.max(yy0, yy1)) - fy;
+        // g2.fillRect(fx, fy, w, h);
+        g2.fill(block);
         // g2.setStroke(new BasicStroke(1.0f));
         // g2.draw(block);
 
