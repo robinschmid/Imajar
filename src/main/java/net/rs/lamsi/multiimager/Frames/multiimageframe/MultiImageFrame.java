@@ -44,7 +44,6 @@ import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.listener.ChartZoomConnector;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
-import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -81,7 +80,6 @@ public class MultiImageFrame extends JFrame {
   // boolean map for visible pixel according to range limitations of other images
   // map[lines][dp]
   private Boolean[][] map;
-  private boolean[] maplinear;
   private JMenuBar menuBar;
   private JMenu mnSettings;
   private JMenuItem mntmColumns;
@@ -498,6 +496,7 @@ public class MultiImageFrame extends JFrame {
     int maxlines = first.getMaxLinesCount();
     int maxdp = first.getMaxLineLength();
 
+    // different size - delete and recreate map
     boolean different = map == null || maxlines != map.length || maxdp != map[0].length;
     if (different) {
       settings.setMap(null);
@@ -515,9 +514,6 @@ public class MultiImageFrame extends JFrame {
   private void updateMap() {
     try {
       map = group.updateMap();
-
-      // save linear one
-      maplinear = settings.convertToLinearMap();
     } catch (Exception ex) {
       ex.printStackTrace();
       ImageEditorWindow.log(ex.getMessage(), LOG.ERROR);
@@ -626,8 +622,6 @@ public class MultiImageFrame extends JFrame {
       }
 
       // set new map
-      if (heat[i].getRenderer() instanceof ImageRenderer)
-        ((ImageRenderer) heat[i].getRenderer()).setMapLinear(maplinear);
       heat[i].getChart().fireChartChanged();
       // set uptodate
       uptodate[i] = true;

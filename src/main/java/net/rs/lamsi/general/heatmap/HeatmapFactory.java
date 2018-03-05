@@ -371,7 +371,7 @@ public class HeatmapFactory {
       yAxis.setLowerMargin(0.0);
       yAxis.setUpperMargin(0.0);
       // XYBlockRenderer
-      ImageRenderer renderer = new ImageRenderer();
+      ImageRenderer2 renderer = new ImageRenderer2(img);
 
       // PaintScale für farbe? TODO mit Settings!
       // TODO upper and lower value setzen!!!!

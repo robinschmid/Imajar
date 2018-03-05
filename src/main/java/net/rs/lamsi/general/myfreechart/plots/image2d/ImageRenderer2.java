@@ -34,7 +34,6 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
 
   //
   protected SettingsAlphaMap sett;
-  protected boolean[] map = null;
 
   protected Image2D img;
 
@@ -352,22 +351,6 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
 
-    // only if in map or if there is no map
-    if (isMapTrue(item)) {
-      drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item,
-          crosshairState, pass);
-    } else if (sett != null && sett.getAlpha() > 0) {
-      g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
-      drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, dataset, series, item,
-          crosshairState, pass);
-      g2.setComposite(BlendComposite.Normal);
-    }
-  }
-
-  protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
-      PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
-      XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
-
     if (dataset instanceof Image2DDataset) {
       Image2DDataset data = (Image2DDataset) dataset;
       Image2D img = data.getImage();
@@ -377,8 +360,19 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       int line = item / data.getLineLength();
       int dp = item % data.getLineLength();
 
-      drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, line,
-          dp, crosshairState, pass);
+      // only if in map or if there is no map
+      if (isMapTrue(line, dp)) {
+        // set transparency if used
+        boolean useAlpha =
+            (sett != null && sett.isActive() && sett.getAlpha() != 1 && sett.getAlpha() != 0);
+        if (useAlpha)
+          g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+        // paint block
+        drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, line,
+            dp, crosshairState, pass);
+        // reset
+        g2.setComposite(BlendComposite.Normal);
+      }
     }
   }
 
@@ -446,25 +440,8 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
    * @param item
    * @return
    */
-  public boolean isMapTrue(int item) {
-    return (sett != null && !sett.isActive()) || map == null
-        || (item < map.length && map[item] == true);
-  }
-
-  public boolean[] getMap() {
-    return map;
-  }
-
-  public void setMap(SettingsAlphaMap sett) {
-    this.sett = sett;
-    this.map = sett.convertToLinearMap();
-    if (map != null)
-      this.fireChangeEvent();
-  }
-
-
-  public void setMapLinear(boolean[] maplinear) {
-    map = maplinear;
+  public boolean isMapTrue(int line, int dp) {
+    return sett == null || !sett.isActive() || sett.getMapValue(line, dp) == true;
   }
 
   public PaintScale getPaintScale(int i) {
@@ -483,6 +460,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     if (this.img != img) {
       resetSizing();
       this.img = img;
+      this.sett = img.getImageGroup().getSettAlphaMap();
     }
   }
 

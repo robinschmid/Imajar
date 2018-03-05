@@ -249,25 +249,34 @@ public class ImageGroupMD implements Serializable {
     //
     SettingsAlphaMap sttA = getSettAlphaMap();
     Boolean[][] map = sttA.getMap();
-    // create new
-    if (map == null) {
-      map = new Boolean[first.getMaxLinesCount()][first.getMaxLineLength()];
-    }
-    // init as true
-    for (int r = 0; r < map.length; r++) {
-      for (int d = 0; d < map[r].length; d++) {
-        if (first.isDP(r, d))
-          map[r][d] = true;
-        else
-          map[r][d] = null;
-      }
-    }
 
-    // go through all rows and check if in range
-    for (int i = 0; i < sttA.getTableModel().getRowList().size(); i++) {
-      MultiImgTableRow row = sttA.getTableModel().getRowList().get(i);
-      // thorws exeption if not the same dimensions
-      row.applyToMap(map);
+    List<MultiImgTableRow> rows = sttA.getTableModel().getRowList();
+    // no row is active?
+    boolean isLimited = rows.stream().anyMatch(r -> r.isUseRange());
+
+    if (isLimited) {
+      sttA.setActive(true);
+      // create new
+      if (map == null) {
+        map = new Boolean[first.getMaxLinesCount()][first.getMaxLineLength()];
+      }
+      // init as true
+      for (int r = 0; r < map.length; r++) {
+        for (int d = 0; d < map[r].length; d++) {
+          if (first.isDP(r, d))
+            map[r][d] = true;
+          else
+            map[r][d] = null;
+        }
+      }
+
+      // go through all rows and check if in range
+      // thorws exception if not the same dimensions
+      for (MultiImgTableRow row : rows)
+        row.applyToMap(map);
+    } else {
+      sttA.setActive(false);
+      map = null;
     }
 
     sttA.setMap(map);
