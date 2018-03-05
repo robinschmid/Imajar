@@ -1145,18 +1145,21 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // finished
     ImageLogicRunner.setIS_UPDATING(false);
     // show all modules for images
-    if (activeModuleContainer != null)
+    if (activeModuleContainer != null && activeModuleContainer != modImage2D) {
       activeModuleContainer.setVisible(false);
+    }
+    if (activeModuleContainer == null || activeModuleContainer != modImage2D) {
+      activeModuleContainer = modImage2D;
+      activeModuleContainer.setVisible(true);
+      east.add(activeModuleContainer, BorderLayout.CENTER);
+      debug.stopAndLOG("for showing all modules of img2d");
+    }
 
-    activeModuleContainer = modImage2D;
-    activeModuleContainer.setVisible(true);
-    east.add(activeModuleContainer, BorderLayout.CENTER);
-    debug.stopAndLOG("for showing all modules of img2d");
     // set
     debug.setNewStartTime();
     modImage2D.setCurrentImage(img, true);
-    ImageEditorWindow.log(
-        "TIME: " + debug.stop() + "   FOR setting the current image for all modules ", LOG.DEBUG);
+
+    debug.stopAndLOG("FOR setting the current image for all modules");
 
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
@@ -1177,12 +1180,14 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // finished
     ImageLogicRunner.setIS_UPDATING(false);
     // show all modules for ImageOverlays
-    if (activeModuleContainer != null)
+    if (activeModuleContainer != null && activeModuleContainer != modImageOverlay)
       activeModuleContainer.setVisible(false);
 
-    activeModuleContainer = modImageOverlay;
-    activeModuleContainer.setVisible(true);
-    east.add(activeModuleContainer, BorderLayout.CENTER);
+    if (activeModuleContainer == null || activeModuleContainer != modImageOverlay) {
+      activeModuleContainer = modImageOverlay;
+      activeModuleContainer.setVisible(true);
+      east.add(activeModuleContainer, BorderLayout.CENTER);
+    }
 
     // set
     DebugStopWatch debug = new DebugStopWatch();
@@ -1210,12 +1215,14 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // finished
     ImageLogicRunner.setIS_UPDATING(false);
     // show all modules for ImageOverlays
-    if (activeModuleContainer != null)
+    if (activeModuleContainer != null && activeModuleContainer != modSPImage)
       activeModuleContainer.setVisible(false);
 
-    activeModuleContainer = modSPImage;
-    activeModuleContainer.setVisible(true);
-    east.add(activeModuleContainer, BorderLayout.CENTER);
+    if (activeModuleContainer == null || activeModuleContainer != modSPImage) {
+      activeModuleContainer = modSPImage;
+      activeModuleContainer.setVisible(true);
+      east.add(activeModuleContainer, BorderLayout.CENTER);
+    }
 
     // set
     DebugStopWatch debug = new DebugStopWatch();

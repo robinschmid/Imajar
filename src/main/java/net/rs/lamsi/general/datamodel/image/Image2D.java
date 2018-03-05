@@ -1552,11 +1552,11 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    */
   public double getMinIntensity(boolean onlySelected) {
     checkForUpdateInParentIProcessing();
-    // array with values only (no NaN)
-    double[] inten = toIArray(false, onlySelected);
     if (onlySelected) {
       if (Double.isNaN(minZSelected)) {
         minZSelected = Double.POSITIVE_INFINITY;
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           if (i < minZSelected)
             minZSelected = i;
@@ -1570,6 +1570,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
     } else {
       if (Double.isNaN(minZ)) {
         minZ = Double.POSITIVE_INFINITY;
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           if (i < minZ)
             minZ = i;
@@ -1590,11 +1592,11 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    */
   public double getMinNonZeroIntensity(boolean onlySelected) {
     checkForUpdateInParentIProcessing();
-    // array with values only (no NaN)
-    double[] inten = toIArray(false, onlySelected);
     if (onlySelected) {
       if (Double.isNaN(minNonZeroZSelected)) {
         minNonZeroZSelected = Double.POSITIVE_INFINITY;
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           if (i < minNonZeroZSelected && i != 0)
             minNonZeroZSelected = i;
@@ -1607,6 +1609,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
       return minNonZeroZSelected;
     } else {
       if (Double.isNaN(minNonZeroZ)) {
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         minNonZeroZ = Double.POSITIVE_INFINITY;
         for (double i : inten)
           if (i < minNonZeroZ && i != 0)
@@ -1628,11 +1632,11 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    */
   public double getMaxIntensity(boolean onlySelected) {
     checkForUpdateInParentIProcessing();
-    // array with values only (no NaN)
-    double[] inten = toIArray(false, onlySelected);
     if (onlySelected) {
       if (Double.isNaN(maxZSelected)) {
         maxZSelected = Double.NEGATIVE_INFINITY;
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           if (i > maxZSelected)
             maxZSelected = i;
@@ -1646,6 +1650,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
     } else {
       if (Double.isNaN(maxZ)) {
         maxZ = Double.NEGATIVE_INFINITY;
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           if (i > maxZ)
             maxZ = i;
@@ -1667,12 +1673,12 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    */
   public double getAverageIntensity(boolean onlySelected) {
     checkForUpdateInParentIProcessing();
-    // array with values only (no NaN)
-    double[] inten = toIArray(false, onlySelected);
     if (onlySelected) {
       if (Double.isNaN(avgZSelected)) {
         avgZSelected = 0;
 
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           avgZSelected += i;
 
@@ -1684,6 +1690,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
       if (Double.isNaN(averageIProcessed)) {
         averageIProcessed = 0;
 
+        // array with values only (no NaN)
+        double[] inten = toIArray(false, onlySelected);
         for (double i : inten)
           averageIProcessed += i;
 

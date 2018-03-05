@@ -28,6 +28,7 @@ public class JFreeSquaredChart extends JFreeChart {
   private static final int MAX_ITERATIONS = 10;
   // is only reset after finished paint
   private int iteration = 0;
+  private Rectangle2D origChartArea;
   private Rectangle2D size;
   private Predicate<Rectangle2D> sizeChangedListener;
 
@@ -66,6 +67,8 @@ public class JFreeSquaredChart extends JFreeChart {
    * @param info records info about the drawing (null means collect no info).
    */
   public void draw(Graphics2D g2, Rectangle2D chartArea, Point2D anchor, ChartRenderingInfo info) {
+    if (iteration == 0)
+      origChartArea = (Rectangle2D) chartArea.clone();
 
     notifyListeners(new ChartProgressEvent(this, this, ChartProgressEvent.DRAWING_STARTED, 0));
 
@@ -179,8 +182,15 @@ public class JFreeSquaredChart extends JFreeChart {
       double y = chartArea.getY() + (chartArea.getHeight() - newChartArea.getHeight()) / 2.0;
       newChartArea.setRect(x, y, newChartArea.getWidth(), newChartArea.getHeight());
 
-      // else try to draw chart with new size
-      draw(g2, newChartArea, anchor, info);
+      // too small
+      if (newChartArea.getWidth() < 50 || newChartArea.getHeight() < 50) {
+        iteration = Integer.MAX_VALUE - 1;
+        // draw in full size
+        draw(g2, origChartArea, anchor, info);
+      } else {
+        // else try to draw chart with new size
+        draw(g2, newChartArea, anchor, info);
+      }
       return;
     }
 

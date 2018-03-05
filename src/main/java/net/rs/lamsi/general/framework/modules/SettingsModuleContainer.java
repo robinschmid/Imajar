@@ -140,7 +140,7 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
             sm.setVisible(true);
           } else {
             sm.setVisible(false);
-            ImageEditorWindow.log("No Settings for " + sm.getSettingsClass(), LOG.DEBUG);
+            ImageEditorWindow.log("No Settings for " + sm.getSettingsClass(), LOG.WARNING);
           }
           ImageEditorWindow.log("TIME: " + debug.stop() + "   FOR setAllViaExistingSettings in "
               + sm.getClass().getName(), LOG.DEBUG);

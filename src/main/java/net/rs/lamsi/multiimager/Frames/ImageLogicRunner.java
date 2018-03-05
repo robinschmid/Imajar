@@ -158,7 +158,10 @@ public class ImageLogicRunner {
     IconNode node = new IconNode(i, false,
         window.isCreatingImageIcons() ? i.getIcon(sett.getIconWidth(), sett.getIconHeight())
             : null);
-    parent.add(node);
+    if (parent != null)
+      parent.add(node);
+    else
+      treeImg.addNodeToRoot(node);
     return node;
   }
 
@@ -273,19 +276,19 @@ public class ImageLogicRunner {
       DebugStopWatch debug = new DebugStopWatch();
       if (Image2D.class.isInstance(c2d)) {
         window.setImage2D((Image2D) c2d);
-        ImageEditorWindow.log("setImage2D took " + debug.stop(), LOG.DEBUG);
+        debug.stopAndLOG("for setImage2D");
       } else if (ImageOverlay.class.isInstance(c2d)) {
         window.setImageOverlay((ImageOverlay) c2d);
-        ImageEditorWindow.log("setImageOverlay took " + debug.stop(), LOG.DEBUG);
+        debug.stopAndLOG("for setImageOverlay");
       } else if (SingleParticleImage.class.isInstance(c2d)) {
         window.setSPImage((SingleParticleImage) c2d);
-        ImageEditorWindow.log("setSPImage took " + debug.stop(), LOG.DEBUG);
+        debug.stopAndLOG("for setSPImage");
       }
 
       // create new heatmap
       debug.setNewStartTime();
       renewImage2DView();
-      ImageEditorWindow.log("renewImage2DView took " + debug.stop(), LOG.DEBUG);
+      debug.stopAndLOG("FOR renewImage2DView");
     }
   }
 
@@ -303,7 +306,7 @@ public class ImageLogicRunner {
         // show heatmap in Center
 
         DebugStopWatch debug = new DebugStopWatch();
-        currentHeat = heatFactory.generateHeatmap(selectedImage);
+        currentHeat = HeatmapFactory.generateHeatmap(selectedImage);
         ImageEditorWindow.log("creating the heatmap took " + debug.stop(), LOG.DEBUG);
 
         ChartPanel myChart = currentHeat.getChartPanel();
@@ -698,25 +701,30 @@ public class ImageLogicRunner {
                 }
               }
             } else {
-              // load all files as one image set
-              ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(files,
-                  settingsDataImport, true, this);
+              try {
+                // load all files as one image set
+                ImageGroupMD[] imgs = Image2DImportExportUtil.importTextDataToImage(files,
+                    settingsDataImport, true, this);
 
-              // add to project
-              if (project != null) {
-                for (ImageGroupMD g : imgs) {
-                  if (settingsDataImport.isOpenImageSetupDialog())
-                    setUpImage2D(g);
-                  project.add(g);
+                // add to project
+                if (project != null) {
+                  for (ImageGroupMD g : imgs) {
+                    if (settingsDataImport.isOpenImageSetupDialog())
+                      setUpImage2D(g);
+                    project.add(g);
+                  }
                 }
-              }
 
-              // add all
-              for (int coll = 0; coll < imgs.length; coll++) {
-                if (imgs[coll].getImages().size() > 0) {
-                  // add img to list
-                  addGroup(imgs[coll], project);
+                // add all
+                for (int coll = 0; coll < imgs.length; coll++) {
+                  if (imgs[coll].getImages().size() > 0) {
+                    // add img to list
+                    addGroup(imgs[coll], project);
+                  }
                 }
+              } catch (Exception e) {
+                e.printStackTrace();
+                DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
               }
             }
             return state;
@@ -741,6 +749,12 @@ public class ImageLogicRunner {
       Image2D[] imgs = group.getImagesOnly();
       for (Image2D i : imgs)
         sett.applyToImage(i);
+
+      //
+      ImageEditorWindow.log(
+          "Set up performed on image group " + group.getName() + " (lines: "
+              + imgs[0].getData().getLinesCount() + " dp: " + imgs[0].getData().getMaxDP() + ")",
+          LOG.IMPORTANT);
     }
   }
 
@@ -830,6 +844,8 @@ public class ImageLogicRunner {
               // add lines
               try {
                 data.appendLines(lines);
+                ImageEditorWindow.log("Added " + lines.length + " lines to " + group.getName(),
+                    LOG.MESSAGE);
               } catch (Exception e) {
                 e.printStackTrace();
               }

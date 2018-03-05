@@ -5,40 +5,55 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 public class DebugStopWatch {
 
-	private long start = 0;
+  private long start = 0, lastStop = 0;
 
-	public DebugStopWatch() {
-		super();
-		if(ImageEditorWindow.isDebugging())
-			this.start = System.nanoTime();
-	}
-	
-	public String stopAndLOG() {
-		if(ImageEditorWindow.isDebugging() && start!=0) {
-			String s = (System.nanoTime()-start)/1000000/1000.0+" s";
-			ImageEditorWindow.log(s, LOG.DEBUG);
-			return s;
-		}
-		return "";
-	}
-	public String stopAndLOG(String message) {
-		if(ImageEditorWindow.isDebugging() && start!=0) {
-			String s = (System.nanoTime()-start)/1000000/1000.0+" s";
-			ImageEditorWindow.log("TIME: "+s+" for "+message, LOG.DEBUG);
-			return s;
-		}
-		return "";
-	}
-	public String stop() {
-		if(ImageEditorWindow.isDebugging() && start!=0) {
-			String s = (System.nanoTime()-start)/1000000/1000.0+" s";
-			return s;
-		}
-		return "";
-	}
-	
-	public void setNewStartTime() {
-		if(ImageEditorWindow.isDebugging())
-			this.start = System.nanoTime();
-	}
+  public DebugStopWatch() {
+    super();
+    setNewStartTime();
+  }
+
+  public String stopAndLOG() {
+    if (ImageEditorWindow.isDebugging() && start != 0) {
+      long time = System.nanoTime();
+      String s = toTime(time - start) + " s";
+      String d = toTime(time - lastStop) + " s";
+      ImageEditorWindow.log(s, LOG.DEBUG);
+      lastStop = time;
+      return s;
+    }
+    return "";
+  }
+
+  public String stopAndLOG(String message) {
+    if (ImageEditorWindow.isDebugging() && start != 0) {
+      long time = System.nanoTime();
+      String s = toTime(time - start) + " s";
+      String d = toTime(time - lastStop) + " s";
+      ImageEditorWindow.log("TIME: " + s + "(+" + d + ") for " + message, LOG.DEBUG);
+      lastStop = time;
+      return s;
+    }
+    return "";
+  }
+
+  public String stop() {
+    if (ImageEditorWindow.isDebugging() && start != 0) {
+      long time = System.nanoTime();
+      String s = toTime(time - start) + " s";
+      lastStop = time;
+      return s;
+    }
+    return "";
+  }
+
+  public void setNewStartTime() {
+    if (ImageEditorWindow.isDebugging()) {
+      this.start = System.nanoTime();
+      this.lastStop = start;
+    }
+  }
+
+  private double toTime(long diff) {
+    return (diff) / 1000000 / 1000.0;
+  }
 }

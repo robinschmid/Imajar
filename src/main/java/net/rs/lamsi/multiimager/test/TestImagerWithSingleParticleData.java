@@ -38,8 +38,10 @@ public class TestImagerWithSingleParticleData {
           ImageEditorWindow window = new ImageEditorWindow();
           window.setVisible(true);
           // load data ThermoMP17 Image qtofwerk.csv
-          String s = "D:\\Data\\sp Au\\2018_01_23 LA-spICP-MS_S2_Test_4um_4ums_100%_image.csv";
-          String s2 = "D:\\Data\\sp Au\\full.csv";
+          String s =
+              "D:\\Daten2\\Calibration\\2018_01_28\\2018_01_28 sp_LA_Calibration_50 [4um_8ums_50%].csv";
+          String s2 =
+              "D:\\Daten2\\Calibration\\2018_01_28\\2018_01_28 sp_LA_Calibration_50 [4um_8ums_50%].csv";
 
           SettingsImageDataImportTxt settingsDataImport =
               new SettingsImageDataImportTxt(IMPORT.PRESETS_THERMO_iCAPQ, true, ",", false);

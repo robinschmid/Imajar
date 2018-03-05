@@ -51,6 +51,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
   // ################################################################################################
@@ -930,6 +931,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
   public void setAllViaExistingSettings(SettingsPaintScale ps) {
     ImageLogicRunner.setIS_UPDATING(false);
 
+    DebugStopWatch timer = new DebugStopWatch();
     // new reseted ps
     if (ps != null) {
       // stop auto updating
@@ -988,17 +990,23 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
       this.getTxtMinFilter().setText(formatPercentNumber(minFilter));
       this.getTxtMaxFilter().setText(formatPercentNumber(maxFilter));
 
+      timer.stopAndLOG("set basics in PaintscaleModule");
+
       // apply if min/max is not set
       if (ps.getMaxIAbs(currentImage) == 0 && ps.getModeMax().equals(ValueMode.PERCENTILE))
         applyMaxFilter();
       if (ps.getMinIAbs(currentImage) == 0 && ps.getModeMin().equals(ValueMode.PERCENTILE))
         applyMinFilter();
 
+      timer.stopAndLOG("apply min max filter in PaintscaleModule");
+
       // set values and force!
       if (ps.getModeMin().equals(ValueMode.ABSOLUTE)) {
         // absolute at last
-        setMinimumValuePercentage(ps.getMinIRel(currentImage), true);
-        setMinimumValue(ps.getMinIAbs(currentImage), true);
+        double abs = ps.getMinIAbs(currentImage);
+        timer.stopAndLOG("get abs and rel for min values in PaintscaleModule");
+        setMinimumValue(abs, true);
+        timer.stopAndLOG("set abs and rel for min values in PaintscaleModule");
       } else {
         // percentage last
         setMinimumValue(ps.getMinIAbs(currentImage), true);
@@ -1014,6 +1022,7 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
         setMaximumValue(ps.getMaxIAbs(currentImage), true);
         setMaximumValuePercentage(ps.getMaxIRel(currentImage), true);
       }
+      timer.stopAndLOG("set min max values in PaintscaleModule");
 
       // comboboxes
       getComboMinValType().setSelectedItem(ps.getModeMin());
@@ -1021,8 +1030,11 @@ public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintS
       applyMinMode(ps.getModeMin());
       applyMaxMode(ps.getModeMax());
 
+
       /// renew histo
       getPnHistogram().updateHisto(ps);
+
+      timer.stopAndLOG("update histo in PaintscaleModule");
 
       // just in case
       stopDelayedListener();
