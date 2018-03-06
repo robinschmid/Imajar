@@ -3,7 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.rs.lamsi</groupId>
 	<artifactId>MassImager</artifactId>
-	<version>3.39b</version>
+	<version>3.41</version>
+	
+	<scm>
+    <connection>scm:svn:http://127.0.0.1/dummy</connection>
+    <developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
+    <tag>HEAD</tag>
+    <url>http://127.0.0.1/dummy</url>
+  </scm>
+	
 	<build>
 		<resources>
 			<resource>
@@ -65,7 +73,33 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <id>buildnumber</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <format>{0,number}</format>
+          <items>
+            <item>buildNumber</item>
+          </items> 
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+        <revisionOnScmFailure>no.scm.config.in.pom</revisionOnScmFailure>
+        </configuration>
+      </plugin>
 		</plugins>
+		
+    <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 	</build>
 
 
