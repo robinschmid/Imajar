@@ -3,9 +3,12 @@ package net.rs.lamsi.general.myfreechart.themes;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
+import java.text.DecimalFormat;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.title.PaintScaleLegend;
@@ -42,6 +45,10 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
   protected boolean showXGrid = false, showYGrid = false;
   protected boolean showXAxis = true, showYAxis = true;
+  protected boolean showOutline = true;
+  protected float xTickUnit, yTickUnit;
+  protected DecimalFormat xTickFormat, yTickFormat;
+  protected boolean useXAutoTick, useYAutoTick;
 
 
   public MyStandardChartTheme(THEME themeID, String name) {
@@ -65,12 +72,19 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
     masterFont = new Font("Arial", Font.PLAIN, 11);
     masterFontColor = Color.black;
+
+    showOutline = true;
+    xTickUnit = 1;
+    yTickUnit = 1;
+    useXAutoTick = true;
+    useYAutoTick = true;
   }
 
   public void setAll(boolean antiAlias, boolean showTitle, boolean noBG, Color cBG, Color cPlotBG,
       boolean showXGrid, boolean showYGrid, boolean showXAxis, boolean showYAxis, Font fMaster,
       Color cMaster, Font fAxesT, Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle,
-      Color cTitle) {
+      Color cTitle, boolean outline, boolean xTick, boolean yTick, float xTickUnit, float yTickUnit,
+      String xTickF, String yTickF) {
     this.setAntiAliased(antiAlias);
     this.setShowTitle(showTitle);
     this.setNoBackground(noBG);
@@ -87,9 +101,20 @@ public class MyStandardChartTheme extends StandardChartTheme {
     this.setTickLabelPaint(cAxesL);
     this.setTitlePaint(cTitle);
 
+    this.setAxisLinePaint(cAxesL);
+    this.setPlotOutlinePaint(cAxesL);
+
     this.setChartBackgroundPaint(cBG);
     this.setPlotBackgroundPaint(cPlotBG);
     this.setLegendBackgroundPaint(cBG);
+
+    this.showOutline = outline;
+    this.xTickUnit = xTickUnit == 0 ? 1 : xTickUnit;
+    this.yTickUnit = yTickUnit == 0 ? 1 : yTickUnit;
+    this.useXAutoTick = xTick;
+    this.useYAutoTick = yTick;
+    setxTickFormat(xTickF, this.xTickUnit);
+    setyTickFormat(yTickF, this.yTickUnit);
 
     masterFont = fMaster;
     masterFontColor = cMaster;
@@ -98,9 +123,9 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
   @Override
   public void apply(JFreeChart chart) {
-    // TODO Auto-generated method stub
     super.apply(chart);
     //
+    chart.getXYPlot().setOutlineVisible(showOutline);
     chart.getXYPlot().setDomainGridlinesVisible(showXGrid);
     chart.getXYPlot().setRangeGridlinesVisible(showYGrid);
     // all axes
@@ -108,6 +133,16 @@ public class MyStandardChartTheme extends StandardChartTheme {
       NumberAxis a = (NumberAxis) chart.getXYPlot().getDomainAxis(i);
       a.setTickMarkPaint(axisLinePaint);
       a.setAxisLinePaint(axisLinePaint);
+      a.setAxisLineVisible(true);
+      // ticks
+      a.setAutoTickUnitSelection(useXAutoTick);
+      if (!useXAutoTick) {
+        DecimalFormat f = xTickFormat;
+        if (f != null)
+          a.setTickUnit(new NumberTickUnit(xTickUnit, f), false, true);
+        else
+          a.setTickUnit(new NumberTickUnit(xTickUnit), false, true);
+      }
       // visible?
       a.setVisible(showXAxis);
     }
@@ -115,6 +150,16 @@ public class MyStandardChartTheme extends StandardChartTheme {
       NumberAxis a = (NumberAxis) chart.getXYPlot().getRangeAxis(i);
       a.setTickMarkPaint(axisLinePaint);
       a.setAxisLinePaint(axisLinePaint);
+      a.setAxisLineVisible(true);
+      // ticks
+      a.setAutoTickUnitSelection(useYAutoTick);
+      if (!useYAutoTick) {
+        DecimalFormat f = yTickFormat;
+        if (f != null)
+          a.setTickUnit(new NumberTickUnit(yTickUnit, f), false, true);
+        else
+          a.setTickUnit(new NumberTickUnit(yTickUnit), false, true);
+      }
       // visible?
       a.setVisible(showYAxis);
     }
@@ -123,9 +168,14 @@ public class MyStandardChartTheme extends StandardChartTheme {
     chart.getPlot().setBackgroundPaint(this.getPlotBackgroundPaint());
 
     for (int i = 0; i < chart.getSubtitleCount(); i++)
-      if (PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass()))
-        ((PaintScaleLegend) chart.getSubtitle(i))
-            .setBackgroundPaint(this.getChartBackgroundPaint());
+      if (PaintScaleLegend.class.isAssignableFrom(chart.getSubtitle(i).getClass())) {
+        PaintScaleLegend l = ((PaintScaleLegend) chart.getSubtitle(i));
+        l.setBackgroundPaint(this.getChartBackgroundPaint());
+        ValueAxis a = l.getAxis();
+        a.setTickMarkPaint(axisLinePaint);
+        a.setAxisLinePaint(axisLinePaint);
+        a.setAxisLineVisible(true);
+      }
     if (chart.getLegend() != null)
       chart.getLegend().setBackgroundPaint(this.getChartBackgroundPaint());
 
@@ -175,9 +225,20 @@ public class MyStandardChartTheme extends StandardChartTheme {
     Settings.toXML(el, doc, "cItem", getItemLabelPaint());
     Settings.toXML(el, doc, "cTitle", getTitlePaint());
     Settings.toXML(el, doc, "cTick", getTickLabelPaint());
+
+    Settings.toXML(el, doc, "xTickFormat", xTickFormat.toPattern());
+    Settings.toXML(el, doc, "yTickFormat", yTickFormat.toPattern());
+    Settings.toXML(el, doc, "useXAutoTick", useXAutoTick);
+    Settings.toXML(el, doc, "useYAutoTick", useYAutoTick);
+    Settings.toXML(el, doc, "yTickUnit", yTickUnit);
+    Settings.toXML(el, doc, "xTickUnit", xTickUnit);
+
+    Settings.toXML(el, doc, "showOutline", showOutline);
   }
 
   public void loadValuesFromXML(Element el, Document doc) {
+    String xform = null;
+    String yform = null;
     boolean hasNoBG = false;
     NodeList list = el.getChildNodes();
     for (int i = 0; i < list.getLength(); i++) {
@@ -188,6 +249,22 @@ public class MyStandardChartTheme extends StandardChartTheme {
           axisLinePaint = Settings.colorFromXML(nextElement);
         else if (paramName.equals("themeID"))
           themeID = THEME.valueOf(nextElement.getTextContent());
+
+        else if (paramName.equals("showOutline"))
+          showOutline = Settings.booleanFromXML(nextElement);
+        else if (paramName.equals("xTickFormat"))
+          xform = nextElement.getTextContent();
+        else if (paramName.equals("yTickFormat"))
+          yform = nextElement.getTextContent();
+        else if (paramName.equals("useXAutoTick"))
+          useXAutoTick = Settings.booleanFromXML(nextElement);
+        else if (paramName.equals("useYAutoTick"))
+          useYAutoTick = Settings.booleanFromXML(nextElement);
+        else if (paramName.equals("xTickUnit"))
+          xTickUnit = Settings.floatFromXML(nextElement);
+        else if (paramName.equals("yTickUnit"))
+          yTickUnit = Settings.floatFromXML(nextElement);
+
         else if (paramName.equals("showXGrid"))
           showXGrid = Settings.booleanFromXML(nextElement);
         else if (paramName.equals("showYGrid"))
@@ -239,6 +316,9 @@ public class MyStandardChartTheme extends StandardChartTheme {
           setExtraLargeFont(Settings.fontFromXML(nextElement));
       }
     }
+
+    setxTickFormat(xform, xTickUnit);
+    setyTickFormat(yform, yTickUnit);
   }
 
   public boolean isNoBackground() {
@@ -366,5 +446,83 @@ public class MyStandardChartTheme extends StandardChartTheme {
 
   public void setMasterFontColor(Color masterFontColor) {
     this.masterFontColor = masterFontColor;
+  }
+
+  public boolean isShowOutline() {
+    return showOutline;
+  }
+
+  public void setShowOutline(boolean showOutline) {
+    this.showOutline = showOutline;
+  }
+
+  public float getxTickUnit() {
+    return xTickUnit;
+  }
+
+  public void setxTickUnit(float xTickUnit) {
+    this.xTickUnit = xTickUnit;
+  }
+
+  public float getyTickUnit() {
+    return yTickUnit;
+  }
+
+  public void setyTickUnit(float yTickUnit) {
+    this.yTickUnit = yTickUnit;
+  }
+
+  public DecimalFormat getxTickFormat() {
+    return xTickFormat;
+  }
+
+  public void setxTickFormat(String f, float unit) {
+    if (f == null || f.isEmpty()) {
+      String[] s = String.valueOf(unit).replaceAll("[+-]", "").split("\\.");
+      xTickFormat = new DecimalFormat();
+      if (s.length > 1) {
+        int l = s[1].equals("0") ? 0 : s[1].length();
+        xTickFormat.setMinimumFractionDigits(l);
+        xTickFormat.setMaximumFractionDigits(l);
+      }
+      xTickFormat.setMinimumIntegerDigits(1);
+      xTickFormat.setMaximumIntegerDigits(s[0].length());
+    } else
+      this.xTickFormat = new DecimalFormat(f);
+  }
+
+  public DecimalFormat getyTickFormat() {
+    return yTickFormat;
+  }
+
+  public void setyTickFormat(String f, float unit) {
+    if (f == null || f.isEmpty()) {
+      String[] s = String.valueOf(unit).replaceAll("[+-]", "").split("\\.");
+      yTickFormat = new DecimalFormat();
+      if (s.length > 1) {
+        int l = s[1].equals("0") ? 0 : s[1].length();
+        yTickFormat.setMinimumFractionDigits(l);
+        yTickFormat.setMaximumFractionDigits(l);
+      }
+      yTickFormat.setMinimumIntegerDigits(1);
+      yTickFormat.setMaximumIntegerDigits(s[0].length());
+    } else
+      this.yTickFormat = new DecimalFormat(f);
+  }
+
+  public boolean isUseXAutoTick() {
+    return useXAutoTick;
+  }
+
+  public void setUseXAutoTick(boolean useXAutoTick) {
+    this.useXAutoTick = useXAutoTick;
+  }
+
+  public boolean isUseYAutoTick() {
+    return useYAutoTick;
+  }
+
+  public void setUseYAutoTick(boolean useYAutoTick) {
+    this.useYAutoTick = useYAutoTick;
   }
 }

@@ -45,10 +45,13 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
       String paintScaleTitle, boolean usePaintScaleTitle, Font fMaster, Color cMaster, Font fAxesT,
       Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale,
       String chartTitle, RectangleInsets psMargin, int psWidth, double psTickUnit,
-      boolean psAutoSelectTickUnit, String xAxisTitle, String yAxisTitle) {
+      boolean psAutoSelectTickUnit, String xAxisTitle, String yAxisTitle, boolean outline,
+      boolean xTick, boolean yTick, float xTickUnit, float yTickUnit, String xTickF,
+      String yTickF) {
+
     getSettTheme().setAll(antiAlias, showTitle, noBG, cBG, cPlotBG, showXGrid, showYGrid, showXAxis,
         showYAxis, fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle, chartTitle,
-        xAxisTitle, yAxisTitle);
+        xAxisTitle, yAxisTitle, outline, xTick, yTick, xTickUnit, yTickUnit, xTickF, yTickF);
     getSettScaleInPlot().setAll(showScale, scaleUnit, scaleFactor, scaleValue, scaleXPos, scaleYPos,
         fScale, cScale);
 
