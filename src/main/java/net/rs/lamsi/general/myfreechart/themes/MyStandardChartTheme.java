@@ -130,7 +130,7 @@ public class MyStandardChartTheme extends StandardChartTheme {
       chart.getLegend().setBackgroundPaint(this.getChartBackgroundPaint());
 
     //
-    chart.setAntiAlias(isAntiAliased());
+    chart.setTextAntiAlias(isAntiAliased());
     if (chart.getTitle() != null)
       chart.getTitle().setVisible(isShowTitle());
     chart.getPlot().setBackgroundAlpha(isNoBackground() ? 0 : 1);

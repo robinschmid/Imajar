@@ -81,6 +81,7 @@ public class EImage2DChartPanel extends EChartPanel {
     this.img = img;
     addExtraExportMenu(graphicsExportMenu, dataExportMenu);
     ChartLogics.makeChartResizable(this);
+    chart.setAntiAlias(false);
   }
 
   @Override
