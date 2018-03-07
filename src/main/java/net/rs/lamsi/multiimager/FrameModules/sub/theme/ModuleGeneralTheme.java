@@ -464,8 +464,8 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
 
       DecimalFormat fx = t.getxTickFormat();
       DecimalFormat fy = t.getyTickFormat();
-      getTxtXTickUnit().setText(fx != null ? fx.toPattern() : "");
-      getTxtYTickUnit().setText(fy != null ? fy.toPattern() : "");
+      getTxtXTickFormat().setText(fx != null ? fx.toPattern() : "");
+      getTxtYTickFormat().setText(fy != null ? fy.toPattern() : "");
 
       // chart title
       getTxtChartTitle().setText(st.getChartTitle());

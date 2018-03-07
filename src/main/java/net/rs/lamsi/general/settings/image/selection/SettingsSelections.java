@@ -50,6 +50,9 @@ public class SettingsSelections extends Settings implements Serializable,
   // for quantified images to register value processing changes
   protected int regressionVersionID = 1;
 
+  // use alpha map for exclusions
+  protected boolean alphaMapExclusionActive = false;
+
   // use blank reduction?
   protected boolean blankActive = false;
 
@@ -63,6 +66,8 @@ public class SettingsSelections extends Settings implements Serializable,
     updateRegression = true;
     lastProcessingChangeTime = -1;
     regressionVersionID = 1;
+    alphaMapExclusionActive = false;
+    blankActive = false;
   }
 
   // ##########################################################
@@ -842,6 +847,8 @@ public class SettingsSelections extends Settings implements Serializable,
         return false;
       if (this.getSelections().size() != that.getSelections().size())
         return false;
+      if (this.isAlphaMapExclusionActive() != that.isAlphaMapExclusionActive())
+        return false;
 
       for (int i = 0; i < selections.size(); i++)
         selections.get(i).equals(that.getSelections().get(i));
@@ -905,6 +912,15 @@ public class SettingsSelections extends Settings implements Serializable,
       sel.updateStatistics();
     }
   }
+
+  public boolean isAlphaMapExclusionActive() {
+    return alphaMapExclusionActive;
+  }
+
+  public void setAlphaMapExclusionActive(boolean alphaMapExclusionActive) {
+    this.alphaMapExclusionActive = alphaMapExclusionActive;
+  }
+
 }
 
 

@@ -4,6 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.interf.GroupSettings;
@@ -73,6 +74,20 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
       }
     }
   }
+
+
+  /**
+   * 
+   * @param img
+   * @return
+   */
+  public boolean checkDimensions(Image2D img) {
+    if (map == null || map.length == 0)
+      return false;
+    return img.getMaxLinesCount() == map.length && img.getMaxLineLength() == map[0].length;
+  }
+
+
 
   public boolean isActive() {
     return isActive;

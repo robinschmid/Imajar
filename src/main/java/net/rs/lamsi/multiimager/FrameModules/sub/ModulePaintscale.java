@@ -35,6 +35,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.basics.multislider.JMultiRangeSlider;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -53,7 +54,8 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
-public class ModulePaintscale extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
+public class ModulePaintscale
+    extends Collectable2DSettingsModule<SettingsPaintScale, Collectable2D> {
   // ################################################################################################
   // MY STUFF
 

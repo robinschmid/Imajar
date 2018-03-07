@@ -11,6 +11,7 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jfree.chart.renderer.PaintScale;
+import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
@@ -18,6 +19,7 @@ import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.PaintScaleDataProvider;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
 import net.rs.lamsi.general.settings.Settings;
@@ -31,6 +33,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -42,7 +45,8 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 // XY raw data!
 // have to be multiplied with velocity and spot size
-public class Image2D extends Collectable2D<SettingsImage2D> implements Serializable {
+public class Image2D extends Collectable2D<SettingsImage2D>
+    implements Serializable, PaintScaleDataProvider {
   // do not change the version!
   private static final long serialVersionUID = 1L;
 
@@ -50,12 +54,6 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
   // Parent image with master settings
   protected Image2D parent;
 
-  // image has nothing to do with quantifier class! so dont use a listener for data processing
-  // changed events TODO
-  protected ArrayList<IntensityProcessingChangedListener> listenerProcessingChanged =
-      new ArrayList<IntensityProcessingChangedListener>();
-  // intensityProcessingChanged? save lastIProcChangeTime and compare with one from quantifier class
-  protected int lastIProcChangeTime = 1;
 
   // ############################################################
   // Settings
@@ -68,6 +66,12 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
   // index of image in data set: (multidimensional data set)
   protected int index = 0;
 
+  // image has nothing to do with quantifier class! so dont use a listener for data processing
+  // changed events TODO
+  protected ArrayList<IntensityProcessingChangedListener> listenerProcessingChanged =
+      new ArrayList<IntensityProcessingChangedListener>();
+  // intensityProcessingChanged? save lastIProcChangeTime and compare with one from quantifier class
+  protected int lastIProcChangeTime = 1;
   // are getting calculated only once or after processing changed
   // max and min z (intensity)
   protected double averageIProcessed = -1;
@@ -237,6 +241,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
       if (sel != null) {
         i = sel.calcIntensity(this, l, dp, i);
       }
+
       // apply IS
       SettingsImage2DQuantifierIS isq = settings.getInternalQuantifierIS();
       if (isq != null) {
@@ -1703,13 +1708,13 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
 
 
   /**
-   * intensity range (max-min)
+   * [min, max]
    * 
    * @param onlySelected
    * @return
    */
-  public double getIRange(boolean onlySelected) {
-    return this.getMaxIntensity(onlySelected) - this.getMinIntensity(onlySelected);
+  public Range getIRange(boolean onlySelected) {
+    return new Range(this.getMinIntensity(onlySelected), this.getMaxIntensity(onlySelected));
   }
 
   /**
@@ -1718,7 +1723,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    *         result=100)
    */
   public double getIPercentage(double intensity, boolean onlySelected) {
-    return (intensity / getIRange(onlySelected) * 100.0);
+    Range r = getIRange(onlySelected);
+    return ((intensity - r.getLowerBound()) / r.getLength() * 100.0);
   }
 
   /**
@@ -1728,7 +1734,8 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
    * @return value /100 * intensityRange
    */
   public double getIAbs(double value, boolean onlySelected) {
-    return value / 100.0 * getIRange(onlySelected);
+    Range r = getIRange(onlySelected);
+    return value / 100.0 * r.getLength() + r.getLowerBound();
   }
 
   /**
@@ -1740,7 +1747,7 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
     // sort all z values
     double[] z = null;
     if (!onlySelected)
-      toIArray(raw);
+      z = toIArray(raw);
     else
       z = getSelectedDataAsArray(raw, true);
     Arrays.sort(z);
@@ -2264,8 +2271,27 @@ public class Image2D extends Collectable2D<SettingsImage2D> implements Serializa
     if (!isInBounds(l, dp))
       return true;
 
-    // no exculsion rects?
     SettingsSelections sel = settings.getSettSelections();
+
+    // use alpha map as exclusion?
+    if (sel.isAlphaMapExclusionActive()) {
+      // check alpha map
+      if (getImageGroup() != null) {
+        SettingsAlphaMap a = getImageGroup().getSettAlphaMap();
+        if (a != null && a.isActive()) {
+          // same dimensions?
+          if (a.checkDimensions(this)) {
+            Boolean b = a.getMapValue(l, dp);
+            // is excluded in alphamap:
+            if (b == null || b == false)
+              return true;
+          } else
+            a.setActive(false);
+        }
+      }
+    }
+
+    // no exclusion rects?
     if (!sel.hasExclusions())
       return false;
 
