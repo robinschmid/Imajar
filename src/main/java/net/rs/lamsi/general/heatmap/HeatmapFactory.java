@@ -30,7 +30,7 @@ import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer2;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
-import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.Image2DDataset;
+import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralCollecable2D;
@@ -41,6 +41,8 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.Valu
 import net.rs.lamsi.general.settings.image.visualisation.paintscales.SingleColorPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 
 
@@ -120,7 +122,7 @@ public class HeatmapFactory {
 
   private static Heatmap generateHeatmapFromSPImage(SingleParticleImage image) throws Exception {
     // Heatmap erzeugen
-    Heatmap h = createSPChart(image, createDataset(image));
+    Heatmap h = createSPChart(image);
     // TODO WHY?
 
     image.getSettings().applyToHeatMap(h);
@@ -189,7 +191,7 @@ public class HeatmapFactory {
   private static IXYZDataset createDataset(SingleParticleImage image) {
     double[][] dat = null;
     // get matrices
-    dat = image.toXYCountsArray();
+    dat = image.updateFilteredDataCountsArray();
     // return dataset
     return createDataset(image.getSettings().getSettImage().getTitle(), dat);
   }
@@ -476,14 +478,15 @@ public class HeatmapFactory {
   private static Heatmap createImage2DChart(final Image2D img, SettingsPaintScale settings,
       SettingsGeneralImage settImage, String xTitle, String yTitle) throws Exception {
 
-    Image2DDataset dataset = new Image2DDataset(img);
+    DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
     dataset.applyPostProcessing();
     // absolute min max
     double zmin = img.getMinIntensity(false);
     double zmax = img.getMaxIntensity(false);
     // no data!
-    if (zmin == zmax || zmax == 0) {
-      throw new Exception("Every data point has the same intensity of " + zmin);
+    if (zmin == zmax) {
+      ImageEditorWindow.log("Every data point has the same intensity of " + zmin, LOG.ERROR);
+      return null;
     } else {
       SettingsThemesContainer setTheme = img.getSettTheme();
       SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
@@ -597,21 +600,23 @@ public class HeatmapFactory {
   }
 
   // creates jfreechart plot for heatmap
-  private static Heatmap createSPChart(SingleParticleImage img, IXYZDataset dataset)
-      throws Exception {
-    return createSPChart(img, SettingsPaintScale.createStandardSettings(),
+  private static Heatmap createSPChart(SingleParticleImage img) throws Exception {
+    return createSPChart(img, img.getPaintScaleSettings(),
         (SettingsGeneralCollecable2D) img.getSettingsByClass(SettingsGeneralCollecable2D.class),
-        dataset, "x", "y");
+        "x", "y");
   }
 
   // erstellt ein JFreeChart Plot der heatmap
   // bwidth und bheight (BlockWidth) sind die Maximalwerte
   private static Heatmap createSPChart(final SingleParticleImage img, SettingsPaintScale settings,
-      SettingsGeneralCollecable2D settImage, IXYZDataset dataset, String xTitle, String yTitle)
-      throws Exception {
-    // this min max values in array
-    double zmin = dataset.getZMin();
-    double zmax = dataset.getZMax();
+      SettingsGeneralCollecable2D settImage, String xTitle, String yTitle) throws Exception {
+
+    DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
+    dataset.applyPostProcessing();
+    // absolute min max
+    double zmin = img.getMinIntensity(false);
+    double zmax = img.getMaxIntensity(false);
+
     // no data!
     SettingsThemesContainer setTheme = img.getSettTheme();
     SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
@@ -626,7 +631,7 @@ public class HeatmapFactory {
     yAxis.setLowerMargin(0.0);
     yAxis.setUpperMargin(0.0);
     // XYBlockRenderer
-    ImageRenderer renderer = new ImageRenderer();
+    ImageRenderer2 renderer = new ImageRenderer2(img);
 
     // creation of scale
     // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001

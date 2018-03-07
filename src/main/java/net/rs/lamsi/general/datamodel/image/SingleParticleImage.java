@@ -1,7 +1,8 @@
 package net.rs.lamsi.general.datamodel.image;
 
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.stream.DoubleStream;
 import javax.swing.Icon;
 import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
@@ -44,6 +45,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   public SingleParticleImage(Image2D img, SettingsSPImage sett) {
     super(sett);
     this.img = img;
+    sett.setImg(img);
   }
 
   /**
@@ -124,7 +126,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * 
    * @return [lines][x,y,z] with z as number of particles
    */
-  public double[][] toXYCountsArray() {
+  public double[][] updateFilteredDataCountsArray() {
     SingleParticleSettings sett = getSettings().getSettSingleParticle();
     return toXYCountsArray(sett);
   }
@@ -135,136 +137,35 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * @return [lines][x,y,z] with z as number of particles
    */
   public double[][] toXYCountsArray(SingleParticleSettings sett) {
-    XYIDataMatrix matrix = img.toXYIDataMatrix(false, true);
-    float[][] x = matrix.getX();
-    float[][] y = matrix.getY();
-    double[][] z = matrix.getI();
     ImageEditorWindow.log("Start SPI counter: ", LOG.MESSAGE);
 
     DebugStopWatch timer = new DebugStopWatch();
-
-    filteredData = new double[z.length][];
-    for (int i = 0; i < z.length; i++)
-      filteredData[i] = new double[z[i].length];
-
-    for (int i = 0; i < z.length; i++) {
-      for (int k = 0; k < z[i].length; k++) {
-        filteredData[i][k] = z[i][k];
-      }
-    }
-
+    filteredData = img.toIMatrixOfSelected(false);
     // filter split pixel eventstimer
-    timer.stopAndLOG("XYIDataMatrix from img");
+    timer.stopAndLOG("toIMatrixOfSelected from img");
     ImageEditorWindow.log("Start SPI counter: Data filtering", LOG.MESSAGE);
     filteredData = filterOutSplitPixelEvents(sett, filteredData, img.isRotated());
     timer.stopAndLOG("filter split particle events");
 
-    int numberOfPixel = sett.getNumberOfPixel();
-    int ipixel = 0;
     Range window = sett.getWindow();
     if (window == null)
       window = new Range(0, 0);
 
-    LinkedList<Float> fx = new LinkedList<Float>();
-    LinkedList<Float> fy = new LinkedList<Float>();
-    LinkedList<Double> fz = new LinkedList<Double>();
-
-    double counter = 0;
-
+    // count events
     ImageEditorWindow.log("Start SPI counter: Count particles", LOG.MESSAGE);
-    // count particles in numberOfPixel pixel and in window
-    // TODO line-wise?
-    if (!img.isRotated()) {
-      for (int l = 0; l < filteredData.length; l++) {
-        float cx = -1;
-        float cy = -1;
-        ipixel = 0;
-        counter = 0;
-        for (int dp = 0; dp < filteredData[l].length; dp++) {
-          // init with first dp of line
-          if (cx == -1) {
-            cx = x[l][dp];
-            cy = y[l][dp];
-          }
-
-          // for all dp
-          if (cx != -1) {
-            ipixel++;
-            // in window?
-            if (!Double.isNaN(filteredData[l][dp]) && window.contains(filteredData[l][dp])) {
-              counter++;
-            }
-            // enough pixel?
-            if (ipixel >= numberOfPixel) {
-              // add
-              fx.add(cx);
-              fy.add(cy);
-              fz.add(counter);
-              // reset
-              ipixel = 0;
-              cx = -1;
-              cy = -1;
-              counter = 0;
-            }
-          }
-        }
-      }
-    } else {
-      int max = 0;
-      for (int l = 0; l < filteredData.length; l++)
-        if (filteredData.length > max)
-          max = filteredData.length;
-
-      for (int l = 0; l < max; l++) {
-        float cx = -1;
-        float cy = -1;
-        ipixel = 0;
-        counter = 0;
-        for (int dp = 0; dp < filteredData.length; dp++) {
-          if (l < filteredData[dp].length) {
-            // init with first dp of line
-            if (cx == -1) {
-              cx = x[dp][l];
-              cy = y[dp][l];
-            }
-            // for all dp
-            if (cx != -1) {
-              ipixel++;
-              // in window?
-              if (!Double.isNaN(filteredData[dp][l]) && window.contains(filteredData[dp][l])) {
-                counter++;
-              }
-              // enough pixel?
-              if (ipixel >= numberOfPixel) {
-                // add
-                fx.add(cx);
-                fy.add(cy);
-                fz.add(counter);
-                // reset
-                ipixel = 0;
-                cx = -1;
-                cy = -1;
-                counter = 0;
-              }
-            }
-          }
+    for (int i = 0; i < filteredData.length; i++) {
+      for (int j = 0; j < filteredData[i].length; j++) {
+        if (!Double.isNaN(filteredData[i][j])) {
+          if (window.contains(filteredData[i][j]))
+            filteredData[i][j] = 1;
+          else
+            filteredData[i][j] = 0;
         }
       }
     }
-    //
-    timer.stopAndLOG("counted particle events of " + fx.size() + " pixels");
 
     ImageEditorWindow.log("Start SPI counter: DONE", LOG.MESSAGE);
-    ImageEditorWindow.log("Start SPI counter: Tranfer to array", LOG.MESSAGE);
-    // transform to XYZ array [lines][x,y,z]
-    double[][] arr = new double[3][fx.size()];
-    for (int i = 0; i < fx.size(); i++) {
-      arr[0][i] = fx.get(i);
-      arr[1][i] = fy.get(i);
-      arr[2][i] = fz.get(i);
-    }
-    timer.stopAndLOG("transfer to array finished");
-    return arr;
+    return filteredData;
   }
 
   /**
@@ -578,62 +479,89 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   @Override
   public float getX(boolean raw, int l, int dp) {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getX(false, l, dp);
   }
 
   @Override
   public float getY(boolean raw, int l, int dp) {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getY(false, l, dp);
   }
 
   @Override
   public double getI(boolean raw, int l, int dp) {
-    // TODO Auto-generated method stub
-    return 0;
+    if (raw)
+      return img.getI(false, l, dp);
+    else {
+      if (filteredData == null)
+        updateFilteredDataCountsArray();
+      return isInBounds(l, dp) ? filteredData[l][dp] : Double.NaN;
+    }
   }
 
   @Override
   public int getMinLineLength() {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getMinLineLength();
   }
 
   @Override
   public int getMaxLineLength() {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getMaxLineLength();
   }
 
   @Override
   public int getMinLinesCount() {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getMinLinesCount();
   }
 
   @Override
   public int getMaxLinesCount() {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getMaxLinesCount();
   }
 
   @Override
   public int getLineLength(int l) {
-    // TODO Auto-generated method stub
-    return 0;
+    return img.getLineLength(l);
   }
 
   @Override
   public int getLineCount(int dp) {
-    // TODO Auto-generated method stub
-    return 0;
+    return getLineCount(dp);
   }
 
   @Override
   public double[] toIArray(boolean raw, boolean onlySelected, boolean excluded) {
-    // TODO Auto-generated method stub
-    return null;
+    if (raw)
+      return img.toIArray(false, onlySelected, excluded);
+    else {
+      if (filteredData == null)
+        updateFilteredDataCountsArray();
+      return Arrays.stream(filteredData).flatMapToDouble(DoubleStream::of).toArray();
+    }
   }
 
+  /**
+   * generate XYI matrices [line][dp]
+   * 
+   * @param raw
+   * @param useSettings rotation and imaging mode
+   * @return
+   */
+  @Override
+  public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
+    XYIDataMatrix d = img.toXYIDataMatrix(false, useSettings);
+    if (raw) {
+      return d;
+    } else {
+      if (filteredData == null)
+        updateFilteredDataCountsArray();
+      d.setI(filteredData);
+      return d;
+    }
+  }
+
+
+  @Override
+  public int getTotalDataPoints() {
+    return img.getTotalDataPoints();
+  }
 }

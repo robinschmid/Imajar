@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.jfree.data.Range;
+import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
@@ -35,11 +36,43 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
   }
 
 
+  /**
+   * total number of data points
+   * 
+   * @return
+   */
+  public abstract int getTotalDataPoints();
+
+  /**
+   * width of the image
+   * 
+   * @param raw
+   * @return
+   */
+  public abstract float getWidth();
+
+  /**
+   * height of the image
+   * 
+   * @param raw
+   * @return
+   */
+  public abstract float getHeight();
+
   public abstract float getX(boolean raw, int l, int dp);
 
   public abstract float getY(boolean raw, int l, int dp);
 
   public abstract double getI(boolean raw, int l, int dp);
+
+  /**
+   * generate XYI matrices [line][dp]
+   * 
+   * @param raw
+   * @param useSettings rotation and imaging mode
+   * @return
+   */
+  public abstract XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings);
 
   /**
    * minimum line length in regards to rotation columns of the image
@@ -245,20 +278,10 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
     if (onlySelected) {
       if (Double.isNaN(minZSelected))
         updateDataParameters();
-
-      if (minZSelected == Double.POSITIVE_INFINITY) {
-        minZSelected = 0;
-        return Double.NaN;
-      }
       return minZSelected;
     } else {
       if (Double.isNaN(minZ))
         updateDataParameters();
-
-      if (minZ == Double.POSITIVE_INFINITY) {
-        minZ = 0;
-        return Double.NaN;
-      }
       return minZ;
     }
   }
@@ -528,4 +551,5 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
   public void removeIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
     listenerProcessingChanged.remove(li);
   }
+
 }

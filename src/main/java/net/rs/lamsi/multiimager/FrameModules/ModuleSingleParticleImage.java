@@ -11,6 +11,7 @@ import net.rs.lamsi.general.framework.modules.MainSettingsModuleContainer;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneralCollectable2D;
+import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSPImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
@@ -22,6 +23,7 @@ public class ModuleSingleParticleImage
 
   private ModuleGeneralCollectable2D moduleGeneral;
   private ModuleZoom moduleZoom;
+  private ModulePaintscale modulePaintScale;
   private ModuleThemes moduleThemes;
   private ModuleBackgroundImg moduleBG;
   private ModuleSPImage moduleSPImage;
@@ -70,6 +72,10 @@ public class ModuleSingleParticleImage
     moduleZoom = new ModuleZoom();
     addModule(moduleZoom);
 
+    modulePaintScale = new ModulePaintscale();
+    addModule(modulePaintScale);
+
+
     moduleBG = new ModuleBackgroundImg();
     addModule(moduleBG);
 
@@ -100,5 +106,9 @@ public class ModuleSingleParticleImage
 
   public ModuleGeneralCollectable2D getModuleGeneral() {
     return moduleGeneral;
+  }
+
+  public ModulePaintscale getModulePaintScale() {
+    return modulePaintScale;
   }
 }

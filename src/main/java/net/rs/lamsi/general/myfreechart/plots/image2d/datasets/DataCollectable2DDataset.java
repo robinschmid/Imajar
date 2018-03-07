@@ -5,34 +5,33 @@ import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
 import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYZDataset;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
-import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 
 /**
  * getX getY and getZ are deprecated
  *
  */
-public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, RangeInfo {
+public class DataCollectable2DDataset extends AbstractXYZDataset implements DomainInfo, RangeInfo {
   private static final long serialVersionUID = 1L;
 
-  private Image2D img;
+  private DataCollectable2D img;
   // post processed data. Not null if post processing was applied.
   // otherwise use img as data source
   protected XYIDataMatrix data;
   protected List<PostProcessingOp> lastOp;
   protected int linelength = 0;
 
-  public Image2DDataset(Image2D img) {
+  public DataCollectable2DDataset(DataCollectable2D img) {
     super();
     this.img = img;
   }
 
   @Override
   public int getItemCount(int series) {
-    return data == null ? img.getData().getMaxDP() * img.getData().getLinesCount()
-        : linelength * data.lineCount();
+    return data == null ? img.getTotalDataPoints() : linelength * data.lineCount();
   }
 
   /**
@@ -84,7 +83,7 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
     return img.getTitle();
   }
 
-  public Image2D getImage() {
+  public DataCollectable2D getImage() {
     return img;
   }
 
@@ -95,7 +94,7 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
 
   @Override
   public double getDomainUpperBound(boolean includeInterval) {
-    return img.getWidth(false);
+    return img.getWidth();
   }
 
   @Override
@@ -110,7 +109,7 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
 
   @Override
   public double getRangeUpperBound(boolean includeInterval) {
-    return img.getHeight(false);
+    return img.getHeight();
   }
 
   @Override
@@ -120,54 +119,57 @@ public class Image2DDataset extends AbstractXYZDataset implements DomainInfo, Ra
 
   // interpolation and gaussian blur
   public boolean applyPostProcessing() {
-    SettingsGeneralImage sett = img.getSettings().getSettImage();
-    List<PostProcessingOp> op = sett.getPostProcessingOp();
+    // get list of post processing operations from settings
+    if (img.getSettings() instanceof PostProcessingOpProvider) {
+      List<PostProcessingOp> op =
+          ((PostProcessingOpProvider) img.getSettings()).getPostProcessingOp();
 
-    // op is different to last op
-    boolean same = lastOp != null && op.size() == lastOp.size();
+      // op is different to last op
+      boolean same = lastOp != null && op.size() == lastOp.size();
 
-    if (same && op.size() > 0) {
-      same = op.stream().allMatch(o -> lastOp.stream().anyMatch(last -> o.equals(last)));
-    }
+      if (same && op.size() > 0) {
+        same = op.stream().allMatch(o -> lastOp.stream().anyMatch(last -> o.equals(last)));
+      }
 
-    if (op.size() > 0 && !same) {
+      if (op.size() > 0 && !same) {
 
-      data = img.toXYIDataMatrix(false, true);
+        data = img.toXYIDataMatrix(false, true);
 
-      double[][] z = data.getI();
-      float[][] y = data.getY();
-      float[][] x = data.getX();
+        double[][] z = data.getI();
+        float[][] y = data.getY();
+        float[][] x = data.getX();
 
-      double[][] tz = null;
-      float[][] tx = null, ty = null;
+        double[][] tz = null;
+        float[][] tx = null, ty = null;
 
-      for (PostProcessingOp o : op) {
-        // intensity
-        tz = o.processItensity(tz == null ? z : tz);
-        // xy
-        if (o.isProcessingXY()) {
-          tx = o.processXY(tx == null ? x : tx);
-          ty = o.processXY(ty == null ? y : ty);
+        for (PostProcessingOp o : op) {
+          // intensity
+          tz = o.processItensity(tz == null ? z : tz);
+          // xy
+          if (o.isProcessingXY()) {
+            tx = o.processXY(tx == null ? x : tx);
+            ty = o.processXY(ty == null ? y : ty);
+          }
         }
+
+        // error
+        if (tz == null)
+          return false;
+
+        data.setI(tz);
+        if (tx != null) {
+          data.setX(tx);
+          data.setY(ty);
+        }
+
+        linelength = data.getMaximumLineLength();
+
+        lastOp = op;
+        return true;
+      } else {
+        data = null;
+        linelength = img.getMaxLineLength();
       }
-
-      // error
-      if (tz == null)
-        return false;
-
-      data.setI(tz);
-      if (tx != null) {
-        data.setX(tx);
-        data.setY(ty);
-      }
-
-      linelength = data.getMaximumLineLength();
-
-      lastOp = op;
-      return true;
-    } else {
-      data = null;
-      linelength = img.getMaxLineLength();
     }
     return false;
   }

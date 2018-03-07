@@ -1,9 +1,12 @@
 package net.rs.lamsi.general.settings.image;
 
+import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
+import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.filter.SettingsCropAndShift;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
@@ -20,7 +23,8 @@ import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
-public class SettingsImage2D extends SettingsContainerCollectable2D implements Image2DSett {
+public class SettingsImage2D extends SettingsContainerCollectable2D
+    implements Image2DSett, PostProcessingOpProvider {
   // do not change the version!
   private static final long serialVersionUID = 1L;
 
@@ -172,4 +176,10 @@ public class SettingsImage2D extends SettingsContainerCollectable2D implements I
 
   @Override
   public void loadValuesFromXML(Element el, Document doc) {}
+
+
+  @Override
+  public List<PostProcessingOp> getPostProcessingOp() {
+    return getSettImage().getPostProcessingOp();
+  }
 }

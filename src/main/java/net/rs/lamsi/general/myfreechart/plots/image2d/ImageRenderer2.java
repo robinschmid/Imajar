@@ -23,9 +23,8 @@ import org.jfree.chart.util.PublicCloneable;
 import org.jfree.data.Range;
 import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.XYDataset;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
-import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.Image2DDataset;
+import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
@@ -69,7 +68,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
    * 
    * @param img2
    */
-  public ImageRenderer2(Image2D img) {
+  public ImageRenderer2(DataCollectable2D img) {
     setImage(img);
     updateOffsets();
     this.paintScale = new LookupPaintScale();
@@ -352,9 +351,9 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
 
-    if (dataset instanceof Image2DDataset) {
-      Image2DDataset data = (Image2DDataset) dataset;
-      Image2D img = data.getImage();
+    if (dataset instanceof DataCollectable2DDataset) {
+      DataCollectable2DDataset data = (DataCollectable2DDataset) dataset;
+      DataCollectable2D img = data.getImage();
       setImage(img);
 
       // draw line per line
@@ -379,8 +378,8 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
-      Image2DDataset data, Image2D img, int item, int line, int dp, CrosshairState crosshairState,
-      int pass) {
+      DataCollectable2DDataset data, DataCollectable2D img, int item, int line, int dp,
+      CrosshairState crosshairState, int pass) {
 
     // try to get intensity - NaN == no data point
     double z = data.getZ(false, line, dp);

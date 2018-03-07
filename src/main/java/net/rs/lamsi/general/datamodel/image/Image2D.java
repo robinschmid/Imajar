@@ -851,6 +851,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @param useSettings rotation and imaging mode
    * @return
    */
+  @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
     if (useSettings) {
       SettingsGeneralImage sett = settings.getSettImage();
@@ -1552,11 +1553,33 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @param raw
    * @return
    */
+  @Override
+  public float getWidth() {
+    return getWidth(false);
+  }
+
+  /**
+   * width of the image
+   * 
+   * @param raw
+   * @return
+   */
   public float getWidth(boolean raw) {
     if (!isRotated())
       return data.getWidthX() * xFactor(raw);
     else
       return getYRaw(raw, data.getLinesCount());
+  }
+
+  /**
+   * height of the image
+   * 
+   * @param raw
+   * @return
+   */
+  @Override
+  public float getHeight() {
+    return getHeight(false);
   }
 
   /**
@@ -2038,6 +2061,11 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   // a name for lists
   public String toListName() {
     return settings.getSettImage().toListName();
+  }
+
+  @Override
+  public int getTotalDataPoints() {
+    return data.getMaxDP() * data.getLinesCount();
   }
 
 }
