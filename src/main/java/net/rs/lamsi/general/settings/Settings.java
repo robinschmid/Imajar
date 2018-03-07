@@ -169,7 +169,7 @@ public abstract class Settings implements Serializable {
    * @return
    * @throws IOException
    */
-  public File saveToXML(Component parent) throws IOException {
+  public File saveToXML(Component parent) throws Exception {
     // Open new FC
     // create Path
     File path = new File(FileAndPathUtil.getPathOfJar(), this.getPathSettingsFile());
@@ -197,7 +197,7 @@ public abstract class Settings implements Serializable {
    * @param file
    * @throws IOException
    */
-  public void saveToXML(File file) throws IOException {
+  public void saveToXML(File file) throws Exception {
     FileAndPathUtil.createDirectory(file.getParentFile());
     saveToXML(new FileOutputStream(file));
   }
@@ -208,31 +208,27 @@ public abstract class Settings implements Serializable {
    * @param file
    * @throws IOException
    */
-  public void saveToXML(OutputStream fos) throws IOException {
-    try {
-      DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+  public void saveToXML(OutputStream fos) throws Exception {
+    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-      Document configuration = dBuilder.newDocument();
-      Element configRoot = configuration.createElement("settings");
-      configuration.appendChild(configRoot);
+    Document configuration = dBuilder.newDocument();
+    Element configRoot = configuration.createElement("settings");
+    configuration.appendChild(configRoot);
 
-      // creates a new element for this settings class and appends Values
-      appendSettingsToXML(configRoot, configuration);
+    // creates a new element for this settings class and appends Values
+    appendSettingsToXML(configRoot, configuration);
 
-      TransformerFactory transfac = TransformerFactory.newInstance();
-      Transformer transformer = transfac.newTransformer();
-      transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-      transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+    TransformerFactory transfac = TransformerFactory.newInstance();
+    Transformer transformer = transfac.newTransformer();
+    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
-      StreamResult result = new StreamResult(fos);
-      DOMSource source = new DOMSource(configuration);
-      transformer.transform(source, result);
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
+    StreamResult result = new StreamResult(fos);
+    DOMSource source = new DOMSource(configuration);
+    transformer.transform(source, result);
   }
 
 

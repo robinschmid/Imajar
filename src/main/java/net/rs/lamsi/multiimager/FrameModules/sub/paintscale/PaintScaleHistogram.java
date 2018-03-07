@@ -11,7 +11,7 @@ import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.TextAnchor;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
@@ -21,7 +21,7 @@ import net.rs.lamsi.utils.threads.DelayedProgressUpdateTask;
 
 public class PaintScaleHistogram extends JPanel {
 
-  private Image2D lastImg;
+  private DataCollectable2D lastImg;
   private SettingsPaintScale lastPS = null;
   private EChartPanel chart = null;
 
@@ -38,7 +38,7 @@ public class PaintScaleHistogram extends JPanel {
     this.setLayout(new BorderLayout());
   }
 
-  public Image2D getImg() {
+  public DataCollectable2D getImg() {
     return lastImg;
   }
 
@@ -47,7 +47,7 @@ public class PaintScaleHistogram extends JPanel {
    * 
    * @param img
    */
-  public void setImg(Image2D img) {
+  public void setImg(DataCollectable2D img) {
     if (this.lastImg != img) {
       isUptodate = false;
       // stop old task
@@ -79,7 +79,7 @@ public class PaintScaleHistogram extends JPanel {
     task = new DelayedProgressUpdateTask(1, 1000) {
       @Override
       protected Boolean doInBackground2() throws Exception {
-        Image2D img = lastImg;
+        DataCollectable2D img = lastImg;
         if (img != null) {
           try {
             ImageEditorWindow.log("HISTOGRAM is updating now", LOG.DEBUG);
@@ -91,8 +91,8 @@ public class PaintScaleHistogram extends JPanel {
                 isUptodate = false;
 
               if (!isUptodate) {
-                double[] dat1 = img.toIArray(false);
-                double[] dat2 = img.getIInIRange(ps);
+                double[] dat1 = img.toIArray(false, false);
+                double[] dat2 = img.getIInIRange(ps, false);
                 if (dat2.length > 2) {
                   int bins2 = (int) Math.sqrt(dat2.length) + 40;
                   double binwidth2 = (max - min) / bins2;

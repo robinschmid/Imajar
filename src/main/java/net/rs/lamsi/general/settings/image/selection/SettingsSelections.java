@@ -15,6 +15,7 @@ import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
@@ -819,7 +820,7 @@ public class SettingsSelections extends Settings implements Serializable,
   }
 
   @Override
-  public void fireIntensityProcessingChanged(Image2D img) {
+  public void fireIntensityProcessingChanged(DataCollectable2D img) {
     // update if processing of current image has changed
     // e.g. after internal standard was applied or anything else
     if (lastProcessingChangeTime != img.getLastIProcChangeTime()) {

@@ -431,7 +431,7 @@ public class DataExportUtil {
 
         addProgressStep(1.0);
 
-        double[] dataSelected = img.getSelectedDataAsArray(sett.isExportRaw(), true);
+        double[] dataSelected = img.toIArray(sett.isExportRaw(), true, true);
         // export the data
         // writer it to txt or xlsx
         if (sett.isWritingToClipboard()) {

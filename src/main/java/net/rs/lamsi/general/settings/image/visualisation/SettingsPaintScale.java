@@ -6,7 +6,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.basics.multislider.JMultiRangeSlider;
 import net.rs.lamsi.general.settings.Settings;
 
@@ -108,7 +108,7 @@ public class SettingsPaintScale extends Settings {
    * @param img
    * @return
    */
-  public double getMinIAbs(Image2D img) {
+  public double getMinIAbs(DataCollectable2D img) {
     switch (modeMin) {
       case ABSOLUTE:
         return min;
@@ -126,7 +126,7 @@ public class SettingsPaintScale extends Settings {
    * @param img
    * @return
    */
-  public double getMinIRel(Image2D img) {
+  public double getMinIRel(DataCollectable2D img) {
     switch (modeMin) {
       case ABSOLUTE:
         return img.getIPercentage(min, usesMinMaxFromSelection);
@@ -144,7 +144,7 @@ public class SettingsPaintScale extends Settings {
    * @param img
    * @return
    */
-  public double getMaxIAbs(Image2D img) {
+  public double getMaxIAbs(DataCollectable2D img) {
     switch (modeMax) {
       case ABSOLUTE:
         return max;
@@ -162,7 +162,7 @@ public class SettingsPaintScale extends Settings {
    * @param img
    * @return
    */
-  public double getMaxIRel(Image2D img) {
+  public double getMaxIRel(DataCollectable2D img) {
     switch (modeMax) {
       case ABSOLUTE:
         return img.getIPercentage(max, usesMinMaxFromSelection);
@@ -214,7 +214,7 @@ public class SettingsPaintScale extends Settings {
   }
 
 
-  public boolean isInIRange(Image2D img, double intensity) {
+  public boolean isInIRange(DataCollectable2D img, double intensity) {
     return intensity >= getMinIAbs(img) && intensity <= getMaxIAbs(img);
   }
 

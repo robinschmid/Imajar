@@ -643,7 +643,6 @@ public class HeatmapFactory {
     renderer.setBlockWidth(img.getMaxBlockWidth());
     renderer.setBlockHeight(img.getMaxBlockHeight());
 
-
     // Plot erstellen mit daten
     XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
     plot.setBackgroundPaint(Color.lightGray);

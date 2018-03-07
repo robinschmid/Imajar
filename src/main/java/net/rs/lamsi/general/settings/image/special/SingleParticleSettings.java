@@ -45,6 +45,18 @@ public class SingleParticleSettings extends Settings {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof SingleParticleSettings))
+      return false;
+    else {
+      SingleParticleSettings that = (SingleParticleSettings) o;
+      return that.getSplitPixel() == this.getSplitPixel()
+          && Double.compare(that.getNoiseLevel(), this.getNoiseLevel()) == 0
+          && that.getWindow().equals(this.getWindow());
+    }
+  }
+
+  @Override
   public void applyToHeatMap(Heatmap heat) {}
 
   // ##########################################################

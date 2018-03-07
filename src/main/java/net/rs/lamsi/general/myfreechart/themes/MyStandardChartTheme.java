@@ -226,8 +226,10 @@ public class MyStandardChartTheme extends StandardChartTheme {
     Settings.toXML(el, doc, "cTitle", getTitlePaint());
     Settings.toXML(el, doc, "cTick", getTickLabelPaint());
 
-    Settings.toXML(el, doc, "xTickFormat", xTickFormat.toPattern());
-    Settings.toXML(el, doc, "yTickFormat", yTickFormat.toPattern());
+    if (xTickFormat != null)
+      Settings.toXML(el, doc, "xTickFormat", xTickFormat.toPattern());
+    if (yTickFormat != null)
+      Settings.toXML(el, doc, "yTickFormat", yTickFormat.toPattern());
     Settings.toXML(el, doc, "useXAutoTick", useXAutoTick);
     Settings.toXML(el, doc, "useYAutoTick", useYAutoTick);
     Settings.toXML(el, doc, "yTickUnit", yTickUnit);

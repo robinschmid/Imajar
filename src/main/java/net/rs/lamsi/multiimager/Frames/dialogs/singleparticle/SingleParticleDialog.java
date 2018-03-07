@@ -5,9 +5,9 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.DoubleFunction;
+import java.util.stream.DoubleStream;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -483,10 +483,10 @@ public class SingleParticleDialog extends JFrame {
               // create histogram
               double[] data = null;
               if (cbExcludeSmallerNoise.isSelected()) {
-                List<Double> dlist = img.getSelectedDataAsList(false, true);
-                data = dlist.stream().mapToDouble(d -> d).filter(d -> d >= noise).toArray();
+                double[] dlist = img.toIArray(false, true);
+                data = DoubleStream.of(dlist).filter(d -> d >= noise).toArray();
               } else
-                data = img.getSelectedDataAsArray(false, true);
+                data = img.toIArray(false, true);
 
               Range r = EChartFactory.getBounds(data);
 

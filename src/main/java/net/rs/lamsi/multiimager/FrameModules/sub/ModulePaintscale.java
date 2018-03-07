@@ -35,7 +35,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.basics.multislider.JMultiRangeSlider;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -55,7 +55,7 @@ import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class ModulePaintscale
-    extends Collectable2DSettingsModule<SettingsPaintScale, Collectable2D> {
+    extends Collectable2DSettingsModule<SettingsPaintScale, DataCollectable2D> {
   // ################################################################################################
   // MY STUFF
 
@@ -587,7 +587,7 @@ public class ModulePaintscale
   }
 
   @Override
-  public void setCurrentImage(Image2D img, boolean setAllToPanel) {
+  public void setCurrentImage(DataCollectable2D img, boolean setAllToPanel) {
     super.setCurrentImage(img, setAllToPanel);
     getPnHistogram().setImg(img);
   }

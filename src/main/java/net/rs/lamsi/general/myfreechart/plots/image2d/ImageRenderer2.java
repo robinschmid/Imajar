@@ -24,6 +24,7 @@ import org.jfree.data.Range;
 import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.XYDataset;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.Image2DDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
@@ -35,7 +36,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
   //
   protected SettingsAlphaMap sett;
 
-  protected Image2D img;
+  protected DataCollectable2D img;
 
 
   /**
@@ -464,7 +465,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     return getBlockHeight();
   }
 
-  public void setImage(Image2D img) {
+  public void setImage(DataCollectable2D img) {
     if (this.img != img) {
       resetSizing();
       this.img = img;

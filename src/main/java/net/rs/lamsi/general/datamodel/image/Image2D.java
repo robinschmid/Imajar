@@ -5,13 +5,11 @@ import java.awt.Paint;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jfree.chart.renderer.PaintScale;
-import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
@@ -19,13 +17,12 @@ import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.datamodel.image.interf.PaintScaleDataProvider;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
-import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
@@ -35,7 +32,6 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformati
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
@@ -45,8 +41,7 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 // XY raw data!
 // have to be multiplied with velocity and spot size
-public class Image2D extends Collectable2D<SettingsImage2D>
-    implements Serializable, PaintScaleDataProvider {
+public class Image2D extends DataCollectable2D<SettingsImage2D> implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
 
@@ -66,20 +61,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
   // index of image in data set: (multidimensional data set)
   protected int index = 0;
 
-  // image has nothing to do with quantifier class! so dont use a listener for data processing
-  // changed events TODO
-  protected ArrayList<IntensityProcessingChangedListener> listenerProcessingChanged =
-      new ArrayList<IntensityProcessingChangedListener>();
-  // intensityProcessingChanged? save lastIProcChangeTime and compare with one from quantifier class
-  protected int lastIProcChangeTime = 1;
-  // are getting calculated only once or after processing changed
-  // max and min z (intensity)
-  protected double averageIProcessed = -1;
-  protected double minZ = Double.NaN, maxZ = Double.NaN;
-  protected double minNonZeroZSelected = Double.NaN, minNonZeroZ = Double.NaN;
-  protected double minZSelected = Double.NaN, maxZSelected = Double.NaN, avgZSelected = Double.NaN;
-  protected double minZFiltered = -1;
-  protected double maxZFiltered = -1;
   // store total dp count
 
   public Image2D() {
@@ -174,6 +155,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * @param dp
    * @return
    */
+  @Override
   public float getY(boolean raw, int l, int dp) {
     return getY(raw, l, dp, settings.getSettImage().getImagingMode(),
         settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(),
@@ -200,6 +182,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * @param dp
    * @return
    */
+  @Override
   public double getI(boolean raw, int l, int dp) {
     return getI(raw, true, l, dp);
   }
@@ -343,6 +326,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * @param dp
    * @return
    */
+  @Override
   public float getX(boolean raw, int l, int dp) {
     return getX(raw, l, dp, settings.getSettImage().getImagingMode(),
         settings.getSettImage().getRotationOfData(), settings.getSettImage().isReflectHorizontal(),
@@ -523,6 +507,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return
    */
+  @Override
   public int getMinLineLength() {
     if (!isRotated()) {
       return data.getMinDP();
@@ -536,6 +521,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return
    */
+  @Override
   public int getMaxLineLength() {
     if (!isRotated()) {
       return data.getMaxDP();
@@ -549,6 +535,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return
    */
+  @Override
   public int getMinLinesCount() {
     if (!isRotated()) {
       return data.getLinesCount();
@@ -562,6 +549,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return
    */
+  @Override
   public int getMaxLinesCount() {
     if (!isRotated()) {
       return data.getLinesCount();
@@ -585,6 +573,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return
    */
+  @Override
   public int getLineLength(int l) {
     return getLineLength(l, settings.getSettImage().getRotationOfData(),
         settings.getSettImage().isReflectHorizontal());
@@ -743,25 +732,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
     //
     return new double[][] {x, y, z};
   }
-
-  /**
-   * returns all line lengths according to rotation etc
-   * 
-   * @return
-   */
-  private int[] getLineLenghts() {
-    int rotation = settings.getSettImage().getRotationOfData();
-    int[] length = new int[data.getLinesCount()];
-    if ((rotation == 90 || rotation == 270 || rotation == -90))
-      // all line length
-      for (int i = 0; i < data.getLinesCount(); i++)
-        length[i] = getLineCount(i);
-    else
-      for (int i = 0; i < data.getLinesCount(); i++)
-        length[i] = getLineLength(i);
-    return length;
-  }
-
 
 
   /**
@@ -1212,30 +1182,24 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return float intensity Array
    */
-  public double[] toIArray(boolean raw, boolean onlySelected) {
+  @Override
+  public double[] toIArray(boolean raw, boolean onlySelected, boolean excluded) {
     if (onlySelected) {
-      // calc count of points
-      ArrayList<Double> z = new ArrayList<Double>();
-      // for lines (that are actually datapoints)
+      double[] datasel = new double[getSelectedDPCount(true)];
+      int counter = 0;
       int maxlines = getMaxLinesCount();
       int maxdp = getMaxLineLength();
-      int c = 0;
       for (int l = 0; l < maxlines; l++) {
         for (int dp = 0; dp < maxdp; dp++) {
-          // for dp ( that are actually lines)
           double tmp;
-          if (!isExcludedDP(l, dp) && isSelectedDP(l, dp)
+          if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)
               && !Double.isNaN(tmp = getI(raw, l, dp))) {
-            z.add(tmp);
+            datasel[counter] = tmp;
+            counter++;
           }
         }
       }
-      // convert
-      double[] zz = new double[z.size()];
-      for (int i = 0; i < z.size(); i++)
-        zz[i] = z.get(i);
-
-      return zz;
+      return datasel;
     } else {
       return toIArray(raw);
     }
@@ -1551,217 +1515,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
 
 
   /**
-   * minimum intensity processed
-   * 
-   * @return
-   */
-  public double getMinIntensity(boolean onlySelected) {
-    checkForUpdateInParentIProcessing();
-    if (onlySelected) {
-      if (Double.isNaN(minZSelected)) {
-        minZSelected = Double.POSITIVE_INFINITY;
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          if (i < minZSelected)
-            minZSelected = i;
-      }
-
-      if (minZSelected == Double.POSITIVE_INFINITY) {
-        minZSelected = Double.NaN;
-        return Double.NaN;
-      }
-      return minZSelected;
-    } else {
-      if (Double.isNaN(minZ)) {
-        minZ = Double.POSITIVE_INFINITY;
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          if (i < minZ)
-            minZ = i;
-      }
-
-      if (minZ == Double.POSITIVE_INFINITY) {
-        minZ = Double.NaN;
-        return Double.NaN;
-      }
-      return minZ;
-    }
-  }
-
-  /**
-   * minimum intensity that is not zero processed
-   * 
-   * @return
-   */
-  public double getMinNonZeroIntensity(boolean onlySelected) {
-    checkForUpdateInParentIProcessing();
-    if (onlySelected) {
-      if (Double.isNaN(minNonZeroZSelected)) {
-        minNonZeroZSelected = Double.POSITIVE_INFINITY;
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          if (i < minNonZeroZSelected && i != 0)
-            minNonZeroZSelected = i;
-      }
-
-      if (minNonZeroZSelected == Double.POSITIVE_INFINITY) {
-        minNonZeroZSelected = Double.NaN;
-        return Double.NaN;
-      }
-      return minNonZeroZSelected;
-    } else {
-      if (Double.isNaN(minNonZeroZ)) {
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        minNonZeroZ = Double.POSITIVE_INFINITY;
-        for (double i : inten)
-          if (i < minNonZeroZ && i != 0)
-            minNonZeroZ = i;
-      }
-
-      if (minNonZeroZ == Double.POSITIVE_INFINITY) {
-        minNonZeroZ = Double.NaN;
-        return Double.NaN;
-      }
-      return minNonZeroZ;
-    }
-  }
-
-  /**
-   * maximum intensity processed
-   * 
-   * @return
-   */
-  public double getMaxIntensity(boolean onlySelected) {
-    checkForUpdateInParentIProcessing();
-    if (onlySelected) {
-      if (Double.isNaN(maxZSelected)) {
-        maxZSelected = Double.NEGATIVE_INFINITY;
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          if (i > maxZSelected)
-            maxZSelected = i;
-      }
-
-      if (maxZSelected == Double.NEGATIVE_INFINITY) {
-        maxZSelected = Double.NaN;
-        return Double.NaN;
-      }
-      return maxZSelected;
-    } else {
-      if (Double.isNaN(maxZ)) {
-        maxZ = Double.NEGATIVE_INFINITY;
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          if (i > maxZ)
-            maxZ = i;
-      }
-
-      if (maxZ == Double.NEGATIVE_INFINITY) {
-        maxZ = Double.NaN;
-        return Double.NaN;
-      }
-      return maxZ;
-    }
-  }
-
-
-  /**
-   * Calcs the average I for this img
-   * 
-   * @return
-   */
-  public double getAverageIntensity(boolean onlySelected) {
-    checkForUpdateInParentIProcessing();
-    if (onlySelected) {
-      if (Double.isNaN(avgZSelected)) {
-        avgZSelected = 0;
-
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          avgZSelected += i;
-
-        avgZSelected = avgZSelected / inten.length;
-      }
-      return avgZSelected;
-    } else {
-      //
-      if (Double.isNaN(averageIProcessed)) {
-        averageIProcessed = 0;
-
-        // array with values only (no NaN)
-        double[] inten = toIArray(false, onlySelected);
-        for (double i : inten)
-          averageIProcessed += i;
-
-        averageIProcessed = averageIProcessed / inten.length;
-      }
-      return averageIProcessed;
-    }
-  }
-
-
-  /**
-   * [min, max]
-   * 
-   * @param onlySelected
-   * @return
-   */
-  public Range getIRange(boolean onlySelected) {
-    return new Range(this.getMinIntensity(onlySelected), this.getMaxIntensity(onlySelected));
-  }
-
-  /**
-   * 
-   * @return value (set in a paintscale) as a percentage of the maximum value (value==max:
-   *         result=100)
-   */
-  public double getIPercentage(double intensity, boolean onlySelected) {
-    Range r = getIRange(onlySelected);
-    return ((intensity - r.getLowerBound()) / r.getLength() * 100.0);
-  }
-
-  /**
-   * 
-   * @param value as percentage (0-100%)
-   * @param onlySelected
-   * @return value /100 * intensityRange
-   */
-  public double getIAbs(double value, boolean onlySelected) {
-    Range r = getIRange(onlySelected);
-    return value / 100.0 * r.getLength() + r.getLowerBound();
-  }
-
-  /**
-   * 
-   * @param intensity
-   * @return the percentile of all intensities (if value is equal to max the result is 100)
-   */
-  public double getIPercentile(boolean raw, double intensity, boolean onlySelected) {
-    // sort all z values
-    double[] z = null;
-    if (!onlySelected)
-      z = toIArray(raw);
-    else
-      z = getSelectedDataAsArray(raw, true);
-    Arrays.sort(z);
-
-    for (int i = 0; i < z.length; i++) {
-      if (z[i] <= intensity) {
-        return (i / (z.length - 1));
-      }
-    }
-    return 0;
-  }
-
-
-  /**
    * The maximum x value of a line (right edge) --> length
    * 
    * @param raw
@@ -1866,8 +1619,19 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    * 
    * @return
    */
+  @Override
   public double getMaxBlockWidth() {
     return getMaxBlockWidth(getSettings().getSettImage());
+  }
+
+  /**
+   * maximum block height for renderer = distance between one and next block in lines
+   * 
+   * @return
+   */
+  @Override
+  public double getMaxBlockHeight() {
+    return getMaxBlockHeight(getSettings().getSettImage());
   }
 
   public double getMaxBlockWidth(SettingsGeneralImage settImg) {
@@ -1885,14 +1649,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
     }
   }
 
-  /**
-   * maximum block height for renderer = distance between one and next block in lines
-   * 
-   * @return
-   */
-  public double getMaxBlockHeight() {
-    return getMaxBlockHeight(getSettings().getSettImage());
-  }
 
   public double getMaxBlockHeight(SettingsGeneralImage settImg) {
     int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
@@ -1910,81 +1666,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
   }
 
 
-  // #############################################################
-  // apply filter to cut off first or last values of intensity
-  // only apply if not already done
-  private double lastAppliedMinFilter = -1, lastAppliedMaxFilter = -1;
-
-  /**
-   * 
-   * @param f in percent ( 5 % as 5 not 0.05)
-   * @return
-   */
-  public double applyCutFilterMin(double f) {
-    if (f != lastAppliedMinFilter) {
-      // apply filter
-      // sort all z values
-      double[] z = null;
-      if (!settings.getSettPaintScale().isUsesMinMaxFromSelection())
-        z = toIArray(false);
-      else
-        z = getSelectedDataAsArray(false, true);
-      Arrays.sort(z);
-      // cut off percent f/100.f
-      int size = z.length - 1;
-      // save in var
-      minZFiltered = z[(int) (size * f / 100.0)];
-      settings.getSettPaintScale().setMin(minZFiltered);
-      lastAppliedMinFilter = f;
-    }
-    return minZFiltered;
-  }
-
-  /**
-   * 
-   * @param f in percent ( 5 % as 5 not 0.05)
-   * @return
-   */
-  public double applyCutFilterMax(double f) {
-    if (f != lastAppliedMaxFilter) {
-      // apply filter
-      // sort all z values
-      double[] z = null;
-      if (!settings.getSettPaintScale().isUsesMinMaxFromSelection())
-        z = toIArray(false);
-      else
-        z = getSelectedDataAsArray(false, true);
-      Arrays.sort(z);
-      // cut off percent f/100.f
-      int size = z.length - 1;
-      // save in var --> cut from max 1-p
-      maxZFiltered = z[size - (int) (size * f / 100.0)];
-      settings.getSettPaintScale().setMax(maxZFiltered);
-      lastAppliedMaxFilter = f;
-    }
-    return maxZFiltered;
-  }
-
-  /**
-   * does not apply the cut filter to this image
-   * 
-   * @param f in percent ( 5 % as 5 not 0.05)
-   * @return
-   */
-  public double getValueCutFilter(double f, boolean useMinMaxFromSelection) {
-    // apply filter
-    // sort all z values
-    double[] z = null;
-    if (!useMinMaxFromSelection)
-      z = toIArray(false);
-    else
-      z = getSelectedDataAsArray(false, true);
-    Arrays.sort(z);
-    // cut off percent f/100.f
-    int size = z.length - 1;
-    // save in var --> cut from max 1-p
-    return z[(int) (size * f / 100.0)];
-  }
 
   // #####################################################################################
   // Basic funcitons filling images
@@ -1993,22 +1674,13 @@ public class Image2D extends Collectable2D<SettingsImage2D>
   // #####################################################################################
 
   /**
+   * For full range {@link DataCollectable2D#getIRange(boolean)}
    * 
    * @return intensity span
    */
   public double getIntensitySpan(boolean onlySelected) {
     return getMaxIntensity(onlySelected) - getMinIntensity(onlySelected);
   }
-
-  public double getMinZFiltered() {
-    return minZFiltered;
-  }
-
-  public double getMaxZFiltered() {
-    return maxZFiltered;
-  }
-
-
 
   // vars for that:
   private double[] averageIProcessedForLine;
@@ -2039,41 +1711,26 @@ public class Image2D extends Collectable2D<SettingsImage2D>
   /**
    * checks if there is a parent that has changed I processing then it changes the processing here
    */
-  private void checkForUpdateInParentIProcessing() {
+  @Override
+  protected void checkForUpdateInParentIProcessing() {
     if (parent != null && parent.getLastIProcChangeTime() != lastIProcChangeTime) {
       fireIntensityProcessingChanged();
       lastIProcChangeTime = parent.getLastIProcChangeTime();
     }
   }
 
+  public Image2D getParent() {
+    return parent;
+  }
+
   /**
    * save lastIProcChangeTime for comparison in all quantifiers. update all quantifiers if it has
    * changed
    */
+  @Override
   public void fireIntensityProcessingChanged() {
+    super.fireIntensityProcessingChanged();
     // gives a indirect signal to Quantifier and children to change iProc
-    lastIProcChangeTime++;
-    if (lastIProcChangeTime >= Integer.MAX_VALUE - 1)
-      lastIProcChangeTime = -1;
-
-    averageIProcessed = Double.NaN;
-    minZ = Double.NaN;
-    maxZ = Double.NaN;
-    minZSelected = Double.NaN;
-    maxZSelected = Double.NaN;
-    avgZSelected = Double.NaN;
-
-    minNonZeroZ = Double.NaN;
-    minNonZeroZSelected = Double.NaN;
-
-
-    // applyCutFilter?
-    lastAppliedMaxFilter = -1;
-    lastAppliedMinFilter = -1;
-    if (settings.getSettPaintScale().getModeMin().equals(ValueMode.PERCENTILE))
-      applyCutFilterMin(settings.getSettPaintScale().getMinFilter());
-    if (settings.getSettPaintScale().getModeMax().equals(ValueMode.PERCENTILE))
-      applyCutFilterMax(settings.getSettPaintScale().getMaxFilter());
     // IS
     SettingsImage2DQuantifierIS internalQ = settings.getInternalQuantifierIS();
     if (internalQ != null && internalQ.getImgIS() != null) {
@@ -2083,25 +1740,8 @@ public class Image2D extends Collectable2D<SettingsImage2D>
           .setBlankQuantifier(settings.getOperations().getBlankQuantifier());
       internalQ.getImgIS().fireIntensityProcessingChanged();
     }
-
-    // register changes
-    // e.g. for regression SettingsSelection
-    for (IntensityProcessingChangedListener l : listenerProcessingChanged)
-      l.fireIntensityProcessingChanged(this);
   }
 
-  public void addIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
-    listenerProcessingChanged.add(li);
-  }
-
-  public void removeIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
-    listenerProcessingChanged.remove(li);
-  }
-
-
-  public Image2D getParent() {
-    return parent;
-  }
 
   /**
    * all child will point at settings from parent.
@@ -2155,24 +1795,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
     return counter;
   }
 
-  /**
-   * Returns all selected and not excluded data points to an array
-   * 
-   * @return
-   */
-  public double[] getSelectedDataAsArray(boolean raw, boolean excluded) {
-    double[] datasel = new double[getSelectedDPCount(true)];
-    int counter = 0;
-    for (int l = 0; l < data.getLinesCount(); l++) {
-      for (int dp = 0; dp < data.getLineLength(l); dp++) {
-        if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) {
-          datasel[counter] = getI(raw, l, dp);
-          counter++;
-        }
-      }
-    }
-    return datasel;
-  }
 
   /**
    * Returns all selected and not excluded data points to an array
@@ -2181,9 +1803,10 @@ public class Image2D extends Collectable2D<SettingsImage2D>
    */
   public List<Double> getSelectedDataAsList(boolean raw, boolean excluded) {
     ArrayList<Double> list = new ArrayList<>();
-    int counter = 0;
-    for (int l = 0; l < data.getLinesCount(); l++) {
-      for (int dp = 0; dp < data.getLineLength(l); dp++) {
+    int lines = getMaxLinesCount();
+    int maxdp = getMaxLineLength();
+    for (int l = 0; l < lines; l++) {
+      for (int dp = 0; dp < maxdp; dp++) {
         if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) {
           list.add(getI(raw, l, dp));
         }
@@ -2192,75 +1815,8 @@ public class Image2D extends Collectable2D<SettingsImage2D>
     return list;
   }
 
-
   /**
-   * returns all data points in intensity range (max/min) (processed) uses the PaintScaleSettings of
-   * this image
-   * 
-   * @return
-   */
-  public double[] getIInIRange() {
-    return getIInIRange(settings.getSettPaintScale());
-  }
-
-  /**
-   * returns all data points in intensity range (max/min) (processed)
-   * 
-   * @return
-   */
-  public double[] getIInIRange(SettingsPaintScale ps) {
-    double[] list = new double[countIInIRange(ps)];
-
-    double[] inten = toIArray(false);
-    int counter = 0;
-    for (double d : inten) {
-      if (ps.isInIRange(this, d)) {
-        list[counter] = d;
-        counter++;
-      }
-    }
-    return list;
-  }
-
-  /**
-   * returns number of data points in intensity range (max/min) uses the PaintScaleSettings of this
-   * image
-   * 
-   * @return
-   */
-  public int countIInIRange() {
-    return countIInIRange(settings.getSettPaintScale());
-  }
-
-  /**
-   * returns number of data points in intensity range (max/min)
-   * 
-   * @return
-   */
-  public int countIInIRange(SettingsPaintScale ps) {
-    int counter = 0;
-    double[] inten = toIArray(false);
-    for (double d : inten) {
-      if (ps.isInIRange(this, d)) {
-        counter++;
-      }
-    }
-    return counter;
-  }
-
-  /**
-   * are l and dp in bounds (after rotation, reflection, ...)
-   * 
-   * @param l
-   * @param dp
-   * @return
-   */
-  public boolean isInBounds(int l, int dp) {
-    return !(l < 0 || l >= getLineCount(dp) || dp < 0 || dp >= getLineLength(l));
-  }
-
-  /**
-   * checks if a dp is excluded by a rect in excluded list
+   * checks if a dp is excluded by a rect in excluded list. Or in alpha map
    * 
    * @param l
    * @param dp
@@ -2328,21 +1884,6 @@ public class Image2D extends Collectable2D<SettingsImage2D>
     }
   }
 
-  /**
-   * checks if this is a dp with data (because of rotation and different line length)
-   * 
-   * @param l
-   * @param dp
-   * @return
-   */
-  public boolean isDP(int l, int dp) {
-    return !Double.isNaN(getI(true, l, dp));
-  }
-
-  //
-  public int getLastIProcChangeTime() {
-    return lastIProcChangeTime;
-  }
 
   /**
    * Copies the Image2D and sets this to parent settings will be connected
@@ -2478,7 +2019,7 @@ public class Image2D extends Collectable2D<SettingsImage2D>
     data.removeRawDataChangedListener(list);
   }
 
-  public void cleatRawDataChangedListeners() {
+  public void clearRawDataChangedListeners() {
     data.cleatRawDataChangedListeners();
   }
 

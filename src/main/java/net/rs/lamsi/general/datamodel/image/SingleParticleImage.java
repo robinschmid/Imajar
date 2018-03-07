@@ -2,12 +2,12 @@ package net.rs.lamsi.general.datamodel.image;
 
 import java.io.Serializable;
 import java.util.LinkedList;
-import java.util.List;
 import javax.swing.Icon;
 import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
@@ -19,7 +19,8 @@ import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 // XY raw data!
 // have to be multiplied with velocity and spot size
-public class SingleParticleImage extends Collectable2D<SettingsSPImage> implements Serializable {
+public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
+    implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
 
@@ -65,13 +66,18 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
     return getSPDataArraySelected(sett);
   }
 
+  /**
+   * Filtered data array from selected data points Split particle events are filtered out
+   * 
+   * @param sett
+   * @return
+   */
   public double[] getSPDataArraySelected(SingleParticleSettings sett) {
     // the data
     DebugStopWatch timer = new DebugStopWatch();
 
     // if not yet filtered or settings have changed
-    if (selectedFilteredData == null || lastSelected.getSplitPixel() != sett.getSplitPixel()
-        || Double.compare(lastSelected.getNoiseLevel(), sett.getNoiseLevel()) != 0
+    if (selectedFilteredData == null || !lastSelected.equals(sett)
         || !img.getSettings().getSettSelections().equals(lastSelections)) {
       // get data matrix of selected DP
       selectedFilteredData = img.toIMatrixOfSelected(false);
@@ -88,6 +94,7 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
         e.printStackTrace();
       }
     }
+
     // to array
     int size = 0;
     for (int x = 0; x < selectedFilteredData.length; x++)
@@ -261,6 +268,8 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
   }
 
   /**
+   * Filter out split pixel events. These events are defined as consecutive high intensities>noise
+   * level
    * 
    * @param data [lines][dp]
    * @param rotated if true data is used as [dp][lines]
@@ -455,23 +464,6 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
       return null;
   }
 
-  /**
-   * Returns all selected and not excluded data points to an array
-   * 
-   * @return
-   */
-  public double[] getSelectedDataAsArray(boolean raw, boolean excluded) {
-    return img.getSelectedDataAsArray(raw, excluded);
-  }
-
-  /**
-   * Returns all selected and not excluded data points to an array
-   * 
-   * @return
-   */
-  public List<Double> getSelectedDataAsList(boolean raw, boolean excluded) {
-    return img.getSelectedDataAsList(raw, excluded);
-  }
 
   /**
    * returns an easy icon
@@ -512,8 +504,6 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
   public int getHeightAsMaxDP() {
     return img.getHeightAsMaxDP();
   }
-
-
 
   public double getMaxBlockWidth() {
     return getMaxBlockWidth(img.getSettings().getSettImage());
@@ -583,6 +573,67 @@ public class SingleParticleImage extends Collectable2D<SettingsSPImage> implemen
         e.printStackTrace();
       }
     }
+  }
+
+
+  @Override
+  public float getX(boolean raw, int l, int dp) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public float getY(boolean raw, int l, int dp) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double getI(boolean raw, int l, int dp) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int getMinLineLength() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int getMaxLineLength() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int getMinLinesCount() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int getMaxLinesCount() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int getLineLength(int l) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int getLineCount(int dp) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double[] toIArray(boolean raw, boolean onlySelected, boolean excluded) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
