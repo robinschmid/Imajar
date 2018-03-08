@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.jfree.chart.ChartPanel;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
 
 public class SelectionTableRow implements Serializable {
@@ -51,8 +50,8 @@ public class SelectionTableRow implements Serializable {
   /**
    * final stats calculation after all data points were added via check
    */
-  public void calculateStatistics(Image2D img) {
-    if (img == null || data == null || data.size() == 0)
+  public void calculateStatistics() {
+    if (data == null || data.isEmpty())
       return;
     // create histo
     // copy to double array

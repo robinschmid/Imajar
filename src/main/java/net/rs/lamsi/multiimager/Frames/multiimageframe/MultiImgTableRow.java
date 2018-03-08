@@ -1,6 +1,7 @@
 package net.rs.lamsi.multiimager.Frames.multiimageframe;
 
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 
 
 public class MultiImgTableRow {
@@ -59,7 +60,7 @@ public class MultiImgTableRow {
    * @param map
    * @throws Exception
    */
-  public void applyToMap(Boolean[][] map) throws Exception {
+  public void applyToMap(State[][] map) throws Exception {
     // same dimension`?
     if (map.length != img.getMaxLinesCount() || map[0].length != img.getMaxLineLength())
       throw new Exception("Map has a different dimension than image " + img.getTitle());
@@ -73,7 +74,7 @@ public class MultiImgTableRow {
             // check if img.intensity out of range
             double tmp = img.getI(false, l, d);
             if (!Double.isNaN(tmp) && !inRange(tmp))
-              map[l][d] = false;
+              map[l][d] = map[l][d].toFalse();
           }
         }
       }

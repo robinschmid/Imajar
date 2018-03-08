@@ -483,7 +483,8 @@ public class SingleParticleDialog extends JFrame {
               // create histogram
               double[] data = null;
               if (cbExcludeSmallerNoise.isSelected()) {
-                double[] dlist = img.toIArray(false, true);
+                // get processed data from original image
+                double[] dlist = img.toIArray(true, true);
                 data = DoubleStream.of(dlist).filter(d -> d >= noise).toArray();
               } else
                 data = img.toIArray(false, true);

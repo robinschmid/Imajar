@@ -31,6 +31,7 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
@@ -1278,7 +1279,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @param sett
    * @return [line][dp]
    */
-  public Object[][] toIMatrix(boolean raw, Boolean[][] map) {
+  public Object[][] toIMatrix(boolean raw, State[][] map) {
     // time only once?
     int cols = getMaxLinesCount();
     int rows = getMaxLineLength();
@@ -1290,7 +1291,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
       for (int r = 0; r < rows; r++) {
         // only if not null: write Intensity
         // only if not null: write Intensity
-        boolean state = c < map.length && r < map[c].length && map[c][r];
+        boolean state = c < map.length && r < map[c].length && map[c][r].isFalse();
         if (state) {
           double tmp = getI(raw, c, r);
           dataExp[c][r] = !Double.isNaN(tmp) ? tmp : "";
@@ -1860,9 +1861,9 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
         if (a != null && a.isActive()) {
           // same dimensions?
           if (a.checkDimensions(this)) {
-            Boolean b = a.getMapValue(l, dp);
+            State b = a.getMapValue(l, dp);
             // is excluded in alphamap:
-            if (b == null || b == false)
+            if (b.isFalse())
               return true;
           } else
             a.setActive(false);

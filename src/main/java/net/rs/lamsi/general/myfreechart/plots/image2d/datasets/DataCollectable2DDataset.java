@@ -22,7 +22,10 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
   // otherwise use img as data source
   protected XYIDataMatrix data;
   protected List<PostProcessingOp> lastOp;
+  protected int lastProcTime = -1;
   protected int linelength = 0;
+  protected double maxZ;
+  protected double minZ;
 
   public DataCollectable2DDataset(DataCollectable2D img) {
     super();
@@ -53,6 +56,10 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
 
   public float getY(boolean raw, int line, int dp) {
     return data == null ? img.getY(raw, line, dp) : data.getY()[line][dp];
+  }
+
+  public boolean isProcessed() {
+    return data != null;
   }
 
   @Override
@@ -124,17 +131,17 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
       List<PostProcessingOp> op =
           ((PostProcessingOpProvider) img.getSettings()).getPostProcessingOp();
 
-      // op is different to last op
-      boolean same = lastOp != null && op.size() == lastOp.size();
+      int time = img.getLastIProcChangeTime();
 
-      if (same && op.size() > 0) {
+      // op is different to last op
+      boolean same = time == lastProcTime && lastOp != null && op.size() == lastOp.size();
+
+      if (same && !op.isEmpty()) {
         same = op.stream().allMatch(o -> lastOp.stream().anyMatch(last -> o.equals(last)));
       }
 
-      if (op.size() > 0 && !same) {
-
+      if (!op.isEmpty() && !same) {
         data = img.toXYIDataMatrix(false, true);
-
         double[][] z = data.getI();
         float[][] y = data.getY();
         float[][] x = data.getX();
@@ -156,6 +163,20 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
         if (tz == null)
           return false;
 
+        // pre calc min and max
+        minZ = Double.POSITIVE_INFINITY;
+        maxZ = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < tz.length; i++) {
+          for (int j = 0; j < tz[i].length; j++) {
+            if (!Double.isNaN(tz[i][j])) {
+              if (tz[i][j] < minZ)
+                minZ = tz[i][j];
+              if (tz[i][j] > maxZ)
+                maxZ = tz[i][j];
+            }
+          }
+        }
+
         data.setI(tz);
         if (tx != null) {
           data.setX(tx);
@@ -165,6 +186,7 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
         linelength = data.getMaximumLineLength();
 
         lastOp = op;
+        lastProcTime = time;
         return true;
       } else {
         data = null;
@@ -172,5 +194,13 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
       }
     }
     return false;
+  }
+
+  public double getMinIntensity() {
+    return isProcessed() ? minZ : img.getMinIntensity(false);
+  }
+
+  public double getMaxIntensity() {
+    return isProcessed() ? maxZ : img.getMaxIntensity(false);
   }
 }

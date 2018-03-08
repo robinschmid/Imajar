@@ -627,7 +627,9 @@ public class ModulePaintscale
       ImageEditorWindow.log("Setting Min % " + f, LOG.DEBUG);
       lastMinPercentage = f;
       // apply to all perc. components
+      getSliderMinimum().setEnabled(false);
       getSliderMinimum().setValue((int) (f * 1000));
+      getSliderMinimum().setEnabled(true);
       getTxtMinPerc().setText(formatPercentNumber(f));
       // absolute
       double absMin = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
@@ -636,7 +638,7 @@ public class ModulePaintscale
   }
 
   protected void setMinimumValue(double abs, boolean force) {
-    if ((lastMin != abs || force) && currentImage != null) {
+    if ((Double.compare(lastMin, abs) != 0 || force) && currentImage != null) {
       lastMin = abs;
       // apply to all abs components
       getTxtMinimum().setText(formatAbsNumber(abs));
@@ -652,7 +654,9 @@ public class ModulePaintscale
       ImageEditorWindow.log("Setting max % " + f, LOG.DEBUG);
       lastMaxPercentage = f;
       // apply to all perc. components
+      getSliderMaximum().setEnabled(false);
       getSliderMaximum().setValue((int) (f * 1000));
+      getSliderMaximum().setEnabled(true);
       getTxtMaxPerc().setText(formatPercentNumber(f));
       // absolute
       double absMax = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
@@ -661,7 +665,7 @@ public class ModulePaintscale
   }
 
   protected void setMaximumValue(double abs, boolean force) {
-    if ((force || lastMax != abs) && currentImage != null) {
+    if ((force || Double.compare(lastMax, abs) != 0) && currentImage != null) {
       ImageEditorWindow.log("Setting max abs " + abs, LOG.DEBUG);
       lastMax = abs;
       // apply to all abs components

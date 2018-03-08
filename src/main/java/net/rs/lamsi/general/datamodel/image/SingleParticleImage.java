@@ -147,24 +147,27 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     filteredData = filterOutSplitPixelEvents(sett, filteredData, img.isRotated());
     timer.stopAndLOG("filter split particle events");
 
+    int particles = 0;
     Range window = sett.getWindow();
-    if (window == null)
-      window = new Range(0, 0);
-
-    // count events
-    ImageEditorWindow.log("Start SPI counter: Count particles", LOG.MESSAGE);
-    for (int i = 0; i < filteredData.length; i++) {
-      for (int j = 0; j < filteredData[i].length; j++) {
-        if (!Double.isNaN(filteredData[i][j])) {
-          if (window.contains(filteredData[i][j]))
-            filteredData[i][j] = 1;
-          else
-            filteredData[i][j] = 0;
+    if (window != null) {
+      // count events
+      ImageEditorWindow.log("Start SPI counter: Count particles in window" + window.toString(),
+          LOG.MESSAGE);
+      for (int i = 0; i < filteredData.length; i++) {
+        for (int j = 0; j < filteredData[i].length; j++) {
+          if (!Double.isNaN(filteredData[i][j])) {
+            if (window.contains(filteredData[i][j])) {
+              filteredData[i][j] = 1;
+              particles++;
+            } else
+              filteredData[i][j] = 0;
+          }
         }
       }
-    }
+    } else
+      ImageEditorWindow.log("SPI counter: no window defined", LOG.MESSAGE);
 
-    ImageEditorWindow.log("Start SPI counter: DONE", LOG.MESSAGE);
+    ImageEditorWindow.log("SPI counter DONE: particles:" + particles, LOG.MESSAGE);
     return filteredData;
   }
 
@@ -178,124 +181,56 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    */
   private double[][] filterOutSplitPixelEvents(SingleParticleSettings sett, double[][] data,
       boolean rotated) {
-    ImageEditorWindow.log("Filtering data array " + data.length + "x" + data[0].length,
-        LOG.MESSAGE);
 
-    int solved = 0;
-    int lastSelectedDPCount = 0;
-    if (data != null && data.length > 0) {
-      int maxlength = 0;
-      double[][] result = new double[data.length][];
-      for (int i = 0; i < data.length; i++) {
-        result[i] = new double[data[i].length];
-        if (data[i].length > maxlength)
-          maxlength = i;
-      }
-
-      // number of pixels to accumulate for split pixel events
-      int pixel = sett.getSplitPixel();
-      double noise = sett.getNoiseLevel();
-      double[] last = new double[pixel];
-      int ilast = 0;
-      // rotated?
-      if (!rotated) {
-        // [lines][dp]
-        // find minimum value as background
-        double min = Double.MAX_VALUE;
-        // second smallest
-        double min2 = min;
-        for (int dp = 0; dp < data[0].length; dp++) {
-          double v = data[0][dp];
-          if (!Double.isNaN(v)) {
-            if (v < min)
-              min = v;
-            else if (v > min && v < min2)
-              min2 = v;
-          }
+    double noise = sett.getNoiseLevel();
+    int pixel = sett.getSplitPixel();
+    // short circuit if pixel is 0 -> no filter applied
+    if (pixel <= 0) {
+      ImageEditorWindow.log("No split pixel filter applied because split pixel was 0", LOG.MESSAGE);
+      return data;
+    } else {
+      ImageEditorWindow.log("Filtering data array " + data.length + "x" + data[0].length
+          + " with split pixel=" + pixel + " and noise=" + noise, LOG.MESSAGE);
+      int solved = 0;
+      int lastSelectedDPCount = 0;
+      if (data != null && data.length > 0) {
+        int maxlength = 0;
+        double[][] result = new double[data.length][];
+        for (int i = 0; i < data.length; i++) {
+          result[i] = new double[data[i].length];
+          if (data[i].length > maxlength)
+            maxlength = i;
         }
 
-        // safety
-        if (noise <= min)
-          noise = min2;
-
-        // for lines and dp accumulate pixel and add the sum to result
-        for (int l = 0; l < data.length; l++) {
-          for (int dp = 0; dp < data[l].length; dp++) {
-            double current = data[l][dp];
-            // stop accumulation
-            if (ilast > 0 && (Double.isNaN(current) || current < noise || ilast >= last.length)) {
-              // finish this split pixel event
-              double sum = 0;
-              int imax = 0;
-              for (int i = 0; i < ilast; i++) {
-                sum += last[i];
-                if (last[imax] < last[i])
-                  imax = i;
-              }
-              // add all data points as sum or min
-              for (int i = 0; i < ilast; i++) {
-                if (i == imax)
-                  result[l][dp - ilast + i] = sum;
-                else
-                  result[l][dp - ilast + i] = min;
-              }
-              // reset
-              ilast = 0;
-              solved++;
+        // number of pixels to accumulate for split pixel events
+        double[] last = new double[pixel];
+        int ilast = 0;
+        // rotated?
+        if (!rotated) {
+          // [lines][dp]
+          // find minimum value as background
+          double min = Double.MAX_VALUE;
+          // second smallest
+          double min2 = min;
+          for (int dp = 0; dp < data[0].length; dp++) {
+            double v = data[0][dp];
+            if (!Double.isNaN(v)) {
+              if (v < min)
+                min = v;
+              else if (v > min && v < min2)
+                min2 = v;
             }
-            // is greater noise?
-            if (Double.isNaN(current) || current < noise) {
-              // add noisy pixel
-              result[l][dp] = current;
-            } else {
-              // accumulate pixel
-              if (ilast < last.length) {
-                last[ilast] = current;
-                ilast++;
-              }
-            }
-
-            // count non-NaN
-            if (!Double.isNaN(current))
-              lastSelectedDPCount++;
           }
-          // resolve last split event
-          if (ilast > 0) {
-            // finish this split pixel event
-            double sum = 0;
-            int imax = 0;
-            for (int i = 0; i < ilast; i++) {
-              sum += last[i];
-              if (last[imax] < last[i])
-                imax = i;
-            }
-            // add all data points as sum or min
-            for (int i = 0; i < ilast; i++) {
-              if (i == imax)
-                result[l][result[l].length - ilast + i] = sum;
-              else
-                result[l][result[l].length - ilast + i] = min;
-            }
-            // reset
-            ilast = 0;
-            solved++;
-          }
-        }
-      } else {
-        // non rotated [dp][line]
-        // find minimum value as background
-        double min = Double.MAX_VALUE;
-        for (int dp = 0; dp < data.length; dp++)
-          if (!Double.isNaN(data[dp][0]) && data[dp][0] < min)
-            min = data[dp][0];
+          // safety: filter out min value by setting noise to at least min2
+          if (noise <= min)
+            noise = min2;
 
-        // for lines and dp accumulate pixel and add the sum to result
-        for (int l = 0; l < maxlength; l++) {
-          for (int dp = 0; dp < data.length; dp++) {
-            if (l < data[dp].length) {
-              double current = data[dp][l];
+          // for lines and dp accumulate pixel and add the sum to result
+          for (int l = 0; l < data.length; l++) {
+            for (int dp = 0; dp < data[l].length; dp++) {
+              double current = data[l][dp];
               // stop accumulation
-              if (ilast > 0 && (Double.isNaN(current) || current < noise || ilast >= last.length)) {
+              if (ilast > 0 && (Double.isNaN(current) || current < noise || ilast >= pixel)) {
                 // finish this split pixel event
                 double sum = 0;
                 int imax = 0;
@@ -307,9 +242,9 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                 // add all data points as sum or min
                 for (int i = 0; i < ilast; i++) {
                   if (i == imax)
-                    result[dp - ilast + i][l] = sum;
+                    result[l][dp - ilast + i] = sum;
                   else
-                    result[dp - ilast + i][l] = min;
+                    result[l][dp - ilast + i] = min;
                 }
                 // reset
                 ilast = 0;
@@ -318,10 +253,10 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
               // is greater noise?
               if (Double.isNaN(current) || current < noise) {
                 // add noisy pixel
-                result[dp][l] = current;
+                result[l][dp] = current;
               } else {
                 // accumulate pixel
-                if (ilast < last.length) {
+                if (ilast < pixel) {
                   last[ilast] = current;
                   ilast++;
                 }
@@ -331,38 +266,111 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
               if (!Double.isNaN(current))
                 lastSelectedDPCount++;
             }
+            // resolve last split event
+            if (ilast > 0) {
+              // finish this split pixel event
+              double sum = 0;
+              int imax = 0;
+              for (int i = 0; i < ilast; i++) {
+                sum += last[i];
+                if (last[imax] < last[i])
+                  imax = i;
+              }
+              // add all data points as sum or min
+              for (int i = 0; i < ilast; i++) {
+                if (i == imax)
+                  result[l][result[l].length - ilast + i] = sum;
+                else
+                  result[l][result[l].length - ilast + i] = min;
+              }
+              // reset
+              ilast = 0;
+              solved++;
+            }
           }
-          // resolve last split event
-          if (ilast > 0) {
-            // finish this split pixel event
-            double sum = 0;
-            int imax = 0;
-            for (int i = 0; i < ilast; i++) {
-              sum += last[i];
-              if (last[imax] < last[i])
-                imax = i;
+        } else {
+          // non rotated [dp][line]
+          // find minimum value as background
+          double min = Double.MAX_VALUE;
+          for (int dp = 0; dp < data.length; dp++)
+            if (!Double.isNaN(data[dp][0]) && data[dp][0] < min)
+              min = data[dp][0];
+
+          // for lines and dp accumulate pixel and add the sum to result
+          for (int l = 0; l < maxlength; l++) {
+            for (int dp = 0; dp < data.length; dp++) {
+              if (l < data[dp].length) {
+                double current = data[dp][l];
+                // stop accumulation
+                if (ilast > 0 && (Double.isNaN(current) || current < noise || ilast >= pixel)) {
+                  // finish this split pixel event
+                  double sum = 0;
+                  int imax = 0;
+                  for (int i = 0; i < ilast; i++) {
+                    sum += last[i];
+                    if (last[imax] < last[i])
+                      imax = i;
+                  }
+                  // add all data points as sum or min
+                  for (int i = 0; i < ilast; i++) {
+                    if (i == imax)
+                      result[dp - ilast + i][l] = sum;
+                    else
+                      result[dp - ilast + i][l] = min;
+                  }
+                  // reset
+                  ilast = 0;
+                  solved++;
+                }
+                // is greater noise?
+                if (Double.isNaN(current) || current < noise) {
+                  // add noisy pixel
+                  result[dp][l] = current;
+                } else {
+                  // accumulate pixel
+                  if (ilast < pixel) {
+                    last[ilast] = current;
+                    ilast++;
+                  }
+                }
+
+                // count non-NaN
+                if (!Double.isNaN(current))
+                  lastSelectedDPCount++;
+              }
             }
-            // add all data points as sum or min
-            for (int i = 0; i < ilast; i++) {
-              if (i == imax)
-                result[result.length - 1 - ilast + i][l] = sum;
-              else
-                result[result.length - 1 - ilast + i][l] = min;
+            // resolve last split event
+            if (ilast > 0) {
+              // finish this split pixel event
+              double sum = 0;
+              int imax = 0;
+              for (int i = 0; i < ilast; i++) {
+                sum += last[i];
+                if (last[imax] < last[i])
+                  imax = i;
+              }
+              // add all data points as sum or min
+              for (int i = 0; i < ilast; i++) {
+                if (i == imax)
+                  result[result.length - 1 - ilast + i][l] = sum;
+                else
+                  result[result.length - 1 - ilast + i][l] = min;
+              }
+              // reset
+              ilast = 0;
+              solved++;
             }
-            // reset
-            ilast = 0;
-            solved++;
           }
         }
-      }
 
-      ImageEditorWindow.log(
-          "Filtered data array size " + lastSelectedDPCount + " solved events " + solved,
-          LOG.MESSAGE);
-      // return
-      return result;
-    } else
-      return null;
+        ImageEditorWindow.log(
+            "Filtered data array size " + lastSelectedDPCount + " solved events " + solved,
+            LOG.MESSAGE);
+        // return
+        return result;
+      } else
+        return null;
+    }
   }
 
 
@@ -525,12 +533,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   @Override
   public int getLineCount(int dp) {
-    return getLineCount(dp);
+    return img.getLineCount(dp);
   }
 
   @Override
   public double[] toIArray(boolean raw, boolean onlySelected, boolean excluded) {
     if (raw)
+      // return processed data of original image
       return img.toIArray(false, onlySelected, excluded);
     else {
       if (filteredData == null)
@@ -559,6 +568,11 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     }
   }
 
+  @Override
+  public void fireIntensityProcessingChanged() {
+    super.fireIntensityProcessingChanged();
+    filteredData = null;
+  }
 
   @Override
   public int getTotalDataPoints() {

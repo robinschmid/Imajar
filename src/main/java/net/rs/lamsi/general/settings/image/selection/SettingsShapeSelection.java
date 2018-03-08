@@ -16,9 +16,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 
 public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
@@ -74,6 +75,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   protected ROI roi = ROI.SAMPLE;
   protected SelectionTableRow stats;
   protected SelectionTableRow statsRegardingExclusion;
+  protected SelectionTableRow statsRegardingExclusionAndMap;
   protected Color color;
   protected SettingsBasicStroke stroke;
   // order for quantifiers
@@ -81,7 +83,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   // concentration for quantifier / qualifier
   protected double concentration = 0;
 
-  protected transient Image2D currentImg;
+  protected transient DataCollectable2D currentImg;
 
 
   // highlight selection
@@ -106,7 +108,8 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     }
   }
 
-  public SettingsShapeSelection(Image2D currentImage, ROI roi, SelectionMode mode, T shape) {
+  public SettingsShapeSelection(DataCollectable2D currentImage, ROI roi, SelectionMode mode,
+      T shape) {
     super("SettingsShapeSelection", "/Settings/Selections/Shapes/", "setSelShape");
 
     this.shape = shape;
@@ -138,13 +141,13 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * 
    * @return
    */
-  public Object[] getRowData() {
+  public Object[] getRowData(boolean useMap) {
     float y0 = getY0();
     float x0 = getX0();
     float y1 = getY1();
     float x1 = getX1();
 
-    SelectionTableRow r = getDefaultTableRow();
+    SelectionTableRow r = getDefaultTableRow(useMap);
 
     return new Object[] {orderNumber, mode.toString(), roi.toString(), concentration, x0, y0, x1,
         y1, r.getN(), r.getSum(), r.getMin(), r.getMax(), r.getAvg(), r.getMedian(), r.getP99(),
@@ -156,13 +159,13 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * 
    * @return without histogram
    */
-  public Object[] getRowDataExport() {
+  public Object[] getRowDataExport(boolean useMap) {
     float y0 = getY0();
     float x0 = getX0();
     float y1 = getY1();
     float x1 = getX1();
 
-    SelectionTableRow r = getDefaultTableRow();
+    SelectionTableRow r = getDefaultTableRow(useMap);
 
     return new Object[] {orderNumber, mode.toString(), roi.toString(), concentration, x0, y0, x1,
         y1, r.getN(), r.getSum(), r.getMin(), r.getMax(), r.getAvg(), r.getMedian(), r.getP99(),
@@ -204,7 +207,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     return SettingsShapeSelection.class;
   }
 
-  public void setCurrentImage(Image2D img) {
+  public void setCurrentImage(DataCollectable2D img) {
     if (img != null && !img.equals(currentImg)) {
       currentImg = img;
     }
@@ -350,16 +353,21 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * @param isExcluded
    * @return
    */
-  public boolean check(double x, double y, double i, float w, float h, boolean isExcluded) {
-    return check((float) x, (float) y, i, w, h, isExcluded);
+  public boolean check(double x, double y, double i, float w, float h, boolean isExcluded,
+      State dpstate) {
+    return check((float) x, (float) y, i, w, h, isExcluded, dpstate);
   }
 
-  public boolean check(float x, float y, double i, float w, float h, boolean isExcluded) {
+  public boolean check(float x, float y, double i, float w, float h, boolean isExcluded,
+      State dpstate) {
     if (contains(x + w / 2.f, y + h / 2.f)) {
       // add data point
       stats.addValue(i);
-      if (!isExcluded)
+      if (!isExcluded) {
         statsRegardingExclusion.addValue(i);
+        if (!dpstate.isFalse())
+          statsRegardingExclusionAndMap.addValue(i);
+      }
 
       return true;
     } else
@@ -370,8 +378,9 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * final stats calculation after all data points were added via check
    */
   public void calculateStatistics() {
-    stats.calculateStatistics(currentImg);
-    statsRegardingExclusion.calculateStatistics(currentImg);
+    stats.calculateStatistics();
+    statsRegardingExclusion.calculateStatistics();
+    statsRegardingExclusionAndMap.calculateStatistics();
   }
 
   /**
@@ -503,8 +512,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * 
    * @return
    */
-  public SelectionTableRow getDefaultTableRow() {
-    return mode.equals(SelectionMode.SELECT) ? statsRegardingExclusion : stats;
+  public SelectionTableRow getDefaultTableRow(boolean useMap) {
+    if (mode.equals(SelectionMode.SELECT))
+      return useMap ? statsRegardingExclusionAndMap : statsRegardingExclusion;
+    else
+      return stats;
   }
 
   /**
@@ -523,6 +535,10 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    */
   public SelectionTableRow getStatsRegardingExclusions() {
     return statsRegardingExclusion;
+  }
+
+  public SelectionTableRow getStatsRegardingExclusionAndMap() {
+    return statsRegardingExclusionAndMap;
   }
 
   /**

@@ -15,6 +15,7 @@ import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2DSett;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
@@ -23,13 +24,13 @@ import net.rs.lamsi.general.settings.image.operations.quantifier.Image2DQuantify
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
-import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
 public class SettingsSelections extends Settings implements Serializable,
-    Image2DQuantifyStrategyImpl, Image2DSett, IntensityProcessingChangedListener {
+    Image2DQuantifyStrategyImpl, DataCollectable2DSett, IntensityProcessingChangedListener {
   // do not change the version!
   private static final long serialVersionUID = 1L;
 
@@ -44,7 +45,7 @@ public class SettingsSelections extends Settings implements Serializable,
   //
   private boolean hasExclusions = false, hasSelections = false;
 
-  protected transient Image2D currentImg;
+  protected transient DataCollectable2D currentImg;
   // last time processing has changed for currentImg
   protected int lastProcessingChangeTime = -1;
   // version id for regression to track changes
@@ -134,11 +135,11 @@ public class SettingsSelections extends Settings implements Serializable,
 
   // ##########################################################
   // logic
-  public void setCurrentImage(Image2D img) {
+  public void setCurrentImage(DataCollectable2D img) {
     setCurrentImage(img, true);
   }
 
-  public void setCurrentImage(Image2D img, boolean checkUpdate) {
+  public void setCurrentImage(DataCollectable2D img, boolean checkUpdate) {
     // remove listener
     if (currentImg != null)
       currentImg.removeIntensityProcessingChangedListener(this);
@@ -164,7 +165,7 @@ public class SettingsSelections extends Settings implements Serializable,
       updateStatistics();
   }
 
-  public Image2D getCurrentImage() {
+  public DataCollectable2D getCurrentImage() {
     return currentImg;
   }
 
@@ -174,25 +175,35 @@ public class SettingsSelections extends Settings implements Serializable,
   public void updateStatistics() {
     if (currentImg != null && selections != null && selections.size() > 0) {
       // TODO do statistics for all shape selections
-      double[][] data = currentImg.toXYIArray(false, true);
-      double[] x = data[0];
-      double[] y = data[1];
-      double[] z = data[2];
+      XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
+      float[][] x = data.getX();
+      float[][] y = data.getY();
+      double[][] z = data.getI();
+
+      // alpha map settings
+      SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
 
       float w = (float) currentImg.getMaxBlockWidth();
       float h = (float) currentImg.getMaxBlockHeight();
 
       // for each data point
-      for (int d = 0; d < x.length; d++) {
-        boolean isExcluded = isExcluded((float) x[d], (float) y[d], w, h);
+      for (int l = 0; l < z.length; l++) {
+        for (int dp = 0; dp < z[l].length; dp++) {
+          // is value?
+          double zv = z[l][dp];
+          if (!Double.isNaN(zv)) {
+            boolean isExcluded = isExcluded((float) x[l][dp], (float) y[l][dp], w, h);
+            State dpstate = alpha.getMapValue(l, dp);
 
-        // check dp for all selected rects with exclude information
-        // and add to containing shapes
-        for (int i = 0; i < selections.size(); i++) {
-          SettingsShapeSelection s = selections.get(i);
+            // check dp for all selected rects with exclude information
+            // and add to containing shapes
+            for (int i = 0; i < selections.size(); i++) {
+              SettingsShapeSelection s = selections.get(i);
 
-          // check with the information whether it is excluded
-          s.check(x[d], y[d], z[d], w, h, isExcluded);
+              // check with the information whether it is excluded
+              s.check(x[l][dp], y[l][dp], zv, w, h, isExcluded, dpstate);
+            }
+          }
         }
       }
 
@@ -224,20 +235,31 @@ public class SettingsSelections extends Settings implements Serializable,
   public void updateStatistics(SettingsShapeSelection s) {
     if (currentImg != null && s != null) {
       // TODO do statistics for all shape selections
-      double[][] data = currentImg.toXYIArray(false, true);
-      double[] x = data[0];
-      double[] y = data[1];
-      double[] z = data[2];
+      XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
+      float[][] x = data.getX();
+      float[][] y = data.getY();
+      double[][] z = data.getI();
+
+      // alpha map settings
+      SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
 
       float w = (float) currentImg.getMaxBlockWidth();
       float h = (float) currentImg.getMaxBlockHeight();
 
       // for each data point
-      for (int d = 0; d < x.length; d++) {
-        boolean isExcluded = isExcluded((float) x[d], (float) y[d], w, h);
-        // check for s
-        // and add to containing shapes
-        s.check(x[d], y[d], z[d], w, h, isExcluded);
+      for (int l = 0; l < z.length; l++) {
+        for (int dp = 0; dp < z[l].length; dp++) {
+          // is value?
+          double zv = z[l][dp];
+          if (!Double.isNaN(zv)) {
+            boolean isExcluded = isExcluded((float) x[l][dp], (float) y[l][dp], w, h);
+            State dpstate = alpha.getMapValue(l, dp);
+            // check for s
+            // and add to containing shapes
+            // check with the information whether it is excluded
+            s.check(x[l][dp], y[l][dp], zv, w, h, isExcluded, dpstate);
+          }
+        }
       }
 
       // finalise the process?
@@ -553,6 +575,9 @@ public class SettingsSelections extends Settings implements Serializable,
       float w = (float) currentImg.getMaxBlockWidth();
       float h = (float) currentImg.getMaxBlockHeight();
 
+      // alpha map settings
+      SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
+
       // for each line
       for (int l = 0; l < x.length; l++) {
         // for each data point
@@ -578,7 +603,8 @@ public class SettingsSelections extends Settings implements Serializable,
             for (int i = 0; i < selections.size(); i++) {
               SettingsShapeSelection s = selections.get(i);
               // check with the information that it is excluded
-              boolean inside = s.check(x[l][d], y[l][d], z[l][d], w, h, isExcluded);
+              boolean inside =
+                  s.check(x[l][d], y[l][d], z[l][d], w, h, isExcluded, alpha.getMapValue(l, d));
 
               isSelected = (inside && s.getMode().equals(SelectionMode.SELECT)) || isSelected;
               // write to
@@ -656,7 +682,7 @@ public class SettingsSelections extends Settings implements Serializable,
       // write data rows
       for (int r = 0; r < selections.size(); r++) {
         // write all tablerows
-        Object[] row = selections.get(r).getRowDataExport();
+        Object[] row = selections.get(r).getRowDataExport(isAlphaMapExclusionActive());
         xwriter.writeDataArrayToSheet(shSummary, row, 0, 2 + r, false);
 
         // for all shape sheets:
@@ -710,38 +736,52 @@ public class SettingsSelections extends Settings implements Serializable,
     }
   }
 
-
   /**
    * create alpha map
    */
-  public void createAlphaMap(SettingsAlphaMap sett) {
-    if (currentImg != null && selections != null && selections.size() > 0) {
-      // do statistics for all shape selections
-      XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
-      float[][] x = data.getX();
-      float[][] y = data.getY();
-      double[][] z = data.getI();
+  public void markAlphaMap(SettingsAlphaMap sett) {
+    if (currentImg != null) {
+      if (selections != null && selections.size() > 0) {
+        // do statistics for all shape selections
+        XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
+        float[][] x = data.getX();
+        float[][] y = data.getY();
+        double[][] z = data.getI();
 
-      Boolean[][] map = new Boolean[z.length][];
+        State[][] map = sett.getMap();
 
-      float w = (float) currentImg.getMaxBlockWidth();
-      float h = (float) currentImg.getMaxBlockHeight();
+        boolean isnew = map == null;
+        if (isnew)
+          map = new State[z.length][];
 
-      // for each line
-      for (int l = 0; l < x.length; l++) {
-        map[l] = new Boolean[z[l].length];
-        // for each data point
-        for (int d = 0; d < x[l].length; d++) {
-          if (!Double.isNaN(z[l][d])) {
-            // is excluded?
-            boolean inside = isInsideShape((float) x[l][d], (float) y[l][d], w, h);
-            map[l][d] = !inside;
-          } else
-            map[l][d] = null;
+        float w = (float) currentImg.getMaxBlockWidth();
+        float h = (float) currentImg.getMaxBlockHeight();
+
+        // for each line
+        for (int l = 0; l < x.length; l++) {
+          if (isnew)
+            map[l] = new State[z[l].length];
+          // for each data point
+          for (int d = 0; d < x[l].length; d++) {
+            if (!Double.isNaN(z[l][d])) {
+              // is excluded?
+              boolean inside = isInsideShape((float) x[l][d], (float) y[l][d], w, h);
+              // mark dp
+              if (inside)
+                map[l][d] = isnew ? State.MARKED_ALPHA_TRUE : map[l][d].toMarked();
+              else {
+                if (isnew)
+                  map[l][d] = State.ALPHA_TRUE;
+              }
+            } else {
+              if (isnew)
+                map[l][d] = State.NO_DP;
+            }
+          }
         }
+        sett.setMap(map);
+        sett.setActive(true);
       }
-      sett.setMap(map);
-      sett.setActive(true);
     }
   }
 
@@ -795,7 +835,7 @@ public class SettingsSelections extends Settings implements Serializable,
       for (SettingsShapeSelection s : selections) {
         if (s.getRoi().equals(ROI.QUANTIFIER)) {
           dat[c][0] = s.getConcentration();
-          dat[c][1] = s.getDefaultTableRow().getAvg();
+          dat[c][1] = s.getDefaultTableRow(isAlphaMapExclusionActive()).getAvg();
           c++;
         }
       }

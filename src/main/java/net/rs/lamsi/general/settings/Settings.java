@@ -37,6 +37,7 @@ import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.SettingsCollectable2DPlaceHolder;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
@@ -746,6 +747,29 @@ public abstract class Settings implements Serializable {
     return null;
   }
 
+  /**
+   * 
+   * @param el
+   * @return null if no value was found
+   */
+  public static State[][] mapStateFromXML(final Element el) {
+    final String numString = el.getTextContent();
+    if (numString.length() > 0) {
+      String[] lines = numString.split("\n");
+      State[][] map = new State[lines.length][];
+      for (int i = 0; i < lines.length; i++) {
+        String l = lines[i];
+        String[] split = l.split(";");
+        map[i] = new State[split.length];
+        for (int x = 0; x < split.length; x++) {
+          map[i][x] = State.valueOf(split[x]);
+        }
+      }
+      return map;
+    }
+    return null;
+  }
+
 
   /**
    * hashed map is the super class of the class in the xml node node name
@@ -885,7 +909,14 @@ public abstract class Settings implements Serializable {
    * @return
    */
   public boolean changed(Object a, Object b) {
-    return ((a != null ^ b != null) || (a != null && !a.equals(b)));
+    if (a == null && b == null)
+      return false;
+    // double float
+    if (a instanceof Float && b instanceof Float)
+      return Float.compare((Float) a, (Float) b) != 0;
+    if (a instanceof Double && b instanceof Double)
+      return Double.compare((Double) a, (Double) b) != 0;
+    return (a != null && !a.equals(b)) || (b != null && !b.equals(a));
   }
 
   /**

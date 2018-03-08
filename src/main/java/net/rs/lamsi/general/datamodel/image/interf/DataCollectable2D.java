@@ -16,7 +16,7 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
   private static final long serialVersionUID = 1L;
   // image has nothing to do with quantifier class! so dont use a listener for data processing
   // changed events TODO
-  protected List<IntensityProcessingChangedListener> listenerProcessingChanged = new ArrayList<>();
+  protected List<IntensityProcessingChangedListener> listenerProcessingChanged;
   // intensityProcessingChanged? save lastIProcChangeTime and compare with one from quantifier class
   protected int lastIProcChangeTime = 1;
   // are getting calculated only once or after processing changed
@@ -29,12 +29,10 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
   protected double maxZFiltered = Double.NaN;
   protected double lastAppliedMinFilter = -1, lastAppliedMaxFilter = -1;
 
-
   public DataCollectable2D(T settings) {
     super();
     this.settings = settings;
   }
-
 
   /**
    * total number of data points
@@ -205,8 +203,9 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
 
     // register changes
     // e.g. for regression SettingsSelection
-    for (IntensityProcessingChangedListener l : listenerProcessingChanged)
-      l.fireIntensityProcessingChanged(this);
+    if (listenerProcessingChanged != null)
+      for (IntensityProcessingChangedListener l : listenerProcessingChanged)
+        l.fireIntensityProcessingChanged(this);
   }
 
   public void updateDataParameters() {
@@ -545,11 +544,14 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
 
 
   public void addIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
+    if (listenerProcessingChanged == null)
+      listenerProcessingChanged = new ArrayList<>();
     listenerProcessingChanged.add(li);
   }
 
   public void removeIntensityProcessingChangedListener(IntensityProcessingChangedListener li) {
-    listenerProcessingChanged.remove(li);
+    if (listenerProcessingChanged != null)
+      listenerProcessingChanged.remove(li);
   }
 
 }

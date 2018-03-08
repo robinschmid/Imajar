@@ -449,7 +449,7 @@ public class DataExportUtil {
           erows[0] = SettingsShapeSelection.getTitleArrayExport();
           for (int r = 0; r < tableRows.size(); r++) {
             // write all tablerows
-            erows[r + 1] = tableRows.get(r).getRowDataExport();
+            erows[r + 1] = tableRows.get(r).getRowDataExport(sel.isAlphaMapExclusionActive());
 
             addProgressStep(1.0 / tableRows.size());
           }

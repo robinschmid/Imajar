@@ -37,11 +37,16 @@ public class SingleParticleSettings extends Settings {
   }
 
 
-  public void setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel) {
+  public boolean setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel) {
+    boolean diff =
+        Double.compare(this.noiseLevel, noiseLevel) != 0 || (this.window == null && window != null)
+            || (this.window != null && !this.window.equals(window))
+            || this.numberOfPixel != numberOfPixel || this.splitPixel != splitPixel;
     this.noiseLevel = noiseLevel;
     this.splitPixel = splitPixel;
     this.window = window;
     this.numberOfPixel = numberOfPixel;
+    return diff;
   }
 
   @Override

@@ -5,7 +5,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.interf.GroupSettings;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageTableModel;
@@ -13,11 +12,59 @@ import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageTableModel;
 public class SettingsAlphaMap extends Settings implements GroupSettings {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+
   //
+  public enum State {
+    NO_DP, ALPHA_FALSE, ALPHA_TRUE, MARKED_ALPHA_FALSE, MARKED_ALPHA_TRUE, NO_MAP_DEFINED;
+
+    public boolean isTrue() {
+      return this.equals(ALPHA_TRUE) || this.equals(MARKED_ALPHA_TRUE);
+    }
+
+    public boolean isFalse() {
+      return this.equals(ALPHA_FALSE) || this.equals(MARKED_ALPHA_FALSE);
+    }
+
+    public boolean isMarked() {
+      return this.equals(MARKED_ALPHA_TRUE) || this.equals(MARKED_ALPHA_FALSE);
+    }
+
+    /**
+     * use to change from MARKED_TRUE to MARKED_FALSE, and TRUE to FALSE assign result to variable
+     * 
+     * @return The FALSE state of a TRUE state - or the initial state
+     */
+    public State toFalse() {
+      if (this.equals(ALPHA_TRUE))
+        return ALPHA_FALSE;
+      if (this.equals(MARKED_ALPHA_TRUE))
+        return MARKED_ALPHA_FALSE;
+
+      return this;
+    }
+
+    public State toMarked() {
+      if (this.equals(ALPHA_TRUE))
+        return MARKED_ALPHA_TRUE;
+      if (this.equals(ALPHA_FALSE))
+        return MARKED_ALPHA_FALSE;
+
+      return this;
+    }
+
+    public State toUnMarked() {
+      if (this.equals(MARKED_ALPHA_TRUE))
+        return ALPHA_TRUE;
+      if (this.equals(MARKED_ALPHA_FALSE))
+        return ALPHA_FALSE;
+
+      return this;
+    }
+  }
 
   private boolean isActive = false;
   // true: visible, false: invisible, null: no data point
-  private Boolean[][] map = null;
+  private State[][] map = null;
   private int realsize = 0, falseCount = 0;
   protected float alpha = 1;
   // settings
@@ -28,7 +75,7 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     resetAll();
   }
 
-  public SettingsAlphaMap(Boolean[][] map) {
+  public SettingsAlphaMap(State[][] map) {
     this();
     setMap(map);
   }
@@ -41,12 +88,6 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     map = null;
     realsize = 0;
     falseCount = 0;
-  }
-
-  @Override
-  public void applyToHeatMap(Heatmap heat) {
-    super.applyToHeatMap(heat);
-    heat.applyAlphaMapSettings(this);
   }
 
   // ##########################################################
@@ -70,7 +111,7 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
         if (paramName.equals("alpha"))
           alpha = floatFromXML(nextElement);
         else if (paramName.equals("map"))
-          setMap(mapFromXML(nextElement));
+          setMap(mapStateFromXML(nextElement));
       }
     }
   }
@@ -103,7 +144,7 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
    * 
    * @return map[lines][dps]
    */
-  public Boolean[][] getMap() {
+  public State[][] getMap() {
     return map;
   }
 
@@ -111,17 +152,17 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
    * 
    * @param map [lines][dps]
    */
-  public void setMap(Boolean[][] map) {
+  public void setMap(State[][] map) {
     this.map = map;
 
     realsize = 0;
 
     if (map != null) {
-      for (Boolean[] m : map)
-        for (Boolean b : m) {
+      for (State[] m : map)
+        for (State b : m) {
           if (b != null) {
             realsize++;
-            if (!b)
+            if (b.equals(State.ALPHA_FALSE))
               falseCount++;
           }
         }
@@ -136,25 +177,36 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     return realsize;
   }
 
-  public Boolean getMapValue(int line, int dp) {
-    if (map == null || line >= map.length || dp >= map[line].length)
-      return null;
+  public boolean isInBounds(int line, int dp) {
+    return !(map == null || line >= map.length || dp >= map[line].length);
+  }
+
+  public State getMapValue(int line, int dp) {
+    if (map == null)
+      return State.NO_MAP_DEFINED;
+    if (!isInBounds(line, dp))
+      return State.NO_DP;
     else {
       return map[line][dp];
     }
   }
 
+  public void setMapValue(int line, int dp, State state) {
+    if (isInBounds(line, dp))
+      map[line][dp] = state;
+  }
+
   /**
    * converts the map to one dimension as line, line,line,line
    */
-  public boolean[] convertToLinearMap2() {
+  public State[] convertToLinearMap2() {
     if (map == null)
       return null;
 
-    boolean[] maplinear = new boolean[realsize];
+    State[] maplinear = new State[realsize];
     int c = 0;
-    for (Boolean[] m : map) {
-      for (Boolean b : m) {
+    for (State[] m : map) {
+      for (State b : m) {
         if (b != null) {
           maplinear[c] = b;
           c++;
@@ -180,5 +232,18 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     boolean result = a != alpha;
     alpha = a;
     return result;
+  }
+
+  /**
+   * Set all marked dp back to unmarked
+   */
+  public void eraseMarkings() {
+    if (map != null) {
+      for (int i = 0; i < map.length; i++) {
+        for (int j = 0; j < map[i].length; j++) {
+          map[i][j] = map[i][j].toUnMarked();
+        }
+      }
+    }
   }
 }

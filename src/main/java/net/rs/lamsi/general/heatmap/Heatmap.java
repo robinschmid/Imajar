@@ -20,7 +20,6 @@ import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
 
 
@@ -247,10 +246,6 @@ public class Heatmap {
       // fire change event
       chart.fireChartChanged();
     }
-  }
-
-  public void applyAlphaMapSettings(SettingsAlphaMap map) {
-    // renderer.setMap(map);
   }
 
   /**

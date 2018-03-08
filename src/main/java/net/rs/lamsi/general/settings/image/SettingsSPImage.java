@@ -83,7 +83,9 @@ public class SettingsSPImage extends SettingsContainerCollectable2D
   @Override
   public List<PostProcessingOp> getPostProcessingOp() {
     List<PostProcessingOp> op = new LinkedList<>();
-    op.add(new DPReduction(getSettSingleParticle().getNumberOfPixel(), Mode.SUM, img.isRotated()));
+    if (getSettSingleParticle().getNumberOfPixel() > 1)
+      op.add(
+          new DPReduction(getSettSingleParticle().getNumberOfPixel(), Mode.SUM, img.isRotated()));
     return op;
   }
 

@@ -46,6 +46,7 @@ import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -79,7 +80,7 @@ public class MultiImageFrame extends JFrame {
 
   // boolean map for visible pixel according to range limitations of other images
   // map[lines][dp]
-  private Boolean[][] map;
+  private State[][] map;
   private JMenuBar menuBar;
   private JMenu mnSettings;
   private JMenuItem mntmColumns;

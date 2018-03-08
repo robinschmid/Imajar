@@ -237,7 +237,9 @@ public class ModuleSPImage
         int splitPixel = intFromTxt(txtSplitPixel);
         double noiseLevel = doubleFromTxt(txtNoiseLevel);
         int numberOfPixel = intFromTxt(txtNPixel);
-        si.setAll(noiseLevel, splitPixel, window, numberOfPixel);
+        boolean changed = si.setAll(noiseLevel, splitPixel, window, numberOfPixel);
+        if (currentImage != null && changed)
+          currentImage.fireIntensityProcessingChanged();
       } catch (Exception ex) {
         ex.printStackTrace();
       }

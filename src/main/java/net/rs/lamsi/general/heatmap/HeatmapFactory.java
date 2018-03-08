@@ -481,122 +481,120 @@ public class HeatmapFactory {
     DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
     dataset.applyPostProcessing();
     // absolute min max
-    double zmin = img.getMinIntensity(false);
-    double zmax = img.getMaxIntensity(false);
+    double zmin = dataset.getMinIntensity();
+    double zmax = dataset.getMaxIntensity();
     // no data!
-    if (zmin == zmax) {
-      ImageEditorWindow.log("Every data point has the same intensity of " + zmin, LOG.ERROR);
-      return null;
-    } else {
-      SettingsThemesContainer setTheme = img.getSettTheme();
-      SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
-      // XAchse
-      NumberAxis xAxis = new NumberAxis(xTitle);
-      xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
-      xAxis.setLowerMargin(0.0);
-      xAxis.setUpperMargin(0.0);
-      // Y Achse
-      NumberAxis yAxis = new NumberAxis(yTitle);
-      yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
-      yAxis.setLowerMargin(0.0);
-      yAxis.setUpperMargin(0.0);
-      // XYBlockRenderer
-      ImageRenderer2 renderer = new ImageRenderer2(img);
+    if (zmin >= zmax)
+      zmax = zmin + 1;
 
-      // two ways of min or max z value:
-      // min max values by filter
-      if (settings.getModeMin().equals(ValueMode.PERCENTILE)) {
-        // uses filter for min
-        img.applyCutFilterMin(settings.getMinFilter());
-        settings.setMin(img.getMinZFiltered());
-      }
-      if (settings.getModeMax().equals(ValueMode.PERCENTILE)) {
-        // uses filter for min
-        img.applyCutFilterMax(settings.getMaxFilter());
-        settings.setMax(img.getMaxZFiltered());
-      }
-      // creation of scale
-      // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
-      PaintScale scale = null;
-      scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, settings);
-      renderer.setPaintScale(scale);
-      renderer.setAutoPopulateSeriesFillPaint(true);
-      renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+    ImageEditorWindow.log("Every data point has the same intensity of " + zmin, LOG.ERROR);
+    SettingsThemesContainer setTheme = img.getSettTheme();
+    SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
+    // XAchse
+    NumberAxis xAxis = new NumberAxis(xTitle);
+    xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+    xAxis.setLowerMargin(0.0);
+    xAxis.setUpperMargin(0.0);
+    // Y Achse
+    NumberAxis yAxis = new NumberAxis(yTitle);
+    yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
+    yAxis.setLowerMargin(0.0);
+    yAxis.setUpperMargin(0.0);
+    // XYBlockRenderer
+    ImageRenderer2 renderer = new ImageRenderer2(img);
 
-      // TODO change to dynamic block width
-      renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
-      renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
-
-
-      // Plot erstellen mit daten
-      XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
-      plot.setBackgroundPaint(Color.lightGray);
-      plot.setDomainGridlinesVisible(false);
-      plot.setRangeGridlinePaint(Color.white);
-
-      // set background image
-      if (img.getImageGroup() != null) {
-        Image bg = img.getImageGroup().getBGImage();
-        if (bg != null) {
-          // plot.setBackgroundImage(bg);
-          XYImageAnnotation ann =
-              new BGImageAnnotation(bg, img.getImageGroup().getSettings().getSettBGImg(),
-                  img.getWidth(false), img.getHeight(false));
-
-          renderer.addAnnotation(ann, Layer.BACKGROUND);
-        }
-      }
-
-      // create chart
-      JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
-      // remove lower legend
-      chart.removeLegend();
-      chart.setBackgroundPaint(Color.white);
-
-      // Legend
-      PaintScale scaleBar =
-          PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings);
-      PaintScaleLegend legend = createScaleLegend(img, scaleBar,
-          createScaleAxis(settings, setTheme), settings.getLevels());
-      // adding legend in plot or outside
-      if (psTheme.isPaintScaleInPlot()) { // inplot
-        XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend, RectangleAnchor.BOTTOM_RIGHT);
-        ta.setMaxWidth(1);
-        plot.addAnnotation(ta);
-      } else
-        chart.addSubtitle(legend);
-      //
-      chart.setBorderVisible(true);
-
-
-      // ChartPanel
-      EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, img);
-
-      // add scale legend
-      ScaleInPlot scaleInPlot = addScaleInPlot(setTheme, chartPanel);
-
-      // add short title
-      ImageTitle shortTitle = new ImageTitle(img, setTheme.getTheme().getFontShortTitle(),
-          setTheme.getTheme().getcShortTitle(), setTheme.getTheme().getcBGShortTitle(),
-          settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
-      plot.addAnnotation(shortTitle.getAnnotation());
-
-      // theme
-      img.getSettTheme().applyToChart(chart);
-
-      // ChartUtilities.applyCurrentTheme(chart);
-      // defaultChartTheme.apply(chart);
-      chart.fireChartChanged();
-
-      chart.setBorderVisible(false);
-
-      // Heatmap
-      Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot,
-          legend, img, renderer, scaleInPlot, shortTitle);
-
-      // return Heatmap
-      return heat;
+    // two ways of min or max z value:
+    // min max values by filter
+    if (settings.getModeMin().equals(ValueMode.PERCENTILE)) {
+      // uses filter for min
+      img.applyCutFilterMin(settings.getMinFilter());
+      settings.setMin(img.getMinZFiltered());
     }
+    if (settings.getModeMax().equals(ValueMode.PERCENTILE)) {
+      // uses filter for min
+      img.applyCutFilterMax(settings.getMaxFilter());
+      settings.setMax(img.getMaxZFiltered());
+    }
+    // creation of scale
+    // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001
+    PaintScale scale = null;
+    scale = PaintScaleGenerator.generateStepPaintScale(zmin, zmax, settings);
+    renderer.setPaintScale(scale);
+    renderer.setAutoPopulateSeriesFillPaint(true);
+    renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
+
+    // TODO change to dynamic block width
+    renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
+    renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
+
+
+    // Plot erstellen mit daten
+    XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
+    plot.setBackgroundPaint(Color.lightGray);
+    plot.setDomainGridlinesVisible(false);
+    plot.setRangeGridlinePaint(Color.white);
+
+    // set background image
+    if (img.getImageGroup() != null) {
+      Image bg = img.getImageGroup().getBGImage();
+      if (bg != null) {
+        // plot.setBackgroundImage(bg);
+        XYImageAnnotation ann =
+            new BGImageAnnotation(bg, img.getImageGroup().getSettings().getSettBGImg(),
+                img.getWidth(false), img.getHeight(false));
+
+        renderer.addAnnotation(ann, Layer.BACKGROUND);
+      }
+    }
+
+    // create chart
+    JFreeSquaredChart chart = new JFreeSquaredChart("XYBlockChartDemo1", plot);
+    // remove lower legend
+    chart.removeLegend();
+    chart.setBackgroundPaint(Color.white);
+
+    // Legend
+    PaintScale scaleBar = PaintScaleGenerator.generateStepPaintScaleForLegend(zmin, zmax, settings);
+    PaintScaleLegend legend =
+        createScaleLegend(img, scaleBar, createScaleAxis(settings, setTheme), settings.getLevels());
+    // adding legend in plot or outside
+    if (psTheme.isPaintScaleInPlot()) { // inplot
+      XYTitleAnnotation ta = new XYTitleAnnotation(1, 0.0, legend, RectangleAnchor.BOTTOM_RIGHT);
+      ta.setMaxWidth(1);
+      plot.addAnnotation(ta);
+    } else
+      chart.addSubtitle(legend);
+    //
+    chart.setBorderVisible(true);
+
+
+    // ChartPanel
+    EImage2DChartPanel chartPanel = new EImage2DChartPanel(chart, img);
+
+    // add scale legend
+    ScaleInPlot scaleInPlot = addScaleInPlot(setTheme, chartPanel);
+
+    // add short title
+    ImageTitle shortTitle = new ImageTitle(img, setTheme.getTheme().getFontShortTitle(),
+        setTheme.getTheme().getcShortTitle(), setTheme.getTheme().getcBGShortTitle(),
+        settImage.isShowShortTitle(), settImage.getXPosTitle(), settImage.getYPosTitle());
+    plot.addAnnotation(shortTitle.getAnnotation());
+
+    // theme
+    img.getSettTheme().applyToChart(chart);
+
+    // ChartUtilities.applyCurrentTheme(chart);
+    // defaultChartTheme.apply(chart);
+    chart.fireChartChanged();
+
+    chart.setBorderVisible(false);
+
+    // Heatmap
+    Heatmap heat = new Heatmap(dataset, settings.getLevels(), chartPanel, scale, chart, plot,
+        legend, img, renderer, scaleInPlot, shortTitle);
+
+    // return Heatmap
+    return heat;
   }
 
   // creates jfreechart plot for heatmap
@@ -614,8 +612,10 @@ public class HeatmapFactory {
     DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
     dataset.applyPostProcessing();
     // absolute min max
-    double zmin = img.getMinIntensity(false);
-    double zmax = img.getMaxIntensity(false);
+    double zmin = dataset.getMinIntensity();
+    double zmax = dataset.getMaxIntensity();
+    if (zmax <= zmin)
+      zmax = zmin + 1;
 
     // no data!
     SettingsThemesContainer setTheme = img.getSettTheme();

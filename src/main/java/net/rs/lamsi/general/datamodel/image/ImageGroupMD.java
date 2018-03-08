@@ -19,6 +19,7 @@ import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
 import net.rs.lamsi.general.settings.image.SettingsImageGroup;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImgTableRow;
 
 public class ImageGroupMD implements Serializable {
@@ -243,12 +244,12 @@ public class ImageGroupMD implements Serializable {
    * 
    * @return alpha map
    */
-  public Boolean[][] updateMap() throws Exception {
+  public State[][] updateMap() throws Exception {
     // new?
     Image2D first = getFirstImage2D();
     //
     SettingsAlphaMap sttA = getSettAlphaMap();
-    Boolean[][] map = sttA.getMap();
+    State[][] map = sttA.getMap();
 
     List<MultiImgTableRow> rows = sttA.getTableModel().getRowList();
     // no row is active?
@@ -258,15 +259,15 @@ public class ImageGroupMD implements Serializable {
       sttA.setActive(true);
       // create new
       if (map == null) {
-        map = new Boolean[first.getMaxLinesCount()][first.getMaxLineLength()];
+        map = new State[first.getMaxLinesCount()][first.getMaxLineLength()];
       }
       // init as true
       for (int r = 0; r < map.length; r++) {
         for (int d = 0; d < map[r].length; d++) {
           if (first.isDP(r, d))
-            map[r][d] = true;
+            map[r][d] = State.ALPHA_TRUE;
           else
-            map[r][d] = null;
+            map[r][d] = State.NO_DP;
         }
       }
 

@@ -26,6 +26,7 @@ import org.jfree.data.xy.XYDataset;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 public class ImageRenderer2 extends AbstractXYItemRenderer
@@ -361,18 +362,24 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       int dp = item % data.getLineLength();
 
       // only if in map or if there is no map
-      if (isMapTrue(line, dp)) {
+      if (isMapActive()) {
+        State dpstate = sett.getMapValue(line, dp);
+        // do not paint if false
+        if (dpstate.isFalse())
+          return;
+
+        // paint with transparency if marked
+        boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
         // set transparency if used
-        boolean useAlpha =
-            (sett != null && sett.isActive() && sett.getAlpha() != 1 && sett.getAlpha() != 0);
-        if (useAlpha)
+        if (markAlpha)
           g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
-        // paint block
-        drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, line,
-            dp, crosshairState, pass);
-        // reset
-        g2.setComposite(BlendComposite.Normal);
+
       }
+      // paint block
+      drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, line,
+          dp, crosshairState, pass);
+      // reset
+      g2.setComposite(BlendComposite.Normal);
     }
   }
 
@@ -448,8 +455,8 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
    * @param item
    * @return
    */
-  public boolean isMapTrue(int line, int dp) {
-    return sett == null || !sett.isActive() || sett.getMapValue(line, dp) == true;
+  public boolean isMapActive() {
+    return sett != null && sett.isActive();
   }
 
   public PaintScale getPaintScale(int i) {
