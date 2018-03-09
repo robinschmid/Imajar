@@ -64,6 +64,11 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
   /** The paint scale. */
   private PaintScale paintScale;
 
+  private boolean xPixelToSmall = false;
+  private boolean yPixelToSmall = false;
+  private int ix = 0;
+  private int iy = 0;
+
   /**
    * Creates a new {@code XYBlockRenderer} instance with default attributes.
    * 
@@ -418,14 +423,49 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       if (dataArea.intersects(block)) {
         g2.setPaint(p);
 
+        // check at first dp first line if pixels are too small. then only paint integer pixels
+        if (line == 0 && dp == 0) {
+          xPixelToSmall = block.getWidth() < 1;
+          yPixelToSmall = block.getHeight() < 1;
 
+          if (yPixelToSmall)
+            iy = (int) Math.round(Math.min(yy0, yy1)) - 1;
+        }
         // ALTERNATIVE
-        // int fx = (int) Math.round(Math.min(xx0, xx1));
-        // int fy = (int) Math.round(Math.min(yy0, yy1));
-        // int w = (int) Math.round(Math.max(xx0, xx1)) - fx;
-        // int h = (int) Math.round(Math.max(yy0, yy1)) - fy;
-        // g2.fillRect(fx, fy, w, h);
-        g2.fill(block);
+        // paint integer pixels
+        if (xPixelToSmall || yPixelToSmall) {
+          if (dp == 0)
+            if (xPixelToSmall)
+              ix = (int) Math.round(Math.min(xx0, xx1)) - 1;
+          // floor current values
+          int fx = (int) Math.min(xx0, xx1);
+          int fy = (int) Math.min(yy0, yy1);
+
+          // has changed
+          if ((!xPixelToSmall || fx > ix) || (!yPixelToSmall || fy < iy)) {
+            double nx = xPixelToSmall ? ix : block.getX();
+            double ny = yPixelToSmall ? iy : block.getY();
+            double nw = xPixelToSmall ? 1 : block.getWidth();
+            double nh = yPixelToSmall ? 1 : block.getHeight();
+
+            if (line > 0 && dp == 2000) {
+              int free = 1;
+              free = 2;
+            }
+
+            Rectangle2D nblock = new Rectangle2D.Double(nx, ny, nw, nh);
+            // g2.fill(nblock);
+            g2.fillRect(ix, (int) ny, 1, (int) nh);
+            // increment positions
+            if ((!xPixelToSmall || fx > ix))
+              ix++;
+            if ((!yPixelToSmall || fy < iy))
+              iy--;
+          }
+        } else {
+          g2.fill(block);
+        }
+
         // g2.setStroke(new BasicStroke(1.0f));
         // g2.draw(block);
 
@@ -446,7 +486,9 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
               intersect.getCenterY());
         }
       }
+
     }
+
   }
 
   /**
