@@ -140,7 +140,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     ImageEditorWindow.log("Start SPI counter: ", LOG.MESSAGE);
 
     DebugStopWatch timer = new DebugStopWatch();
-    filteredData = img.toIMatrixOfSelected(false);
+    filteredData = img.toIMatrix(false, true);
     // filter split pixel eventstimer
     timer.stopAndLOG("toIMatrixOfSelected from img");
     ImageEditorWindow.log("Start SPI counter: Data filtering", LOG.MESSAGE);
@@ -557,7 +557,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    */
   @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
-    XYIDataMatrix d = img.toXYIDataMatrix(false, useSettings);
+    XYIDataMatrix d = img.toXYIDataMatrix(false, useSettings, false);
     if (raw) {
       return d;
     } else {

@@ -617,6 +617,14 @@ public class HeatmapFactory {
     if (zmax <= zmin)
       zmax = zmin + 1;
 
+    if (settings == null) {
+      settings = SettingsPaintScale.createStandardSettings();
+      settings.setModeMax(ValueMode.RELATIVE);
+      settings.setMax(100);
+      settings.setModeMin(ValueMode.ABSOLUTE);
+      settings.setMin(0);
+    }
+
     // no data!
     SettingsThemesContainer setTheme = img.getSettTheme();
     SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();

@@ -1049,7 +1049,7 @@ public class ModulePaintscale
     }
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
-    ImageEditorWindow.getEditor().fireUpdateEvent(true);
+    // ImageEditorWindow.getEditor().fireUpdateEvent(true);
   }
 
   @Override

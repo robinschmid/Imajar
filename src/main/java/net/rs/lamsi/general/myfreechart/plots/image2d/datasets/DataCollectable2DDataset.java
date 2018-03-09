@@ -9,6 +9,8 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * getX getY and getZ are deprecated
@@ -184,6 +186,9 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
         }
 
         linelength = data.getMaximumLineLength();
+
+        ImageEditorWindow.log("Post processing of DataCollectable2DDataset done: max line length:"
+            + linelength + "; min line length:" + data.getMinimumLineLength(), LOG.MESSAGE);
 
         lastOp = op;
         lastProcTime = time;

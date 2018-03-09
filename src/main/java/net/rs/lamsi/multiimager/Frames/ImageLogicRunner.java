@@ -38,6 +38,8 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsImage2DSetup;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
@@ -910,6 +912,13 @@ public class ImageLogicRunner {
           settings.getSettImage().setTitle(img.getTitle() + "sp");
           settings.getSettImage().setShortTitle(img.getShortTitle() + "sp");
           SingleParticleImage spi = new SingleParticleImage(img, settings);
+          SettingsPaintScale ps = spi.getPaintScaleSettings();
+          if (ps != null) {
+            ps.setModeMax(ValueMode.RELATIVE);
+            ps.setMax(100);
+            ps.setModeMin(ValueMode.ABSOLUTE);
+            ps.setMin(0);
+          }
           group.add(spi);
 
           DefaultMutableTreeNode node = group.getNode();

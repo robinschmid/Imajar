@@ -854,33 +854,23 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    */
   @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
+    SettingsGeneralImage sett = settings.getSettImage();
+    return toXYIDataMatrix(raw, useSettings, sett.isCropDataToMin());
+  }
+
+  public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings, boolean cropDataToMin) {
     if (useSettings) {
       SettingsGeneralImage sett = settings.getSettImage();
       int diff = data.getMaxDP() - data.getMinDP();
       // apply crop?
-      if (sett.isCropDataToMin() && diff != 0) {
+      if (cropDataToMin && diff != 0) {
         int rot = sett.getRotationOfData();
         boolean reflectH = sett.isReflectHorizontal();
         // exclude last line? if shorter than 0.8 of avg
-        boolean excludeLastLine =
-            data.getLineLength(data.getLinesCount() - 1) / data.getAvgDP() < 0.8;
-
-        // start line and last line if exclude
-        final int sl =
-            excludeLastLine && ((reflectH && rot == 0) || (!reflectH && rot == 180)) ? 1 : 0;
-        final int ll =
-            excludeLastLine && ((!reflectH && rot == 0) || (reflectH && rot == 180)) ? 1 : 0;
-        // start/last dp if exclude last line
-        final int sdp = excludeLastLine
-            && ((reflectH && rot == 90) || (!reflectH && (rot == -90 || rot == 270))) ? 1 : 0;
-        final int ldp = excludeLastLine
-            && ((!reflectH && rot == 90) || (reflectH && (rot == -90 || rot == 270))) ? 1 : 0;
-
-
 
         // get full matrix
-        final int cols = getMaxLinesCount() - sl - ll;
-        final int rows = getMaxLineLength() - sdp - ldp;
+        final int cols = getMaxLinesCount();
+        final int rows = getMaxLineLength();
 
         Double[][] z = new Double[cols][rows];
         Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
@@ -890,10 +880,10 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
         // c for lines
         for (int c = 0; c < cols; c++) {
-          int l = c + sl;
+          int l = c;
           // increment l
           for (int r = 0; r < rows; r++) {
-            int dp = r + sdp;
+            int dp = r;
             // only if not null: write Intensity
             double tmp = getI(raw, l, dp);
             z[c][r] = tmp;
@@ -1211,35 +1201,34 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * Returns the intensity matrix (NaN if pixel is empty)
    * 
    * @param raw
-   * @return [dp][line]
+   * @return [line][dp]
    */
   public double[][] toIMatrix(boolean raw, boolean useSettings) {
     // time only once?
     if (useSettings) {
-      int cols = getMaxLinesCount();
-      int rows = getMaxLineLength();
+      int lines = getMaxLinesCount();
+      int dps = getMaxLineLength();
 
-      double[][] dataExp = new double[rows][cols];
+      double[][] dataExp = new double[lines][dps];
       // c for lines
-      for (int c = 0; c < cols; c++) {
+      for (int l = 0; l < lines; l++) {
         // increment l
-        for (int r = 0; r < rows; r++) {
-          // only if not null: write Intensity
-          double tmp = getI(raw, c, r);
-          dataExp[r][c] = !Double.isNaN(tmp) ? tmp : Double.NaN;
+        for (int dp = 0; dp < dps; dp++) {
+          // also allows NaN as no dp
+          dataExp[l][dp] = getI(raw, l, dp);
         }
       }
       return dataExp;
     } else {
-      int cols = data.getLinesCount();
-      int rows = data.getMaxDP();
-      double[][] dataExp = new double[rows][cols];
-      for (int c = 0; c < cols; c++) {
-        int length = data.getLineLength(c);
+      int lines = data.getLinesCount();
+      int dps = data.getMaxDP();
+      double[][] dataExp = new double[dps][lines];
+      for (int l = 0; l < lines; l++) {
+        int length = data.getLineLength(l);
         // increment l
-        for (int r = 0; r < rows; r++) {
+        for (int dp = 0; dp < dps; dp++) {
           // only if not null: write Intensity
-          dataExp[r][c] = r < length ? getIRaw(c, r) : Double.NaN;
+          dataExp[l][dp] = dp < length ? getIRaw(l, dp) : Double.NaN;
         }
       }
       return dataExp;
