@@ -1632,8 +1632,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
-  @Override
-  public double getMaxBlockWidth() {
+  public float getMaxBlockWidth() {
     return getMaxBlockWidth(getSettings().getSettImage());
   }
 
@@ -1642,36 +1641,86 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
-  @Override
-  public double getMaxBlockHeight() {
+  public float getMaxBlockHeight() {
     return getMaxBlockHeight(getSettings().getSettImage());
   }
 
-  public double getMaxBlockWidth(SettingsGeneralImage settImg) {
+  public float getMaxBlockWidth(SettingsGeneralImage settImg) {
     int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
     int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
     return getMaxBlockWidth(settImg.getRotationOfData(), interpolation, reduction);
   }
 
-  public double getMaxBlockWidth(int rotation, int interpolation, int reduction) {
+  public float getMaxBlockWidth(int rotation, int interpolation, int reduction) {
     if (rotation != 0 && rotation != 180)
       return getMaxBlockHeight(0, interpolation, reduction);
     else {
-      double f = 1.0 / interpolation * reduction;
-      return data.getMaxXDPWidth() * settings.getSettImage().getVelocity() * f;
+      float f = 1.f / interpolation * reduction;
+      return data.getMaxDPWidth() * settings.getSettImage().getVelocity() * f;
     }
   }
 
 
-  public double getMaxBlockHeight(SettingsGeneralImage settImg) {
+  public float getMaxBlockHeight(SettingsGeneralImage settImg) {
     int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
     int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
     return getMaxBlockHeight(settImg.getRotationOfData(), interpolation, reduction);
   }
 
-  public double getMaxBlockHeight(int rotation, int interpolation, int redcution) {
+  public float getMaxBlockHeight(int rotation, int interpolation, int redcution) {
     if (rotation != 0 && rotation != 180)
       return getMaxBlockWidth(0, interpolation, redcution);
+    else {
+      // height is not changed when reducing data points
+      return settings.getSettImage().getSpotsize();
+    }
+  }
+
+  /**
+   * maximum block width for renderer = distance between one and next block
+   * 
+   * @return
+   */
+  @Override
+  public float getAvgBlockWidth() {
+    return getAvgBlockWidth(getSettings().getSettImage());
+  }
+
+  /**
+   * maximum block height for renderer = distance between one and next block in lines
+   * 
+   * @return
+   */
+  @Override
+  public float getAvgBlockHeight() {
+    return getAvgBlockHeight(getSettings().getSettImage());
+  }
+
+  public float getAvgBlockWidth(SettingsGeneralImage settImg) {
+    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
+    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+    return getAvgBlockWidth(settImg.getRotationOfData(), interpolation, reduction);
+  }
+
+  public float getAvgBlockWidth(int rotation, int interpolation, int reduction) {
+    if (rotation != 0 && rotation != 180)
+      return getAvgBlockHeight(0, interpolation, reduction);
+    else {
+      float f = 1.f / interpolation * reduction;
+      return data.getAvgDPWidth() * settings.getSettImage().getVelocity() * f;
+    }
+  }
+
+
+  public float getAvgBlockHeight(SettingsGeneralImage settImg) {
+    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
+    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+    return getAvgBlockHeight(settImg.getRotationOfData(), interpolation, reduction);
+  }
+
+  public float getAvgBlockHeight(int rotation, int interpolation, int redcution) {
+    if (rotation != 0 && rotation != 180)
+      return getAvgBlockWidth(0, interpolation, redcution);
     else {
       // height is not changed when reducing data points
       return settings.getSettImage().getSpotsize();
@@ -2056,6 +2105,16 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   @Override
   public int getTotalDataPoints() {
     return data.getMaxDP() * data.getLinesCount();
+  }
+
+  @Override
+  public boolean hasOneDPWidth() {
+    return data.hasOneDPWidth();
+  }
+
+  @Override
+  public boolean hasOneDPHeight() {
+    return data.hasOneDPHeight();
   }
 
 }

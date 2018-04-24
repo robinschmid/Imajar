@@ -433,6 +433,36 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     return img.getMaxBlockHeight(rot, 1, 1);
   }
 
+  public float getAvgBlockWidth() {
+    return getAvgBlockWidth(img.getSettings().getSettImage());
+  }
+
+  public float getAvgBlockHeight() {
+    return getAvgBlockHeight(img.getSettings().getSettImage());
+  }
+
+  public float getAvgBlockWidth(SettingsGeneralImage settImage) {
+    int rot = settImage.getRotationOfData();
+    float f = getSettings().getSettSingleParticle().getNumberOfPixel();
+    return img.getAvgBlockWidth(rot, 1, 1) * f;
+  }
+
+  public float getAvgBlockHeight(SettingsGeneralImage settImage) {
+    int rot = settImage.getRotationOfData();
+    return img.getAvgBlockHeight(rot, 1, 1);
+  }
+
+
+  @Override
+  public boolean hasOneDPWidth() {
+    return img.hasOneDPWidth();
+  }
+
+  @Override
+  public boolean hasOneDPHeight() {
+    return img.hasOneDPHeight();
+  }
+
   public float getWidth() {
     return img.getWidth(false);
   }

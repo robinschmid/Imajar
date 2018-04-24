@@ -40,16 +40,6 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
 
 
   /**
-   * The block width (defaults to 1.0).
-   */
-  private double blockWidth = 0;
-
-  /**
-   * The block height (defaults to 1.0).
-   */
-  private double blockHeight = 0;
-
-  /**
    * The anchor point used to align each block to its (x, y) location. The default value is
    * {@code RectangleAnchor.CENTER}.
    */
@@ -69,6 +59,10 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
   private int ix = 0;
   private int iy = 0;
 
+  // only for range detection
+  private float avgBlockWidth = 0;
+  private float avgBlockHeight = 0;
+
   /**
    * Creates a new {@code XYBlockRenderer} instance with default attributes.
    * 
@@ -78,68 +72,6 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     setImage(img);
     updateOffsets();
     this.paintScale = new LookupPaintScale();
-  }
-
-  /**
-   * Returns the block width, in data/axis units.
-   *
-   * @return The block width.
-   *
-   * @see #setBlockWidth(double)
-   */
-  public double getBlockWidth() {
-    double w;
-    if (blockWidth == 0 && (w = img.getMaxBlockWidth()) != 0)
-      setBlockWidth(w);
-    return blockWidth;
-  }
-
-  /**
-   * Sets the width of the blocks used to represent each data item and sends a
-   * {@link RendererChangeEvent} to all registered listeners.
-   *
-   * @param width the new width, in data/axis units (must be &gt; 0.0).
-   *
-   * @see #getBlockWidth()
-   */
-  public void setBlockWidth(double width) {
-    if (width <= 0.0) {
-      throw new IllegalArgumentException("The 'width' argument must be > 0.0");
-    }
-    this.blockWidth = width;
-    updateOffsets();
-    fireChangeEvent();
-  }
-
-  /**
-   * Returns the block height, in data/axis units.
-   *
-   * @return The block height.
-   *
-   * @see #setBlockHeight(double)
-   */
-  public double getBlockHeight() {
-    double h;
-    if (blockHeight == 0 && (h = img.getMaxBlockHeight()) != 0)
-      setBlockHeight(h);
-    return blockHeight;
-  }
-
-  /**
-   * Sets the height of the blocks used to represent each data item and sends a
-   * {@link RendererChangeEvent} to all registered listeners.
-   *
-   * @param height the new height, in data/axis units (must be &gt; 0.0).
-   *
-   * @see #getBlockHeight()
-   */
-  public void setBlockHeight(double height) {
-    if (height <= 0.0) {
-      throw new IllegalArgumentException("The 'height' argument must be > 0.0");
-    }
-    this.blockHeight = height;
-    updateOffsets();
-    fireChangeEvent();
   }
 
   /**
@@ -203,36 +135,9 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
    * Updates the offsets to take into account the block width, height and anchor.
    */
   private void updateOffsets() {
-    double blockWidth = getBlockWidth();
-    double blockHeight = getBlockHeight();
-    if (blockAnchor.equals(RectangleAnchor.BOTTOM_LEFT)) {
-      xOffset = 0.0;
-      yOffset = 0.0;
-    } else if (blockAnchor.equals(RectangleAnchor.BOTTOM)) {
-      xOffset = -blockWidth / 2.0;
-      yOffset = 0.0;
-    } else if (blockAnchor.equals(RectangleAnchor.BOTTOM_RIGHT)) {
-      xOffset = -blockWidth;
-      yOffset = 0.0;
-    } else if (blockAnchor.equals(RectangleAnchor.LEFT)) {
-      xOffset = 0.0;
-      yOffset = -blockHeight / 2.0;
-    } else if (blockAnchor.equals(RectangleAnchor.CENTER)) {
-      xOffset = -blockWidth / 2.0;
-      yOffset = -blockHeight / 2.0;
-    } else if (blockAnchor.equals(RectangleAnchor.RIGHT)) {
-      xOffset = -blockWidth;
-      yOffset = -blockHeight / 2.0;
-    } else if (blockAnchor.equals(RectangleAnchor.TOP_LEFT)) {
-      xOffset = 0.0;
-      yOffset = -blockHeight;
-    } else if (blockAnchor.equals(RectangleAnchor.TOP)) {
-      xOffset = -blockWidth / 2.0;
-      yOffset = -blockHeight;
-    } else if (blockAnchor.equals(RectangleAnchor.TOP_RIGHT)) {
-      xOffset = -blockWidth;
-      yOffset = -blockHeight;
-    }
+    // always bottom left
+    xOffset = 0.0;
+    yOffset = 0.0;
   }
 
   /**
@@ -254,7 +159,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       return null;
     }
     return new Range(r.getLowerBound() + this.xOffset,
-        r.getUpperBound() + getBlockWidth() + this.xOffset);
+        r.getUpperBound() + avgBlockWidth + this.xOffset);
   }
 
   /**
@@ -275,7 +180,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
         return null;
       } else {
         return new Range(r.getLowerBound() + this.yOffset,
-            r.getUpperBound() + getBlockHeight() + this.yOffset);
+            r.getUpperBound() + avgBlockHeight + this.yOffset);
       }
     } else {
       return null;
@@ -303,12 +208,6 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       return false;
     }
     ImageRenderer2 that = (ImageRenderer2) obj;
-    if (this.blockHeight != that.blockHeight) {
-      return false;
-    }
-    if (this.blockWidth != that.blockWidth) {
-      return false;
-    }
     if (!this.blockAnchor.equals(that.blockAnchor)) {
       return false;
     }
@@ -361,32 +260,42 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       DataCollectable2DDataset data = (DataCollectable2DDataset) dataset;
       DataCollectable2D img = data.getImage();
       setImage(img);
+      lastx1 = -1;
+      lastYY0 = -1;
+      lastXX0 = -1;
 
-      // draw line per line
-      int line = item / data.getLineLength();
-      int dp = item % data.getLineLength();
-
-      // only if in map or if there is no map
-      if (isMapActive()) {
-        State dpstate = sett.getMapValue(line, dp);
-        // do not paint if false
-        if (dpstate.isFalse())
-          return;
-
-        // paint with transparency if marked
-        boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
-        // set transparency if used
-        if (markAlpha)
-          g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
-
+      // draw full image
+      for (int l = 0; l < data.getLineCount(); l++) {
+        for (int dp = 0; dp < data.getLineLength(); dp++) {
+          // only if in map or if there is no map
+          if (isMapActive()) {
+            State dpstate = sett.getMapValue(l, dp);
+            if (dpstate.isFalse()) {
+              // do not paint if false
+              continue;
+            } else {
+              // paint with transparency if marked
+              boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
+              // set transparency if used
+              if (markAlpha)
+                g2.setComposite(
+                    AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+            }
+          }
+          // not in map so paint... if
+          // paint block
+          drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, l,
+              dp, crosshairState, pass);
+          // reset
+          g2.setComposite(BlendComposite.Normal);
+        }
       }
-      // paint block
-      drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, line,
-          dp, crosshairState, pass);
-      // reset
-      g2.setComposite(BlendComposite.Normal);
     }
   }
+
+  double lastx1 = -1;
+  double lastXX0 = -1;
+  double lastYY0 = -1;
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
@@ -403,76 +312,58 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       Paint p = this.getPaintScale().getPaint(z);
       double xx0 = domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
       double yy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
-      double xx1 = domainAxis.valueToJava2D(x + img.getMaxBlockWidth() + this.xOffset, dataArea,
+      double xx1 = domainAxis.valueToJava2D(x + avgBlockWidth + this.xOffset, dataArea,
           plot.getDomainAxisEdge());
-      double yy1 = rangeAxis.valueToJava2D(y + img.getMaxBlockHeight() + this.yOffset, dataArea,
+      double yy1 = rangeAxis.valueToJava2D(y + avgBlockHeight + this.yOffset, dataArea,
           plot.getRangeAxisEdge());
       Rectangle2D block;
 
+      // round to full pixel
+      xx0 = Math.round(xx0);
+      xx1 = Math.round(xx1);
+      yy0 = Math.round(yy0);
+      yy1 = Math.round(yy1);
+
+      double w, h;
 
       PlotOrientation orientation = plot.getOrientation();
       if (orientation.equals(PlotOrientation.HORIZONTAL)) {
-        block = new Rectangle2D.Double(Math.min(yy0, yy1), Math.min(xx0, xx1), Math.abs(yy1 - yy0),
-            Math.abs(xx0 - xx1));
+        w = Math.abs(yy1 - yy0);
+        h = Math.abs(xx0 - xx1);
+        block = new Rectangle2D.Double(Math.min(yy0, yy1), Math.min(xx0, xx1), w, h);
       } else {
-        block = new Rectangle2D.Double(Math.min(xx0, xx1), Math.min(yy0, yy1), Math.abs(xx1 - xx0),
-            Math.abs(yy1 - yy0));
+        h = Math.abs(yy1 - yy0);
+        w = Math.abs(xx0 - xx1);
+        block = new Rectangle2D.Double(Math.min(xx0, xx1), Math.min(yy0, yy1), w, h);
       }
 
+      // blocks should always have the same edge if very close
+      // enlarge width by 1 if rounding error was detected
+      // if dist 1 px
+      double dist = Math.abs(lastx1 - xx0);
+      if (lastx1 != -1 && dist > 0.5 && dist < 1.5)
+        w++;
+
+      lastx1 = xx1;
+
+
+      // // PlotOrientation orientation = plot.getOrientation();
+      // if (orientation.equals(PlotOrientation.HORIZONTAL)) {
+      // block = new Rectangle2D.Double(Math.min(yy0, yy1), Math.min(xx0, xx1), Math.abs(yy1 - yy0),
+      // Math.abs(xx0 - xx1));
+      // } else {
+      // block = new Rectangle2D.Double(Math.min(xx0, xx1), Math.min(yy0, yy1), Math.abs(xx1 - xx0),
+      // Math.abs(yy1 - yy0));
+      // }
+
       // do only paint if inside rect
-      if (dataArea.intersects(block)) {
+      if (w > 0 && h > 0 && dataArea.intersects(block)) {
         g2.setPaint(p);
 
-        // check at first dp first line if pixels are too small. then only paint integer pixels
-        if (line == 0 && dp == 0) {
-          xPixelToSmall = block.getWidth() < 1;
-          yPixelToSmall = block.getHeight() < 1;
-
-          if (yPixelToSmall)
-            iy = (int) Math.round(Math.min(yy0, yy1)) - 1;
-        }
-        // ALTERNATIVE
-        // paint integer pixels
-        if (xPixelToSmall || yPixelToSmall) {
-          if (dp == 0)
-            if (xPixelToSmall)
-              ix = (int) Math.round(Math.min(xx0, xx1)) - 1;
-          // floor current values
-          int fx = (int) Math.min(xx0, xx1);
-          int fy = (int) Math.min(yy0, yy1);
-
-          // has changed
-          if ((!xPixelToSmall || fx > ix) || (!yPixelToSmall || fy < iy)) {
-            double nx = xPixelToSmall ? ix : block.getX();
-            double ny = yPixelToSmall ? iy : block.getY();
-            double nw = xPixelToSmall ? 1 : block.getWidth();
-            double nh = yPixelToSmall ? 1 : block.getHeight();
-
-            if (line > 0 && dp == 2000) {
-              int free = 1;
-              free = 2;
-            }
-
-            Rectangle2D nblock = new Rectangle2D.Double(nx, ny, nw, nh);
-            // g2.fill(nblock);
-            g2.fillRect(ix, (int) ny, 1, (int) nh);
-            // increment positions
-            if ((!xPixelToSmall || fx > ix))
-              ix++;
-            if ((!yPixelToSmall || fy < iy))
-              iy--;
-          }
-        } else {
-          g2.fill(block);
-        }
+        g2.fill(block);
 
         // g2.setStroke(new BasicStroke(1.0f));
         // g2.draw(block);
-
-        if (isItemLabelVisible(1, item)) {
-          drawItemLabel(g2, orientation, data, 1, item, block.getCenterX(), block.getCenterY(),
-              y < 0.0);
-        }
 
         int datasetIndex = plot.indexOf(data);
         double transX = domainAxis.valueToJava2D(x, dataArea, plot.getDomainAxisEdge());
@@ -505,25 +396,19 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     return paintScale;
   }
 
-  public double getBlockWidth(int i) {
-    return getBlockWidth();
-  }
-
-  public double getBlockHeight(int i) {
-    return getBlockHeight();
-  }
-
   public void setImage(DataCollectable2D img) {
     if (this.img != img) {
-      resetSizing();
       this.img = img;
       this.sett = img.getImageGroup().getSettAlphaMap();
+      // block width and height for range detection
+      setAvgBlockSize(img.getAvgBlockWidth(), img.getAvgBlockHeight());
     }
   }
 
-  private void resetSizing() {
-    blockWidth = 0;
-    blockHeight = 0;
+  private void setAvgBlockSize(float w, float h) {
+    avgBlockHeight = h;
+    avgBlockWidth = w;
   }
+
 
 }

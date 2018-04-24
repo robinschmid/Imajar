@@ -159,14 +159,19 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
    * 
    * @return
    */
-  public abstract double getMaxBlockWidth();
+  public abstract float getAvgBlockWidth();
 
   /**
    * maximum block height for renderer = distance between one and next block in lines
    * 
    * @return
    */
-  public abstract double getMaxBlockHeight();
+  public abstract float getAvgBlockHeight();
+
+  public abstract boolean hasOneDPWidth();
+
+  public abstract boolean hasOneDPHeight();
+
 
   //
   public int getLastIProcChangeTime() {

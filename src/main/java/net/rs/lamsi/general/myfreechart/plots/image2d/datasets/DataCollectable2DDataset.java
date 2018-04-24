@@ -36,7 +36,12 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
 
   @Override
   public int getItemCount(int series) {
-    return data == null ? img.getTotalDataPoints() : linelength * data.lineCount();
+    // always paint image as one item
+    return 1;
+  }
+
+  public int getLineCount() {
+    return data == null ? img.getMaxLinesCount() : data.lineCount();
   }
 
   /**

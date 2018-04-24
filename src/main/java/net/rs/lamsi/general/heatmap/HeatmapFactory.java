@@ -397,11 +397,6 @@ public class HeatmapFactory {
       renderer.setAutoPopulateSeriesFillPaint(true);
       renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
 
-      // TODO change to dynamic block width
-      renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
-      renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
-
-
       // Plot erstellen mit daten
       XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
       plot.setBackgroundPaint(Color.lightGray);
@@ -522,11 +517,6 @@ public class HeatmapFactory {
     renderer.setPaintScale(scale);
     renderer.setAutoPopulateSeriesFillPaint(true);
     renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
-
-    // TODO change to dynamic block width
-    renderer.setBlockWidth(img.getMaxBlockWidth(settImage));
-    renderer.setBlockHeight(img.getMaxBlockHeight(settImage));
-
 
     // Plot erstellen mit daten
     XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);
@@ -651,10 +641,6 @@ public class HeatmapFactory {
     renderer.setPaintScale(scale);
     renderer.setAutoPopulateSeriesFillPaint(true);
     renderer.setBlockAnchor(RectangleAnchor.BOTTOM_LEFT);
-
-    // TODO change to dynamic block width
-    renderer.setBlockWidth(img.getMaxBlockWidth());
-    renderer.setBlockHeight(img.getMaxBlockHeight());
 
     // Plot erstellen mit daten
     XYSquaredPlot plot = new XYSquaredPlot(dataset, xAxis, yAxis, renderer);

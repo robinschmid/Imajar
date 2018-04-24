@@ -15,8 +15,8 @@ import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
-import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2DSett;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2DSett;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
@@ -183,8 +183,8 @@ public class SettingsSelections extends Settings implements Serializable,
       // alpha map settings
       SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
 
-      float w = (float) currentImg.getMaxBlockWidth();
-      float h = (float) currentImg.getMaxBlockHeight();
+      float w = (float) currentImg.getAvgBlockWidth();
+      float h = (float) currentImg.getAvgBlockHeight();
 
       // for each data point
       for (int l = 0; l < z.length; l++) {
@@ -243,8 +243,8 @@ public class SettingsSelections extends Settings implements Serializable,
       // alpha map settings
       SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
 
-      float w = (float) currentImg.getMaxBlockWidth();
-      float h = (float) currentImg.getMaxBlockHeight();
+      float w = (float) currentImg.getAvgBlockWidth();
+      float h = (float) currentImg.getAvgBlockHeight();
 
       // for each data point
       for (int l = 0; l < z.length; l++) {
@@ -572,8 +572,8 @@ public class SettingsSelections extends Settings implements Serializable,
       int cselnonex = 0;
 
       // width height of data points
-      float w = (float) currentImg.getMaxBlockWidth();
-      float h = (float) currentImg.getMaxBlockHeight();
+      float w = (float) currentImg.getAvgBlockWidth();
+      float h = (float) currentImg.getAvgBlockHeight();
 
       // alpha map settings
       SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
@@ -754,8 +754,8 @@ public class SettingsSelections extends Settings implements Serializable,
         if (isnew)
           map = new State[z.length][];
 
-        float w = (float) currentImg.getMaxBlockWidth();
-        float h = (float) currentImg.getMaxBlockHeight();
+        float w = (float) currentImg.getAvgBlockWidth();
+        float h = (float) currentImg.getAvgBlockHeight();
 
         // for each line
         for (int l = 0; l < x.length; l++) {

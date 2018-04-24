@@ -58,8 +58,24 @@ public class Simple2DDataset extends ImageDataset {
         : 0;
   }
 
+
   @Override
-  public float getMaxXDPWidth() {
+  public boolean hasOneDPWidth() {
+    return true;
+  }
+
+  @Override
+  public boolean hasOneDPHeight() {
+    return true;
+  }
+
+  @Override
+  public float getMaxDPWidth() {
+    return pixelWidth;
+  }
+
+  @Override
+  public float getAvgDPWidth() {
     return pixelWidth;
   }
 
