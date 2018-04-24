@@ -260,47 +260,256 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       DataCollectable2DDataset data = (DataCollectable2DDataset) dataset;
       DataCollectable2D img = data.getImage();
       setImage(img);
-      lastx1 = -1;
-      lastYY0 = -1;
-      lastXX0 = -1;
 
-      // draw full image
-      for (int l = 0; l < data.getLineCount(); l++) {
-        for (int dp = 0; dp < data.getLineLength(); dp++) {
-          // only if in map or if there is no map
-          if (isMapActive()) {
-            State dpstate = sett.getMapValue(l, dp);
-            if (dpstate.isFalse()) {
-              // do not paint if false
-              continue;
-            } else {
-              // paint with transparency if marked
-              boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
-              // set transparency if used
-              if (markAlpha)
-                g2.setComposite(
-                    AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
-            }
-          }
-          // not in map so paint... if
-          // paint block
-          drawBlockItem(g2, state, dataArea, info, plot, domainAxis, rangeAxis, data, img, item, l,
-              dp, crosshairState, pass);
-          // reset
-          g2.setComposite(BlendComposite.Normal);
-        }
+      // height
+      double yy0 = rangeAxis.valueToJava2D(0, dataArea, plot.getRangeAxisEdge());
+      double yy1 = rangeAxis.valueToJava2D(avgBlockHeight, dataArea, plot.getRangeAxisEdge());
+      double bh = Math.abs(yy1 - yy0);
+
+      // width
+      double xx0 = domainAxis.valueToJava2D(0, dataArea, plot.getDomainAxisEdge());
+      double xx1 = domainAxis.valueToJava2D(avgBlockWidth, dataArea, plot.getDomainAxisEdge());
+      double bw = Math.abs(xx1 - xx0);
+
+      // all same dp width?
+      if (img.hasOneDPWidth()) {
+        // draw with one block width and height
+        drawImage(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState, data, bw, bh);
+      } else {
+        // draw with one block height but different widths
+        drawImageFixedBlockHeight(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState,
+            data, bw, bh);
       }
     }
   }
 
+
+  /**
+   * Draw image with avgDPWidth and Height
+   * 
+   * @param g2
+   * @param state
+   * @param dataArea
+   * @param plot
+   * @param domainAxis
+   * @param rangeAxis
+   * @param crosshairState
+   * @param data
+   * @param bw valueToJava2D BlockWidth
+   * @param bh valueToJava2D BlockHeight
+   */
+  private void drawImage(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
+      XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, CrosshairState crosshairState,
+      DataCollectable2DDataset data, double bw, double bh) {
+    // draw full image
+    for (int l = 0; l < data.getLineCount(); l++) {
+      lastx1 = -1;
+      for (int dp = 0; dp < data.getLineLength(); dp++) {
+        // only if in map or if there is no map
+        if (isMapActive()) {
+          State dpstate = sett.getMapValue(l, dp);
+          if (dpstate.isFalse()) {
+            // do not paint if false
+            continue;
+          } else {
+            // paint with transparency if marked
+            boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
+            // set transparency if used
+            if (markAlpha)
+              g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+          }
+        }
+        // not in map so paint... if
+        // paint block
+        // try to get intensity - NaN == no data point
+        double z = data.getZ(false, l, dp);
+        if (!Double.isNaN(z)) {
+          double x = data.getX(false, l, dp);
+          double y = data.getY(false, l, dp);
+
+          Paint p = this.getPaintScale().getPaint(z);
+          double xx0 =
+              domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
+          double yy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
+
+          // paint
+          drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, xx0,
+              xx0 + bw, yy0, yy0 + bh, p);
+        }
+        // reset
+        g2.setComposite(BlendComposite.Normal);
+      }
+    }
+  }
+
+
+
   double lastx1 = -1;
-  double lastXX0 = -1;
-  double lastYY0 = -1;
+
+  /**
+   * Draw image with a different width for each dp avgDPHeight is used
+   * 
+   * @param g2
+   * @param state
+   * @param dataArea
+   * @param plot
+   * @param domainAxis
+   * @param rangeAxis
+   * @param crosshairState
+   * @param data
+   * @param bh valueToJava2D BlockHeight
+   */
+  private void drawImageFixedBlockHeight(Graphics2D g2, XYItemRendererState state,
+      Rectangle2D dataArea, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
+      CrosshairState crosshairState, DataCollectable2DDataset data, double bw, double bh) {
+    // draw full image
+    Paint lastPaint = null;
+    // last
+    double lxx0 = -1;
+    double lyy0 = -1;
+    // current
+    Paint currentPaint = null;
+    double cxx0 = -1;
+    double cyy0 = -1;
+    boolean currentNoDP = false;
+
+    for (int l = 0; l < data.getLineCount(); l++) {
+      lastx1 = -1;
+      // reset last
+      lxx0 = -1;
+      lyy0 = -1;
+      lastPaint = null;
+      for (int dp = 0; dp < data.getLineLength(); dp++) {
+        // reset current
+        currentNoDP = false;
+        currentPaint = null;
+        cxx0 = -1;
+        cyy0 = -1;
+
+        // only if in map or if there is no map
+        if (isMapActive()) {
+          State dpstate = sett.getMapValue(l, dp);
+          if (dpstate.isFalse()) {
+            // do not paint this block if false
+            currentNoDP = true;
+          } else {
+            // paint with transparency if marked
+            boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
+            // set transparency if used
+            if (markAlpha)
+              g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+          }
+        }
+        if (!currentNoDP || lastPaint != null) {
+          // not in map so paint... if
+          // paint block
+          // try to get intensity - NaN == no data point
+          double z = data.getZ(false, l, dp);
+          if (!Double.isNaN(z)) {
+            double x = data.getX(false, l, dp);
+            double y = data.getY(false, l, dp);
+
+            currentPaint = this.getPaintScale().getPaint(z);
+            cxx0 = domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
+            cyy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
+          } else
+            currentNoDP = true;
+        }
+
+        // paint last dp
+        if (lastPaint != null) {
+          // paint with bw if current dp was
+          double xx1 = currentPaint == null ? lxx0 + bw : cxx0;
+
+          // paint dp
+          drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState,
+              lxx0, xx1, lyy0, lyy0 + bh, lastPaint);
+        }
+
+        // convert current to last
+        lxx0 = cxx0;
+        lyy0 = cyy0;
+        lastPaint = currentNoDP ? null : currentPaint;
+      }
+      // special case for last dp paint with bw and bh
+      // paint last dp
+      if (lastPaint != null) {
+        // paint dp
+        drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, lxx0,
+            lxx0 + bw, lyy0, lyy0 + bh, lastPaint);
+      }
+      // reset
+      g2.setComposite(BlendComposite.Normal);
+    }
+  }
+
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
-      PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
-      DataCollectable2DDataset data, DataCollectable2D img, int item, int line, int dp,
-      CrosshairState crosshairState, int pass) {
+      XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
+      CrosshairState crosshairState, double xx0, double xx1, double yy0, double yy1, Paint p) {
+    Rectangle2D block;
+
+    // round to full pixel
+    xx0 = Math.round(xx0);
+    xx1 = Math.round(xx1);
+    yy0 = Math.round(yy0);
+    yy1 = Math.round(yy1);
+
+    double w, h;
+
+    PlotOrientation orientation = plot.getOrientation();
+    if (orientation.equals(PlotOrientation.HORIZONTAL)) {
+      w = Math.abs(yy1 - yy0);
+      h = Math.abs(xx0 - xx1);
+      block = new Rectangle2D.Double(Math.min(yy0, yy1), Math.min(xx0, xx1), w, h);
+    } else {
+      h = Math.abs(yy1 - yy0);
+      w = Math.abs(xx0 - xx1);
+      block = new Rectangle2D.Double(Math.min(xx0, xx1), Math.min(yy0, yy1), w, h);
+    }
+
+    // blocks should always have the same edge if very close
+    // enlarge width by 1 if rounding error was detected
+    // if dist 1 px
+    double dist = Math.abs(lastx1 - xx0);
+    if (lastx1 != -1 && dist > 0.5 && dist < 1.5) {
+      block = new Rectangle2D.Double(Math.min(xx0, xx1), Math.min(yy0, yy1), w + 1, h);
+    }
+
+    lastx1 = xx1;
+    // paint
+    drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, block, p);
+  }
+
+  protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
+      XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
+      CrosshairState crosshairState, Rectangle2D block, Paint p) {
+
+    // do only paint if inside rect
+    if (block.getWidth() > 0 && block.getHeight() > 0 && dataArea.intersects(block)) {
+      g2.setPaint(p);
+
+      g2.fill(block);
+
+      // g2.setStroke(new BasicStroke(1.0f));
+      // g2.draw(block);
+
+      // int datasetIndex = plot.indexOf(data);
+      // double transX = domainAxis.valueToJava2D(x, dataArea, plot.getDomainAxisEdge());
+      // double transY = rangeAxis.valueToJava2D(y, dataArea, plot.getRangeAxisEdge());
+      // updateCrosshairValues(crosshairState, x, y, datasetIndex, transX, transY, orientation);
+
+      EntityCollection entities = state.getEntityCollection();
+      if (entities != null) {
+        Rectangle2D intersect = block.createIntersection(dataArea);
+        addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY());
+      }
+    }
+  }
+
+  protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
+      XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
+      int line, int dp, CrosshairState crosshairState) {
 
     // try to get intensity - NaN == no data point
     double z = data.getZ(false, line, dp);
@@ -373,7 +582,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
         EntityCollection entities = state.getEntityCollection();
         if (entities != null) {
           Rectangle2D intersect = block.createIntersection(dataArea);
-          addEntity(entities, intersect, data, 1, item, intersect.getCenterX(),
+          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
               intersect.getCenterY());
         }
       }
