@@ -15,7 +15,12 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
 
   //
   public enum State {
-    NO_DP, ALPHA_FALSE, ALPHA_TRUE, MARKED_ALPHA_FALSE, MARKED_ALPHA_TRUE, NO_MAP_DEFINED;
+    NO_DP, // not a dp
+    ALPHA_FALSE, // not visible
+    ALPHA_TRUE, // visible
+    MARKED_ALPHA_FALSE, // marked
+    MARKED_ALPHA_TRUE, // marked
+    NO_MAP_DEFINED;
 
     public boolean isTrue() {
       return this.equals(ALPHA_TRUE) || this.equals(MARKED_ALPHA_TRUE);
@@ -63,10 +68,11 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
   }
 
   private boolean isActive = false;
+  private boolean isDrawMarks = false;
   // true: visible, false: invisible, null: no data point
   private State[][] map = null;
   private int realsize = 0, falseCount = 0;
-  protected float alpha = 1;
+  protected float alpha = 0.5f;
   // settings
   private MultiImageTableModel tableModel;
 
@@ -84,10 +90,11 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
   @Override
   public void resetAll() {
     isActive = false;
-    alpha = 1;
+    alpha = 0.5f;
     map = null;
     realsize = 0;
     falseCount = 0;
+    isDrawMarks = false;
   }
 
   // ##########################################################
@@ -97,6 +104,7 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
     toXML(elParent, doc, "isActive", isActive);
     toXMLArray(elParent, doc, "map", map);
     toXML(elParent, doc, "alpha", alpha);
+    toXML(elParent, doc, "isDrawMarks", isDrawMarks);
   }
 
   @Override
@@ -108,7 +116,9 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
         String paramName = nextElement.getNodeName();
         if (paramName.equals("isActive"))
           isActive = booleanFromXML(nextElement);
-        if (paramName.equals("alpha"))
+        else if (paramName.equals("isDrawMarks"))
+          isDrawMarks = booleanFromXML(nextElement);
+        else if (paramName.equals("alpha"))
           alpha = floatFromXML(nextElement);
         else if (paramName.equals("map"))
           setMap(mapStateFromXML(nextElement));
@@ -137,6 +147,17 @@ public class SettingsAlphaMap extends Settings implements GroupSettings {
   public boolean setActive(boolean isActive) {
     boolean result = isActive != this.isActive;
     this.isActive = isActive;
+    return result;
+  }
+
+
+  public boolean isDrawMarks() {
+    return isDrawMarks;
+  }
+
+  public boolean setDrawMarks(boolean isDrawMarks) {
+    boolean result = isDrawMarks != this.isDrawMarks;
+    this.isDrawMarks = isDrawMarks;
     return result;
   }
 

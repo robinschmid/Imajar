@@ -10,6 +10,7 @@ import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.utils.FileAndPathUtil;
 
 
 public class SettingsGeneralCollecable2D extends Settings {
@@ -46,8 +47,8 @@ public class SettingsGeneralCollecable2D extends Settings {
 
   public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos,
       boolean keepAspectRatio) {
+    setTitle(title);
     this.shortTitle = shortTitle;
-    this.title = title;
     this.showShortTitle = useShortTitle;
     this.xPosTitle = xPos;
     this.yPosTitle = yPos;
@@ -150,7 +151,7 @@ public class SettingsGeneralCollecable2D extends Settings {
   }
 
   public void setTitle(String title) {
-    this.title = title;
+    this.title = FileAndPathUtil.replaceInvalidChar(title);
   }
 
   public String toListName() {

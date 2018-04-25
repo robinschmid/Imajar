@@ -192,11 +192,12 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
 
     cbAlphaMapAsExclusion = new JCheckBox("use alpha map exclusion");
-    cbAlphaMapAsExclusion.addItemListener(il -> updateAllStats());
     cbAlphaMapAsExclusion.setToolTipText(
         "Alpha map is used to exclude. Create alpha map in multi image explorer. All data points that are out of range are excluded from statistics");
     cbAlphaMapAsExclusion.setSelected(true);
     pnNorthMenu.add(cbAlphaMapAsExclusion);
+    cbAlphaMapAsExclusion
+        .addItemListener(il -> setAlphaMapExclude(cbAlphaMapAsExclusion.isSelected()));
 
 
     cbShowAnnotations = new JCheckBox("show annotations");
@@ -356,6 +357,17 @@ public class Image2DSelectDataAreaDialog extends JFrame
     contentPane.requestFocusInWindow();
   }
 
+  private void setAlphaMapExclude(boolean state) {
+    // set to settSel
+    settSel.setAlphaMapExclusionActive(state);
+    // data has changed in table
+    // update table
+    tableModel.fireTableDataChanged();
+    showMarkingMap(cbMarkDp.isSelected());
+  }
+
+
+
   protected void updateAllStats() {
     // update all rects
     settSel.updateStatistics();
@@ -373,11 +385,12 @@ public class Image2DSelectDataAreaDialog extends JFrame
   protected void showMarkingMap(boolean selected) {
     if (img != null) {
       SettingsAlphaMap sett = img.getImageGroup().getSettAlphaMap();
+      sett.setDrawMarks(selected);
 
       // erase markings
       sett.eraseMarkings();
       if (sett != null) {
-        sett.setActive(selected || cbAlphaMapAsExclusion.isSelected());
+        sett.setActive(cbAlphaMapAsExclusion.isSelected());
         if (selected) {
           // create map
           settSel.markAlphaMap(sett);
@@ -511,6 +524,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
         getCbtnColor().setColor(c);
 
         // show
+        setAlphaMapExclude(cbAlphaMapAsExclusion.isSelected());
         setVisible(true);
       } catch (Exception ex) {
         DialogLoggerUtil.showErrorDialog(this, "", ex);
@@ -582,8 +596,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
    */
   protected void updateSelection(SettingsShapeSelection currentSelect) {
     if (img != null)
-      img.getImageGroup().getSettAlphaMap()
-          .setActive(cbAlphaMapAsExclusion.isSelected() || cbMarkDp.isSelected());
+      img.getImageGroup().getSettAlphaMap().setActive(cbAlphaMapAsExclusion.isSelected());
     // Update rects
     if (currentSelect != null && currentSelect.getMode() == SelectionMode.EXCLUDE) {
       // update all rects

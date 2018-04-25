@@ -27,9 +27,11 @@ import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
-public class ImageRenderer2 extends AbstractXYItemRenderer
+public class FullImageRenderer extends AbstractXYItemRenderer
     implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
 
 
@@ -68,7 +70,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
    * 
    * @param img2
    */
-  public ImageRenderer2(DataCollectable2D img) {
+  public FullImageRenderer(DataCollectable2D img) {
     setImage(img);
     updateOffsets();
     this.paintScale = new LookupPaintScale();
@@ -158,8 +160,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     if (r == null) {
       return null;
     }
-    return new Range(r.getLowerBound() + this.xOffset,
-        r.getUpperBound() + avgBlockWidth + this.xOffset);
+    return new Range(r.getLowerBound() + this.xOffset, r.getUpperBound() + this.xOffset);
   }
 
   /**
@@ -179,8 +180,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       if (r == null) {
         return null;
       } else {
-        return new Range(r.getLowerBound() + this.yOffset,
-            r.getUpperBound() + avgBlockHeight + this.yOffset);
+        return new Range(r.getLowerBound() + this.yOffset, r.getUpperBound() + this.yOffset);
       }
     } else {
       return null;
@@ -204,10 +204,10 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof ImageRenderer2)) {
+    if (!(obj instanceof FullImageRenderer)) {
       return false;
     }
-    ImageRenderer2 that = (ImageRenderer2) obj;
+    FullImageRenderer that = (FullImageRenderer) obj;
     if (!this.blockAnchor.equals(that.blockAnchor)) {
       return false;
     }
@@ -226,7 +226,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
    */
   @Override
   public Object clone() throws CloneNotSupportedException {
-    ImageRenderer2 clone = (ImageRenderer2) super.clone();
+    FullImageRenderer clone = (FullImageRenderer) super.clone();
     if (this.paintScale instanceof PublicCloneable) {
       PublicCloneable pc = (PublicCloneable) this.paintScale;
       clone.paintScale = (PaintScale) pc.clone();
@@ -283,6 +283,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     }
   }
 
+  int c = 0;
 
   /**
    * Draw image with avgDPWidth and Height
@@ -301,19 +302,28 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
   private void drawImage(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, CrosshairState crosshairState,
       DataCollectable2DDataset data, double bw, double bh) {
+    float width = img.getAvgBlockWidth();
+    float height = img.getAvgBlockHeight();
+    Range domain = domainAxis.getRange();
+    Range range = rangeAxis.getRange();
+    c = 0;
+    int cAll = 0;
     // draw full image
     for (int l = 0; l < data.getLineCount(); l++) {
       lastx1 = -1;
       for (int dp = 0; dp < data.getLineLength(); dp++) {
         // only if in map or if there is no map
-        if (isMapActive()) {
+        if (sett != null) {
           State dpstate = sett.getMapValue(l, dp);
-          if (dpstate.isFalse()) {
+          if (sett.isActive() && dpstate.isFalse()) {
             // do not paint if false
             continue;
-          } else {
+          } else if (sett.isDrawMarks() && dpstate.isMarked()) {
             // paint with transparency if marked
             boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
+            // skip paint if alpha = 0
+            if (markAlpha && sett.getAlpha() < 0.0001)
+              continue;
             // set transparency if used
             if (markAlpha)
               g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
@@ -327,19 +337,43 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
           double x = data.getX(false, l, dp);
           double y = data.getY(false, l, dp);
 
-          Paint p = this.getPaintScale().getPaint(z);
-          double xx0 =
-              domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
-          double yy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
+          // check whether block is in range of axes
+          if (inRanges(x, y, x + width, y + height, domain, range)) {
 
-          // paint
-          drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, xx0,
-              xx0 + bw, yy0, yy0 + bh, p);
+            Paint p = this.getPaintScale().getPaint(z);
+            double xx0 =
+                domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
+            double yy0 =
+                rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
+
+            // paint
+            drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState,
+                xx0, xx0 + bw, yy0, yy0 - bh, p);
+            cAll++;
+          }
         }
         // reset
         g2.setComposite(BlendComposite.Normal);
       }
     }
+    ImageEditorWindow.log("dp=" + c + " (" + cAll + ")", LOG.DEBUG);
+  }
+
+
+  /**
+   * Checks if at least one coordinate of x and y are in range and domain
+   * 
+   * @param x0
+   * @param y0
+   * @param x1
+   * @param y1
+   * @param domain
+   * @param range
+   * @return
+   */
+  private boolean inRanges(double x0, double y0, double x1, double y1, Range domain, Range range) {
+    return (domain.contains(x0) || domain.contains(x1))
+        && (range.contains(y0) || range.contains(y1));
   }
 
 
@@ -423,7 +457,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
 
           // paint dp
           drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState,
-              lxx0, xx1, lyy0, lyy0 + bh, lastPaint);
+              lxx0, xx1, lyy0, lyy0 - bh, lastPaint);
         }
 
         // convert current to last
@@ -436,7 +470,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       if (lastPaint != null) {
         // paint dp
         drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, lxx0,
-            lxx0 + bw, lyy0, lyy0 + bh, lastPaint);
+            lxx0 + bw, lyy0, lyy0 - bh, lastPaint);
       }
       // reset
       g2.setComposite(BlendComposite.Normal);
@@ -473,7 +507,7 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
     // if dist 1 px
     double dist = Math.abs(lastx1 - xx0);
     if (lastx1 != -1 && dist > 0.5 && dist < 1.5) {
-      block = new Rectangle2D.Double(Math.min(xx0, xx1), Math.min(yy0, yy1), w + 1, h);
+      block = new Rectangle2D.Double(Math.min(xx0, xx1) - 1, Math.min(yy0, yy1), w + 1, h);
     }
 
     lastx1 = xx1;
@@ -490,6 +524,8 @@ public class ImageRenderer2 extends AbstractXYItemRenderer
       g2.setPaint(p);
 
       g2.fill(block);
+      // count
+      c++;
 
       // g2.setStroke(new BasicStroke(1.0f));
       // g2.draw(block);

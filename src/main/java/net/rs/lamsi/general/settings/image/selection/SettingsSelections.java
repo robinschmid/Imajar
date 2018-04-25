@@ -780,7 +780,6 @@ public class SettingsSelections extends Settings implements Serializable,
           }
         }
         sett.setMap(map);
-        sett.setActive(true);
       }
     }
   }

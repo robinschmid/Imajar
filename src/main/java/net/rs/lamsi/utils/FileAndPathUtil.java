@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-
 import org.apache.commons.io.FilenameUtils;
-
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
@@ -19,51 +17,63 @@ import net.rs.lamsi.utils.useful.FileNameExtFilter;
  */
 public class FileAndPathUtil {
 
-	  public static final int MAX_LENGTH = 255;
-	  /**
-	   * Limits a path (file and all parent folders) to a chars limit
-	   * 
-	   * @param f
-	   * @return
-	   */
-	  public static File applyMaxLength(File f) {
-	    File parent = f.getParentFile();
-	    String name = f.getName();
-	    // apply max length to parent
-	    if (parent != null)
-	      parent = applyMaxLength(parent);
-	    // apply length to f name
-	    if (name.length() > MAX_LENGTH) {
-	      if (f.isFile()) {
-	        String ext = FilenameUtils.getExtension(name);
-	        name = eraseFormat(name);
-	        int end = MAX_LENGTH - ext.length() - 1;
-	        name = name.substring(0, end) + "." + ext;
-	      }
-	    }
-	    // return new file
-	    if (parent == null)
-	      if (name == null || name.isEmpty())
-	        return f;
-	      else
-	        return new File(name);
-	    else
-	      return new File(parent, name);
-	  }
+  public static final int MAX_LENGTH = 255;
 
-	  /**
-	   * replace all invalid characters
-	   * title.replaceAll("[:*?\"<>|]", "_");
-	   * title.replace(".", ",");
-	   * @param title
-	   * @return
-	   */
-	public static String replaceInvalidChar(String title) {
-	    title = title.replaceAll("[:*?\"<>|]", "_");
-	    title = title.replace(".", ",");
-		return title;
-	}
-	
+  /**
+   * Limits a path (file and all parent folders) to a chars limit
+   * 
+   * @param f
+   * @return
+   */
+  public static File applyMaxLength(File f) {
+    File parent = f.getParentFile();
+    String name = f.getName();
+    // apply max length to parent
+    if (parent != null)
+      parent = applyMaxLength(parent);
+    // apply length to f name
+    if (name.length() > MAX_LENGTH) {
+      if (f.isFile()) {
+        String ext = FilenameUtils.getExtension(name);
+        name = eraseFormat(name);
+        int end = MAX_LENGTH - ext.length() - 1;
+        name = name.substring(0, end) + "." + ext;
+      }
+    }
+    // return new file
+    if (parent == null)
+      if (name == null || name.isEmpty())
+        return f;
+      else
+        return new File(name);
+    else
+      return new File(parent, name);
+  }
+
+  /**
+   * replace all invalid characters title.replaceAll("[:*?\"<>|]", "_"); title.replace(".", ",");
+   * 
+   * @param title
+   * @return
+   */
+  public static String replaceInvalidChar(String title) {
+    title = title.replaceAll("[:*?\"<>|]", "_");
+    title = title.replace(".", ",");
+    return title;
+  }
+
+  /**
+   * replace all invalid characters title.replaceAll("[:*?\"<>|]", "_"); title.replace(".", ",");
+   * 
+   * @param title
+   * @return
+   */
+  public static String replaceInvalidChar(String title, String regex) {
+    title = title.replaceAll("[:*?\"<>|]", regex);
+    title = title.replace(".", regex);
+    return title;
+  }
+
   /**
    * Returns the real file path as path/filename.fileformat
    * 
@@ -375,45 +385,45 @@ public class FileAndPathUtil {
   }
 
   public static List<File[]> findFilesInDir(File dir, FileNameExtFilter fileFilter,
-	      boolean searchSubdir, boolean filesInSeparateFolders) {
-	    DebugStopWatch t = new DebugStopWatch();
-	    File[] subDir = FileAndPathUtil.getSubDirectories(dir);
-	    t.stopAndLOG(" found " + subDir.length + " sub directories in " + dir.getName());
-	    // result: each vector element stands for one img
-	    ArrayList<File[]> list = new ArrayList<File[]>();
-	    // add all files as first image
-	    // sort all files and return them
-	    t.setNewStartTime();
-	    File[] files = dir.listFiles(fileFilter);
-	    t.stopAndLOG(" listing all " + files.length + " files in " + dir.getName());
-	    t.setNewStartTime();
-	    files = FileAndPathUtil.sortFilesByNumber(files);
-	    t.stopAndLOG(" sorting all " + files.length + " files in " + dir.getName());
-	    if (files != null && files.length > 0)
-	      list.add(files);
+      boolean searchSubdir, boolean filesInSeparateFolders) {
+    DebugStopWatch t = new DebugStopWatch();
+    File[] subDir = FileAndPathUtil.getSubDirectories(dir);
+    t.stopAndLOG(" found " + subDir.length + " sub directories in " + dir.getName());
+    // result: each vector element stands for one img
+    ArrayList<File[]> list = new ArrayList<File[]>();
+    // add all files as first image
+    // sort all files and return them
+    t.setNewStartTime();
+    File[] files = dir.listFiles(fileFilter);
+    t.stopAndLOG(" listing all " + files.length + " files in " + dir.getName());
+    t.setNewStartTime();
+    files = FileAndPathUtil.sortFilesByNumber(files);
+    t.stopAndLOG(" sorting all " + files.length + " files in " + dir.getName());
+    if (files != null && files.length > 0)
+      list.add(files);
 
-	    if (subDir == null || subDir.length <= 0 || !searchSubdir) {
-	      // no subdir end directly
-	      return list;
-	    } else {
-	      // sort dirs
-	      t.setNewStartTime();
-	      subDir = FileAndPathUtil.sortFilesByNumber(subDir);
-	      t.stopAndLOG(" sorting all " + subDir.length + " sub directories in " + dir.getName());
-	      // go in all sub and subsub... folders to find files
-	      if (filesInSeparateFolders) {
-	        t.setNewStartTime();
-	        findFilesInSubDirSeparatedFolders(dir, subDir, list, fileFilter);
-	        t.stopAndLOG(" finding files in sub directories (FILES IN SEPARATE FOLDERS)");
-	      } else {
-	        t.setNewStartTime();
-	        findFilesInSubDir(subDir, list, fileFilter);
-	        t.stopAndLOG(" finding files in sub directories");
-	      }
-	      // return as array (unsorted because they are sorted folder wise)
-	      return list;
-	    }
-	  }
+    if (subDir == null || subDir.length <= 0 || !searchSubdir) {
+      // no subdir end directly
+      return list;
+    } else {
+      // sort dirs
+      t.setNewStartTime();
+      subDir = FileAndPathUtil.sortFilesByNumber(subDir);
+      t.stopAndLOG(" sorting all " + subDir.length + " sub directories in " + dir.getName());
+      // go in all sub and subsub... folders to find files
+      if (filesInSeparateFolders) {
+        t.setNewStartTime();
+        findFilesInSubDirSeparatedFolders(dir, subDir, list, fileFilter);
+        t.stopAndLOG(" finding files in sub directories (FILES IN SEPARATE FOLDERS)");
+      } else {
+        t.setNewStartTime();
+        findFilesInSubDir(subDir, list, fileFilter);
+        t.stopAndLOG(" finding files in sub directories");
+      }
+      // return as array (unsorted because they are sorted folder wise)
+      return list;
+    }
+  }
 
   /**
    * go into all subfolders and find all files and go in further subfolders files stored in separate

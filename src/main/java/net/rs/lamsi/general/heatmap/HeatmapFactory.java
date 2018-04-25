@@ -26,7 +26,7 @@ import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
-import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer2;
+import net.rs.lamsi.general.myfreechart.plots.image2d.FullImageRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
@@ -373,7 +373,7 @@ public class HeatmapFactory {
       yAxis.setLowerMargin(0.0);
       yAxis.setUpperMargin(0.0);
       // XYBlockRenderer
-      ImageRenderer2 renderer = new ImageRenderer2(img);
+      FullImageRenderer renderer = new FullImageRenderer(img);
 
       // PaintScale für farbe? TODO mit Settings!
       // TODO upper and lower value setzen!!!!
@@ -496,7 +496,7 @@ public class HeatmapFactory {
     yAxis.setLowerMargin(0.0);
     yAxis.setUpperMargin(0.0);
     // XYBlockRenderer
-    ImageRenderer2 renderer = new ImageRenderer2(img);
+    FullImageRenderer renderer = new FullImageRenderer(img);
 
     // two ways of min or max z value:
     // min max values by filter
@@ -629,7 +629,7 @@ public class HeatmapFactory {
     yAxis.setLowerMargin(0.0);
     yAxis.setUpperMargin(0.0);
     // XYBlockRenderer
-    ImageRenderer2 renderer = new ImageRenderer2(img);
+    FullImageRenderer renderer = new FullImageRenderer(img);
 
     // creation of scale
     // binary data scale? 1, 10, 11, 100, 101, 111, 1000, 1001

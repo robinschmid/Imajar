@@ -22,6 +22,7 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
   private JLabel lbPercentage;
   private JLabel lbTotalDP;
   private JLabel lbFalseDP;
+  private JCheckBox cbShowMarks;
   //
 
   /**
@@ -32,34 +33,37 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
 
     JPanel panel = new JPanel();
     getPnContent().add(panel, BorderLayout.CENTER);
-    panel.setLayout(new MigLayout("", "[][][grow]", "[][][][]"));
+    panel.setLayout(new MigLayout("", "[][][grow]", "[][][][][]"));
+
+    cbShowMarks = new JCheckBox("show marks");
+    panel.add(cbShowMarks, "cell 0 0 2 1");
 
     JLabel lblAlpha = new JLabel("alpha");
-    panel.add(lblAlpha, "cell 0 0,alignx trailing");
+    panel.add(lblAlpha, "cell 0 1,alignx trailing");
 
     txtAlpha = new JTextField();
     txtAlpha.setToolTipText("Alpha value 0.0 - 1.0 : transparent - visible ");
-    txtAlpha.setText("1");
-    panel.add(txtAlpha, "cell 1 0 2 1,alignx left,aligny top");
+    txtAlpha.setText("0.5");
+    panel.add(txtAlpha, "cell 1 1 2 1,alignx left,aligny top");
     txtAlpha.setColumns(10);
 
     JLabel lblExcluded = new JLabel("excluded data points");
-    panel.add(lblExcluded, "cell 0 1 2 1,alignx left");
+    panel.add(lblExcluded, "cell 0 2 2 1,alignx left");
 
     lbFalseDP = new JLabel("0");
-    panel.add(lbFalseDP, "cell 2 1");
+    panel.add(lbFalseDP, "cell 2 2");
 
     JLabel lblTotalDataPoints = new JLabel("total data points");
-    panel.add(lblTotalDataPoints, "cell 0 2 2 1,alignx right");
+    panel.add(lblTotalDataPoints, "cell 0 3 2 1,alignx right");
 
     lbTotalDP = new JLabel("0");
-    panel.add(lbTotalDP, "cell 2 2");
+    panel.add(lbTotalDP, "cell 2 3");
 
     JLabel lblPercentage = new JLabel("percentage");
-    panel.add(lblPercentage, "cell 0 3 2 1,alignx right");
+    panel.add(lblPercentage, "cell 0 4 2 1,alignx right");
 
     lbPercentage = new JLabel("0");
-    panel.add(lbPercentage, "cell 2 3");
+    panel.add(lbPercentage, "cell 2 4");
 
     setMaxPresets(15);
   }
@@ -75,6 +79,7 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
       ColorChangedListener ccl, ItemListener il) {
     txtAlpha.getDocument().addDocumentListener(dl);
     getCbActiveAlphaMap().addItemListener(il);
+    cbShowMarks.addItemListener(il);
   }
 
   // ################################################################################################
@@ -98,6 +103,7 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
     getLbTotalDP().setText(String.valueOf(total));
     getLbPercentage().setText(String.format("0.00", p));
     getTxtAlpha().setText(String.valueOf(si.getAlpha()));
+    getCbShowMarks().setSelected(si.isDrawMarks());
 
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
@@ -111,6 +117,7 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
         boolean changed = false;
         changed = si.setActive(getCbActiveAlphaMap().isSelected()) || changed;
         changed = si.setAlpha(floatFromTxt(txtAlpha)) || changed;
+        changed = si.setDrawMarks(getCbShowMarks().isSelected()) || changed;
 
       } catch (Exception ex) {
         ex.printStackTrace();
@@ -137,5 +144,9 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
 
   public JCheckBox getCbActiveAlphaMap() {
     return getCbTitle();
+  }
+
+  public JCheckBox getCbShowMarks() {
+    return cbShowMarks;
   }
 }

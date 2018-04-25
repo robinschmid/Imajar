@@ -121,6 +121,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
     stats = new SelectionTableRow();
     statsRegardingExclusion = new SelectionTableRow();
+    statsRegardingExclusionAndMap = new SelectionTableRow();
   }
 
   public SettingsShapeSelection(SelectionMode mode, T shape) {
@@ -132,6 +133,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     stroke = getStrokeForROI(roi);
     stats = new SelectionTableRow();
     statsRegardingExclusion = new SelectionTableRow();
+    statsRegardingExclusionAndMap = new SelectionTableRow();
   }
 
   // #############################################################################
