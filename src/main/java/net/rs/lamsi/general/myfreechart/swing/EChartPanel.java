@@ -59,6 +59,10 @@ import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 public class EChartPanel extends ChartPanel {
   private static final long serialVersionUID = 1L;
 
+  // standard gestures
+  private static final List<GestureHandlerFactory> standardGestures =
+      ChartGestureHandler.initStandardGestures(true, true, true, true, false, true, true, true);
+
   protected ZoomHistory zoomHistory;
   protected List<AxesRangeChangedListener> axesRangeListener;
   protected boolean isMouseZoomable = true;
@@ -215,7 +219,7 @@ public class EChartPanel extends ChartPanel {
     // add ChartGestureHandlers
     ChartGestureMouseAdapter m = getGestureAdapter();
     if (m != null) {
-      for (GestureHandlerFactory f : ChartGestureHandler.getStandardGestures())
+      for (GestureHandlerFactory f : standardGestures)
         m.addGestureHandler(f.createHandler());
     }
   }

@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -30,6 +31,9 @@ import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class EImage2DChartPanel extends EChartPanel {
+  private static final List<GestureHandlerFactory> standardGestures =
+      ChartGestureHandler.initStandardGestures(true, true, false, true, true, true, true, true);
+
   private Collectable2D img;
 
   public EImage2DChartPanel(JFreeChart chart, Collectable2D img) {
@@ -99,8 +103,7 @@ public class EImage2DChartPanel extends EChartPanel {
     // add ChartGestureHandlers
     ChartGestureMouseAdapter g = getGestureAdapter();
     if (g != null) {
-      for (GestureHandlerFactory f : ChartGestureHandler.initStandardGestures(true, true, false,
-          true, true, true, true, true))
+      for (GestureHandlerFactory f : standardGestures)
         g.addGestureHandler(f.createHandler());
     }
 
