@@ -56,11 +56,6 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   /** The paint scale. */
   private PaintScale paintScale;
 
-  private boolean xPixelToSmall = false;
-  private boolean yPixelToSmall = false;
-  private int ix = 0;
-  private int iy = 0;
-
   // only for range detection
   private float avgBlockWidth = 0;
   private float avgBlockHeight = 0;
