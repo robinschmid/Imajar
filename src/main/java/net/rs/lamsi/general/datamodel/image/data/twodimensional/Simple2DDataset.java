@@ -58,6 +58,17 @@ public class Simple2DDataset extends ImageDataset {
         : 0;
   }
 
+  @Override
+  public float getX0() {
+    return 0;
+  }
+
+  @Override
+  public float getY0() {
+    return 0;
+  }
+
+
 
   @Override
   public boolean hasOneDPWidth() {

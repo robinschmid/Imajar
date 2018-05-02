@@ -559,4 +559,8 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
       listenerProcessingChanged.remove(li);
   }
 
+  public abstract float getX0();
+
+  public abstract float getY0();
+
 }

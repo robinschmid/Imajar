@@ -25,6 +25,7 @@ import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.XYDataset;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
+import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -59,6 +60,8 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   // only for range detection
   private float avgBlockWidth = 0;
   private float avgBlockHeight = 0;
+
+  private int c = 0;
 
   /**
    * Creates a new {@code XYBlockRenderer} instance with default attributes.
@@ -250,12 +253,19 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   public void drawItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
-
+    DataCollectable2DDataset data = null;
     if (dataset instanceof DataCollectable2DDataset) {
-      DataCollectable2DDataset data = (DataCollectable2DDataset) dataset;
+      data = (DataCollectable2DDataset) dataset;
       DataCollectable2D img = data.getImage();
       setImage(img);
+    } else if (dataset instanceof DataCollectable2DListDataset) {
+      DataCollectable2DListDataset list = (DataCollectable2DListDataset) dataset;
+      data = list.getDataset(series);
+      DataCollectable2D img = data.getImage();
+      setImage(img);
+    }
 
+    if (data != null) {
       // height
       double yy0 = rangeAxis.valueToJava2D(0, dataArea, plot.getRangeAxisEdge());
       double yy1 = rangeAxis.valueToJava2D(avgBlockHeight, dataArea, plot.getRangeAxisEdge());
@@ -278,7 +288,6 @@ public class FullImageRenderer extends AbstractXYItemRenderer
     }
   }
 
-  int c = 0;
 
   /**
    * Draw image with avgDPWidth and Height

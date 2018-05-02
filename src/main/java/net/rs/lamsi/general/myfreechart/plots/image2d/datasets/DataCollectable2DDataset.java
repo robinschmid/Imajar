@@ -103,12 +103,12 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
 
   @Override
   public double getDomainLowerBound(boolean includeInterval) {
-    return 0;
+    return data == null ? img.getX0() : data.getXRange().getLowerBound();
   }
 
   @Override
   public double getDomainUpperBound(boolean includeInterval) {
-    return img.getWidth();
+    return data == null ? img.getX0() + img.getWidth() : data.getXRange().getUpperBound();
   }
 
   @Override
@@ -118,12 +118,12 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
 
   @Override
   public double getRangeLowerBound(boolean includeInterval) {
-    return 0;
+    return data == null ? img.getY0() : data.getYRange().getLowerBound();
   }
 
   @Override
   public double getRangeUpperBound(boolean includeInterval) {
-    return img.getHeight();
+    return data == null ? img.getY0() + img.getHeight() : data.getYRange().getUpperBound();
   }
 
   @Override

@@ -1537,6 +1537,23 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
     return getYRaw(raw, data.getLinesCount());
   }
 
+
+  @Override
+  public float getX0() {
+    if (!isRotated())
+      return data.getX0() * xFactor(false);
+    else
+      return data.getY0() * yFactor(false);
+  }
+
+  @Override
+  public float getY0() {
+    if (!isRotated())
+      return data.getY0() * yFactor(false);
+    else
+      return data.getX0() * xFactor(false);
+  }
+
   /**
    * width of the image
    * 

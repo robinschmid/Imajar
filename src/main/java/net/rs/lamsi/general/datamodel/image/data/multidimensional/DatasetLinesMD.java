@@ -28,6 +28,7 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
 
   // last x of longest line ( left edge of the datapoint)
   protected float lastX = -1;
+  protected float x0 = Float.NaN;
 
   // settings of rotation, reflection, imaging mode
   protected SettingsGeneralRotation settRot;
@@ -58,6 +59,7 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
     minDP = -1;
     maxDP = -1;
     avgDP = -1;
+    x0 = Float.NaN;
   }
 
 
@@ -274,6 +276,38 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
       }
     }
     return lastX;
+  }
+
+  @Override
+  public float getX0() {
+    if (Float.isNaN(x0)) {
+      if (hasOnlyOneXColumn())
+        x0 = getX0(0);
+      else {
+        for (int i = 0; i < lines.length; i++)
+          if (Float.isNaN(x0) || getX0(i) < x0)
+            x0 = getX0(i);
+      }
+    }
+    return x0;
+  }
+
+  /**
+   * x0 of line
+   * 
+   * @param i
+   * @return
+   */
+  private float getX0(int i) {
+    if (hasOnlyOneXColumn())
+      return lines[0].getX0();
+    else
+      return lines[i].getX0();
+  }
+
+  @Override
+  public float getY0() {
+    return 0;
   }
 
   @Override

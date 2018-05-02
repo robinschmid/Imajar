@@ -16,6 +16,7 @@ import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
@@ -24,9 +25,9 @@ import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
 import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
+import net.rs.lamsi.general.myfreechart.plots.image2d.FullImageRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageOverlayRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.ImageRenderer;
-import net.rs.lamsi.general.myfreechart.plots.image2d.FullImageRenderer;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.BGImageAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
@@ -100,6 +101,8 @@ public class HeatmapFactory {
       return generateHeatmapFromImage2D((Image2D) image);
     } else if (ImageOverlay.class.isInstance(image))
       return generateHeatmapFromImageOverlay((ImageOverlay) image);
+    else if (ImageMerge.class.isInstance(image))
+      return generateHeatmapFromImageMerge((ImageMerge) image);
     else if (image.isSPImage())
       return generateHeatmapFromSPImage((SingleParticleImage) image);
     else
