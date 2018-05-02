@@ -35,7 +35,7 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
   }
 
   /**
-   * total number of data points
+   * total number of data points from data
    * 
    * @return
    */

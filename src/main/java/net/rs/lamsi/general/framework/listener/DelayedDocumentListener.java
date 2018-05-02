@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.framework.listener;
 
+import java.io.Serializable;
 import java.util.EventListener;
 import java.util.function.Consumer;
 import javax.swing.event.DocumentEvent;
@@ -11,7 +12,12 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
  * Use a consumer or override documentCHanged method
  *
  */
-public class DelayedDocumentListener implements DocumentListener, Runnable, EventListener {
+public class DelayedDocumentListener
+    implements DocumentListener, Runnable, EventListener, Serializable {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
   private long lastAutoUpdateTime = -1;
   private boolean isAutoUpdateStarted = false;

@@ -2104,7 +2104,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
   @Override
   public int getTotalDataPoints() {
-    return data.getMaxDP() * data.getLinesCount();
+    return data.getTotalDPCount();
   }
 
   @Override

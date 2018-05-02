@@ -29,6 +29,7 @@ import javax.swing.border.EmptyBorder;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.Size2D;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
@@ -78,8 +79,6 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
   private JButton btnPath;
   private JButton btnRenewPreview;
 
-
-
   // ###################################################################
   // Vars
   protected ChartPanel chartPanel;
@@ -122,8 +121,16 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
   protected void openDialogI(JFreeChart chart) {
     try {
-      addChartToPanel(new EChartPanel((JFreeChart) chart.clone()), true);
+      // has similar xy dimensions?
+      XYPlot p = chart.getXYPlot();
+      double x = p.getDomainAxis().getRange().getLength();
+      double y = p.getRangeAxis().getRange().getLength();
+      double min = Math.min(x, y);
+      double max = Math.max(x, y);
+      boolean different = max / min >= 100;
+      cbOnlyUseWidth.setSelected(!different);
       setVisible(true);
+      addChartToPanel(new EChartPanel((JFreeChart) chart.clone()), true);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -601,32 +608,19 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
       getContentPane().add(buttonPane, BorderLayout.SOUTH);
       {
         JButton okButton = new JButton("Save");
-        okButton.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            // Save as
-            saveGraphicsAs();
-          }
-        });
+        okButton.addActionListener(e -> saveGraphicsAs());
         okButton.setActionCommand("OK");
         buttonPane.add(okButton);
         getRootPane().setDefaultButton(okButton);
       }
       {
         btnRenewPreview = new JButton("Renew Preview");
-        btnRenewPreview.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            renewPreview();
-          }
-        });
+        btnRenewPreview.addActionListener(e -> renewPreview());
         buttonPane.add(btnRenewPreview);
       }
       {
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            setVisible(false);
-          }
-        });
+        cancelButton.addActionListener(e -> setVisible(false));
         cancelButton.setActionCommand("Cancel");
         buttonPane.add(cancelButton);
       }

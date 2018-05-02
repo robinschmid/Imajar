@@ -17,6 +17,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
@@ -118,7 +119,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   private ImageSetupDialog imageSetupDialog;
 
   // save all frames for updating style etc
-  private Vector<Component> listFrames = new Vector<Component>();
+  private List<Component> listFrames = new ArrayList<Component>();
 
   // MODULES
   private ModuleImage2D modImage2D;
@@ -226,7 +227,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         HeatmapGraphicsExportDialog.createInstance();
     WindowStyleUtil.changeWindowStyle(grpHeatmapExportDialog, WindowStyleUtil.STYLE_SYSTEM);
     grpExportDialog.setVisible(false);
-    listFrames.addElement(grpExportDialog);
+    listFrames.add(grpExportDialog);
     // give window to LogicPanel
     logicRunner = new ImageLogicRunner(this);
     // progress dialog
@@ -235,7 +236,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     preferencesDialog = new DialogPreferences(this);
     WindowStyleUtil.changeWindowStyle(preferencesDialog, WindowStyleUtil.STYLE_SYSTEM);
     preferencesDialog.setVisible(false);
-    listFrames.addElement(preferencesDialog);
+    listFrames.add(preferencesDialog);
 
 
     imageSetupDialog = new ImageSetupDialog();
@@ -243,12 +244,12 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     importDataDialog = new ImportDataDialog(logicRunner);
     WindowStyleUtil.changeWindowStyle(importDataDialog, WindowStyleUtil.STYLE_SYSTEM);
     importDataDialog.setVisible(false);
-    listFrames.addElement(importDataDialog);
+    listFrames.add(importDataDialog);
 
     DialogDataSaver exportDataDialog = DialogDataSaver.createInst(SettingsHolder.getSettings());
     WindowStyleUtil.changeWindowStyle(exportDataDialog, WindowStyleUtil.STYLE_SYSTEM);
     exportDataDialog.setVisible(false);
-    listFrames.addElement(exportDataDialog);
+    listFrames.add(exportDataDialog);
 
     JMenuBar menuBar = new JMenuBar();
     setJMenuBar(menuBar);
@@ -742,6 +743,15 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     pnNorthMenu.add(btnROI);
 
 
+    JButton btnOpenHisto = new JButton("");
+    btnOpenHisto.addActionListener(e -> logicRunner.openHistogram(logicRunner.getSelectedImage()));
+    btnOpenHisto.setPreferredSize(new Dimension(31, 31));
+    btnOpenHisto
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_histo.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    pnNorthMenu.add(btnOpenHisto);
+
+
     JButton btnMultiImage = new JButton("");
     btnMultiImage.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -753,6 +763,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         }
       }
     });
+
     btnMultiImage.setPreferredSize(new Dimension(31, 31));
     btnMultiImage
         .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_MultiImage.png"))

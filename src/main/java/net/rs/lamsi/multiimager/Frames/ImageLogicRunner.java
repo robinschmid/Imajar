@@ -28,6 +28,7 @@ import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.framework.modules.tree.IconNode;
@@ -44,6 +45,7 @@ import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
+import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramDialog;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
 import net.rs.lamsi.utils.DialogLoggerUtil;
@@ -787,6 +789,20 @@ public class ImageLogicRunner {
     }
   }
 
+
+  /**
+   * opens a histogram frame for a DataCollectable2D
+   * 
+   * @param c
+   */
+  public void openHistogram(Collectable2D c) {
+    if (c != null && c instanceof DataCollectable2D) {
+      // open histogram frame
+      HistogramDialog d = new HistogramDialog((DataCollectable2D) c);
+      DialogLoggerUtil.centerOnScreen(d, true);
+      d.setVisible(true);
+    }
+  }
 
   /**
    * combine multiple images by selection in tree
