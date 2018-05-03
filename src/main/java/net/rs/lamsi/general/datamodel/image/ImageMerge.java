@@ -1,8 +1,10 @@
 package net.rs.lamsi.general.datamodel.image;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.swing.Icon;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.image.SettingsImageMerge;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
@@ -103,12 +105,12 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
   }
 
 
-  public Image2D[] getImages() {
-    return group.getImagesOnly();
+  public List<DataCollectable2D> getImages() {
+    return settings.getImageList();
   }
 
   public int size() {
-    return group.image2dCount();
+    return getImages().size();
   }
 
   public SettingsThemesContainer getSettTheme() {

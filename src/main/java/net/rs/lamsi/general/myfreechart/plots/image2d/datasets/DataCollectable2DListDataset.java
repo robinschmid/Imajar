@@ -1,10 +1,13 @@
 package net.rs.lamsi.general.myfreechart.plots.image2d.datasets;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
 import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYZDataset;
+import net.rs.lamsi.general.datamodel.image.ImageMerge;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.merge.SettingsSingleMerge;
 
 /**
@@ -18,11 +21,17 @@ public class DataCollectable2DListDataset extends AbstractXYZDataset
   private List<DataCollectable2DDataset> list;
   private List<SettingsSingleMerge> settings;
 
-  public DataCollectable2DListDataset(List<DataCollectable2DDataset> list,
-      List<SettingsSingleMerge> settings) {
+  public DataCollectable2DListDataset(ImageMerge image) {
     super();
-    this.list = list;
-    this.settings = settings;
+    List<DataCollectable2D> imgs = image.getSettings().getImageList();
+    this.list = new ArrayList<>();
+    for (DataCollectable2D img : imgs) {
+      DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
+      dataset.applyPostProcessing();
+      list.add(dataset);
+    }
+
+    this.settings = image.getSettings().getMergeSettings();
   }
 
   @Override
