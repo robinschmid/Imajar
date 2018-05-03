@@ -25,6 +25,10 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Button;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Entity;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Key;
+import net.rs.lamsi.general.myfreechart.gestures.ChartGestureDragDiffHandler;
 import net.rs.lamsi.general.myfreechart.plot.JFreeSquaredChart;
 import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot;
 import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
@@ -36,6 +40,7 @@ import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
+import net.rs.lamsi.general.myfreechart.plots.image2d.merge.MergeDragDiffHandler;
 import net.rs.lamsi.general.processing.dataoperations.DataInterpolator;
 import net.rs.lamsi.general.settings.image.SettingsImageMerge;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
@@ -545,6 +550,12 @@ public class HeatmapFactory {
     // theme
     img.getSettTheme().applyToChart(chart);
     chart.fireChartChanged();
+
+    // add gestures to shift single images
+
+    ChartGestureDragDiffHandler handler =
+        new MergeDragDiffHandler(img, chartPanel, Entity.XY_ITEM, Button.BUTTON1, Key.ALT);
+    chartPanel.getGestureAdapter().addGestureHandler(handler);
 
     // Heatmap
     Heatmap heat = new Heatmap(dataset, chartPanel, scales, chart, plot, img, renderer, scaleInPlot,

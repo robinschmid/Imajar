@@ -30,7 +30,7 @@ public class TestImageMerge {
         try {
           ImageEditorWindow window = new ImageEditorWindow();
           window.setVisible(true);
-          String s = "D:\\Daten2\\iod.img2dproject";
+          String s = "D:\\Daten2\\iod2.img2dproject";
           window.getLogicRunner().loadProjectFromFile(new File(s));
 
           // import non triggered

@@ -23,6 +23,8 @@ import org.jfree.chart.util.PublicCloneable;
 import org.jfree.data.Range;
 import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.XYDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
@@ -34,12 +36,14 @@ import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 public class FullImageRenderer extends AbstractXYItemRenderer
     implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
   //
   protected SettingsAlphaMap sett;
 
   protected DataCollectable2D img;
+  private boolean useImageAsXYItem = true;
 
 
   /**
@@ -268,10 +272,12 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
     DataCollectable2DDataset data = null;
     if (dataset instanceof DataCollectable2DDataset) {
+      logger.debug("draw image of DataCollectable2DDataset");
       data = (DataCollectable2DDataset) dataset;
       DataCollectable2D img = data.getImage();
       setImage(img);
     } else if (dataset instanceof DataCollectable2DListDataset) {
+      logger.debug("draw image #{} of ImageMerge (ListDataset)", series);
       DataCollectable2DListDataset list = (DataCollectable2DListDataset) dataset;
       data = list.getDataset(series);
       DataCollectable2D img = data.getImage();
@@ -291,14 +297,18 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
       // all same dp width?
       if (img.hasOneDPWidth()) {
+        logger.info("All data points: Equal widths");
         // draw with one block width and height
         drawImage(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState, data, series,
             bw, bh);
       } else {
+        logger.info("All data points: Different widths");
         // draw with one block height but different widths
         drawImageFixedBlockHeight(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState,
             data, series, bw, bh);
       }
+    } else {
+      logger.error("no data for series {} in dataset", series);
     }
   }
 
@@ -372,6 +382,17 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         }
         // reset
         g2.setComposite(BlendComposite.Normal);
+      }
+    }
+    if (useImageAsXYItem) {
+      double xx0 =
+          domainAxis.valueToJava2D(, dataArea, plot.getDomainAxisEdge());
+      Rectangle2D.Double block =
+          new Rectangle2D.Double();
+      EntityCollection entities = state.getEntityCollection();
+      if (entities != null) {
+        Rectangle2D intersect = block.createIntersection(dataArea);
+        addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY());
       }
     }
     ImageEditorWindow.log("dp=" + c + " (" + cAll + ")", LOG.DEBUG);
@@ -552,10 +573,13 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       // double transY = rangeAxis.valueToJava2D(y, dataArea, plot.getRangeAxisEdge());
       // updateCrosshairValues(crosshairState, x, y, datasetIndex, transX, transY, orientation);
 
-      EntityCollection entities = state.getEntityCollection();
-      if (entities != null) {
-        Rectangle2D intersect = block.createIntersection(dataArea);
-        addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY());
+      if (!useImageAsXYItem) {
+        EntityCollection entities = state.getEntityCollection();
+        if (entities != null) {
+          Rectangle2D intersect = block.createIntersection(dataArea);
+          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
+              intersect.getCenterY());
+        }
       }
     }
   }
@@ -632,11 +656,13 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         double transY = rangeAxis.valueToJava2D(y, dataArea, plot.getRangeAxisEdge());
         updateCrosshairValues(crosshairState, x, y, datasetIndex, transX, transY, orientation);
 
-        EntityCollection entities = state.getEntityCollection();
-        if (entities != null) {
-          Rectangle2D intersect = block.createIntersection(dataArea);
-          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
-              intersect.getCenterY());
+        if (!useImageAsXYItem) {
+          EntityCollection entities = state.getEntityCollection();
+          if (entities != null) {
+            Rectangle2D intersect = block.createIntersection(dataArea);
+            addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
+                intersect.getCenterY());
+          }
         }
       }
     }
