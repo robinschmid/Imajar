@@ -47,14 +47,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.jfree.chart.plot.XYPlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageMerge;
@@ -103,6 +102,8 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
 public class ImageEditorWindow extends JFrame implements Runnable {
+  private static final Logger logger = LoggerFactory.getLogger(ImageEditorWindow.class);
+
   // LOG
   public static enum LOG {
     MESSAGE, ERROR, WARNING, IMPORTANT, DEBUG
@@ -1414,55 +1415,22 @@ public class ImageEditorWindow extends JFrame implements Runnable {
    * @param mode LOG is in this class
    */
   public static void log(String s, LOG mode) {
-    if (txtLog != null && isLogging() && getEditor() != null
-        && !(mode == LOG.DEBUG && !isDebugging())) {
-      try {
-        StyledDocument doc = txtLog.getStyledDocument();
-        if (styleWarning == null) {
-          // init styles
-          styleWarning = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleWarning, Color.ORANGE);
-          StyleConstants.setBold(styleWarning, false);
-          styleError = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleError, Color.RED);
-          StyleConstants.setBold(styleError, true);
-          styleMessage = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleMessage, Color.BLACK);
-          StyleConstants.setBold(styleMessage, false);
-          styleImportant = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleImportant, Color.CYAN);
-          StyleConstants.setBold(styleImportant, true);
-          styleDebug = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleDebug, Color.YELLOW);
-          StyleConstants.setBackground(styleDebug, Color.BLACK);
-          StyleConstants.setBold(styleDebug, false);
-        }
-        SimpleAttributeSet style = null;
-        switch (mode) {
-          case ERROR:
-            s = "Error: " + s;
-            style = styleError;
-            break;
-          case WARNING:
-            s = "Warning: " + s;
-            style = styleWarning;
-            break;
-          case IMPORTANT:
-            style = styleImportant;
-            break;
-          case MESSAGE:
-            style = styleMessage;
-            break;
-          case DEBUG:
-            s = "Debug: " + s;
-            style = styleDebug;
-            break;
-        }
-        // append
-        doc.insertString(doc.getLength(), s + "\n", style);
-      } catch (BadLocationException exc) {
-        exc.printStackTrace();
-      }
+    switch (mode) {
+      case ERROR:
+        logger.error(s);
+        break;
+      case WARNING:
+        logger.warn(s);
+        break;
+      case IMPORTANT:
+        logger.info(s);
+        break;
+      case MESSAGE:
+        logger.info(s);
+        break;
+      case DEBUG:
+        logger.debug(s);
+        break;
     }
   }
 
