@@ -75,14 +75,14 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
     }
   }
 
-  /**
-   * Add shape to
-   * 
-   * @param s
-   */
-  public void addShape(Shape s) {
-
-  }
+  // /**
+  // * Add shape to
+  // *
+  // * @param s
+  // */
+  // public void addShape(Shape s) {
+  // Area a = new Area(s);
+  // }
 
   // ##########################################################
   // xml input/output
