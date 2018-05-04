@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -341,6 +342,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     setSize((float) r.getWidth() + px, (float) r.getHeight() + py);
   }
 
+  public abstract void transform(AffineTransform at);
 
   // ##########################################################
   // statistics
@@ -496,7 +498,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     if (isHighlighted)
       s = new BasicStroke(4f, s.getEndCap(), s.getLineJoin(), s.getMiterLimit(), s.getDashArray(),
           s.getDashPhase());
-    return new EXYShapeAnnotation(this.getShape(), s, c) {
+    EXYShapeAnnotation ann = new EXYShapeAnnotation(this.getShape(), s, c) {
       @Override
       public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea, ValueAxis domainAxis,
           ValueAxis rangeAxis, int rendererIndex, PlotRenderingInfo info) {
@@ -507,6 +509,8 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
         //
       }
     };
+    ann.addTransformationListener(at -> transform(at));
+    return ann;
   }
 
   /**

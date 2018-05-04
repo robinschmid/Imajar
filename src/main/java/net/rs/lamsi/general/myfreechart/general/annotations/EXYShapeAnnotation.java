@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.function.Consumer;
 import org.jfree.chart.HashUtils;
 import org.jfree.chart.annotations.AbstractXYAnnotation;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
@@ -43,6 +45,8 @@ public class EXYShapeAnnotation extends AbstractXYAnnotation
 
   /** The paint used to fill the shape. */
   private transient Paint fillPaint;
+
+  private Consumer<AffineTransform> transformListener;
 
   /**
    * Creates a new annotation (where, by default, the shape is drawn with a black outline).
@@ -147,6 +151,7 @@ public class EXYShapeAnnotation extends AbstractXYAnnotation
 
   }
 
+
   /**
    * Tests this annotation for equality with an arbitrary object.
    *
@@ -245,12 +250,46 @@ public class EXYShapeAnnotation extends AbstractXYAnnotation
 
   // #######################################################
   // changes to original jfreechart version
+  @Override
+  protected void addEntity(PlotRenderingInfo info, Shape hotspot, int rendererIndex,
+      String toolTipText, String urlText) {
+    if (info == null) {
+      return;
+    }
+    EntityCollection entities = info.getOwner().getEntityCollection();
+    if (entities == null) {
+      return;
+    }
+    // changed to carry entity
+    EXYAnnotationEntity entity =
+        new EXYAnnotationEntity(this, hotspot, rendererIndex, toolTipText, urlText);
+    entities.add(entity);
+  }
+
   public Shape getShape() {
     return shape;
   }
 
   public void setShape(Shape shape) {
     this.shape = shape;
+  }
+
+  /**
+   * Transform shape by affine transform
+   * 
+   * @param at
+   */
+  public void transform(AffineTransform at) {
+    if (shape != null) {
+      setShape(at.createTransformedShape(shape));
+      if (transformListener != null)
+        transformListener.accept(at);
+      fireAnnotationChanged();
+    }
+  }
+
+  public void addTransformationListener(Consumer<AffineTransform> listener) {
+    this.transformListener = listener;
   }
 
 }

@@ -52,39 +52,55 @@ public class SelectionTableRow implements Serializable {
    * clear memory
    */
   public void calculateStatistics() {
-    if (data == null || data.isEmpty())
+    if (data == null || data.isEmpty()) {
+      reset();
       return;
-    // create histo
-    // copy to double array
-    double[] array = new double[data.size()];
-    for (int i = 0; i < data.size(); i++) {
-      array[i] = data.get(i);
+    } else {
+      // create histo
+      // copy to double array
+      double[] array = new double[data.size()];
+      for (int i = 0; i < data.size(); i++) {
+        array[i] = data.get(i);
+      }
+      histo = new ChartPanel(EChartFactory.createHistogram(array));
+
+      // for percentiles and median
+      Collections.sort(data);
+
+      median = data.get(Math.max(0, data.size() / 2 - 1));
+      p99 = data.get(Math.max(0, (int) Math.round(data.size() * 0.99 - 1)));
+
+      n = data.size();
+      // average and sdev
+      avg = sum / (double) n;
+      // stdev
+      sdev = 0;
+
+      for (double d : data) {
+        sdev += Math.pow(d - avg, 2);
+      }
+      // calc stdev
+      sdev = Math.sqrt(sdev / (double) (data.size() - 1));
+
+      // erase data
+      // need to keep for histogram
+      // erase later TODO
+      // data = null;
     }
-    histo = new ChartPanel(EChartFactory.createHistogram(array));
-
-    // for percentiles and median
-    Collections.sort(data);
-
-    median = data.get(Math.max(0, data.size() / 2 - 1));
-    p99 = data.get(Math.max(0, (int) Math.round(data.size() * 0.99 - 1)));
-
-    n = data.size();
-    // average and sdev
-    avg = sum / (double) n;
-    // stdev
-    sdev = 0;
-
-    for (double d : data) {
-      sdev += Math.pow(d - avg, 2);
-    }
-    // calc stdev
-    sdev = Math.sqrt(sdev / (double) (data.size() - 1));
-
-    // erase data
-    // need to keep for histogram
-    // erase later TODO
-    // data = null;
   }
+
+  public void reset() {
+    min = 0;
+    max = 0;
+    median = 0;
+    p99 = 0;
+    avg = 0;
+    n = 0;
+    sdev = 0;
+    sum = 0;
+    histo = null;
+  }
+
 
   public ArrayList<Double> getData() {
     return data;

@@ -384,17 +384,6 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         g2.setComposite(BlendComposite.Normal);
       }
     }
-    if (useImageAsXYItem) {
-      double xx0 =
-          domainAxis.valueToJava2D(, dataArea, plot.getDomainAxisEdge());
-      Rectangle2D.Double block =
-          new Rectangle2D.Double();
-      EntityCollection entities = state.getEntityCollection();
-      if (entities != null) {
-        Rectangle2D intersect = block.createIntersection(dataArea);
-        addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY());
-      }
-    }
     ImageEditorWindow.log("dp=" + c + " (" + cAll + ")", LOG.DEBUG);
   }
 

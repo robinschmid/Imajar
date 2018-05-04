@@ -58,6 +58,10 @@ public class ChartGestureDragDiffHandler extends ChartGestureHandler {
     this(entity, button, new Key[] {key}, null, null);
   }
 
+  public ChartGestureDragDiffHandler(ChartGesture.Entity entity, Button button, Key[] key) {
+    this(entity, button, key, null, null);
+  }
+
   public ChartGestureDragDiffHandler(ChartGesture.Entity entity, Button button, Key key,
       Consumer<ChartGestureDragDiffEvent> dragDiffHandler) {
     this(entity, button, new Key[] {key},
@@ -67,6 +71,12 @@ public class ChartGestureDragDiffHandler extends ChartGestureHandler {
   public ChartGestureDragDiffHandler(ChartGesture.Entity entity, Button button, Key[] key,
       Consumer<ChartGestureDragDiffEvent> dragDiffHandler[]) {
     this(entity, button, key, dragDiffHandler, null);
+  }
+
+  public ChartGestureDragDiffHandler(ChartGesture.Entity entity, Button button, Key[] key,
+      Consumer<ChartGestureDragDiffEvent> dragDiffHandler) {
+    this(entity, button, key,
+        (Consumer<ChartGestureDragDiffEvent>[]) new Consumer[] {dragDiffHandler}, null);
   }
 
   public ChartGestureDragDiffHandler(ChartGesture.Entity entity, Button button, Key[] key,
@@ -205,9 +215,9 @@ public class ChartGestureDragDiffHandler extends ChartGestureHandler {
                   lastEvent, event, start, offset, orient);
               // scroll / zoom / do anything with this new event
               // choose handler by key filter
-              for (int i = 0; i < dragDiffHandler.length; i++)
+              for (int i = 0; i < key.length; i++)
                 if (key[i].filter(event.getMouseEvent()))
-                  dragDiffHandler[i].accept(dragEvent);
+                  getConsumer(i).accept(dragEvent);
               // set last event
               lastEvent = event;
               // save updated last
@@ -217,5 +227,15 @@ public class ChartGestureDragDiffHandler extends ChartGestureHandler {
         }
       }
     };
+  }
+
+
+  protected Consumer<ChartGestureDragDiffEvent> getConsumer(int i) {
+    if (dragDiffHandler == null)
+      return null;
+    if (dragDiffHandler.length <= i)
+      return dragDiffHandler[0];
+    else
+      return dragDiffHandler[i];
   }
 }

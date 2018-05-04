@@ -1,5 +1,8 @@
 package net.rs.lamsi.multiimager.test;
 
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -12,6 +15,9 @@ public class ConsoleTest {
   public static void main(String[] args) {
     // TODO Auto-generated method stub UTF8thermo.csv
 
+    Rectangle2D.Float f = new Rectangle2D.Float(0, 0, 10, 10);
+    AffineTransform at = AffineTransform.getTranslateInstance(0, 10);
+    Shape f2 = at.createTransformedShape(f);
     double d = 1.55555;
     System.out.println("v " + getSignificant(d, 3));
     System.out.println("v " + getSignificant(d / 10.0, 3));

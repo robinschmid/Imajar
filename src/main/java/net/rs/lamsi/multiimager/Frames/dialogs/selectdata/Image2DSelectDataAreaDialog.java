@@ -672,13 +672,19 @@ public class Image2DSelectDataAreaDialog extends JFrame
    * 
    * @param r
    */
-  private void updateAnnotation(SettingsShapeSelection r) {
+  private void updateAnnotation(final SettingsShapeSelection r) {
     // remove old
     EXYShapeAnnotation currentAnn = map.get(r);
     if (currentAnn == null) {
       currentAnn = r.createXYShapeAnnotation();
       heat.getPlot().addAnnotation(currentAnn, false);
       map.put(r, currentAnn);
+      // add listener
+      currentAnn.addChangeListener(e -> {
+        // update statistics on change
+        updateSelection(r);
+        updateHistoPanelData();
+      });
     } else {
       // set shape
       currentAnn.setShape(r.getShape());
