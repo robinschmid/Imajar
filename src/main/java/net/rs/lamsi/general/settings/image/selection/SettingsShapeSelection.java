@@ -8,7 +8,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
-import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
@@ -17,6 +16,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
+import net.rs.lamsi.general.myfreechart.general.annotations.EXYShapeAnnotation;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
@@ -490,13 +490,13 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * 
    * @return
    */
-  public XYShapeAnnotation createXYShapeAnnotation() {
+  public EXYShapeAnnotation createXYShapeAnnotation() {
     Color c = getColor();
     BasicStroke s = getStrokeSettings().getStroke();
     if (isHighlighted)
       s = new BasicStroke(4f, s.getEndCap(), s.getLineJoin(), s.getMiterLimit(), s.getDashArray(),
           s.getDashPhase());
-    return new XYShapeAnnotation(this.getShape(), s, c) {
+    return new EXYShapeAnnotation(this.getShape(), s, c) {
       @Override
       public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea, ValueAxis domainAxis,
           ValueAxis rangeAxis, int rendererIndex, PlotRenderingInfo info) {

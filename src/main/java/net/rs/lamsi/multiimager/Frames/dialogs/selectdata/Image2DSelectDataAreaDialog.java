@@ -42,7 +42,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
@@ -52,6 +51,7 @@ import net.rs.lamsi.general.framework.basics.strokechooser.JStrokeChooserPanel;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
+import net.rs.lamsi.general.myfreechart.general.annotations.EXYShapeAnnotation;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.selection.SettingsElipseSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsPolygonSelection;
@@ -122,7 +122,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
   private Heatmap heat;
   private Image2D img;
   // save the relation in hashmap
-  private HashMap<SettingsShapeSelection, XYShapeAnnotation> map;
+  private HashMap<SettingsShapeSelection, EXYShapeAnnotation> map;
   //
   private SettingsSelections settSel;
 
@@ -568,7 +568,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
   protected void deleteSelection(SettingsShapeSelection r) {
     if (r != null) {
       // remove annotation
-      XYShapeAnnotation currentAnn = map.get(r);
+      EXYShapeAnnotation currentAnn = map.get(r);
       if (currentAnn != null)
         heat.getPlot().removeAnnotation(currentAnn, false);
       // remove from map
@@ -597,7 +597,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
         heat = HeatmapFactory.generateHeatmap(img);
         this.img = (Image2D) heat.getImage();
         // get all existing rects
-        map = new HashMap<SettingsShapeSelection, XYShapeAnnotation>();
+        map = new HashMap<SettingsShapeSelection, EXYShapeAnnotation>();
 
         settSel = img.getSettings().getSettSelections();
         settSel.setCurrentImage(img, false);
@@ -674,14 +674,15 @@ public class Image2DSelectDataAreaDialog extends JFrame
    */
   private void updateAnnotation(SettingsShapeSelection r) {
     // remove old
-    XYShapeAnnotation currentAnn = map.get(r);
-    if (currentAnn != null)
-      heat.getPlot().removeAnnotation(currentAnn, false);
-
-    // add new
-    currentAnn = r.createXYShapeAnnotation();
-    heat.getPlot().addAnnotation(currentAnn, false);
-    map.put(r, currentAnn);
+    EXYShapeAnnotation currentAnn = map.get(r);
+    if (currentAnn == null) {
+      currentAnn = r.createXYShapeAnnotation();
+      heat.getPlot().addAnnotation(currentAnn, false);
+      map.put(r, currentAnn);
+    } else {
+      // set shape
+      currentAnn.setShape(r.getShape());
+    }
   }
 
   /**

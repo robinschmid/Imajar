@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
@@ -15,6 +14,7 @@ import org.jfree.data.xy.XYZDataset;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.myfreechart.general.annotations.EXYShapeAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ImageTitle;
 import net.rs.lamsi.general.myfreechart.plots.image2d.annot.ScaleInPlot;
@@ -41,7 +41,7 @@ public class Heatmap {
   // stats
   private boolean isShowingSelectedExcludedRects = false, isShowingBlankMinMax = false;
   // list of annotations for later removing
-  private ArrayList<XYShapeAnnotation> annSelections;
+  private ArrayList<EXYShapeAnnotation> annSelections;
 
   private ImageTitle shortTitle;
 
@@ -172,7 +172,7 @@ public class Heatmap {
       Image2D image = (Image2D) this.image;
       // remove all annotations
       if (annSelections != null)
-        for (XYShapeAnnotation a : annSelections)
+        for (EXYShapeAnnotation a : annSelections)
           plot.removeAnnotation(a, false);
       // add them
       if (isShowingSelectedExcludedRects) {
@@ -183,7 +183,7 @@ public class Heatmap {
         if (selections != null) {
           for (Iterator iterator = selections.iterator(); iterator.hasNext();) {
             SettingsShapeSelection sel = (SettingsShapeSelection) iterator.next();
-            XYShapeAnnotation ann = sel.createXYShapeAnnotation();
+            EXYShapeAnnotation ann = sel.createXYShapeAnnotation();
             annSelections.add(ann);
             plot.addAnnotation(ann, false);
           }
@@ -206,7 +206,7 @@ public class Heatmap {
     isShowingSelectedExcludedRects = show;
     // init
     if (annSelections == null) {
-      annSelections = new ArrayList<XYShapeAnnotation>();
+      annSelections = new ArrayList<EXYShapeAnnotation>();
     }
     // update
     updateSelectedExcludedRects();
