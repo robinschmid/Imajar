@@ -356,14 +356,12 @@ public class HistogramPanel extends JPanel {
             @Override
             protected JFreeChart doInBackground() throws Exception {
               // create histogram
-              double[] data = null;
+              double[] data = img.toIArray(false, true);;
               if (cbExcludeSmallerNoise.isSelected()) {
                 double noise = img.getMinIntensity(true);
                 // get processed data from original image
-                double[] dlist = img.toIArray(false, true);
-                data = DoubleStream.of(dlist).filter(d -> d > noise).toArray();
-              } else
-                data = img.toIArray(false, true);
+                data = DoubleStream.of(data).filter(d -> d > noise).toArray();
+              }
 
               Range r = EChartFactory.getBounds(data);
 
