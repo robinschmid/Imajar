@@ -463,10 +463,23 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     return img.hasOneDPHeight();
   }
 
+
+  @Override
+  public float getX0() {
+    return img.getX0();
+  }
+
+  @Override
+  public float getY0() {
+    return img.getY0();
+  }
+
+  @Override
   public float getWidth() {
     return img.getWidth(false);
   }
 
+  @Override
   public float getHeight() {
     return img.getHeight(false);
   }

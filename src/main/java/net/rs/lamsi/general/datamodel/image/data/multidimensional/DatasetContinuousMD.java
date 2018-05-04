@@ -261,6 +261,17 @@ public class DatasetContinuousMD extends MDDataset implements Serializable {
     return lastX;
   }
 
+
+  @Override
+  public float getX0() {
+    return line.getX0();
+  }
+
+  @Override
+  public float getY0() {
+    return 0;
+  }
+
   /**
    * calculates the data point in the continuous dimension
    * 

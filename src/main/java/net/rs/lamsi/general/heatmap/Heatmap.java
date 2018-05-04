@@ -12,7 +12,6 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.data.xy.XYZDataset;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.myfreechart.general.annotations.EXYShapeAnnotation;
 import net.rs.lamsi.general.myfreechart.plots.image2d.EImage2DChartPanel;
@@ -70,10 +69,10 @@ public class Heatmap {
           ((Image2D) image).getSettings().getOperations().getBlankQuantifier().isShowInChart());
   }
 
-  public Heatmap(IXYZDataset dataset, EChartPanel chartPanel, PaintScale[] paintScale,
+  public Heatmap(XYZDataset dataset, EChartPanel chartPanel, PaintScale[] paintScale,
       JFreeChart chart, XYPlot plot,
       // PaintScaleLegend legend,
-      ImageOverlay image, XYItemRenderer renderer, ScaleInPlot scaleInPlot,
+      Collectable2D image, XYItemRenderer renderer, ScaleInPlot scaleInPlot,
       ImageTitle shortTitle2) {
     super();
     this.dataset = dataset;
@@ -87,7 +86,6 @@ public class Heatmap {
     this.scaleInPlot = scaleInPlot;
     this.shortTitle = shortTitle2;
   }
-
 
 
   public XYZDataset getDataset() {

@@ -23,8 +23,11 @@ import org.jfree.chart.util.PublicCloneable;
 import org.jfree.data.Range;
 import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.XYDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
+import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -33,12 +36,14 @@ import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 public class FullImageRenderer extends AbstractXYItemRenderer
     implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
   //
   protected SettingsAlphaMap sett;
 
   protected DataCollectable2D img;
+  private boolean useImageAsXYItem = true;
 
 
   /**
@@ -54,26 +59,21 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   private double yOffset;
 
   /** The paint scale. */
-  private PaintScale paintScale;
-
-  private boolean xPixelToSmall = false;
-  private boolean yPixelToSmall = false;
-  private int ix = 0;
-  private int iy = 0;
+  private PaintScale[] paintScale;
 
   // only for range detection
   private float avgBlockWidth = 0;
   private float avgBlockHeight = 0;
+
+  private int c = 0;
 
   /**
    * Creates a new {@code XYBlockRenderer} instance with default attributes.
    * 
    * @param img2
    */
-  public FullImageRenderer(DataCollectable2D img) {
-    setImage(img);
-    updateOffsets();
-    this.paintScale = new LookupPaintScale();
+  public FullImageRenderer() {
+    this.paintScale = new PaintScale[] {new LookupPaintScale()};
   }
 
   /**
@@ -114,8 +114,26 @@ public class FullImageRenderer extends AbstractXYItemRenderer
    * @see #setPaintScale(PaintScale)
    * @since 1.0.4
    */
-  public PaintScale getPaintScale() {
-    return this.paintScale;
+  public PaintScale getPaintScale(int series) {
+    if (paintScale.length == 1)
+      return paintScale[0];
+    else
+      return this.paintScale[series];
+  }
+
+  /**
+   * Sets the paint scale used by the renderer and sends a {@link RendererChangeEvent} to all
+   * registered listeners.
+   *
+   * @param scale the scale ({@code null} not permitted).
+   *
+   * @see #getPaintScale()
+   * @since 1.0.4
+   */
+  public void setPaintScale(PaintScale[] scale) {
+    Args.nullNotPermitted(scale, "scale");
+    this.paintScale = scale;
+    fireChangeEvent();
   }
 
   /**
@@ -129,7 +147,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
    */
   public void setPaintScale(PaintScale scale) {
     Args.nullNotPermitted(scale, "scale");
-    this.paintScale = scale;
+    this.paintScale = new PaintScale[] {scale};
     fireChangeEvent();
   }
 
@@ -227,10 +245,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   @Override
   public Object clone() throws CloneNotSupportedException {
     FullImageRenderer clone = (FullImageRenderer) super.clone();
-    if (this.paintScale instanceof PublicCloneable) {
-      PublicCloneable pc = (PublicCloneable) this.paintScale;
-      clone.paintScale = (PaintScale) pc.clone();
-    }
+    clone.paintScale = paintScale.clone();
     clone.setImage(img);
     return clone;
   }
@@ -255,12 +270,21 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   public void drawItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
-
+    DataCollectable2DDataset data = null;
     if (dataset instanceof DataCollectable2DDataset) {
-      DataCollectable2DDataset data = (DataCollectable2DDataset) dataset;
+      logger.debug("draw image of DataCollectable2DDataset");
+      data = (DataCollectable2DDataset) dataset;
       DataCollectable2D img = data.getImage();
       setImage(img);
+    } else if (dataset instanceof DataCollectable2DListDataset) {
+      logger.debug("draw image #{} of ImageMerge (ListDataset)", series);
+      DataCollectable2DListDataset list = (DataCollectable2DListDataset) dataset;
+      data = list.getDataset(series);
+      DataCollectable2D img = data.getImage();
+      setImage(img);
+    }
 
+    if (data != null) {
       // height
       double yy0 = rangeAxis.valueToJava2D(0, dataArea, plot.getRangeAxisEdge());
       double yy1 = rangeAxis.valueToJava2D(avgBlockHeight, dataArea, plot.getRangeAxisEdge());
@@ -273,17 +297,21 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
       // all same dp width?
       if (img.hasOneDPWidth()) {
+        logger.info("All data points: Equal widths");
         // draw with one block width and height
-        drawImage(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState, data, bw, bh);
+        drawImage(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState, data, series,
+            bw, bh);
       } else {
+        logger.info("All data points: Different widths");
         // draw with one block height but different widths
         drawImageFixedBlockHeight(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState,
-            data, bw, bh);
+            data, series, bw, bh);
       }
+    } else {
+      logger.error("no data for series {} in dataset", series);
     }
   }
 
-  int c = 0;
 
   /**
    * Draw image with avgDPWidth and Height
@@ -301,7 +329,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
    */
   private void drawImage(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, CrosshairState crosshairState,
-      DataCollectable2DDataset data, double bw, double bh) {
+      DataCollectable2DDataset data, int series, double bw, double bh) {
     float width = img.getAvgBlockWidth();
     float height = img.getAvgBlockHeight();
     Range domain = domainAxis.getRange();
@@ -340,7 +368,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
           // check whether block is in range of axes
           if (inRanges(x, y, x + width, y + height, domain, range)) {
 
-            Paint p = this.getPaintScale().getPaint(z);
+            Paint p = this.getPaintScale(series).getPaint(z);
             double xx0 =
                 domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
             double yy0 =
@@ -354,6 +382,17 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         }
         // reset
         g2.setComposite(BlendComposite.Normal);
+      }
+    }
+    if (useImageAsXYItem) {
+      double xx0 =
+          domainAxis.valueToJava2D(, dataArea, plot.getDomainAxisEdge());
+      Rectangle2D.Double block =
+          new Rectangle2D.Double();
+      EntityCollection entities = state.getEntityCollection();
+      if (entities != null) {
+        Rectangle2D intersect = block.createIntersection(dataArea);
+        addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY());
       }
     }
     ImageEditorWindow.log("dp=" + c + " (" + cAll + ")", LOG.DEBUG);
@@ -376,8 +415,6 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         && (range.contains(y0) || range.contains(y1));
   }
 
-
-
   double lastx1 = -1;
 
   /**
@@ -395,7 +432,8 @@ public class FullImageRenderer extends AbstractXYItemRenderer
    */
   private void drawImageFixedBlockHeight(Graphics2D g2, XYItemRendererState state,
       Rectangle2D dataArea, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
-      CrosshairState crosshairState, DataCollectable2DDataset data, double bw, double bh) {
+      CrosshairState crosshairState, DataCollectable2DDataset data, int series, double bw,
+      double bh) {
     // draw full image
     Paint lastPaint = null;
     // last
@@ -443,7 +481,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
             double x = data.getX(false, l, dp);
             double y = data.getY(false, l, dp);
 
-            currentPaint = this.getPaintScale().getPaint(z);
+            currentPaint = this.getPaintScale(series).getPaint(z);
             cxx0 = domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
             cyy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
           } else
@@ -535,17 +573,20 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       // double transY = rangeAxis.valueToJava2D(y, dataArea, plot.getRangeAxisEdge());
       // updateCrosshairValues(crosshairState, x, y, datasetIndex, transX, transY, orientation);
 
-      EntityCollection entities = state.getEntityCollection();
-      if (entities != null) {
-        Rectangle2D intersect = block.createIntersection(dataArea);
-        addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY());
+      if (!useImageAsXYItem) {
+        EntityCollection entities = state.getEntityCollection();
+        if (entities != null) {
+          Rectangle2D intersect = block.createIntersection(dataArea);
+          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
+              intersect.getCenterY());
+        }
       }
     }
   }
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
-      int line, int dp, CrosshairState crosshairState) {
+      int series, int line, int dp, CrosshairState crosshairState) {
 
     // try to get intensity - NaN == no data point
     double z = data.getZ(false, line, dp);
@@ -554,7 +595,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       double x = data.getX(false, line, dp);
       double y = data.getY(false, line, dp);
 
-      Paint p = this.getPaintScale().getPaint(z);
+      Paint p = this.getPaintScale(series).getPaint(z);
       double xx0 = domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());
       double yy0 = rangeAxis.valueToJava2D(y + this.yOffset, dataArea, plot.getRangeAxisEdge());
       double xx1 = domainAxis.valueToJava2D(x + avgBlockWidth + this.xOffset, dataArea,
@@ -615,16 +656,16 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         double transY = rangeAxis.valueToJava2D(y, dataArea, plot.getRangeAxisEdge());
         updateCrosshairValues(crosshairState, x, y, datasetIndex, transX, transY, orientation);
 
-        EntityCollection entities = state.getEntityCollection();
-        if (entities != null) {
-          Rectangle2D intersect = block.createIntersection(dataArea);
-          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
-              intersect.getCenterY());
+        if (!useImageAsXYItem) {
+          EntityCollection entities = state.getEntityCollection();
+          if (entities != null) {
+            Rectangle2D intersect = block.createIntersection(dataArea);
+            addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
+                intersect.getCenterY());
+          }
         }
       }
-
     }
-
   }
 
   /**
@@ -635,10 +676,6 @@ public class FullImageRenderer extends AbstractXYItemRenderer
    */
   public boolean isMapActive() {
     return sett != null && sett.isActive();
-  }
-
-  public PaintScale getPaintScale(int i) {
-    return paintScale;
   }
 
   public void setImage(DataCollectable2D img) {

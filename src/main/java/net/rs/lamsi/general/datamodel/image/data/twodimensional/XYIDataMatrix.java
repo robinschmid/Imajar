@@ -1,15 +1,65 @@
 package net.rs.lamsi.general.datamodel.image.data.twodimensional;
 
+import org.jfree.data.Range;
+
 public class XYIDataMatrix {
 
   protected double[][] i;
   protected float[][] x, y;
+
+  // min max
+  protected Range rx, ry, ri;
 
   public XYIDataMatrix(float[][] x, float[][] y, double[][] i) {
     super();
     this.x = x;
     this.y = y;
     this.i = i;
+
+    updateStats();
+  }
+
+
+  private void updateStats() {
+    // ranges for x y i
+    rx = rangeOf(x);
+    ry = rangeOf(y);
+    ri = rangeOf(i);
+
+  }
+
+
+  private Range rangeOf(float[][] data) {
+    float max = Float.NEGATIVE_INFINITY;
+    float min = Float.MAX_VALUE;
+
+    for (float[] d : data) {
+      for (float v : d) {
+        if (!Float.isNaN(v)) {
+          if (v > max)
+            max = v;
+          if (v < min)
+            min = v;
+        }
+      }
+    }
+    return new Range(min, max);
+  }
+
+  private Range rangeOf(double[][] data) {
+    double max = Double.NEGATIVE_INFINITY;
+    double min = Double.MAX_VALUE;
+    for (double[] d : data) {
+      for (double v : d) {
+        if (!Double.isNaN(v)) {
+          if (v > max)
+            max = v;
+          if (v < min)
+            min = v;
+        }
+      }
+    }
+    return new Range(min, max);
   }
 
 
@@ -32,14 +82,17 @@ public class XYIDataMatrix {
 
   public void setI(double[][] i) {
     this.i = i;
+    ri = rangeOf(i);
   }
 
   public void setX(float[][] x) {
     this.x = x;
+    rx = rangeOf(x);
   }
 
   public void setY(float[][] y) {
     this.y = y;
+    ry = rangeOf(y);
   }
 
   public int getMinimumLineLength() {
@@ -92,29 +145,39 @@ public class XYIDataMatrix {
 
 
   public double getMinI() {
-    double min = Double.MAX_VALUE;
-    for (double[] d : i) {
-      for (int f = 0; f < d.length; f++) {
-        if (!Double.isNaN(d[f]) && d[f] < min)
-          min = d[f];
-      }
-    }
-
-    return min;
+    return ri.getLowerBound();
   }
 
   public double getMaxI() {
-    double max = Double.NEGATIVE_INFINITY;
-    for (double[] d : i) {
-      for (int f = 0; f < d.length; f++) {
-        if (!Double.isNaN(d[f]) && d[f] > max)
-          max = d[f];
-      }
-    }
-
-    return max;
+    return ri.getUpperBound();
   }
 
+  /**
+   * Intensity range
+   * 
+   * @return
+   */
+  public Range getIRange() {
+    return ri;
+  }
+
+  /**
+   * Y range
+   * 
+   * @return
+   */
+  public Range getYRange() {
+    return ry;
+  }
+
+  /**
+   * X range
+   * 
+   * @return
+   */
+  public Range getXRange() {
+    return rx;
+  }
 
   /**
    * Creates a one dimensional array for [x,y,z][dp]

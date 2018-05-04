@@ -47,16 +47,16 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.jfree.chart.plot.XYPlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
@@ -79,6 +79,7 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImage2D;
+import net.rs.lamsi.multiimager.FrameModules.ModuleImageMerge;
 import net.rs.lamsi.multiimager.FrameModules.ModuleImageOverlay;
 import net.rs.lamsi.multiimager.FrameModules.ModuleSingleParticleImage;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleBackgroundImg;
@@ -101,6 +102,8 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
 public class ImageEditorWindow extends JFrame implements Runnable {
+  private static final Logger logger = LoggerFactory.getLogger(ImageEditorWindow.class);
+
   // LOG
   public static enum LOG {
     MESSAGE, ERROR, WARNING, IMPORTANT, DEBUG
@@ -125,6 +128,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   private ModuleImage2D modImage2D;
   private ModuleImageOverlay modImageOverlay;
   private ModuleSingleParticleImage modSPImage;
+  private ModuleImageMerge modImageMerge;
+
   /**
    * the module container that is active (imageoverlay or image2d) first set the image or
    * imageoverlay and this will be set
@@ -434,6 +439,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     btnCreateOverlay.addActionListener(e -> logicRunner.createOverlay());
     mnAction.add(btnCreateOverlay);
 
+    JMenuItem btnCreateImageMerge = new JMenuItem("Create image merge");
+    btnCreateImageMerge.addActionListener(e -> logicRunner.createImageMerge());
+    mnAction.add(btnCreateImageMerge);
+
     JMenuItem btnCreateSP = new JMenuItem("Create single particle image");
     btnCreateSP.addActionListener(e -> logicRunner.createSingleParticleImage());
     mnAction.add(btnCreateSP);
@@ -657,6 +666,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
 
     modImageOverlay = new ModuleImageOverlay(this);
     modImageOverlay.setVisible(false);
+
+    modImageMerge = new ModuleImageMerge(this);
+    modImageMerge.setVisible(false);
 
     modSPImage = new ModuleSingleParticleImage(this);
     modSPImage.setVisible(false);
@@ -1047,6 +1059,11 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     modImageOverlay.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL,
         autoRepColorChangedL, autoRepItemL);
 
+    modImageMerge.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL,
+        autoItemL);
+    modImageMerge.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL,
+        autoRepColorChangedL, autoRepItemL);
+
     modSPImage.addAutoupdater(autoActionL, autoChangeL, autoDocumentL, autoColorChangedL,
         autoItemL);
     modSPImage.addAutoRepainter(autoRepActionL, autoRepChangeL, autoRepDocumentL,
@@ -1214,6 +1231,40 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     this.revalidate();
   }
 
+  /**
+   * sets the image to all imagemodules: gets called first (then addHeatmapToPanel)
+   * 
+   * @param img
+   */
+  public void setImageMerge(ImageMerge img) {
+    boolean isauto = modImageMerge.isAutoUpdating();
+    modImageMerge.setAutoUpdating(false);
+    // finished
+    ImageLogicRunner.setIS_UPDATING(false);
+    // show all modules for ImageOverlays
+    if (activeModuleContainer != null && activeModuleContainer != modImageMerge)
+      activeModuleContainer.setVisible(false);
+
+    if (activeModuleContainer == null || activeModuleContainer != modImageMerge) {
+      activeModuleContainer = modImageMerge;
+      activeModuleContainer.setVisible(true);
+      east.add(activeModuleContainer, BorderLayout.CENTER);
+    }
+
+    // set
+    DebugStopWatch debug = new DebugStopWatch();
+    modImageMerge.setCurrentImage(img, true);
+    ImageEditorWindow.log("TIME: " + debug.stop()
+        + "   FOR setting the current image for all OVERLAY modules " + debug.stop(), LOG.DEBUG);
+
+    // finished
+    ImageLogicRunner.setIS_UPDATING(true);
+    modImageMerge.setAutoUpdating(isauto);
+    updateMenuBar(img);
+
+    this.revalidate();
+  }
+
 
   /**
    * sets the single particle image
@@ -1364,55 +1415,22 @@ public class ImageEditorWindow extends JFrame implements Runnable {
    * @param mode LOG is in this class
    */
   public static void log(String s, LOG mode) {
-    if (txtLog != null && isLogging() && getEditor() != null
-        && !(mode == LOG.DEBUG && !isDebugging())) {
-      try {
-        StyledDocument doc = txtLog.getStyledDocument();
-        if (styleWarning == null) {
-          // init styles
-          styleWarning = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleWarning, Color.ORANGE);
-          StyleConstants.setBold(styleWarning, false);
-          styleError = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleError, Color.RED);
-          StyleConstants.setBold(styleError, true);
-          styleMessage = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleMessage, Color.BLACK);
-          StyleConstants.setBold(styleMessage, false);
-          styleImportant = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleImportant, Color.CYAN);
-          StyleConstants.setBold(styleImportant, true);
-          styleDebug = new SimpleAttributeSet();
-          StyleConstants.setForeground(styleDebug, Color.YELLOW);
-          StyleConstants.setBackground(styleDebug, Color.BLACK);
-          StyleConstants.setBold(styleDebug, false);
-        }
-        SimpleAttributeSet style = null;
-        switch (mode) {
-          case ERROR:
-            s = "Error: " + s;
-            style = styleError;
-            break;
-          case WARNING:
-            s = "Warning: " + s;
-            style = styleWarning;
-            break;
-          case IMPORTANT:
-            style = styleImportant;
-            break;
-          case MESSAGE:
-            style = styleMessage;
-            break;
-          case DEBUG:
-            s = "Debug: " + s;
-            style = styleDebug;
-            break;
-        }
-        // append
-        doc.insertString(doc.getLength(), s + "\n", style);
-      } catch (BadLocationException exc) {
-        exc.printStackTrace();
-      }
+    switch (mode) {
+      case ERROR:
+        logger.error(s);
+        break;
+      case WARNING:
+        logger.warn(s);
+        break;
+      case IMPORTANT:
+        logger.info(s);
+        break;
+      case MESSAGE:
+        logger.info(s);
+        break;
+      case DEBUG:
+        logger.debug(s);
+        break;
     }
   }
 

@@ -241,4 +241,8 @@ public abstract class ImageDataset implements Serializable {
    */
   public abstract float getLastX();
 
+  public abstract float getX0();
+
+  public abstract float getY0();
+
 }

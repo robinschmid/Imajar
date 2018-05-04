@@ -20,6 +20,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.jfree.chart.ChartPanel;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
@@ -36,6 +37,7 @@ import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.image.SettingsImageMerge;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsImage2DSetup;
@@ -219,7 +221,7 @@ public class ImageLogicRunner {
     }
     // add overlays afterwards
     for (Collectable2D c2d : group.getImages()) {
-      if (ImageOverlay.class.isInstance(c2d)) {
+      if (!Image2D.class.isInstance(c2d)) {
         addImageNode(c2d, parent);
       }
     }
@@ -284,6 +286,9 @@ public class ImageLogicRunner {
         debug.stopAndLOG("for setImage2D");
       } else if (ImageOverlay.class.isInstance(c2d)) {
         window.setImageOverlay((ImageOverlay) c2d);
+        debug.stopAndLOG("for setImageOverlay");
+      } else if (ImageMerge.class.isInstance(c2d)) {
+        window.setImageMerge((ImageMerge) c2d);
         debug.stopAndLOG("for setImageOverlay");
       } else if (SingleParticleImage.class.isInstance(c2d)) {
         window.setSPImage((SingleParticleImage) c2d);
@@ -904,6 +909,37 @@ public class ImageLogicRunner {
     }
   }
 
+
+  /**
+   * creates a group of ImageMerge for this project
+   */
+  public void createImageMerge() {
+    ImagingProject project = treeImg.getSelectedProject();
+    if (project != null) {
+      // find all titles
+      ImageGroupMD g0 = project.get(0);
+
+      // final group of merges
+      ImageGroupMD mergeGroup = new ImageGroupMD();
+      mergeGroup.setProject(project);
+      // for each title
+      for (Collectable2D c : g0.getImages()) {
+        if (c instanceof DataCollectable2D) {
+          SettingsImageMerge sett = new SettingsImageMerge();
+          try {
+            ImageMerge m = new ImageMerge(mergeGroup, sett, c.getTitle());
+            mergeGroup.add(m);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+      }
+      ImageEditorWindow.log("Created " + mergeGroup.size() + " merge images", LOG.MESSAGE);
+
+      // add group to tree
+      addGroup(mergeGroup, project);
+    }
+  }
 
   /**
    * Create SP image
