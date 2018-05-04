@@ -24,6 +24,7 @@ import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler.Handler;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureMouseAdapter;
 import net.rs.lamsi.general.myfreechart.gestures.interf.GestureHandlerFactory;
 import net.rs.lamsi.general.myfreechart.gestures.special.TransformEXYAnnotationHandler;
+import net.rs.lamsi.general.myfreechart.gestures.special.TransformEXYAnnotationHandler.Transform;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -122,9 +123,12 @@ public class EImage2DChartPanel extends EChartPanel {
           Entity.PLOT, Button.BUTTON1, Orientation.HORIZONTAL, null);
 
       // drag annotations
-      TransformEXYAnnotationHandler h = new TransformEXYAnnotationHandler(this,
-          Entity.XY_ANNOTATION, Button.BUTTON1, new Key[] {Key.CTRL, Key.SHIFT, Key.ALT});
-      g.addGestureHandler(h);
+      g.addGestureHandler(new TransformEXYAnnotationHandler(Transform.TRANSLATE, this,
+          Entity.XY_ANNOTATION, Button.BUTTON1, Key.CTRL));
+      g.addGestureHandler(new TransformEXYAnnotationHandler(Transform.SCALE, this,
+          Entity.XY_ANNOTATION, Button.BUTTON1, Key.SHIFT));
+      g.addGestureHandler(new TransformEXYAnnotationHandler(Transform.ROTATE, this,
+          Entity.XY_ANNOTATION, Button.BUTTON1, Key.ALT));
     }
   }
 
