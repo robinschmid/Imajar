@@ -174,6 +174,7 @@ public class SettingsSelections extends Settings implements Serializable,
    */
   public void updateStatistics() {
     if (currentImg != null && selections != null && selections.size() > 0) {
+      clearStatistics();
       // TODO do statistics for all shape selections
       XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
       float[][] x = data.getX();
@@ -228,12 +229,21 @@ public class SettingsSelections extends Settings implements Serializable,
     }
   }
 
+  /**
+   * clear data of all selections
+   */
+  private void clearStatistics() {
+    if (selections != null) {
+      selections.stream().forEach(s -> s.clearData());
+    }
+  }
 
   /**
    * updates the statistics for one selection (use general update method if you want to update all)
    */
   public void updateStatistics(SettingsShapeSelection s) {
     if (currentImg != null && s != null) {
+      s.clearData();
       // TODO do statistics for all shape selections
       XYIDataMatrix data = currentImg.toXYIDataMatrix(false, true);
       float[][] x = data.getX();

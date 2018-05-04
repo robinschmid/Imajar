@@ -45,6 +45,7 @@ import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
+import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramDialog;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
@@ -797,8 +798,11 @@ public class ImageLogicRunner {
    */
   public void openHistogram(Collectable2D c) {
     if (c != null && c instanceof DataCollectable2D) {
+      DataCollectable2D img = (DataCollectable2D) c;
+      HistogramData data = new HistogramData(img.toIArray(false, true), img.getMinIntensity(true),
+          img.getMaxIntensity(true));
       // open histogram frame
-      HistogramDialog d = new HistogramDialog((DataCollectable2D) c);
+      HistogramDialog d = new HistogramDialog("Histogram of " + img.getTitle(), data);
       DialogLoggerUtil.centerOnScreen(d, true);
       d.setVisible(true);
     }

@@ -21,6 +21,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
@@ -64,6 +65,8 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
+import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
+import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramPanel;
 import net.rs.lamsi.multiimager.test.TestQuantifier;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
@@ -72,6 +75,44 @@ import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 public class Image2DSelectDataAreaDialog extends JFrame
     implements MouseListener, MouseMotionListener {
 
+  private enum Position {
+    HIDE, LEFT, TOP;
+
+    public Position next() {
+      switch (this) {
+        case HIDE:
+          return LEFT;
+        case TOP:
+          return HIDE;
+        case LEFT:
+          return TOP;
+      }
+      return HIDE;
+    }
+
+    public String toBorderLayout() {
+      switch (this) {
+        case HIDE:
+          return null;
+        case TOP:
+          return BorderLayout.NORTH;
+        case LEFT:
+          return BorderLayout.WEST;
+      }
+      return null;
+    }
+
+    public int toSplitLayout() {
+      switch (this) {
+        case HIDE:
+        case LEFT:
+          return JSplitPane.HORIZONTAL_SPLIT;
+        case TOP:
+          return JSplitPane.VERTICAL_SPLIT;
+      }
+      return JSplitPane.VERTICAL_SPLIT;
+    }
+  }
   private enum KEY {
     SHRINK, SHIFT, ENLARGE
   }
@@ -109,6 +150,12 @@ public class Image2DSelectDataAreaDialog extends JFrame
   private JStrokeChooserPanel strokeChooserPanel;
   private JCheckBox cbShowAnnotations;
   private JCheckBox cbAlphaMapAsExclusion;
+  // histo panel
+  private HistogramPanel histoPanel;
+  private Position histoPos = Position.HIDE;
+  private JPanel pnSplitTop;
+  private JSplitPane splitCenter;
+
 
   /**
    * Launch the application.
@@ -179,8 +226,17 @@ public class Image2DSelectDataAreaDialog extends JFrame
     table = new JTable();
     scrollPane.setViewportView(table);
 
+    pnSplitTop = new JPanel();
+    splitPane.setLeftComponent(pnSplitTop);
+    pnSplitTop.setLayout(new BorderLayout(0, 0));
+
+    splitCenter = new JSplitPane();
+    pnSplitTop.add(splitCenter, BorderLayout.CENTER);
+
     pnChartView = new JPanel();
-    splitPane.setLeftComponent(pnChartView);
+    splitCenter.setRightComponent(pnChartView);
+    splitCenter.setDividerLocation(0);
+    splitCenter.setLeftComponent(new JPanel(null));
     pnChartView.setLayout(new BorderLayout(0, 0));
 
     JPanel pnNorthMenuContainer = new JPanel();
@@ -189,6 +245,10 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
     JPanel pnNorthMenu = new JPanel();
     pnNorthMenuContainer.add(pnNorthMenu, BorderLayout.NORTH);
+
+    JButton btnToggleHisto = new JButton("toggle histo");
+    btnToggleHisto.addActionListener(e -> toggleHisto());
+    pnNorthMenu.add(btnToggleHisto);
 
 
     cbAlphaMapAsExclusion = new JCheckBox("use alpha map exclusion");
@@ -357,6 +417,46 @@ public class Image2DSelectDataAreaDialog extends JFrame
     contentPane.requestFocusInWindow();
   }
 
+  /**
+   * Show, change position and hide large histogram
+   * 
+   * @return
+   */
+  private void toggleHisto() {
+    boolean wasHidden = histoPos == Position.HIDE;
+    // next position
+    histoPos = histoPos.next();
+    // create
+    if (histoPanel == null)
+      histoPanel = new HistogramPanel();
+
+    if (wasHidden) {
+      splitCenter.setLeftComponent(histoPanel);
+      updateHistoPanelData();
+    } else if (histoPos.equals(Position.HIDE)) {
+      splitCenter.setLeftComponent(new JPanel(null));
+    }
+    splitCenter.setOrientation(histoPos.toSplitLayout());
+    splitCenter.resetToPreferredSizes();
+  }
+
+
+  /**
+   * Set new data to histogram
+   */
+  private void updateHistoPanelData() {
+    if (!histoPos.equals(Position.HIDE) && currentSelect != null) {
+      SelectionTableRow row = currentSelect.getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
+      List<Double> d = row.getData();
+      if (d != null) {
+        HistogramData data = new HistogramData(
+            d.stream().mapToDouble(Double::doubleValue).toArray(), row.getMin(), row.getMax());
+        histoPanel.setData(data, false);
+      }
+    }
+  }
+
+
   private void setAlphaMapExclude(boolean state) {
     // set to settSel
     settSel.setAlphaMapExclusionActive(state);
@@ -373,6 +473,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
     settSel.updateStatistics();
     // update table
     tableModel.fireTableDataChanged();
+    updateHistoPanelData();
     repaint();
   }
 
@@ -578,7 +679,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
     // put data in table
     tableModel.addRow(r, false);
     // update statistics
-    updateSelection(r);
+    updateSelection();
   }
 
 
@@ -588,6 +689,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
    */
   protected void updateSelection() {
     updateSelection(currentSelect);
+    updateHistoPanelData();
   }
 
   /**
@@ -709,14 +811,17 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
 
   private void setCurrentSelect(SettingsShapeSelection s) {
+    // deselect old
     if (currentSelect != null) {
       currentSelect.setHighlighted(false);
       updateAnnotation(currentSelect);
     }
+    // select new
     currentSelect = s;
     if (s != null) {
       currentSelect.setHighlighted(true);
       updateAnnotation(currentSelect);
+      updateHistoPanelData();
     }
     JFreeChart chart = heat.getChart();
     chart.fireChartChanged();
@@ -998,5 +1103,13 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
   public JCheckBox getCbShowAnnotations() {
     return cbShowAnnotations;
+  }
+
+  public JPanel getPnSplitTop() {
+    return pnSplitTop;
+  }
+
+  public JSplitPane getSplitCenter() {
+    return splitCenter;
   }
 }

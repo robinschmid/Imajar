@@ -2,6 +2,7 @@ package net.rs.lamsi.multiimager.Frames.dialogs.analytics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.concurrent.ExecutionException;
 import java.util.function.DoubleFunction;
 import java.util.stream.DoubleStream;
@@ -18,7 +19,6 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.Range;
 import org.jfree.data.xy.XYDataset;
-import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
@@ -43,13 +43,14 @@ public class HistogramPanel extends JPanel {
   private JTextField txtPrecision;
   private JCheckBox cbGaussianFit;
 
-  private DataCollectable2D img;
+  private HistogramData data;
 
   /**
    * Create the dialog.
    */
-  public HistogramPanel(DataCollectable2D img) {
+  public HistogramPanel() {
     setBounds(100, 100, 903, 952);
+    setMinimumSize(new Dimension(600, 300));
     setLayout(new BorderLayout());
     contentPanel = new JPanel();
     add(contentPanel, BorderLayout.CENTER);
@@ -102,7 +103,7 @@ public class HistogramPanel extends JPanel {
           }
           {
             txtBinWidth = new JTextField();
-            txtBinWidth.setText("1");
+            txtBinWidth.setText("");
             pnHistoSett.add(txtBinWidth);
             txtBinWidth.setColumns(7);
           }
@@ -249,20 +250,44 @@ public class HistogramPanel extends JPanel {
     }
 
     addListener();
+  }
 
-    //
-    this.img = img;
-    if (img != null) {
-      // set bin width
-      int bin = (int) Math.sqrt(img.getTotalDataPoints());
-      double l = img.getMaxIntensity(true) - img.getMinIntensity(true);
-      double bw = l / (double) bin;
-      String bws = String.valueOf(bw);
-      try {
-        bws = Precision.toString(bw, 4);
-      } catch (Exception e) {
+  public HistogramPanel(HistogramData data) {
+    this();
+    setData(data);
+  }
+
+  /**
+   * set data and update
+   * 
+   * @param data
+   */
+  public void setData(HistogramData data) {
+    setData(data, true);
+  }
+
+  /**
+   * 
+   * @param data
+   * @param estimateBinWidth estimates the binning width as range.length divided by SQRT of number
+   *        of data entries
+   */
+  public void setData(HistogramData data, boolean estimateBinWidth) {
+    this.data = data;
+    if (data != null) {
+      if (estimateBinWidth || txtBinWidth.getText().isEmpty()) {
+        // set bin width
+        int bin = (int) Math.sqrt(data.size());
+        double l = data.getRange().getLength();
+        double bw = l / (double) bin;
+        String bws = String.valueOf(bw);
+        // round
+        try {
+          bws = Precision.toString(bw, 4);
+        } catch (Exception e) {
+        }
+        txtBinWidth.setText(bws);
       }
-      txtBinWidth.setText(bws);
 
       //
       ddlRepaint.stop();
@@ -340,7 +365,7 @@ public class HistogramPanel extends JPanel {
    * @throws Exception
    */
   private void updateHistograms() {
-    if (img != null) {
+    if (data != null) {
       double binwidth2 = Double.NaN;
       double binShift2 = Double.NaN;
       try {
@@ -356,19 +381,19 @@ public class HistogramPanel extends JPanel {
             @Override
             protected JFreeChart doInBackground() throws Exception {
               // create histogram
-              double[] data = img.toIArray(false, true);;
+              double[] dat = data.getData();
               if (cbExcludeSmallerNoise.isSelected()) {
-                double noise = img.getMinIntensity(true);
+                double noise = data.getRange().getLowerBound();
                 // get processed data from original image
-                data = DoubleStream.of(data).filter(d -> d > noise).toArray();
+                dat = DoubleStream.of(dat).filter(d -> d > noise).toArray();
               }
 
-              Range r = EChartFactory.getBounds(data);
+              Range r = EChartFactory.getBounds(dat);
 
               DoubleFunction<Double> f =
                   cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
 
-              JFreeChart chart = EChartFactory.createHistogram(data, "I", binwidth,
+              JFreeChart chart = EChartFactory.createHistogram(dat, "I", binwidth,
                   r.getLowerBound() - binShift, r.getUpperBound(), f);
               // add gaussian?
               if (cbGaussianFit.isSelected()) {

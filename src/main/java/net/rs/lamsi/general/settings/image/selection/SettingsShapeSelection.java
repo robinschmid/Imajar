@@ -594,4 +594,13 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   public void setStroke(SettingsBasicStroke stroke) {
     this.stroke = stroke;
   }
+
+  public void clearData() {
+    if (stats != null)
+      stats.clearData();
+    if (statsRegardingExclusion != null)
+      statsRegardingExclusion.clearData();
+    if (statsRegardingExclusionAndMap != null)
+      statsRegardingExclusionAndMap.clearData();
+  }
 }

@@ -48,7 +48,8 @@ public class SelectionTableRow implements Serializable {
   }
 
   /**
-   * final stats calculation after all data points were added via check
+   * final stats calculation after all data points were added via check. run clearData later to
+   * clear memory
    */
   public void calculateStatistics() {
     if (data == null || data.isEmpty())
@@ -80,6 +81,16 @@ public class SelectionTableRow implements Serializable {
     sdev = Math.sqrt(sdev / (double) (data.size() - 1));
 
     // erase data
+    // need to keep for histogram
+    // erase later TODO
+    // data = null;
+  }
+
+  public ArrayList<Double> getData() {
+    return data;
+  }
+
+  public void clearData() {
     data = null;
   }
 
