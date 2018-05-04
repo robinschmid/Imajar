@@ -489,7 +489,7 @@ public class ModulePaintscale
 
     // add standard paintscales to menu
     // TODO comment out for window build
-    // addStandardPaintScalesToMenu();
+    addStandardPaintScalesToMenu();
   }
 
   /**
