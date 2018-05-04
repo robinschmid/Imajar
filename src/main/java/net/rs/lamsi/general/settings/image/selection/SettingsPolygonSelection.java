@@ -82,6 +82,9 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
   // */
   // public void addShape(Shape s) {
   // Area a = new Area(s);
+  // a.add(new Area(s));
+  // a.subtract(new Area(s));
+  // AffineTransform at;
   // }
 
   // ##########################################################
