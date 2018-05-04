@@ -17,7 +17,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,9 +55,7 @@ import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.general.annotations.EXYShapeAnnotation;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
-import net.rs.lamsi.general.settings.image.selection.SettingsElipseSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsPolygonSelection;
-import net.rs.lamsi.general.settings.image.selection.SettingsRectSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
@@ -781,7 +781,27 @@ public class Image2DSelectDataAreaDialog extends JFrame
           x1 = (float) pos.getX();
           y1 = (float) pos.getY();
 
-          currentSelect.setFirstAndSecondMouseEvent(x0, y0, x1, y1);
+
+          if (currentSelect instanceof SettingsPolygonSelection) {
+            float x = Math.min(x0, x1);
+            float y = Math.min(y0, y1);
+            float w = Math.abs(x0 - x1);
+            float h = Math.abs(y0 - y1);
+            switch (getCurrentShape()) {
+              case RECT:
+                ((SettingsPolygonSelection) currentSelect)
+                    .setPolygonFromShape(new Rectangle2D.Float(x, y, w, h));
+                break;
+              case ELIPSE:
+                ((SettingsPolygonSelection) currentSelect)
+                    .setPolygonFromShape(new Ellipse2D.Float(x, y, w, h));
+                break;
+              default:
+                currentSelect.setFirstAndSecondMouseEvent(x0, y0, x1, y1);
+                break;
+            }
+          }
+
           lastMouseEvent = e;
           // update selection stats and annotation
           updateSelection();
@@ -873,12 +893,12 @@ public class Image2DSelectDataAreaDialog extends JFrame
         SettingsShapeSelection tmpSelect = null;
         switch (getCurrentShape()) {
           case RECT:
-            tmpSelect = new SettingsRectSelection(img, getCurrentRoiMode(),
-                getCurrentSelectionMode(), x0, y0, 1, 1);
+            tmpSelect = new SettingsPolygonSelection(img, getCurrentRoiMode(),
+                getCurrentSelectionMode(), new Rectangle2D.Float(x0, y0, 1, 1));
             break;
           case ELIPSE:
-            tmpSelect = new SettingsElipseSelection(img, getCurrentRoiMode(),
-                getCurrentSelectionMode(), x0, y0, 1, 1);
+            tmpSelect = new SettingsPolygonSelection(img, getCurrentRoiMode(),
+                getCurrentSelectionMode(), new Ellipse2D.Float(x0, y0, 1, 1));
             break;
           case FREEHAND:
             tmpSelect = new SettingsPolygonSelection(img, getCurrentRoiMode(),
@@ -907,7 +927,22 @@ public class Image2DSelectDataAreaDialog extends JFrame
         x1 = (float) pos.getX();
         y1 = (float) pos.getY();
 
-        currentSelect.setFirstAndSecondMouseEvent(x0, y0, x1, y1);
+        if (currentSelect instanceof SettingsPolygonSelection) {
+          float x = Math.min(x0, x1);
+          float y = Math.min(y0, y1);
+          float w = Math.abs(x0 - x1);
+          float h = Math.abs(y0 - y1);
+          switch (getCurrentShape()) {
+            case RECT:
+              ((SettingsPolygonSelection) currentSelect)
+                  .setPolygonFromShape(new Rectangle2D.Float(x, y, w, h));
+              break;
+            case ELIPSE:
+              ((SettingsPolygonSelection) currentSelect)
+                  .setPolygonFromShape(new Ellipse2D.Float(x, y, w, h));
+              break;
+          }
+        }
         // update selection stats and annotation
         updateSelection();
 

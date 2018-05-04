@@ -31,7 +31,7 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 
   public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode, float x,
       float y) {
-    super(currentImage, roi, mode, new Polygon2D());
+    this(currentImage, roi, mode);
     shape.addPoint(x, y);
   }
 
@@ -57,18 +57,31 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
    * @param s
    */
   public void setPolygonFromShape(Shape s) {
-    shape.reset();
+    shape = new Polygon2D();
 
-    FlatteningPathIterator iter =
-        new FlatteningPathIterator(s.getPathIterator(new AffineTransform()), 1);
-    float[] coords = new float[6];
-    while (!iter.isDone()) {
-      iter.currentSegment(coords);
-      float x = coords[0];
-      float y = coords[1];
-      shape.addPoint(x, y);
-      iter.next();
+    try {
+      FlatteningPathIterator iter =
+          new FlatteningPathIterator(s.getPathIterator(new AffineTransform()), 1);
+      float[] coords = new float[6];
+      while (!iter.isDone()) {
+        iter.currentSegment(coords);
+        float x = coords[0];
+        float y = coords[1];
+        shape.addPoint(x, y);
+        iter.next();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
+
+  /**
+   * Add shape to
+   * 
+   * @param s
+   */
+  public void addShape(Shape s) {
+
   }
 
   // ##########################################################
