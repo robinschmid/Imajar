@@ -65,6 +65,7 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
+import net.rs.lamsi.multiimager.Frames.dialogs.analytics.DataDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramPanel;
 import net.rs.lamsi.multiimager.test.TestQuantifier;
@@ -155,6 +156,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
   private Position histoPos = Position.HIDE;
   private JPanel pnSplitTop;
   private JSplitPane splitCenter;
+  private JButton btnShowData;
 
 
   /**
@@ -248,6 +250,10 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
     JButton btnToggleHisto = new JButton("toggle histo");
     btnToggleHisto.addActionListener(e -> toggleHisto());
+
+    btnShowData = new JButton("show data");
+    btnShowData.addActionListener(e -> showDataDialog());
+    pnNorthMenu.add(btnShowData);
     pnNorthMenu.add(btnToggleHisto);
 
 
@@ -416,6 +422,18 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
     contentPane.requestFocusInWindow();
   }
+
+  private void showDataDialog() {
+    if (currentSelect != null) {
+      SelectionTableRow row = currentSelect.getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
+      List<Double> d = row.getData();
+      if (d != null) {
+        DataDialog dialog = new DataDialog("Data of ROI " + currentSelect.getOrderNumber(), d);
+        dialog.setVisible(true);
+      }
+    }
+  }
+
 
   /**
    * Show, change position and hide large histogram
