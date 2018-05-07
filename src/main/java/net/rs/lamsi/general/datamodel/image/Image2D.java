@@ -10,6 +10,8 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jfree.chart.renderer.PaintScale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
@@ -45,6 +47,7 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 public class Image2D extends DataCollectable2D<SettingsImage2D> implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
   // Parent image with master settings
@@ -859,6 +862,8 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   }
 
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings, boolean cropDataToMin) {
+    logger.debug("toXYIDataMatrix(raw={}, rotation={}, cropToMin={}) on image {}", raw, useSettings,
+        cropDataToMin, getTitle());
     if (useSettings) {
       SettingsGeneralImage sett = settings.getSettImage();
       int diff = data.getMaxDP() - data.getMinDP();
@@ -1137,6 +1142,8 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
     // calc count of points
     int scanpoints = data.getTotalDPCount();
     double[] z = new double[scanpoints];
+    logger.debug("toIArray(raw={}) on image {} (total dp={}) (no selections/exclusions)", raw,
+        getTitle(), scanpoints);
     //
     //
     if (raw) {
@@ -1181,6 +1188,9 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
       int counter = 0;
       int maxlines = getMaxLinesCount();
       int maxdp = getMaxLineLength();
+      logger.debug(
+          "toIMatrixOfSelected(raw={}, excluded={}) on image {} (total selected non excluded dp={})",
+          raw, excluded, getTitle(), datasel.length);
       for (int l = 0; l < maxlines; l++) {
         for (int dp = 0; dp < maxdp; dp++) {
           double tmp;
@@ -1204,6 +1214,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @return [line][dp]
    */
   public double[][] toIMatrix(boolean raw, boolean useSettings) {
+    logger.debug("toIMatrix(raw={}, rotation={}) on image {}", raw, getTitle(), useSettings);
     // time only once?
     if (useSettings) {
       int lines = getMaxLinesCount();
@@ -1245,6 +1256,8 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   public double[][] toIMatrixOfSelected(boolean raw) {
     int cols = getMaxLinesCount();
     int rows = getMaxLineLength();
+    logger.debug("toIMatrixOfSelected(raw={}) on image {} (rows x cols={}x{})", raw, getTitle(),
+        rows, cols);
 
     double[][] dataExp = new double[cols][rows];
     // c for lines

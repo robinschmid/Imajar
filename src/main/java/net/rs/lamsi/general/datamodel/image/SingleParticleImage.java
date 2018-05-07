@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import javax.swing.Icon;
 import org.jfree.data.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -13,6 +15,7 @@ import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -24,6 +27,8 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // ############################################################
   // data
@@ -82,10 +87,11 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     if (selectedFilteredData == null || !lastSelected.equals(sett)
         || !img.getSettings().getSettSelections().equals(lastSelections)) {
       // get data matrix of selected DP
-      selectedFilteredData = img.toIMatrixOfSelected(false);
+      selectedFilteredData = img.toIMatrixOfSelected(true);
       timer.stopAndLOG("image matrix generation");
       // filter out split events
-      selectedFilteredData = filterOutSplitPixelEvents(sett, selectedFilteredData, img.isRotated());
+      selectedFilteredData = filterOutSplitPixelEvents(sett, selectedFilteredData, img.isRotated(),
+          Transformation.NONE);
       timer.stopAndLOG("split pixel event filter");
 
       // save settings
@@ -137,20 +143,23 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * @return [lines][x,y,z] with z as number of particles
    */
   public double[][] toXYCountsArray(SingleParticleSettings sett) {
+    logger.debug("Start single particle counter on {} with {}", img.getTitle(), sett.toString());
     ImageEditorWindow.log("Start SPI counter: ", LOG.MESSAGE);
 
     DebugStopWatch timer = new DebugStopWatch();
-    filteredData = img.toIMatrix(false, true);
+    filteredData = img.toIMatrix(true, true);
     // filter split pixel eventstimer
     timer.stopAndLOG("toIMatrixOfSelected from img");
     ImageEditorWindow.log("Start SPI counter: Data filtering", LOG.MESSAGE);
-    filteredData = filterOutSplitPixelEvents(sett, filteredData, img.isRotated());
+    filteredData =
+        filterOutSplitPixelEvents(sett, filteredData, img.isRotated(), Transformation.CUBEROOT);
     timer.stopAndLOG("filter split particle events");
 
     int particles = 0;
     Range window = sett.getWindow();
     if (window != null) {
       // count events
+      logger.debug("Start to count particles in window:{}", window.toString());
       ImageEditorWindow.log("Start SPI counter: Count particles in window" + window.toString(),
           LOG.MESSAGE);
       for (int i = 0; i < filteredData.length; i++) {
@@ -167,6 +176,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     } else
       ImageEditorWindow.log("SPI counter: no window defined", LOG.MESSAGE);
 
+    logger.info("Particles in window {};  n={}", window.toString(), particles);
     ImageEditorWindow.log("SPI counter DONE: particles:" + particles, LOG.MESSAGE);
     return filteredData;
   }
@@ -177,23 +187,29 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * 
    * @param data [lines][dp]
    * @param rotated if true data is used as [dp][lines]
+   * @param funct function to change resulting data matrix (e.g. apply cuberoot)
    * @return
    */
   private double[][] filterOutSplitPixelEvents(SingleParticleSettings sett, double[][] data,
-      boolean rotated) {
+      boolean rotated, Transformation funct) {
 
     double noise = sett.getNoiseLevel();
     int pixel = sett.getSplitPixel();
     // short circuit if pixel is 0 -> no filter applied
     if (pixel <= 0) {
+      logger.debug("Split pixel filter NOT applied (pixel=0)");
       ImageEditorWindow.log("No split pixel filter applied because split pixel was 0", LOG.MESSAGE);
       return data;
     } else {
-      ImageEditorWindow.log("Filtering data array " + data.length + "x" + data[0].length
+      ImageEditorWindow.log("SP filtering data array " + data.length + "x" + data[0].length
           + " with split pixel=" + pixel + " and noise=" + noise, LOG.MESSAGE);
       int solved = 0;
       int lastSelectedDPCount = 0;
       if (data != null && data.length > 0) {
+        logger.debug(
+            "Split pixel filter (rotated={}) on {}x{} lines x dp (noise={}, pixel={}, transformation={})",
+            rotated, data.length, data[0].length, noise, pixel, funct.toString());
+
         int maxlength = 0;
         double[][] result = new double[data.length][];
         for (int i = 0; i < data.length; i++) {
@@ -239,12 +255,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                   if (last[imax] < last[i])
                     imax = i;
                 }
-                // add all data points as sum or min
+                // set the dp with max i to the sum
+                // rest of data points is set to min (0)
                 for (int i = 0; i < ilast; i++) {
                   if (i == imax)
-                    result[l][dp - ilast + i] = sum;
+                    result[l][dp - ilast + i] = funct.apply(sum);
                   else
-                    result[l][dp - ilast + i] = min;
+                    result[l][dp - ilast + i] = funct.apply(min);
                 }
                 // reset
                 ilast = 0;
@@ -253,7 +270,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
               // is greater noise?
               if (Double.isNaN(current) || current < noise) {
                 // add noisy pixel
-                result[l][dp] = current;
+                result[l][dp] = funct.apply(current);
               } else {
                 // accumulate pixel
                 if (ilast < pixel) {
@@ -276,12 +293,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                 if (last[imax] < last[i])
                   imax = i;
               }
-              // add all data points as sum or min
+              // set the dp with max i to the sum
+              // rest of data points is set to min (0)
               for (int i = 0; i < ilast; i++) {
                 if (i == imax)
-                  result[l][result[l].length - ilast + i] = sum;
+                  result[l][result[l].length - ilast + i] = funct.apply(sum);
                 else
-                  result[l][result[l].length - ilast + i] = min;
+                  result[l][result[l].length - ilast + i] = funct.apply(min);
               }
               // reset
               ilast = 0;
@@ -314,9 +332,9 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                   // add all data points as sum or min
                   for (int i = 0; i < ilast; i++) {
                     if (i == imax)
-                      result[dp - ilast + i][l] = sum;
+                      result[dp - ilast + i][l] = funct.apply(sum);
                     else
-                      result[dp - ilast + i][l] = min;
+                      result[dp - ilast + i][l] = funct.apply(min);
                   }
                   // reset
                   ilast = 0;
@@ -325,7 +343,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                 // is greater noise?
                 if (Double.isNaN(current) || current < noise) {
                   // add noisy pixel
-                  result[dp][l] = current;
+                  result[dp][l] = funct.apply(current);
                 } else {
                   // accumulate pixel
                   if (ilast < pixel) {
@@ -352,9 +370,9 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
               // add all data points as sum or min
               for (int i = 0; i < ilast; i++) {
                 if (i == imax)
-                  result[result.length - 1 - ilast + i][l] = sum;
+                  result[result.length - 1 - ilast + i][l] = funct.apply(sum);
                 else
-                  result[result.length - 1 - ilast + i][l] = min;
+                  result[result.length - 1 - ilast + i][l] = funct.apply(min);
               }
               // reset
               ilast = 0;
@@ -363,6 +381,8 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
           }
         }
 
+        logger.info("Split pixel filter: result {} data points: solved events={}",
+            lastSelectedDPCount, solved);
         ImageEditorWindow.log(
             "Filtered data array size " + lastSelectedDPCount + " solved events " + solved,
             LOG.MESSAGE);

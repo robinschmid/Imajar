@@ -220,6 +220,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
    * Create the application.
    */
   public ImageEditorWindow() {
+    logger.debug("Creates a new window");
+    logger.info("Creates a new window");
+    logger.error("Creates a new window");
     setTitle("ImageEditor");
     thisFrame = this;
     initialize();
