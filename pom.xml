@@ -4,21 +4,22 @@
 	<groupId>net.rs.lamsi</groupId>
 	<artifactId>MassImager</artifactId>
 	<version>3.43</version>
-	
+
 	<scm>
-    <connection>scm:svn:http://127.0.0.1/dummy</connection>
-    <developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
-    <tag>HEAD</tag>
-    <url>http://127.0.0.1/dummy</url>
-  </scm>
-	
+		<connection>scm:svn:http://127.0.0.1/dummy</connection>
+		<developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://127.0.0.1/dummy</url>
+	</scm>
+
 	<build>
 		<resources>
 			<resource>
-				<directory>resource</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
+				<directory>src/main/resources</directory>
+				<targetPath>${project.build.directory}</targetPath>
+			</resource>
+			<resource>
+				<directory>src/test/resources</directory>
 			</resource>
 		</resources>
 		<plugins>
@@ -43,6 +44,10 @@
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
+					<!-- exclude log4j.properties -->
+					<excludes>
+						<exclude>**/log4j.properties</exclude>
+					</excludes>
 					<archive>
 						<manifest>
 							<mainClass>net.rs.lamsi.massimager.Frames.Window</mainClass>
@@ -73,33 +78,33 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.4</version>
-        <executions>
-          <execution>
-            <id>buildnumber</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>create</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <format>{0,number}</format>
-          <items>
-            <item>buildNumber</item>
-          </items> 
-          <doCheck>false</doCheck>
-          <doUpdate>false</doUpdate>
-        <revisionOnScmFailure>no.scm.config.in.pom</revisionOnScmFailure>
-        </configuration>
-      </plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>buildnumber</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<format>{0,number}</format>
+					<items>
+						<item>buildNumber</item>
+					</items>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+					<revisionOnScmFailure>no.scm.config.in.pom</revisionOnScmFailure>
+				</configuration>
+			</plugin>
 		</plugins>
-		
-    <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
+
+		<finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 	</build>
 
 
@@ -136,7 +141,7 @@
 			<artifactId>apache-log4j-extras</artifactId>
 			<version>1.2.17</version>
 		</dependency>
-	
+
 		<!-- https://mvnrepository.com/artifact/org.freehep/freehep-graphicsio-emf -->
 		<dependency>
 			<groupId>org.freehep</groupId>
@@ -157,6 +162,16 @@
 			<artifactId>mzmine</artifactId>
 			<version>2.21</version>
 			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 
@@ -317,14 +332,9 @@
 			<artifactId>juniversalchardet</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-		
-		
-		<!-- old local mzmine 
-		<dependency>
-			<groupId>net.sf.mzmine</groupId>
-			<artifactId>MZmine</artifactId>
-			<version>2.13</version>
-		</dependency>
-		-->
+
+
+		<!-- old local mzmine <dependency> <groupId>net.sf.mzmine</groupId> <artifactId>MZmine</artifactId> 
+			<version>2.13</version> </dependency> -->
 	</dependencies>
 </project>
