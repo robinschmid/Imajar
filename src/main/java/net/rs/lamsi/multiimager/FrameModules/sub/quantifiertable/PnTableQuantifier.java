@@ -25,7 +25,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.framework.basics.ButtonColumn;
 import net.rs.lamsi.general.settings.image.operations.quantifier.Quantifier;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectDataAreaDialog;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
 public abstract class PnTableQuantifier extends JPanel implements ListSelectionListener {
@@ -95,7 +95,7 @@ public abstract class PnTableQuantifier extends JPanel implements ListSelectionL
 		        final int modelRow = Integer.valueOf( e.getActionCommand() );
 		        QuantifierTableRow row = getTableModel().getQuantiRowList().get(modelRow);
 		        // open TODO
-		        Image2DSelectDataAreaDialog dialog = new Image2DSelectDataAreaDialog();
+		        SelectDataAreaDialog dialog = new SelectDataAreaDialog();
 				dialog.startDialog(row.getImg());
 				WindowAdapter wl = new WindowAdapter() {
 					@Override

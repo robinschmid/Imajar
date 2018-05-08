@@ -73,8 +73,7 @@ import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
 
-public class Image2DSelectDataAreaDialog extends JFrame
-    implements MouseListener, MouseMotionListener {
+public class SelectDataAreaDialog extends JFrame implements MouseListener, MouseMotionListener {
 
   private enum Position {
     HIDE, LEFT, TOP;
@@ -166,7 +165,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         try {
-          Image2DSelectDataAreaDialog frame = new Image2DSelectDataAreaDialog();
+          SelectDataAreaDialog frame = new SelectDataAreaDialog();
           TestQuantifier.rand = new Random(System.currentTimeMillis());
           ImageGroupMD img = TestImageFactory.createNonNormalImage(1);
           frame.startDialog((Image2D) img.get(0));
@@ -181,7 +180,7 @@ public class Image2DSelectDataAreaDialog extends JFrame
   /**
    * Create the frame.
    */
-  public Image2DSelectDataAreaDialog() {
+  public SelectDataAreaDialog() {
     final JFrame thisframe = this;
     setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     setBounds(100, 100, 778, 767);
@@ -875,6 +874,9 @@ public class Image2DSelectDataAreaDialog extends JFrame
 
   @Override
   public void mousePressed(MouseEvent e) {
+    // stop if key modifiers are pressed
+    if (e.isShiftDown() || e.isAltDown() || e.isControlDown())
+      return;
     // creation of new selections
     if (e.getButton() == MouseEvent.BUTTON1 && !(getBtnChoose().isSelected())) {
       //

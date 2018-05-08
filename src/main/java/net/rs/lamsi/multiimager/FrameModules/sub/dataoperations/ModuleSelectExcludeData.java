@@ -25,7 +25,7 @@ import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectDataAreaDialog;
 import javax.swing.SwingConstants;
 
 public class ModuleSelectExcludeData extends Collectable2DSettingsModule<SettingsSelections, Image2D> { 
@@ -92,7 +92,7 @@ public class ModuleSelectExcludeData extends Collectable2DSettingsModule<Setting
 			public void actionPerformed(ActionEvent e) {
 				// open dialog with image ex
 				if(currentImage!=null && currentImage.isImage2D()) {
-					final Image2DSelectDataAreaDialog dialog = new Image2DSelectDataAreaDialog();
+					final SelectDataAreaDialog dialog = new SelectDataAreaDialog();
 					dialog.startDialog((Image2D) currentImage);
 					WindowAdapter wl = new WindowAdapter() {
 						@Override

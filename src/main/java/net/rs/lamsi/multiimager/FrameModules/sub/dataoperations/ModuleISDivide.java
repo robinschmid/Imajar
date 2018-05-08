@@ -32,7 +32,7 @@ import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2D
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS.THRESHOLD_MODE;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
-import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.Image2DSelectDataAreaDialog;
+import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectDataAreaDialog;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 
 public class ModuleISDivide
@@ -178,7 +178,7 @@ public class ModuleISDivide
       public void actionPerformed(ActionEvent e) {
         // open dialog with image ex
         if (imgIS != null) {
-          Image2DSelectDataAreaDialog dialog = new Image2DSelectDataAreaDialog();
+          SelectDataAreaDialog dialog = new SelectDataAreaDialog();
           dialog.startDialog(imgIS);
           WindowAdapter wl = new WindowAdapter() {
             @Override
