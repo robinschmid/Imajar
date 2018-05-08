@@ -3,6 +3,8 @@ package net.rs.lamsi.general.datamodel.image;
 import java.io.Serializable;
 import java.util.List;
 import javax.swing.Icon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.image.SettingsImageMerge;
@@ -12,6 +14,7 @@ import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesCo
 public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   protected ImageGroupMD group;
 
@@ -157,7 +160,7 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
         img.setSettings(this.settings.copy());
         img.getSettings().setTitle(name);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("", e);
       }
     }
   }

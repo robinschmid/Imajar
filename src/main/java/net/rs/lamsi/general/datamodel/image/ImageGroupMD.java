@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -25,6 +27,7 @@ import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImgTableRow;
 public class ImageGroupMD implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   // settings
   protected SettingsImageGroup settings;
 
@@ -99,7 +102,7 @@ public class ImageGroupMD implements Serializable {
               try {
                 ((ImageOverlay) get(i)).addImage(img);
               } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("", e);
               }
         }
       } else {
@@ -126,10 +129,10 @@ public class ImageGroupMD implements Serializable {
                   try {
                     ((ImageOverlay) get(i)).addImage(img);
                   } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("", e);
                   }
             } catch (Exception e) {
-              e.printStackTrace();
+              logger.error("", e);
             }
           }
         }
@@ -160,7 +163,7 @@ public class ImageGroupMD implements Serializable {
             try {
               ((ImageOverlay) get(f)).removeImage(index);
             } catch (Exception e) {
-              e.printStackTrace();
+              logger.error("", e);
             }
 
       }
@@ -202,7 +205,7 @@ public class ImageGroupMD implements Serializable {
       try {
         bgImage = ImageIO.read(getBGImagePath());
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("", e);
       }
     }
     return bgImage;

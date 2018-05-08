@@ -1510,7 +1510,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
         img.getSettings().getSettImage().setTitle(name);
         img.getSettings().getSettImage().setRAWFilepath(path);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("", e);
       }
     }
   }
