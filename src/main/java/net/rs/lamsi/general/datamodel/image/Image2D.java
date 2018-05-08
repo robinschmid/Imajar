@@ -38,8 +38,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 // XY raw data!
@@ -354,7 +352,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
     else {
       // for the maximum processed line length
       int overMax = (data.getLineLength(line) - dp + 1);
-      ImageEditorWindow.log("ask for a dp>then line in getXProcessed", LOG.DEBUG);
+      logger.debug("ask for a dp>then line in getXProcessed");
       // return (((data.getX(line, data.getLineLength(line)-1) + getLine(line).getWidthDP()*overMax)
       // * settImage.getVelocity()));
       // tmp change

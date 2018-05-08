@@ -5,12 +5,12 @@ import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
 import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYZDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * getX getY and getZ are deprecated
@@ -18,6 +18,7 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
  */
 public class DataCollectable2DDataset extends AbstractXYZDataset implements DomainInfo, RangeInfo {
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private DataCollectable2D img;
   // post processed data. Not null if post processing was applied.
@@ -192,8 +193,10 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
 
         linelength = data.getMaximumLineLength();
 
-        ImageEditorWindow.log("Post processing of DataCollectable2DDataset done: max line length:"
-            + linelength + "; min line length:" + data.getMinimumLineLength(), LOG.MESSAGE);
+
+        logger.info(
+            "Post processing of DataCollectable2DDataset done: \n max line length: {}   min line length: {}",
+            linelength, data.getMinimumLineLength());
 
         lastOp = op;
         lastProcTime = time;

@@ -1,5 +1,8 @@
 package net.rs.lamsi.general.heatmap.dataoperations;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * idea from (by Wojciech Jarosz):
  * http://web.archive.org/web/20030801220134/http://www.acm.uiuc.edu/siggraph/workshops/wjarosz_convolution_2001.pdf
@@ -10,6 +13,7 @@ package net.rs.lamsi.general.heatmap.dataoperations;
  *
  */
 public class FastGaussianBlur extends PostProcessingOp {
+  private static final Logger logger = LoggerFactory.getLogger(FastGaussianBlur.class);
 
   private double sigma;
 
@@ -51,7 +55,7 @@ public class FastGaussianBlur extends PostProcessingOp {
     int k = 10;
     double f = i / (double) k;
     double d = 1.0 / 10;
-    System.out.println("+" + d + "  " + f);
+    logger.debug("+{}  {}", d, f);
     boxesForGauss(2, 3);
     boxesForGauss(1, 3);
     boxesForGauss(2, 3);
@@ -224,10 +228,9 @@ public class FastGaussianBlur extends PostProcessingOp {
     for (int i = 0; i < n; i++)
       sizes[i] = i < m ? wl : wu;
 
-    System.out.print("For n=" + n + " and sigma=" + sigma + " we got sizes: ");
+    logger.debug("For n=" + n + " and sigma=" + sigma + " we got sizes: ");
     for (int i : sizes)
-      System.out.print(i + ", ");
-    System.out.println();
+      logger.debug(i + ", ");
     return sizes;
   }
 

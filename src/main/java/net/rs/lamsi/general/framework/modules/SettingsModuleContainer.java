@@ -10,16 +10,15 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.interf.SettingsModuleObject;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsContainerSettings;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
-import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 /**
  * holds multiple Collectable2DSettingsModules or HeatmapSettingsModules or basic Modules
@@ -31,6 +30,7 @@ import net.rs.lamsi.utils.useful.DebugStopWatch;
  */
 public abstract class SettingsModuleContainer<T extends SettingsContainerSettings, S extends Collectable2D>
     extends Collectable2DSettingsModule<T, S> implements SettingsModuleObject<S> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // panel for settings
   protected JPanel gridsettings;
@@ -122,11 +122,9 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
   public void setAllViaExistingSettings(T st) throws Exception {
     if (st != null) {
       ImageLogicRunner.setIS_UPDATING(false);
-      DebugStopWatch debug = new DebugStopWatch();
       // new reseted ps
       for (Module m : listSettingsModules) {
         if (SettingsModule.class.isInstance(m)) {
-          debug.setNewStartTime();
           SettingsModule sm = ((SettingsModule) m);
           // try to find settings in collection2d
           Settings sett = getCurrentImage().getSettingsByClass(sm.getSettingsClass());
@@ -140,10 +138,8 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
             sm.setVisible(true);
           } else {
             sm.setVisible(false);
-            ImageEditorWindow.log("No Settings for " + sm.getSettingsClass(), LOG.WARNING);
+            logger.warn("No Settings for {}", sm.getSettingsClass());
           }
-          ImageEditorWindow.log("TIME: " + debug.stop() + "   FOR setAllViaExistingSettings in "
-              + sm.getClass().getName(), LOG.DEBUG);
         }
       }
       // finished

@@ -24,13 +24,15 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.framework.modules.tree.IconNodeRenderer;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.mylists.ListAction;
 import net.rs.lamsi.utils.useful.mylists.TreeAction;
 
 public class DialogLoggerUtil {
+
+  private final static Logger logger = LoggerFactory.getLogger(DialogLoggerUtil.class);
 
   /*
    * Dialogs
@@ -76,7 +78,7 @@ public class DialogLoggerUtil {
         centerOnScreen(dialog, true);
         dialog.startDialog();
         // log in window
-        ImageEditorWindow.log("DIALOG:" + message, LOG.MESSAGE);
+        logger.debug("Show dialog: {}", message);
       }
     });
   }

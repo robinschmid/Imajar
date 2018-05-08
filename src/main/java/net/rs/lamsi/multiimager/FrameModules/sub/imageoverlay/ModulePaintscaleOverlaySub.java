@@ -31,6 +31,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
@@ -45,13 +47,13 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.Valu
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModulePaintscaleOverlaySub
     extends Collectable2DSettingsModule<SettingsPaintScale, Image2D> {
   // ################################################################################################
   // MY STUFF
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private static int ICON_WIDTH = 100;
 
@@ -395,7 +397,7 @@ public class ModulePaintscaleOverlaySub
   protected void setMinimumValuePercentage(double f, boolean force) {
     if ((!(lastMinPercentage + 0.001 > f && lastMinPercentage - 0.001 < f) || force)
         && currentImage != null) {
-      ImageEditorWindow.log("Setting Min % " + f, LOG.DEBUG);
+      logger.debug("Setting Min % {}", f);
       lastMinPercentage = f;
       // apply to all perc. components
       getSliderMinimum().setValue((int) (f * 1000));
@@ -420,7 +422,7 @@ public class ModulePaintscaleOverlaySub
   protected void setMaximumValuePercentage(double f, boolean force) {
     if ((!(lastMaxPercentage + 0.001 > f && lastMaxPercentage - 0.001 < f)
         || getTxtMaxPerc().getText().length() == 0) && currentImage != null) {
-      ImageEditorWindow.log("Setting max % " + f, LOG.DEBUG);
+      logger.debug("Setting max % {}", f);
       lastMaxPercentage = f;
       // apply to all perc. components
       getSliderMaximum().setValue((int) (f * 1000));
@@ -433,7 +435,7 @@ public class ModulePaintscaleOverlaySub
 
   protected void setMaximumValue(double abs, boolean force) {
     if (lastMax != abs && currentImage != null) {
-      ImageEditorWindow.log("Setting max abs " + abs, LOG.DEBUG);
+      logger.debug("Setting max abs {}", abs);
       lastMax = abs;
       // apply to all abs components
       getTxtMaximum().setText(formatAbsNumber(abs));

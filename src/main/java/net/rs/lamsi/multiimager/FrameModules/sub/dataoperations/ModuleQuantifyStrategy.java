@@ -316,8 +316,6 @@ public class ModuleQuantifyStrategy
           update =
               (linear.setSlope(doubleFromTxt(getTxtLinearSlope())) && sett.isActive()) || update;
           currentImage.getSettings().replaceSettings(sett, true);
-
-          System.out.println("SETTINGS SETTINGS A and B");
           break;
         case ONE_POINT:
           if (sett == null || !(sett instanceof SettingsImage2DQuantifierOnePoint)) {

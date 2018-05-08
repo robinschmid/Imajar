@@ -16,8 +16,6 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * this class can hold multiple sub settings {@link SettingsImage2D}
@@ -234,7 +232,7 @@ public abstract class SettingsContainerSettings extends Settings {
           }
         }
         // nothing...
-        ImageEditorWindow.log("No settings object found for " + classsettings.getName(), LOG.DEBUG);
+        logger.warn("No settings object found for {}", classsettings.getName());
         return null;
       }
     }

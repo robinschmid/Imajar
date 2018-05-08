@@ -22,9 +22,12 @@ import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 import org.jfree.chart.ui.Align;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JFreeSquaredChart extends JFreeChart {
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   private static final int MAX_ITERATIONS = 10;
   // is only reset after finished paint
   private int iteration = 0;
@@ -161,14 +164,14 @@ public class JFreeSquaredChart extends JFreeChart {
     XYSquaredPlot plot = (XYSquaredPlot) this.getPlot();
     iteration++; // first iteration in plot is 1
     if (iteration > MAX_ITERATIONS)
-      System.out.println("MAX IT 10");
+      logger.debug("MAX IT 10");
     else
-      System.out.println("IT " + iteration);
+      logger.debug("IT {}", iteration);
 
     Rectangle2D newChartArea = plot.calc(g2, chartArea, plotArea, plotInfo, iteration);
     if (newChartArea.equals(chartArea) || iteration > MAX_ITERATIONS) {
       // final paint
-      System.out.println("PAINT iterations: " + iteration);
+      logger.debug("Final PAINT at iteration: {}", iteration);
       iteration = 0;
       this.getPlot().draw(g2, plotArea, anchor, null, plotInfo);
     } else {

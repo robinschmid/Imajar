@@ -7,13 +7,24 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.utils.math.Precision;
 
 public class ConsoleTest {
   private static DecimalFormat format = new DecimalFormat("0.0E00");
 
+  private final static Logger logger = LoggerFactory.getLogger(ConsoleTest.class);
+
   public static void main(String[] args) {
     // TODO Auto-generated method stub UTF8thermo.csv
+    try {
+      int i = 0;
+      int f = 1 / i;
+    } catch (Exception e) {
+      logger.error("test ", " dawd", e);
+      logger.warn("test {}", " dawd", e);
+    }
 
     Rectangle2D.Float f = new Rectangle2D.Float(0, 0, 10, 10);
     AffineTransform at = AffineTransform.getTranslateInstance(0, 10);

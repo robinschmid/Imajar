@@ -104,11 +104,6 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 public class ImageEditorWindow extends JFrame implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(ImageEditorWindow.class);
 
-  // LOG
-  public static enum LOG {
-    MESSAGE, ERROR, WARNING, IMPORTANT, DEBUG
-  }
-
   private static SimpleAttributeSet styleWarning, styleMessage, styleImportant, styleError,
       styleDebug;
   private static boolean isLogging = true;
@@ -320,8 +315,8 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         if (img.isImage2D())
           DialogDataSaver.startDialogWith(logicRunner.getListImage2DOnly(), (Image2D) img);
         else
-          log("Select a standard image for data export (e.g. image overlay currently selected)",
-              LOG.ERROR);
+          logger.error(
+              "Select a standard image for data export (e.g. image overlay currently selected");
       }
     });
     mntmSaveDataAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK));
@@ -1083,7 +1078,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         autoRepaintOnly = false;
 
       if (!isAutoUpdateStarted) {
-        ImageEditorWindow.log("Auto update started", LOG.DEBUG);
+        logger.debug("Auto update started");
         isAutoUpdateStarted = true;
         Thread t = new Thread(this);
         t.start();
@@ -1138,7 +1133,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   public void writeAllSettingsFromModules(boolean repaintOnly) {
     //
     if (activeModuleContainer != null) {
-      ImageEditorWindow.log("Write all Settings from all Modules --> create Settings", LOG.DEBUG);
+      logger.debug("Write all Settings from all Modules --> create Settings");
 
       // show Image
       if (ImageLogicRunner.IS_UPDATING()) {
@@ -1146,7 +1141,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
         activeModuleContainer.writeAllToSettings();
 
         if (repaintOnly) {
-          ImageEditorWindow.log("Write all Settings from all Modules --> REPAINT ONLY", LOG.DEBUG);
+          logger.debug("Write all Settings from all Modules --> REPAINT ONLY");
           Heatmap heat = logicRunner.getCurrentHeat();
           Collectable2D img = logicRunner.getSelectedImage();
           if (heat != null && img != null) {
@@ -1156,7 +1151,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
             heat.getChartPanel().repaint();
           }
         } else {
-          ImageEditorWindow.log("Write all Settings from all Modules --> CREATE NEW", LOG.DEBUG);
+          logger.debug("Write all Settings from all Modules --> CREATE NEW");
           Heatmap heat = logicRunner.renewImage2DView();
         }
       }
@@ -1223,8 +1218,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // set
     DebugStopWatch debug = new DebugStopWatch();
     modImageOverlay.setCurrentImage(img, true);
-    ImageEditorWindow.log("TIME: " + debug.stop()
-        + "   FOR setting the current image for all OVERLAY modules " + debug.stop(), LOG.DEBUG);
+    logger.debug("TIME: {} FOR setting the current image for all OVERLAY modules ", debug.stop());
 
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
@@ -1257,8 +1251,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // set
     DebugStopWatch debug = new DebugStopWatch();
     modImageMerge.setCurrentImage(img, true);
-    ImageEditorWindow.log("TIME: " + debug.stop()
-        + "   FOR setting the current image for all OVERLAY modules " + debug.stop(), LOG.DEBUG);
+    logger.debug("TIME: {} FOR setting the current image for all OVERLAY modules ", debug.stop());
 
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
@@ -1292,8 +1285,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     // set
     DebugStopWatch debug = new DebugStopWatch();
     modSPImage.setCurrentImage(img, true);
-    ImageEditorWindow.log("TIME: " + debug.stop()
-        + "   FOR setting the current image for all SP modules " + debug.stop(), LOG.DEBUG);
+    logger.debug("TIME: {}  FOR setting the current image for all SP modules ", debug.stop());
 
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
@@ -1318,7 +1310,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
    */
   public void addHeatmapToPanel(final Heatmap heat) throws Exception {
 
-    ImageEditorWindow.log("Add Heatmap to panel", LOG.DEBUG);
+    logger.debug("Add Heatmap to panel");
 
     getPnCenterImageView().removeAll();
     getPnCenterImageView().add(heat.getChartPanel(), BorderLayout.CENTER);
@@ -1409,32 +1401,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   public static boolean isDebugging() {
     return (getEditor() != null && getEditor().getCbDebug() != null
         && getEditor().getCbDebug().isSelected());
-  }
-
-  /**
-   * prints a message to the log
-   * 
-   * @param s
-   * @param mode LOG is in this class
-   */
-  public static void log(String s, LOG mode) {
-    switch (mode) {
-      case ERROR:
-        logger.error(s);
-        break;
-      case WARNING:
-        logger.warn(s);
-        break;
-      case IMPORTANT:
-        logger.info(s);
-        break;
-      case MESSAGE:
-        logger.info(s);
-        break;
-      case DEBUG:
-        logger.debug(s);
-        break;
-    }
   }
 
   public static boolean isLogging() {

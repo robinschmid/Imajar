@@ -1,14 +1,15 @@
 package net.rs.lamsi.general.settings.image.operations.quantifier;
 
 import java.io.Serializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 public class Quantifier implements Serializable, IntensityProcessingChangedListener {
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public static final int MODE_AVERAGE = 0, MODE_AVERAGE_PER_LINE = 1, MODE_AVERAGE_BOXES = 2;
 
@@ -200,7 +201,7 @@ public class Quantifier implements Serializable, IntensityProcessingChangedListe
    */
   private void checkForUpdateInIProc() {
     if (lastIProcChangeTime != img.getLastIProcChangeTime()) {
-      ImageEditorWindow.log("I PROCESSING CHANGED IN QUANTIFIER", LOG.DEBUG);
+      logger.debug("I PROCESSING CHANGED IN QUANTIFIER");
       lastIProcChangeTime = img.getLastIProcChangeTime();
       fireIntensityProcessingChanged(img);
     }

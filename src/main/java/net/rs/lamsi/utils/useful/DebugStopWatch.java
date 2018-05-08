@@ -1,9 +1,11 @@
 package net.rs.lamsi.utils.useful;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 public class DebugStopWatch {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private long start = 0, lastStop = 0;
 
@@ -16,8 +18,7 @@ public class DebugStopWatch {
     if (ImageEditorWindow.isDebugging() && start != 0) {
       long time = System.nanoTime();
       String s = toTime(time - start) + " s";
-      String d = toTime(time - lastStop) + " s";
-      ImageEditorWindow.log(s, LOG.DEBUG);
+      logger.debug(s);
       lastStop = time;
       return s;
     }
@@ -29,7 +30,8 @@ public class DebugStopWatch {
       long time = System.nanoTime();
       String s = toTime(time - start) + " s";
       String d = toTime(time - lastStop) + " s";
-      ImageEditorWindow.log("TIME: " + s + "(+" + d + ") for " + message, LOG.DEBUG);
+
+      logger.debug("TIME: {} (+{}) for {}", s, d, message);
       lastStop = time;
       return s;
     }

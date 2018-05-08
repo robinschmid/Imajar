@@ -33,6 +33,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
@@ -49,8 +51,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.Valu
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.ColorListDialog;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
@@ -58,6 +58,7 @@ public class ModulePaintscale
     extends Collectable2DSettingsModule<SettingsPaintScale, DataCollectable2D> {
   // ################################################################################################
   // MY STUFF
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private static int ICON_WIDTH = 100;
   private ColorListDialog colorDialog;
@@ -624,7 +625,7 @@ public class ModulePaintscale
   protected void setMinimumValuePercentage(double f, boolean force) {
     if (((!(lastMinPercentage + 0.001 > f && lastMinPercentage - 0.001 < f)) || force)
         && currentImage != null) {
-      ImageEditorWindow.log("Setting Min % " + f, LOG.DEBUG);
+      logger.debug("Setting Min % {}", f);
       lastMinPercentage = f;
       // apply to all perc. components
       getSliderMinimum().setEnabled(false);
@@ -651,7 +652,7 @@ public class ModulePaintscale
   protected void setMaximumValuePercentage(double f, boolean force) {
     if ((force || ((!(lastMaxPercentage + 0.001 > f && lastMaxPercentage - 0.001 < f)
         || getTxtMaxPerc().getText().length() == 0))) && currentImage != null) {
-      ImageEditorWindow.log("Setting max % " + f, LOG.DEBUG);
+      logger.debug("Setting max % {}", f);
       lastMaxPercentage = f;
       // apply to all perc. components
       getSliderMaximum().setEnabled(false);
@@ -666,7 +667,7 @@ public class ModulePaintscale
 
   protected void setMaximumValue(double abs, boolean force) {
     if ((force || Double.compare(lastMax, abs) != 0) && currentImage != null) {
-      ImageEditorWindow.log("Setting max abs " + abs, LOG.DEBUG);
+      logger.debug("Setting max abs {}", abs);
       lastMax = abs;
       // apply to all abs components
       getTxtMaximum().setText(formatAbsNumber(abs));

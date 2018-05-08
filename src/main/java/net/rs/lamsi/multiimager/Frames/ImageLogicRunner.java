@@ -18,6 +18,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.jfree.chart.ChartPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageMerge;
@@ -45,7 +47,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramDialog;
@@ -57,9 +58,10 @@ import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
-import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class ImageLogicRunner {
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   // ##################################################################################
   // MyStuff
   // statics
@@ -270,35 +272,33 @@ public class ImageLogicRunner {
   public void setSelectedImageAndShow(Collectable2D c2d) {
     //
     if (c2d == null) {
-      ImageEditorWindow.log("REMOVE VIEWED IMAGE2D", LOG.DEBUG);
+      logger.debug("REMOVE VIEWED IMAGE2D");
       selectedImage = c2d;
       // TODO set image2D -> null?
       // remove heatmap von central
       window.getPnCenterImageView().removeAll();
     } else if (this.selectedImage != c2d) {
-      ImageEditorWindow.log("UPDATE IMAGE2D", LOG.DEBUG);
+      logger.debug("UPDATE IMAGE2D");
       //
       selectedImage = c2d;
       // Renew all Modules
-      DebugStopWatch debug = new DebugStopWatch();
       if (Image2D.class.isInstance(c2d)) {
         window.setImage2D((Image2D) c2d);
-        debug.stopAndLOG("for setImage2D");
+        logger.debug("for setImage2D");
       } else if (ImageOverlay.class.isInstance(c2d)) {
         window.setImageOverlay((ImageOverlay) c2d);
-        debug.stopAndLOG("for setImageOverlay");
+        logger.debug("for setImageOverlay");
       } else if (ImageMerge.class.isInstance(c2d)) {
         window.setImageMerge((ImageMerge) c2d);
-        debug.stopAndLOG("for setImageOverlay");
+        logger.debug("for setImageOverlay");
       } else if (SingleParticleImage.class.isInstance(c2d)) {
         window.setSPImage((SingleParticleImage) c2d);
-        debug.stopAndLOG("for setSPImage");
+        logger.debug("for setSPImage");
       }
 
       // create new heatmap
-      debug.setNewStartTime();
       renewImage2DView();
-      debug.stopAndLOG("FOR renewImage2DView");
+      logger.debug("FOR renewImage2DView");
     }
   }
 
@@ -312,12 +312,11 @@ public class ImageLogicRunner {
   public Heatmap renewImage2DView() {
     if (selectedImage != null) {
       try {
-        ImageEditorWindow.log("Create Heatmap", LOG.DEBUG);
+        logger.debug("Create Heatmap");
         // show heatmap in Center
 
-        DebugStopWatch debug = new DebugStopWatch();
         currentHeat = HeatmapFactory.generateHeatmap(selectedImage);
-        ImageEditorWindow.log("creating the heatmap took " + debug.stop(), LOG.DEBUG);
+        logger.debug("creating the heatmap took ");
 
         ChartPanel myChart = currentHeat.getChartPanel();
         myChart.setMouseWheelEnabled(true);
@@ -327,9 +326,7 @@ public class ImageLogicRunner {
       } catch (Exception ex) {
         ex.printStackTrace();
         // Dialog
-        ImageEditorWindow.log(
-            "Cannot create image from " + selectedImage.getTitle() + "; " + ex.getMessage(),
-            LOG.ERROR);
+        logger.error("Cannot create image from {}", selectedImage.getTitle(), ex.getMessage());
         JOptionPane.showMessageDialog(window,
             "cannot create image from " + selectedImage.getTitle() + "; " + ex.getMessage(),
             "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -414,9 +411,7 @@ public class ImageLogicRunner {
           Image2DImportExportUtil.writeToStandardZip(group, file);
           preferences.addImage2DImportExportPath(file);
         } catch (IOException e) {
-          e.printStackTrace();
-          ImageEditorWindow.log(
-              "Error while writing " + file.getAbsolutePath() + "\n" + e.getMessage(), LOG.ERROR);
+          logger.error("Error while writing {}", file.getAbsolutePath(), e);
         }
 
         if (noGroup)
@@ -436,9 +431,7 @@ public class ImageLogicRunner {
           Image2DImportExportUtil.writeProjectToStandardZip(project, file);
           preferences.addImage2DImportExportPath(file);
         } catch (IOException e) {
-          e.printStackTrace();
-          ImageEditorWindow.log(
-              "Error while writing " + file.getAbsolutePath() + "\n" + e.getMessage(), LOG.ERROR);
+          logger.error("Error while writing {}", file.getAbsolutePath(), e);
         }
 
         if (noProject)
@@ -558,8 +551,7 @@ public class ImageLogicRunner {
           } catch (Exception ex) {
             ex.printStackTrace();
             // Dialog
-            ImageEditorWindow.log(
-                "Error while reading " + f.getAbsolutePath() + "\n" + ex.getMessage(), LOG.ERROR);
+            logger.error("Error while reading {}", f.getAbsolutePath(), ex);
             JOptionPane.showMessageDialog(window,
                 "Cannot load image file " + f.getPath() + "; " + ex.getMessage(), "ERROR",
                 JOptionPane.ERROR_MESSAGE);
@@ -599,8 +591,7 @@ public class ImageLogicRunner {
           } catch (Exception ex) {
             ex.printStackTrace();
             // Dialog
-            ImageEditorWindow.log(
-                "Error while reading " + f.getAbsolutePath() + "\n" + ex.getMessage(), LOG.ERROR);
+            logger.error("Error while reading {}", f.getAbsolutePath(), ex);
             JOptionPane.showMessageDialog(window,
                 "Cannot load image file " + f.getPath() + "; " + ex.getMessage(), "ERROR",
                 JOptionPane.ERROR_MESSAGE);
@@ -700,7 +691,7 @@ public class ImageLogicRunner {
                       }
                     }
 
-                    ImageEditorWindow.log("Imported image " + i[0].getName(), LOG.DEBUG);
+                    logger.debug("Imported image {}", i[0].getName());
                     for (int coll = 0; coll < imgs.length; coll++) {
                       if (imgs[coll].getImages().size() > 0) {
                         // add img to list
@@ -733,7 +724,7 @@ public class ImageLogicRunner {
                   }
                 }
               } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Import text data to image failed", e);
                 DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
               }
             }
@@ -745,7 +736,7 @@ public class ImageLogicRunner {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
       DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
     }
     return null;
@@ -761,10 +752,8 @@ public class ImageLogicRunner {
         sett.applyToImage(i);
 
       //
-      ImageEditorWindow.log(
-          "Set up performed on image group " + group.getName() + " (lines: "
-              + imgs[0].getData().getLinesCount() + " dp: " + imgs[0].getData().getMaxDP() + ")",
-          LOG.IMPORTANT);
+      logger.info("Set up performed on image group {} (lines: {} dp: {})", group.getName(),
+          imgs[0].getData().getLinesCount(), imgs[0].getData().getMaxDP());
     }
   }
 
@@ -781,15 +770,14 @@ public class ImageLogicRunner {
       if (file != null && getSelectedImage() != null) {
         try {
           if (Image2D.class.isInstance(selectedImage)) {
-            ImageEditorWindow.log("Exporting data report to " + FileAndPathUtil
-                .getRealFilePath(file.getParentFile(), file.getName(), "xlsx").getAbsolutePath(),
-                LOG.MESSAGE);
+            logger.info("Exporting data report to {}", FileAndPathUtil
+                .getRealFilePath(file.getParentFile(), file.getName(), "xlsx").getAbsolutePath());
             DataExportUtil.exportDataReportOnOperations((Image2D) selectedImage,
                 file.getParentFile(), file.getName());
-            ImageEditorWindow.log("Exporting finished", LOG.MESSAGE);
+            logger.debug("Exporting data report finished");
           }
         } catch (Exception e) {
-          e.printStackTrace();
+          logger.error("", e);
         }
       }
     }
@@ -871,10 +859,9 @@ public class ImageLogicRunner {
               // add lines
               try {
                 data.appendLines(lines);
-                ImageEditorWindow.log("Added " + lines.length + " lines to " + group.getName(),
-                    LOG.MESSAGE);
+                logger.debug("Added {} lines to group {}", lines.length, group.getName());
               } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("", e);
               }
             }
           }
@@ -904,7 +891,7 @@ public class ImageLogicRunner {
           treeImg.reload();
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("", e);
       }
     }
   }
@@ -930,11 +917,11 @@ public class ImageLogicRunner {
             ImageMerge m = new ImageMerge(mergeGroup, sett, c.getTitle());
             mergeGroup.add(m);
           } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Create image merge failed for img {}", c.getTitle(), e);
           }
         }
       }
-      ImageEditorWindow.log("Created " + mergeGroup.size() + " merge images", LOG.MESSAGE);
+      logger.debug("Created {} merge images", mergeGroup.size());
 
       // add group to tree
       addGroup(mergeGroup, project);
@@ -984,7 +971,7 @@ public class ImageLogicRunner {
           treeImg.reload();
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("Cannot create single particle image", e);
       }
     }
   }
@@ -1062,7 +1049,7 @@ public class ImageLogicRunner {
           treeImg.reload();
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("Import down sampled microscopic image failed", e);
       }
     }
   }
@@ -1087,7 +1074,7 @@ public class ImageLogicRunner {
         } else
           return null;
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("Import microscopic image as background failed", e);
         return null;
       }
     } else

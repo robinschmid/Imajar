@@ -16,10 +16,7 @@ import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
-import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 // XY raw data!
 // have to be multiplied with velocity and spot size
@@ -80,19 +77,16 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * @return
    */
   public double[] getSPDataArraySelected(SingleParticleSettings sett) {
-    // the data
-    DebugStopWatch timer = new DebugStopWatch();
-
     // if not yet filtered or settings have changed
     if (selectedFilteredData == null || !lastSelected.equals(sett)
         || !img.getSettings().getSettSelections().equals(lastSelections)) {
       // get data matrix of selected DP
       selectedFilteredData = img.toIMatrixOfSelected(true);
-      timer.stopAndLOG("image matrix generation");
+      logger.debug("image matrix generation");
       // filter out split events
       selectedFilteredData = filterOutSplitPixelEvents(sett, selectedFilteredData, img.isRotated(),
           Transformation.NONE);
-      timer.stopAndLOG("split pixel event filter");
+      logger.debug("split pixel event filter");
 
       // save settings
       try {
@@ -121,7 +115,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         }
       }
     }
-    timer.stopAndLOG("2D array to 1D of " + size + " selected");
+    logger.debug("2D array to 1D of selected {}", size);
     return arr;
   }
 
@@ -144,24 +138,21 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    */
   public double[][] toXYCountsArray(SingleParticleSettings sett) {
     logger.debug("Start single particle counter on {} with {}", img.getTitle(), sett.toString());
-    ImageEditorWindow.log("Start SPI counter: ", LOG.MESSAGE);
+    logger.debug("Start SPI counter: ");
 
-    DebugStopWatch timer = new DebugStopWatch();
     filteredData = img.toIMatrix(true, true);
     // filter split pixel eventstimer
-    timer.stopAndLOG("toIMatrixOfSelected from img");
-    ImageEditorWindow.log("Start SPI counter: Data filtering", LOG.MESSAGE);
+    logger.debug("toIMatrixOfSelected from img");
+    logger.debug("Start SPI counter: Data filtering");
     filteredData =
         filterOutSplitPixelEvents(sett, filteredData, img.isRotated(), Transformation.CUBEROOT);
-    timer.stopAndLOG("filter split particle events");
+    logger.debug("filter split particle events");
 
     int particles = 0;
     Range window = sett.getWindow();
     if (window != null) {
       // count events
       logger.debug("Start to count particles in window:{}", window.toString());
-      ImageEditorWindow.log("Start SPI counter: Count particles in window" + window.toString(),
-          LOG.MESSAGE);
       for (int i = 0; i < filteredData.length; i++) {
         for (int j = 0; j < filteredData[i].length; j++) {
           if (!Double.isNaN(filteredData[i][j])) {
@@ -174,10 +165,9 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         }
       }
     } else
-      ImageEditorWindow.log("SPI counter: no window defined", LOG.MESSAGE);
+      logger.info("SPI counter: no window defined");
 
     logger.info("Particles in window {};  n={}", window.toString(), particles);
-    ImageEditorWindow.log("SPI counter DONE: particles:" + particles, LOG.MESSAGE);
     return filteredData;
   }
 
@@ -198,11 +188,8 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     // short circuit if pixel is 0 -> no filter applied
     if (pixel <= 0) {
       logger.debug("Split pixel filter NOT applied (pixel=0)");
-      ImageEditorWindow.log("No split pixel filter applied because split pixel was 0", LOG.MESSAGE);
       return data;
     } else {
-      ImageEditorWindow.log("SP filtering data array " + data.length + "x" + data[0].length
-          + " with split pixel=" + pixel + " and noise=" + noise, LOG.MESSAGE);
       int solved = 0;
       int lastSelectedDPCount = 0;
       if (data != null && data.length > 0) {
@@ -383,9 +370,6 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
         logger.info("Split pixel filter: result {} data points: solved events={}",
             lastSelectedDPCount, solved);
-        ImageEditorWindow.log(
-            "Filtered data array size " + lastSelectedDPCount + " solved events " + solved,
-            LOG.MESSAGE);
         // return
         return result;
       } else

@@ -5,8 +5,8 @@ import java.util.EventListener;
 import java.util.function.Consumer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Use a consumer or override documentCHanged method
@@ -18,6 +18,7 @@ public class DelayedDocumentListener
    * 
    */
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private long lastAutoUpdateTime = -1;
   private boolean isAutoUpdateStarted = false;
@@ -54,12 +55,12 @@ public class DelayedDocumentListener
     lastEvent = e;
     isStopped = false;
     if (!isAutoUpdateStarted) {
-      ImageEditorWindow.log("Auto update started", LOG.DEBUG);
+      logger.debug("Auto update started");
       isAutoUpdateStarted = true;
       Thread t = new Thread(this);
       t.start();
     } else
-      ImageEditorWindow.log("no auto update this time", LOG.DEBUG);
+      logger.debug("no auto update this time");
   }
 
   @Override

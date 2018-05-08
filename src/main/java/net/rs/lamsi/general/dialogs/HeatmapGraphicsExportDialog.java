@@ -5,16 +5,15 @@ import java.awt.Font;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ui.Size2D;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -29,11 +28,11 @@ import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
 public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements SettingsPanel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public enum EXPORT_STRUCTURE {
     IMAGE("Single image"), GROUP("Group"), PROJECT("Project"), ALL("All images");
@@ -109,10 +108,10 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
 
   @Override
   protected void renewPreview() {
-      // annotations
-      if (heat != null)
-        heat.showSelectedExcludedRects(getCbShowAnnotations().isSelected());
-      super.renewPreview();
+    // annotations
+    if (heat != null)
+      heat.showSelectedExcludedRects(getCbShowAnnotations().isSelected());
+    super.renewPreview();
   }
 
   @Override
@@ -125,7 +124,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
       final EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE) getComboExportStruc().getSelectedItem();
       try {
         if (selected == null || struc.equals(EXPORT_STRUCTURE.IMAGE)) {
-          ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(), LOG.MESSAGE);
+          logger.debug("Writing image to file: {}", sett.getFullFilePath());
 
           applyMaxPathLengthToSett(sett);
           // renew size
@@ -133,70 +132,68 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
           // export size
           final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
           new GraphicsExportThread(chartPanel.getChart(), fsett).start();
-          
+
         } else {
-              try {
-                switch (struc) {
-                  case ALL:
-                    File rootPath = (sett.getPath());
-                    List<Collectable2D> list = ImageEditorWindow.getImages();
-                    if (list != null)
-                      for (Collectable2D c : list) {
-                        if (c.getImageGroup() != null) {
-                          if (c.getImageGroup().getProject() != null) {
-                            // add project and group folder
-                            sett.setPath(new File(
-                                new File(rootPath,
-                                    c.getImageGroup().getProject().getName().replace(".", "_")),
-                                c.getImageGroup().getName().replace(".", "_")));
-                          }
-                          // add group folder
-                          else
-                            sett.setPath(
-                                new File(rootPath, c.getImageGroup().getName().replace(".", "_")));
-                        }
-                        // show, renew, calc size and save
-                        saveCollectable2DGraphics(sett, c, c.getTitle());
+          try {
+            switch (struc) {
+              case ALL:
+                File rootPath = (sett.getPath());
+                List<Collectable2D> list = ImageEditorWindow.getImages();
+                if (list != null)
+                  for (Collectable2D c : list) {
+                    if (c.getImageGroup() != null) {
+                      if (c.getImageGroup().getProject() != null) {
+                        // add project and group folder
+                        sett.setPath(new File(
+                            new File(rootPath,
+                                c.getImageGroup().getProject().getName().replace(".", "_")),
+                            c.getImageGroup().getName().replace(".", "_")));
                       }
-                    break;
-                  case PROJECT:
-                    if (selected != null && selected.getImageGroup() != null
-                        && selected.getImageGroup().getProject() != null) {
-                      ImagingProject project = selected.getImageGroup().getProject();
-                      File mainPath = new File(sett.getPath(), project.getName().replace(".", "_"));
-                      for (ImageGroupMD g : project.getGroups()) {
-                        sett.setPath(new File(mainPath, g.getName().replace(".", "_")));
-                        for (Collectable2D c : g.getImages()) {
-                            // show, renew, calc size and save
-                          saveCollectable2DGraphics(sett, c, c.getTitle());
-                        }
-                      }
+                      // add group folder
+                      else
+                        sett.setPath(
+                            new File(rootPath, c.getImageGroup().getName().replace(".", "_")));
                     }
-                    break;
-                  case GROUP:
-                    if (selected != null && selected.getImageGroup() != null) {
-                      sett.setPath(new File(sett.getPath(),
-                          selected.getImageGroup().getName().replace(".", "_")));
-                      for (Collectable2D c : selected.getImageGroup().getImages()) {
-                          // show, renew, calc size and save
-                        saveCollectable2DGraphics(sett, c, c.getTitle());
-                      }
+                    // show, renew, calc size and save
+                    saveCollectable2DGraphics(sett, c, c.getTitle());
+                  }
+                break;
+              case PROJECT:
+                if (selected != null && selected.getImageGroup() != null
+                    && selected.getImageGroup().getProject() != null) {
+                  ImagingProject project = selected.getImageGroup().getProject();
+                  File mainPath = new File(sett.getPath(), project.getName().replace(".", "_"));
+                  for (ImageGroupMD g : project.getGroups()) {
+                    sett.setPath(new File(mainPath, g.getName().replace(".", "_")));
+                    for (Collectable2D c : g.getImages()) {
+                      // show, renew, calc size and save
+                      saveCollectable2DGraphics(sett, c, c.getTitle());
                     }
-                    break; 
+                  }
                 }
-                //
-                ImageEditorWindow.log("File written successfully", LOG.MESSAGE);
-                DialogLoggerUtil.showMessageDialogForTime(inst, "Information",
-                    "File written successfully ", 1000);
-              } catch (Exception e) {
-                e.printStackTrace();
-                ImageEditorWindow.log("File not written.", LOG.ERROR);
-                DialogLoggerUtil.showErrorDialog(inst, "File not written. ", e);
-              }
+                break;
+              case GROUP:
+                if (selected != null && selected.getImageGroup() != null) {
+                  sett.setPath(new File(sett.getPath(),
+                      selected.getImageGroup().getName().replace(".", "_")));
+                  for (Collectable2D c : selected.getImageGroup().getImages()) {
+                    // show, renew, calc size and save
+                    saveCollectable2DGraphics(sett, c, c.getTitle());
+                  }
+                }
+                break;
+            }
+            //
+            logger.info("File written successfully");
+            DialogLoggerUtil.showMessageDialogForTime(inst, "Information",
+                "File written successfully ", 1000);
+          } catch (Exception e) {
+            logger.error("File not written.", e);
+            DialogLoggerUtil.showErrorDialog(inst, "File not written. ", e);
+          }
         }
       } catch (Exception e) {
-        e.printStackTrace();
-        ImageEditorWindow.log("File not written.", LOG.ERROR);
+        logger.error("File not written.", e);
         DialogLoggerUtil.showErrorDialog(this, "File not written. ", e);
       }
     }
@@ -204,6 +201,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
 
   /**
    * change chartpanel, calc size, repaint, export
+   * 
    * @param sett
    * @param img
    * @param title
@@ -225,7 +223,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
       // title as filename
       sett.setFileName(fileName + title);
       // export
-      ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(), LOG.MESSAGE);
+      logger.debug("Writing image to file: {}", sett.getFullFilePath());
 
       renewPreview();
       // title as filename
@@ -235,9 +233,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
       final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
       new GraphicsExportThread(chartPanel.getChart(), fsett).start();
     } catch (Exception ex) {
-      ex.printStackTrace();
-      ImageEditorWindow
-          .log("FIle: " + sett.getFileName() + " is not saveable. \n" + ex.getMessage(), LOG.ERROR);
+      logger.error("FIle: {} is not saveable", sett.getFileName(), ex);
     }
     // reset
     sett.setFileName(fileName);

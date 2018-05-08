@@ -30,8 +30,6 @@ import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2D
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 public class FullImageRenderer extends AbstractXYItemRenderer
@@ -384,7 +382,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         g2.setComposite(BlendComposite.Normal);
       }
     }
-    ImageEditorWindow.log("dp=" + c + " (" + cAll + ")", LOG.DEBUG);
+    logger.debug("drawn dp={} of all {} data points", c, cAll);
   }
 
 

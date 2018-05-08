@@ -2,11 +2,11 @@ package net.rs.lamsi.general.datamodel.image.data.interf;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.listener.RawDataChangedListener;
 import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 /**
  * Basic methods of a imaging data set
@@ -17,6 +17,7 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 public abstract class ImageDataset implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   // ############################################################
   // listener
   protected ArrayList<RawDataChangedListener> rawDataChangedListener;
@@ -175,9 +176,8 @@ public abstract class ImageDataset implements Serializable {
    * @return
    */
   public Settings getSettingsByClass(Class classsettings) {
-    ImageEditorWindow.log(
-        "getSettingsByClass was called in ImagingDataset - this method should only be used in sub classes",
-        LOG.ERROR);
+    logger.warn(
+        "getSettingsByClass was called in ImagingDataset - this method should only be used in sub classes");
     return null;
   }
 
@@ -187,9 +187,8 @@ public abstract class ImageDataset implements Serializable {
    * @param sett
    */
   public void setSettings(Settings sett) {
-    ImageEditorWindow.log(
-        "Setter setSettingsByClass was called in ImagingDataset - this method should only be used in sub classes",
-        LOG.ERROR);
+    logger.warn(
+        "Setter setSettingsByClass was called in ImagingDataset - this method should only be used in sub classes");
   }
 
   // ########################################################################

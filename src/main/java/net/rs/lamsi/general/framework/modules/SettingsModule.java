@@ -9,13 +9,13 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
@@ -24,6 +24,7 @@ import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 public abstract class SettingsModule<T extends Settings> extends Module
     implements SettingsChangedListener {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   protected final Class classsettings;
 
@@ -71,9 +72,8 @@ public abstract class SettingsModule<T extends Settings> extends Module
                 if (load != null)
                   addPreset(menu, (T) load, FileAndPathUtil.eraseFormat(f.getName()));
               } catch (Exception ex) {
-                ImageEditorWindow.log(
-                    "Preset is broken remove from settings directory: \n" + f.getAbsolutePath(),
-                    LOG.WARNING);
+                logger.warn("Preset is broken remove from settings directory: \n{}",
+                    f.getAbsolutePath(), ex);
               }
             }
           }
@@ -108,9 +108,8 @@ public abstract class SettingsModule<T extends Settings> extends Module
               if (load != null)
                 addPreset(menu, (T) load, FileAndPathUtil.eraseFormat(f.getName()));
             } catch (Exception ex) {
-              ImageEditorWindow.log(
-                  "Preset is broken remove from settings directory: \n" + f.getAbsolutePath(),
-                  LOG.WARNING);
+              logger.warn("Preset is broken remove from settings directory: \n{}",
+                  f.getAbsolutePath(), ex);
             }
           }
         }

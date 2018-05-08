@@ -45,6 +45,8 @@ import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
@@ -62,8 +64,6 @@ import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SHAPE;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.DataDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
@@ -117,6 +117,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     SHRINK, SHIFT, ENLARGE
   }
 
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   // mystuff
   private Heatmap heat;
   private Image2D img;
@@ -646,8 +647,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         setVisible(true);
       } catch (Exception ex) {
         DialogLoggerUtil.showErrorDialog(this, "", ex);
-        ImageEditorWindow.log(ex.getMessage(), LOG.ERROR);
-        ex.printStackTrace();
+        logger.error("Error while startig dialog", ex);
       }
     }
   }
@@ -746,12 +746,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     chart.fireChartChanged();
     this.repaint();
     //
-    ImageEditorWindow.log("UPDATE CHART", LOG.DEBUG);
+    logger.debug("UPDATE CHART");
   }
 
   @Override
   public void mouseDragged(MouseEvent e) {
-    ImageEditorWindow.log("MOVED", LOG.DEBUG);
     // no selected?
     if (currentSelect == null)
       isPressed = false;
@@ -814,7 +813,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   @Override
   public void mouseClicked(MouseEvent e) {
-    ImageEditorWindow.log("CLICKED IN IMAGE2D SELECTION", LOG.DEBUG);
     if (e.getButton() == MouseEvent.BUTTON1) {
       if (getBtnChoose().isSelected()) {
         ChartPanel cp = heat.getChartPanel();
@@ -880,7 +878,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     // creation of new selections
     if (e.getButton() == MouseEvent.BUTTON1 && !(getBtnChoose().isSelected())) {
       //
-      ImageEditorWindow.log("PRESSED IN IMAGE2D SELECTION", LOG.DEBUG);
       ChartPanel cp = heat.getChartPanel();
       Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY());
       x0 = (float) pos.getX();
@@ -920,7 +917,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   public void mouseReleased(MouseEvent e) {
     if (e.getButton() == MouseEvent.BUTTON1 && isPressed) {
       //
-      ImageEditorWindow.log("RELEASED IN IMAGE2D SELECTION", LOG.DEBUG);
       isPressed = false;
 
       if (currentSelect != null) {

@@ -484,8 +484,6 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
       getFontAxesLabels().setColor(t.getTickLabelPaint());
       getFontMaster().setColor(t.getMasterFontColor());
       getFontPlotTitle().setColor(t.getTitlePaint());
-    } else {
-      System.out.println("null settings");
     }
     // finished
     ddlMaster.setActive(true);

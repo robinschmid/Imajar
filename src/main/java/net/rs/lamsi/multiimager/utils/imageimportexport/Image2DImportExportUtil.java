@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import javax.imageio.ImageIO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipOutputStream;
 import net.lingala.zip4j.model.ZipParameters;
@@ -42,8 +44,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.mywriterreader.ZipUtil;
@@ -51,6 +51,7 @@ import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 
 public class Image2DImportExportUtil {
+  private static final Logger logger = LoggerFactory.getLogger(Image2DImportExportUtil.class);
   private static final TxtWriter txtWriter = new TxtWriter();
   private static final String SEPARATION = ";";
 
@@ -258,7 +259,7 @@ public class Image2DImportExportUtil {
     } catch (ZipException e) {
       e.printStackTrace();
     }
-    ImageEditorWindow.log("Group " + group.getName() + " successfully written", LOG.MESSAGE);
+    logger.info("Group {} successfully written", group.getName());
   }
 
   /**
@@ -371,7 +372,7 @@ public class Image2DImportExportUtil {
     //
     InputStream is = files.get("xmatrix.csv");
     if (is != null) {
-      ImageEditorWindow.log("reading x", LOG.MESSAGE);
+      logger.debug("reading x");
       ArrayList<Float>[] x = null;
 
       // line by line add datapoints to current Scanlines
@@ -415,7 +416,7 @@ public class Image2DImportExportUtil {
           e.printStackTrace();
         }
       }
-      ImageEditorWindow.log("reading x (FINISHED)", LOG.MESSAGE);
+      logger.debug("reading x (FINISHED)");
     }
     // finished x matrix
     if (task != null)
@@ -427,8 +428,7 @@ public class Image2DImportExportUtil {
     // y data
     for (String fileName : files.keySet()) {
       if (!fileName.equals("xmatrix.csv") && fileName.endsWith(".csv")) {
-        ImageEditorWindow.log("reading file: " + fileName, LOG.MESSAGE);
-        System.out.println("read file: " + fileName);
+        logger.info("reading file: {}", fileName);
 
         ArrayList<Double>[] y = null;
 
@@ -488,8 +488,7 @@ public class Image2DImportExportUtil {
         InputStream isSett = files.get(FileAndPathUtil
             .addFormat(fileName.substring(0, fileName.length() - 4), sett.getFileEnding()));
         if (isSett != null) {
-          ImageEditorWindow.log("reading settings file of: " + fileName, LOG.MESSAGE);
-          System.out.println("read settings file of: " + fileName);
+          logger.info("reading settings file of: {}", fileName);
 
           settings.add(new SettingsImage2D());
           settings.get(settings.size() - 1).loadFromXML(isSett);
@@ -504,10 +503,7 @@ public class Image2DImportExportUtil {
           bgimg = ImageIO.read(files.get(fileName));
           bgFile = new File(fileName);
         } catch (Exception e) {
-          e.printStackTrace();
-          ImageEditorWindow.log(
-              "ERROR: Cannot load microscopic image: " + fileName + "\n" + e.getMessage(),
-              LOG.ERROR);
+          logger.warn("Cannot load microscopic image {}", fileName, e);
         }
         // finished microscopic image
         if (task != null)
@@ -537,8 +533,7 @@ public class Image2DImportExportUtil {
       // y data
       for (String fileName : files.keySet()) {
         if (fileName.endsWith(tmpov.getFileEnding())) {
-          ImageEditorWindow.log("reading overlay file: " + fileName, LOG.MESSAGE);
-          System.out.println("read overlay file: " + fileName);
+          logger.info("reading overlay file {}", fileName);
 
           //
           InputStream isSett = files.get(fileName);
@@ -561,8 +556,7 @@ public class Image2DImportExportUtil {
       InputStream isSett =
           files.get(FileAndPathUtil.getRealFileName("group", group.getSettings().getFileEnding()));
       if (isSett != null) {
-        ImageEditorWindow.log("reading settings file of: " + group, LOG.MESSAGE);
-        System.out.println("read settings file of: " + group);
+        logger.info("reading group settings file of: {}", group);
         group.getSettings().loadFromXML(isSett);
       }
       // finished group settings
@@ -585,6 +579,7 @@ public class Image2DImportExportUtil {
    */
   public static ImagingProject readProjectFromStandardZip(File f, ProgressUpdateTask task)
       throws IOException {
+    logger.debug("Reading project from standard zip");
     // read files from zip
     // the folders that either contain the projects settings
     TreeMap<String, TreeMap<String, InputStream>> folders = ZipUtil.readProjectZip(f);
@@ -606,7 +601,7 @@ public class Image2DImportExportUtil {
       InputStream projectSettingsIS = folder.get(projectSettingsName);
       if (projectSettingsIS != null) {
         // load settings
-        ImageEditorWindow.log("reading project settings", LOG.MESSAGE);
+        logger.debug("reading project settings");
         projectSettings.loadFromXML(projectSettingsIS);
         projectSettingsIS.close();
         if (task != null)
@@ -614,13 +609,12 @@ public class Image2DImportExportUtil {
       } else {
         // if not read group
         try {
-          ImageEditorWindow.log("NEXT Import group " + e.getKey(), LOG.ERROR);
+          logger.debug("NEXT Import group {}", e.getKey());
           ImageGroupMD group = readGroup(folder, task);
           if (group != null)
             project.add(group);
         } catch (Exception ex) {
-          ImageEditorWindow.log("Can't import group " + e.getKey(), LOG.ERROR);
-          ex.printStackTrace();
+          logger.error("Can't import group {}", e.getKey(), ex);
         }
       }
     }
@@ -640,6 +634,7 @@ public class Image2DImportExportUtil {
    */
   public static ImageGroupMD[] importTextDataToImage(File[] files, SettingsImageDataImportTxt sett,
       boolean sortFiles, ProgressUpdateTask task) throws Exception {
+    logger.debug("import text data to image {}, {}", sett.getModeImport(), sett);
     // get separation strng
     String separation = "";
     if (sett.getSeparation().equalsIgnoreCase("AUTO")) {

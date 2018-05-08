@@ -32,6 +32,8 @@ import javax.swing.event.ChangeListener;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jfree.chart.plot.XYPlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
@@ -47,8 +49,6 @@ import net.rs.lamsi.general.myfreechart.plot.XYSquaredPlot.Scale;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
@@ -57,6 +57,8 @@ import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
 public class MultiImageFrame extends JFrame {
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
+
   private JFrame thisframe;
   private JPanel contentPane;
   private JSplitPane split;
@@ -410,7 +412,7 @@ public class MultiImageFrame extends JFrame {
   }
 
   protected void setColumns(int s) {
-    ImageEditorWindow.log("Set col: " + s, LOG.DEBUG);
+    logger.debug("Set col: ", s);
     GRID_COL = s;
     updateGridView();
   }
@@ -505,7 +507,7 @@ public class MultiImageFrame extends JFrame {
     updateMap();
 
     if (map != null)
-      ImageEditorWindow.log("new map " + map.length, LOG.DEBUG);
+      logger.debug("new map ", map.length);
   }
 
   /**
@@ -517,7 +519,7 @@ public class MultiImageFrame extends JFrame {
       map = group.updateMap();
     } catch (Exception ex) {
       ex.printStackTrace();
-      ImageEditorWindow.log(ex.getMessage(), LOG.ERROR);
+      logger.warn("Error in update map", ex);
     }
   }
 

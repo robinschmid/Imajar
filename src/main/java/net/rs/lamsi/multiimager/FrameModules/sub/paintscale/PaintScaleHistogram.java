@@ -11,15 +11,16 @@ import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.TextAnchor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.threads.DelayedProgressUpdateTask;
 
 public class PaintScaleHistogram extends JPanel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private DataCollectable2D lastImg;
   private SettingsPaintScale lastPS = null;
@@ -74,7 +75,7 @@ public class PaintScaleHistogram extends JPanel {
   }
 
   public void startUpdateTask() {
-    ImageEditorWindow.log("HISTOGRAM task was started", LOG.DEBUG);
+    logger.debug("HISTOGRAM task was started");
     // task gets started after 1 second delay (if not stopped before)
     task = new DelayedProgressUpdateTask(1, 1000) {
       @Override
@@ -82,7 +83,7 @@ public class PaintScaleHistogram extends JPanel {
         DataCollectable2D img = lastImg;
         if (img != null) {
           try {
-            ImageEditorWindow.log("HISTOGRAM is updating now", LOG.DEBUG);
+            logger.debug("HISTOGRAM is updating now");
             SettingsPaintScale ps = lastPS;
             double min = ps.getMinIAbs(img);
             double max = ps.getMaxIAbs(img);
@@ -101,7 +102,7 @@ public class PaintScaleHistogram extends JPanel {
                   if (bins1 > 100000)
                     bins1 = 100000;
 
-                  ImageEditorWindow.log("bi1:" + bins1 + "   Bins2:" + bins2, LOG.DEBUG);
+                  logger.debug("bi1: {}  bins2: {}", bins1, bins2);
                   JFreeChart chart1 = EChartFactory.createHistogram(dat1, bins1);
                   XYPlot plot1 = chart1.getXYPlot();
                   JFreeChart chart2 = EChartFactory.createHistogram(dat2, bins2);

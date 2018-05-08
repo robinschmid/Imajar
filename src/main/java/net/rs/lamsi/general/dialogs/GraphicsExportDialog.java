@@ -31,6 +31,8 @@ import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.Size2D;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.modules.Module;
@@ -45,12 +47,11 @@ import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FIXED_S
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics.FORMAT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageResolution.DIM_UNIT;
 import net.rs.lamsi.massimager.Frames.Dialogs.generalsettings.interfaces.SettingsPanel;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 
 public class GraphicsExportDialog extends JFrame implements SettingsPanel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // only one instance!
   private static GraphicsExportDialog inst;
@@ -256,7 +257,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
       final SettingsExportGraphics sett =
           (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
       try {
-        ImageEditorWindow.log("Writing image to file: " + sett.getFullFilePath(), LOG.MESSAGE);
+        logger.info("Writing image to file: {}", sett.getFullFilePath());
 
         applyMaxPathLengthToSett(sett);
 
@@ -266,8 +267,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
         final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
         new GraphicsExportThread(chartPanel.getChart(), fsett).start();
       } catch (Exception e) {
-        e.printStackTrace();
-        ImageEditorWindow.log("File not written.", LOG.ERROR);
+        logger.error("File not written.", e);
         DialogLoggerUtil.showErrorDialog(this, "File not written. ", e);
       }
     }

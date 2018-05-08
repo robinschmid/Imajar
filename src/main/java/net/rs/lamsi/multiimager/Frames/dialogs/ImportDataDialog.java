@@ -29,19 +29,20 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.IMPORT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 public class ImportDataDialog extends JDialog {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
   protected SettingsImageDataImportTxt settingsDataImport = null;
   protected ImageLogicRunner runner;
@@ -543,8 +544,7 @@ public class ImportDataDialog extends JDialog {
                   if (file != null)
                     addPreset(sett, FileAndPathUtil.eraseFormat(file.getName()));
                 } catch (Exception e1) {
-                  e1.printStackTrace();
-                  ImageEditorWindow.log("Cannot save preset " + e1.getMessage(), LOG.ERROR);
+                  logger.error("Cannot save preset {}", e1.getMessage(), e);
                 }
               }
             });
@@ -560,7 +560,7 @@ public class ImportDataDialog extends JDialog {
                   setAllViaExistingSettings(sett);
                 } catch (Exception e1) {
                   e1.printStackTrace();
-                  ImageEditorWindow.log("Cannot load preset " + e1.getMessage(), LOG.ERROR);
+                  logger.error("Cannot load preset {}", e1.getMessage(), e);
                 }
               }
             });
@@ -753,9 +753,8 @@ public class ImportDataDialog extends JDialog {
                 addPreset((SettingsImageDataImportTxt) sett.copy(),
                     FileAndPathUtil.eraseFormat(f.getName()));
             } catch (Exception ex) {
-              ImageEditorWindow.log("Preset is broken remove from settings directory: \n"
-                  + f.getAbsolutePath() + ex.getLocalizedMessage(), LOG.WARNING);
-              ex.printStackTrace();
+              logger.error("Preset is broken remove from settings directory: \n {}",
+                  f.getAbsolutePath(), ex);
             }
           }
         }

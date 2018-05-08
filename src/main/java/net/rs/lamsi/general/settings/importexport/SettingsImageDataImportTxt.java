@@ -1,19 +1,20 @@
 package net.rs.lamsi.general.settings.importexport;
 
 import java.util.Vector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 public class SettingsImageDataImportTxt extends Settings {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
 
 
@@ -358,9 +359,9 @@ public class SettingsImageDataImportTxt extends Settings {
       }
       return ex;
     } catch (Exception e) {
-      ImageEditorWindow.log(
+      logger.warn(
           "Import: Wrong exclude parameters. Use comma separation and - for ranges. !Executing import without exclusion!",
-          LOG.ERROR);
+          e);
       return null;
     }
   }

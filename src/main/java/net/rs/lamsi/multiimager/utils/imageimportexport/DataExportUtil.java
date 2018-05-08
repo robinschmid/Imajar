@@ -10,6 +10,8 @@ import javax.swing.ProgressMonitor;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
@@ -20,8 +22,6 @@ import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataExport.FileType;
 import net.rs.lamsi.general.settings.importexport.SettingsImage2DDataSelectionsExport;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
@@ -31,6 +31,7 @@ import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.threads.ProgressUpdateTaskMonitor;
 
 public class DataExportUtil {
+  private static final Logger logger = LoggerFactory.getLogger(DataExportUtil.class);
   private static TxtWriter writer = new TxtWriter();
   private static XSSFExcelWriterReader xwriter = new XSSFExcelWriterReader();
   private static XSSFWorkbook lastwb;
@@ -362,7 +363,7 @@ public class DataExportUtil {
       // end file
       writer.closeDatOutput();
       // log
-      ImageEditorWindow.log("Written: " + file.getName() + " to " + file.getParent(), LOG.MESSAGE);
+      logger.info("Written: {} to {}", file.getName(), file.getParent());
 
       // export x matrix
       if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD) && firstFile && xmatrix != null) {
@@ -373,8 +374,7 @@ public class DataExportUtil {
         // end file
         writer.closeDatOutput();
         // log
-        ImageEditorWindow.log("Written: " + file.getName() + " to " + file.getParent(),
-            LOG.MESSAGE);
+        logger.info("Written: {} to {}", file.getName(), file.getParent());
       }
     }
   }

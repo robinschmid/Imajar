@@ -14,6 +14,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jfree.data.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -22,13 +24,12 @@ import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.singleparticle.SingleParticleDialog;
 
 public class ModuleSPImage
     extends Collectable2DSettingsModule<SingleParticleSettings, SingleParticleImage> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
   private DelayedDocumentListener ddlCenterPM;
   private JTextField txtLower;
@@ -141,7 +142,7 @@ public class ModuleSPImage
           txtLower.setText(String.valueOf(r.getLowerBound()));
           txtUpper.setText(String.valueOf(r.getUpperBound()));
         } catch (Exception e2) {
-          ImageEditorWindow.log(e2.getMessage(), LOG.ERROR);
+          logger.error("Wrong input for center or plus minus range (single particle module", e2);
         }
       }
     };

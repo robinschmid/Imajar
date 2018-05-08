@@ -4,19 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 import javax.swing.JFileChooser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 
 public class SettingsGeneralPreferences extends Settings {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   //
   private final int HISTORY_SIZE = 10;
@@ -91,8 +92,7 @@ public class SettingsGeneralPreferences extends Settings {
     try {
       loadFromXML(generalPrefFile);
     } catch (IOException e) {
-      e.printStackTrace();
-      ImageEditorWindow.log("ERROR: Cannot load preferences! " + e.getMessage(), LOG.ERROR);
+      logger.warn("ERROR: Cannot load preferences! ", e);
     }
   }
 
@@ -191,8 +191,7 @@ public class SettingsGeneralPreferences extends Settings {
     try {
       saveToXML(generalPrefFile);
     } catch (Exception e) {
-      e.printStackTrace();
-      ImageEditorWindow.log("ERROR: Cannot save preferences! " + e.getMessage(), LOG.ERROR);
+      logger.error("ERROR: Cannot save preferences! ", e);
     }
   }
 

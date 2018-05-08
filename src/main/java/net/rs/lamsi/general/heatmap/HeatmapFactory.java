@@ -17,6 +17,8 @@ import org.jfree.chart.ui.Layer;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
@@ -52,12 +54,12 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.Valu
 import net.rs.lamsi.general.settings.image.visualisation.paintscales.SingleColorPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow.LOG;
 
 
 
 public class HeatmapFactory {
+  private static final Logger logger = LoggerFactory.getLogger(HeatmapFactory.class);
+
   /**
    * generate heatmap from data
    * 
@@ -580,7 +582,7 @@ public class HeatmapFactory {
     if (zmin >= zmax)
       zmax = zmin + 1;
 
-    ImageEditorWindow.log("Every data point has the same intensity of " + zmin, LOG.ERROR);
+    logger.warn("Every data point has the same intensity of {}", zmin);
     SettingsThemesContainer setTheme = img.getSettTheme();
     SettingsPaintscaleTheme psTheme = setTheme.getSettPaintscaleTheme();
     // axes
