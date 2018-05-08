@@ -19,6 +19,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.Range;
 import org.jfree.data.xy.XYDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
@@ -26,6 +28,7 @@ import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.utils.math.Precision;
 
 public class HistogramPanel extends JPanel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final JPanel contentPanel;
   private DelayedDocumentListener ddlRepaint;
@@ -341,7 +344,7 @@ public class HistogramPanel extends JPanel {
           pnHisto.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
       }
     } catch (Exception e2) {
-      e2.printStackTrace();
+      logger.error("",e2);
     }
   }
 
@@ -354,7 +357,7 @@ public class HistogramPanel extends JPanel {
           pnHisto.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
       }
     } catch (Exception e2) {
-      e2.printStackTrace();
+      logger.error("",e2);
     }
   }
 
@@ -424,14 +427,14 @@ public class HistogramPanel extends JPanel {
                 southwest.getParent().revalidate();
                 southwest.getParent().repaint();
               } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("", e);
               } catch (ExecutionException e) {
-                e.printStackTrace();
+                logger.error("", e);
               }
             }
           }.execute();
         } catch (Exception e1) {
-          e1.printStackTrace();
+          logger.error("",e1);
         }
 
       }
@@ -466,7 +469,7 @@ public class HistogramPanel extends JPanel {
 
       EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits, true);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 

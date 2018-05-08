@@ -1,5 +1,7 @@
 package net.rs.lamsi.general.settings.image.operations.quantifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -14,6 +16,7 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public enum THRESHOLD_MODE {
     REPLACE_AVG("Replace IS value by avg"), REPLACE_MIN_NON_ZERO(
@@ -227,7 +230,7 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
         if (imgIS != null)
           link = null;
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("Cannot replace img placeholder {}", link.toString(), e);
       }
     }
   }

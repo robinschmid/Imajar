@@ -1,89 +1,91 @@
 package net.rs.lamsi.massimager.MyOES;
 
 import java.util.Vector;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 
 public class OESScan {
-	
-	protected Vector<Double> time = new Vector<Double> ();
-	protected Vector<Double> center = new Vector<Double> ();
-	protected String name,date,info;
-	
-	public void setKopfzeile(String kopfzeile){//static nur wenn man in  main klasse ist
-		String [] tmp = kopfzeile.split(",");
-		try {
-			name=tmp[0];
-			date=tmp[1];
-			info=tmp[2];
-		}catch(Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	public void setData(double time2, double center2) {
-		
-		time.add(time2);
-		
-		//abziehen von von vorigem center-wert 
-		double summe=0;
-		for (int i=0; i<center.size(); i++){
-			summe=summe+center.get(i);
-		}
-		double res = center2-summe;
-		center.add(res);  
-	}
-	
+  protected Vector<Double> time = new Vector<Double>();
+  protected Vector<Double> center = new Vector<Double>();
+  protected String name, date, info;
 
-	// returns a MZChrom for this scan with I against t
-	public MZChromatogram getMZChrom() {
-		MZChromatogram chrom = new MZChromatogram("OES");
-		for(int i=0; i<center.size(); i++) {
-			chrom.add(time.get(i), center.get(i));
-		} 
-		return chrom;
-	}
+  public void setKopfzeile(String kopfzeile) {// static nur wenn man in main klasse ist
+    String[] tmp = kopfzeile.split(",");
+    try {
+      name = tmp[0];
+      date = tmp[1];
+      info = tmp[2];
+    } catch (Exception ex) {
+      logger.error("", ex);
+    }
+  }
 
-	public Vector<Double> getTime() {
-		return time;
-	}
+  public void setData(double time2, double center2) {
 
-	public void setTime(Vector<Double> time) {
-		this.time = time;
-	}
+    time.add(time2);
 
-	public Vector<Double> getCenter() {
-		return center;
-	}
+    // abziehen von von vorigem center-wert
+    double summe = 0;
+    for (int i = 0; i < center.size(); i++) {
+      summe = summe + center.get(i);
+    }
+    double res = center2 - summe;
+    center.add(res);
+  }
 
-	public void setCenter(Vector<Double> center) {
-		this.center = center;
-	}
 
-	public String getName() {
-		return name;
-	}
+  // returns a MZChrom for this scan with I against t
+  public MZChromatogram getMZChrom() {
+    MZChromatogram chrom = new MZChromatogram("OES");
+    for (int i = 0; i < center.size(); i++) {
+      chrom.add(time.get(i), center.get(i));
+    }
+    return chrom;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public Vector<Double> getTime() {
+    return time;
+  }
 
-	public String getDate() {
-		return date;
-	}
+  public void setTime(Vector<Double> time) {
+    this.time = time;
+  }
 
-	public void setDate(String date) {
-		this.date = date;
-	}
+  public Vector<Double> getCenter() {
+    return center;
+  }
 
-	public String getInfo() {
-		return info;
-	}
+  public void setCenter(Vector<Double> center) {
+    this.center = center;
+  }
 
-	public void setInfo(String info) {
-		this.info = info;
-	}
-	
-	
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public void setDate(String date) {
+    this.date = date;
+  }
+
+  public String getInfo() {
+    return info;
+  }
+
+  public void setInfo(String info) {
+    this.info = info;
+  }
+
+
 
 }

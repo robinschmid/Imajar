@@ -6,12 +6,15 @@ import javax.swing.JComboBox;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
 import org.jfree.chart.ChartPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.ROI;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection.SelectionMode;
 
 public class ShapeSelectionsTableModel extends AbstractTableModel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
   /**
@@ -238,7 +241,7 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
 
       return data;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
       return new Object[0][0];
     }
   }

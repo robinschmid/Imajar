@@ -31,6 +31,8 @@ import org.jfree.chart.entity.TitleEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
 import net.rs.lamsi.general.myfreechart.general.annotations.EXYAnnotationEntity;
 import net.rs.lamsi.general.myfreechart.general.annotations.EXYShapeAnnotation;
@@ -90,6 +92,8 @@ public class ChartGestureHandler {
     }
   }
 
+  private static final Logger logger = LoggerFactory.getLogger(ChartGestureHandler.class);
+
   // static list of standard chartgestures as GestureHandlerFactories
   // initialise + getter
   private static List<GestureHandlerFactory> standardGestures = null;
@@ -147,7 +151,7 @@ public class ChartGestureHandler {
       }
       return new ChartGestureDragDiffHandler(entity, button, key, consumer);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
       return null;
     }
   }

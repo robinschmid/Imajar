@@ -242,7 +242,7 @@ public class ModuleSPImage
         if (currentImage != null && changed)
           currentImage.fireIntensityProcessingChanged();
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
     return si;

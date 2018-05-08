@@ -79,7 +79,7 @@ public abstract class SettingsModule<T extends Settings> extends Module
           }
         }
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
 
@@ -114,7 +114,7 @@ public abstract class SettingsModule<T extends Settings> extends Module
           }
         }
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
 
@@ -170,7 +170,7 @@ public abstract class SettingsModule<T extends Settings> extends Module
           try {
             setSettings((T) BinaryWriterReader.deepCopy(settings), true);
           } catch (Exception e1) {
-            e1.printStackTrace();
+            logger.error("",e1);
           }
         }
       });
@@ -262,7 +262,7 @@ public abstract class SettingsModule<T extends Settings> extends Module
         // too slow!
         // SettingsHolder.getSettings().replaceSettings((Settings)settings);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
   }
@@ -283,7 +283,7 @@ public abstract class SettingsModule<T extends Settings> extends Module
         }
       }
     } catch (Exception e1) {
-      e1.printStackTrace();
+      logger.error("",e1);
       DialogLoggerUtil.showErrorDialog(this, "Error while saving", e1);
     }
   }

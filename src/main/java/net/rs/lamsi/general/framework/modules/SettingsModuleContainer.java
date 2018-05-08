@@ -165,7 +165,7 @@ public abstract class SettingsModuleContainer<T extends SettingsContainerSetting
           }
         }
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
     return st;

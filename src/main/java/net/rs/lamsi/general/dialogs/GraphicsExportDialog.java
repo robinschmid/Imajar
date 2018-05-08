@@ -133,7 +133,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
       setVisible(true);
       addChartToPanel(new EChartPanel((JFreeChart) chart.clone()), true);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 
@@ -200,7 +200,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
       setChartSize(sett.getSize());
       getPnChartPreview().repaint();
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 

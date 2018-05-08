@@ -1,6 +1,8 @@
 package net.rs.lamsi.general.settings.image.filter;
 
 import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -15,6 +17,7 @@ import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class SettingsCropAndShift extends Settings implements Image2DSett {
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // only negative (cut out) shifts - values are positive
   // 5 -> will cut out the 5 first (0-4) data poitns
@@ -167,7 +170,7 @@ public class SettingsCropAndShift extends Settings implements Image2DSett {
           addProgressStep(1.f);
           return true;
         } catch (Exception ex) {
-          ex.printStackTrace();
+          logger.error("", ex);
           return false;
         }
       }

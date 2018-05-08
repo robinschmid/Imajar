@@ -102,7 +102,7 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
         addChartToPanel(new EChartPanel((JFreeChart) chart.clone()), true);
       setVisible(true);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 

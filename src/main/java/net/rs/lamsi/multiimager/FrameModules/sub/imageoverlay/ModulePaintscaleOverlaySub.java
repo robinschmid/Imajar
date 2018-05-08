@@ -453,7 +453,7 @@ public class ModulePaintscaleOverlaySub
       setMinimumValue(minZ, true);
       getTxtMinFilter().setBorder(emptyBorder);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       getTxtMinFilter().setBorder(errorBorder);
     }
   }
@@ -466,7 +466,7 @@ public class ModulePaintscaleOverlaySub
       setMaximumValue(maxZ, true);
       getTxtMaxFilter().setBorder(emptyBorder);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       getTxtMaxFilter().setBorder(errorBorder);
     }
   }
@@ -607,7 +607,7 @@ public class ModulePaintscaleOverlaySub
           break;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       switch (mode) {
         case ABSOLUTE:
           getTxtMinimum().setBorder(errorBorder);
@@ -637,7 +637,7 @@ public class ModulePaintscaleOverlaySub
           break;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       switch (mode) {
         case ABSOLUTE:
           getTxtMaximum().setBorder(errorBorder);
@@ -777,7 +777,7 @@ public class ModulePaintscaleOverlaySub
         /// renew histo
         // getPnHistogram().updateHisto(ps);
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
     return ps;
@@ -794,7 +794,7 @@ public class ModulePaintscaleOverlaySub
         if (setAllToPanel)
           setAllViaExistingSettings(settings);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
   }

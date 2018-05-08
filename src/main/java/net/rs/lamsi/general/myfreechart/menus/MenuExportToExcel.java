@@ -22,13 +22,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
-
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
@@ -36,6 +35,7 @@ import net.rs.lamsi.utils.mywriterreader.XSSFExcelWriterReader;
 
 public class MenuExportToExcel extends JMenuItem implements MenuExport {
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private XSSFExcelWriterReader excelWriter;
   private EChartPanel chart;
@@ -64,7 +64,7 @@ public class MenuExportToExcel extends JMenuItem implements MenuExport {
         excelWriter.closeWorkbook(wb);
       }
     } catch (InvalidFormatException | IOException e1) {
-      e1.printStackTrace();
+      logger.error("", e1);
     }
   }
 }

@@ -14,6 +14,8 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.myfreechart.themes.FontResizeTheme;
 
@@ -26,6 +28,8 @@ import net.rs.lamsi.general.myfreechart.themes.FontResizeTheme;
  * @author Robin Schmid (robinschmid@uni-muenster.de)
  */
 public class ChartLogics {
+  private static final Logger logger = LoggerFactory.getLogger(ChartLogics.class);
+
   /**
    * Translates mouse coordinates to chart coordinates (xy-axis)
    * 
@@ -180,7 +184,7 @@ public class ChartLogics {
         }
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
     }
 
     return new Dimension((int) estimatedChartWidth, (int) estimatedChartHeight);
@@ -266,7 +270,7 @@ public class ChartLogics {
           lastH = height;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
     }
 
     if (copyToNewPanel) {

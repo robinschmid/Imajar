@@ -27,6 +27,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.Range;
 import org.jfree.data.xy.XYDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Module;
@@ -37,6 +39,7 @@ import net.rs.lamsi.multiimager.FrameModules.ModuleSingleParticleImage;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 public class SingleParticleDialog extends JFrame {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final JPanel contentPanel = new JPanel();
 
@@ -383,7 +386,7 @@ public class SingleParticleDialog extends JFrame {
           pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
       }
     } catch (Exception e2) {
-      e2.printStackTrace();
+      logger.error("",e2);
     }
   }
 
@@ -398,7 +401,7 @@ public class SingleParticleDialog extends JFrame {
           pnHistoFiltered.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
       }
     } catch (Exception e2) {
-      e2.printStackTrace();
+      logger.error("",e2);
     }
   }
 
@@ -451,7 +454,7 @@ public class SingleParticleDialog extends JFrame {
           }
         }.execute();
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("", e);
       }
     }
   }
@@ -526,9 +529,9 @@ public class SingleParticleDialog extends JFrame {
                 southwest.getParent().revalidate();
                 southwest.getParent().repaint();
               } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("", e);
               } catch (ExecutionException e) {
-                e.printStackTrace();
+                logger.error("", e);
               }
             }
           }.execute();
@@ -582,14 +585,14 @@ public class SingleParticleDialog extends JFrame {
                 southeast.getParent().revalidate();
                 southeast.getParent().repaint();
               } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("", e);
               } catch (ExecutionException e) {
-                e.printStackTrace();
+                logger.error("", e);
               }
             }
           }.execute();
         } catch (Exception e1) {
-          e1.printStackTrace();
+          logger.error("",e1);
         }
 
       }
@@ -626,7 +629,7 @@ public class SingleParticleDialog extends JFrame {
 
       EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits, cbAnnotations.isSelected());
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 

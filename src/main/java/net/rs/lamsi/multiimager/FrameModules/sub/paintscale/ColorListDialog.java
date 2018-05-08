@@ -8,8 +8,11 @@ import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ColorListDialog extends JDialog {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private static final long serialVersionUID = 1L;
   private ColorListPanel list;

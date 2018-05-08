@@ -82,7 +82,7 @@ public class DataExportUtil {
           }
         } catch (Exception ex) {
           this.setProgress(100);
-          ex.printStackTrace();
+          logger.error("",ex);
           return false;
         }
         this.setProgress(100);
@@ -99,9 +99,9 @@ public class DataExportUtil {
           else
             DialogLoggerUtil.showErrorDialog(parent, "Not saved", "Error");
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          logger.error("",e);
         } catch (ExecutionException e) {
-          e.printStackTrace();
+          logger.error("",e);
         }
       }
 

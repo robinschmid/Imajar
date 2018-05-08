@@ -96,7 +96,7 @@ public class DirectImageLogicRunner implements Runnable {
     // runner.getTree().addNodeToRoot(parent);
     // isFirstRun=false;
     // } catch (Exception e) {
-    // e.printStackTrace();
+    // logger.error("",e);
     // }
     // }
     // else {
@@ -165,7 +165,7 @@ public class DirectImageLogicRunner implements Runnable {
     // try{
     // tsk.addNewLines(newLines, autoScale, scaleFactor);
     // } catch(Exception ex) {
-    // ex.printStackTrace();
+    // logger.error("",ex);
     // ImageEditorWindow.log("restarting dia", LOG.WARNING);
     // // restart dia!
     // startDIA(dir, sett);
@@ -174,7 +174,7 @@ public class DirectImageLogicRunner implements Runnable {
     // }
     // //
     // } catch (Exception e) {
-    // e.printStackTrace();
+    // logger.error("",e);
     // }
     // // send update to
     // runner.renewImage2DView();
@@ -182,7 +182,7 @@ public class DirectImageLogicRunner implements Runnable {
     // try {
     // thread.sleep(sleepSec*1000);
     // } catch(Exception ex) {
-    // ex.printStackTrace();
+    // logger.error("",ex);
     // }
     // }
     //
@@ -235,7 +235,7 @@ public class DirectImageLogicRunner implements Runnable {
     // runner.addImage(copy, sumNode);
     // runner.getTree().getTreeModel().nodeStructureChanged(sumNode);
     // } catch (Exception e) {
-    // e.printStackTrace();
+    // logger.error("",e);
     // }
     // }
     // }
@@ -300,7 +300,7 @@ public class DirectImageLogicRunner implements Runnable {
    * runner.addCollection2D(imgList, parent, sett); runner.getTree().addNodeToRoot(parent); // add
    * each image and add all line of images to lines vector for(int img=0; img<imgList.length; img++)
    * { // add all lines lines[img] = imgList[img].getLinesAsVector(); } if(imgList.length>0)
-   * lastFiles = dim; } catch (Exception e) { e.printStackTrace(); } } else { try { // new version
+   * lastFiles = dim; } catch (Exception e) { logger.error("",e); } } else { try { // new version
    * to find new files for(int nf=newFileIndex; nf<files.length; nf++) { for(int lf=newFileIndex;
    * lf<lastFiles.length; lf++) { if(dim[nf].compareTo(lastFiles[lf])) { newFileIndex++;
    * ImageEditorWindow.log("####NEW FILE####", LOG.MESSAGE); } } } // create new files array File[]
@@ -327,9 +327,9 @@ public class DirectImageLogicRunner implements Runnable {
    * //check all 10 times if there was an error and create images new if needed // new version to
    * find new files
    * 
-   * } } catch (Exception e) { // TODO Auto-generated catch block e.printStackTrace(); } // on error
+   * } } catch (Exception e) { // TODO Auto-generated catch block logger.error("",e); } // on error
    * the loop will skip this section // keep the last files lastFiles = dim; loops ++; try {
-   * thread.sleep(sleepSec*1000); } catch(Exception ex) { ex.printStackTrace(); } } } } }
+   * thread.sleep(sleepSec*1000); } catch(Exception ex) { logger.error("",ex); } } } } }
    */
 
   /**

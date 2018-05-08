@@ -25,6 +25,8 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.jfree.chart.plot.XYPlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -45,6 +47,7 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralImage, Image2D> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
   private ImageEditorWindow window;
 
@@ -565,7 +568,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
 
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("", ex);
       } finally {
         // important
         if (currentImage != null && update)

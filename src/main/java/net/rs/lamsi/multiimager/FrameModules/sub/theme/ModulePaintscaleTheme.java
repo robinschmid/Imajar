@@ -222,7 +222,7 @@ public class ModulePaintscaleTheme
             cbUsePaintscaleTitle.isSelected(), r, intFromTxt(getTxtPSWidth()),
             doubleFromTxt(getTxtPSTickUnit()), getCbAutoSelectTickPS().isSelected());
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
     return t;

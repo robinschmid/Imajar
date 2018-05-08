@@ -24,6 +24,8 @@ import javax.swing.event.DocumentListener;
 import org.jfree.chart.editor.ChartEditor;
 import org.jfree.chart.editor.ChartEditorManager;
 import org.jfree.chart.util.ResourceBundleWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
@@ -40,6 +42,7 @@ import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsTheme;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsTheme, Collectable2D> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   // mystuff
   protected boolean isForPrint = true;
 
@@ -324,7 +327,7 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
             al.actionPerformed(null);
           }
         } catch (Exception e1) {
-          e1.printStackTrace();
+          logger.error("",e1);
         }
       }
     });
@@ -508,7 +511,7 @@ public class ModuleGeneralTheme extends Collectable2DSettingsModule<SettingsThem
             getCbYAutoTick().isSelected(), floatFromTxt(txtXTickUnit), floatFromTxt(txtYTickUnit),
             txtXTickFormat.getText(), txtYFormat.getText());
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("", ex);
       }
     }
     return st;

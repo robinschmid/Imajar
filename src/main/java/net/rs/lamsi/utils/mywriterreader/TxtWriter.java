@@ -249,7 +249,7 @@ public class TxtWriter {
       }
       out.flush();
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 
@@ -263,7 +263,7 @@ public class TxtWriter {
       out.append(s);
       out.flush();
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 
@@ -284,7 +284,7 @@ public class TxtWriter {
       closeDatOutput();
       out = new BufferedWriter(new FileWriter(file));
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("",e);
     }
   }
 
@@ -297,7 +297,7 @@ public class TxtWriter {
         out.close();
       out = null;
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 
@@ -347,7 +347,7 @@ public class TxtWriter {
       // close
       closeDatOutput();
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 
@@ -381,7 +381,7 @@ public class TxtWriter {
       // close
       closeDatOutput();
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 
@@ -409,7 +409,7 @@ public class TxtWriter {
       // write string
       write(s.toString());
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 

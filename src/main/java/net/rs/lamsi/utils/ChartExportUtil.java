@@ -30,6 +30,8 @@ import org.jfree.chart.encoders.EncoderUtil;
 import org.jfree.chart.encoders.ImageFormat;
 import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.chart.util.Args;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMImplementation;
 import com.itextpdf.awt.DefaultFontMapper;
 import com.itextpdf.text.Document;
@@ -50,6 +52,7 @@ import net.sf.mzmine.util.files.FileAndPathUtil;
  *
  */
 public class ChartExportUtil {
+  private static final Logger logger = LoggerFactory.getLogger(ChartExportUtil.class);
 
   /**
    * Add export dialog to popup menu of a chartpanel
@@ -166,7 +169,7 @@ public class ChartExportUtil {
       contentByte.addTemplate(template, 0, 0);
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
       throw e;
     } finally {
       document.close();
@@ -304,16 +307,16 @@ public class ChartExportUtil {
       out = new OutputStreamWriter(new FileOutputStream(name), "UTF-8");
       svgGenerator.stream(out, useCSS);
     } catch (UnsupportedEncodingException | FileNotFoundException e) {
-      e.printStackTrace();
+      logger.error("", e);
       throw e;
     } catch (SVGGraphics2DIOException e) {
-      e.printStackTrace();
+      logger.error("", e);
       throw e;
     } finally {
       try {
         out.close();
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("", e);
         throw e;
       }
     }
@@ -330,7 +333,7 @@ public class ChartExportUtil {
       chart.draw((Graphics2D) g, rectangle2d);
       g.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("", e);
       throw e;
     }
   }
@@ -345,7 +348,7 @@ public class ChartExportUtil {
       chart.draw((Graphics2D) g, rectangle2d);
       g.endExport();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("", e);
       throw e;
     }
   }

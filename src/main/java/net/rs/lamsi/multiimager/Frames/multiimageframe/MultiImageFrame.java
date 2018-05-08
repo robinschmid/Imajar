@@ -518,7 +518,7 @@ public class MultiImageFrame extends JFrame {
     try {
       map = group.updateMap();
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       logger.warn("Error in update map", ex);
     }
   }
@@ -630,7 +630,7 @@ public class MultiImageFrame extends JFrame {
       uptodate[i] = true;
     } catch (Exception e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 
@@ -680,7 +680,7 @@ public class MultiImageFrame extends JFrame {
       // show dialog
       DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       // show dialog
       DialogLoggerUtil.showErrorDialog(thisframe, "ERROR while saving", "File not written");
     }
@@ -725,7 +725,7 @@ public class MultiImageFrame extends JFrame {
       // show dialog
       DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       // show dialog
       DialogLoggerUtil.showErrorDialog(thisframe, "ERROR while saving", "File not written");
     }
@@ -743,7 +743,7 @@ public class MultiImageFrame extends JFrame {
       // show dialog
       DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       // show dialog
       DialogLoggerUtil.showErrorDialog(thisframe, "ERROR while saving", "File not written");
     }
@@ -766,7 +766,7 @@ public class MultiImageFrame extends JFrame {
       // show dialog
       DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       // show dialog
       DialogLoggerUtil.showErrorDialog(thisframe, "ERROR while saving", "File not written");
     }
@@ -783,7 +783,7 @@ public class MultiImageFrame extends JFrame {
       new TxtWriter().writeDataArrayToFile(FileAndPathUtil.getRealFileName(file, ext), bmap, ",");
       DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       // show dialog
       DialogLoggerUtil.showErrorDialog(thisframe, "ERROR while saving", "File not written");
     }
@@ -806,7 +806,7 @@ public class MultiImageFrame extends JFrame {
       // show dialog
       DialogLoggerUtil.showMessageDialogForTime(thisframe, "SUCCESS", "File written!", 2);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       // show dialog
       DialogLoggerUtil.showErrorDialog(thisframe, "ERROR while saving", "File not written");
     }

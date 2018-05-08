@@ -5,6 +5,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Point2D;
 import org.apache.batik.ext.awt.geom.Polygon2D;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -12,6 +14,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode) {
     super(currentImage, roi, mode, new Polygon2D());
@@ -71,7 +74,7 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
         iter.next();
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 

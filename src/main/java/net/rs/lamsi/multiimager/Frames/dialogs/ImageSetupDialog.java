@@ -11,12 +11,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.settings.image.sub.SettingsImage2DSetup;
 
 public class ImageSetupDialog extends JDialog {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private SettingsImage2DSetup sett;
 
@@ -28,19 +31,6 @@ public class ImageSetupDialog extends JDialog {
   private JTextField txtSpotSize;
   private JComboBox comboReduce;
   private JCheckBox cbReduce;
-
-  /**
-   * Launch the application.
-   */
-  public static void main(String[] args) {
-    try {
-      ImageSetupDialog dialog = new ImageSetupDialog();
-      dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-      dialog.setVisible(true);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
 
   /**
    * Create the dialog.
@@ -127,7 +117,7 @@ public class ImageSetupDialog extends JDialog {
 
       setVisible(false);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 

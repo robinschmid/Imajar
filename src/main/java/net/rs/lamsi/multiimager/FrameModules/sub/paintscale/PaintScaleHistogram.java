@@ -144,7 +144,7 @@ public class PaintScaleHistogram extends JPanel {
               }
             }
           } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("",e);
             return false;
           }
           return true;

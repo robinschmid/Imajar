@@ -38,7 +38,7 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
     try { // TODO
       return null;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       return null;
     }
   }

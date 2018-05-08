@@ -9,6 +9,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jfree.chart.JFreeChart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
@@ -35,6 +37,7 @@ import net.rs.lamsi.utils.useful.DebugStopWatch;
 public class EImage2DChartPanel extends EChartPanel {
   private static final List<GestureHandlerFactory> standardGestures =
       ChartGestureHandler.initStandardGestures(true, true, false, true, true, true, true, true);
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private Collectable2D img;
 
@@ -174,7 +177,7 @@ public class EImage2DChartPanel extends EChartPanel {
                 DataExportUtil.exportDataImage2D((Image2D) img, sett);
             } catch (InvalidFormatException | IOException e1) {
               // TODO Auto-generated catch block
-              e1.printStackTrace();
+              logger.error("", e1);
             }
           }
         });
@@ -193,7 +196,7 @@ public class EImage2DChartPanel extends EChartPanel {
                 DataExportUtil.exportDataImage2D((Image2D) img, sett);
             } catch (InvalidFormatException | IOException e1) {
               // TODO Auto-generated catch block
-              e1.printStackTrace();
+              logger.error("", e1);
             }
           }
         });
@@ -213,7 +216,7 @@ public class EImage2DChartPanel extends EChartPanel {
                 DataExportUtil.exportDataImage2D((Image2D) img, sett);
             } catch (InvalidFormatException | IOException e1) {
               // TODO Auto-generated catch block
-              e1.printStackTrace();
+              logger.error("", e1);
             }
           }
         });
@@ -233,7 +236,7 @@ public class EImage2DChartPanel extends EChartPanel {
                 DataExportUtil.exportDataImage2D((Image2D) img, sett);
             } catch (InvalidFormatException | IOException e1) {
               // TODO Auto-generated catch block
-              e1.printStackTrace();
+              logger.error("", e1);
             }
           }
         });

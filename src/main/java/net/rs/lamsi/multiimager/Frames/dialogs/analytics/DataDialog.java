@@ -10,30 +10,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.utils.mywriterreader.ClipboardWriter;
 
 public class DataDialog extends JFrame {
 
   private JTextArea txtArea;
-
-  /**
-   * Launch the application.
-   */
-  public static void main(String[] args) {
-    try {
-      // HistogramDialog dialog =
-      // new HistogramDialog(TestImageFactory.createPerfectStandard(4, 4, 20).getFirstImage2D());
-      // dialog.setVisible(true);
-
-      Image2D img = TestImageFactory.createGaussianTest(1000, 1000).getFirstImage2D();
-      DataDialog dialog2 = new DataDialog("Test histo gaussian", img.toIArray(false));
-      dialog2.setVisible(true);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
 
   /**
    * Create the dialog.

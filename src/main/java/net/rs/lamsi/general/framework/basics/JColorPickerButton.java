@@ -13,9 +13,12 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 
 public class JColorPickerButton extends JButton {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   JDialog dialog;
   JColorChooser chooser = new JColorChooser();
   Component parentFrame;
@@ -84,7 +87,7 @@ public class JColorPickerButton extends JButton {
       dialog.setVisible(true);
       //
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
     }
     if (dialog != null) {
       dialog.setVisible(true);

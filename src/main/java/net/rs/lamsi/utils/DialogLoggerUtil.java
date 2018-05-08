@@ -212,7 +212,7 @@ public class DialogLoggerUtil {
         Thread.sleep(time);
       } catch (InterruptedException e) {
         // TODO Auto-generated catch block
-        e.printStackTrace();
+        logger.error("",e);
       } finally {
         this.setVisible(false);
         this.dispose();

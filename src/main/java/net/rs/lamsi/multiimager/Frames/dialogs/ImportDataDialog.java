@@ -114,18 +114,6 @@ public class ImportDataDialog extends JDialog {
   private JCheckBox cbShiftXValues;
   private JCheckBox cbShowImageSetup;
 
-  /**
-   * Launch the application.
-   */
-  public static void main(String[] args) {
-    try {
-      ImportDataDialog dialog = new ImportDataDialog(null);
-      dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-      dialog.setVisible(true);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
 
   /**
    * Create the dialog.
@@ -559,7 +547,7 @@ public class ImportDataDialog extends JDialog {
                   sett.loadSettingsFromFile(thisframe);
                   setAllViaExistingSettings(sett);
                 } catch (Exception e1) {
-                  e1.printStackTrace();
+                  logger.error("",e1);
                   logger.error("Cannot load preset {}", e1.getMessage(), e);
                 }
               }
@@ -759,7 +747,7 @@ public class ImportDataDialog extends JDialog {
           }
         }
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("",ex);
       }
     }
   }

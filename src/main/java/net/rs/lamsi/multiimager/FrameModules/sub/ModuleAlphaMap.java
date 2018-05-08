@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -18,6 +20,7 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap, Collectable2D> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   private JTextField txtAlpha;
   private JLabel lbPercentage;
   private JLabel lbTotalDP;
@@ -120,7 +123,7 @@ public class ModuleAlphaMap extends Collectable2DSettingsModule<SettingsAlphaMap
         changed = si.setDrawMarks(getCbShowMarks().isSelected()) || changed;
 
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("", ex);
       }
     }
     return si;

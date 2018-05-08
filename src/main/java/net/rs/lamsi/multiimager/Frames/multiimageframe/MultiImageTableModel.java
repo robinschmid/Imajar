@@ -3,8 +3,11 @@ package net.rs.lamsi.multiimager.Frames.multiimageframe;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultiImageTableModel extends AbstractTableModel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private MultiImageFrame window;
   /**
@@ -173,7 +176,7 @@ public class MultiImageTableModel extends AbstractTableModel {
 
       return data;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
       return new Object[0][0];
     }
   }

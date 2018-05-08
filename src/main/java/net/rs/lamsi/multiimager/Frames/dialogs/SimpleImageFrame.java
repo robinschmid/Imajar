@@ -5,12 +5,15 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class SimpleImageFrame extends JFrame {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private JPanel contentPane;
 
@@ -35,7 +38,7 @@ public class SimpleImageFrame extends JFrame {
       contentPane.add(map.getChartPanel(), BorderLayout.CENTER);
       timer.stopAndLOG("for creating the heatmap for SimpleImageFrame");
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 

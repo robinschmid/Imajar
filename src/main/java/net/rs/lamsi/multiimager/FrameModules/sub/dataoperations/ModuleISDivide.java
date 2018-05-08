@@ -22,6 +22,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -37,6 +39,7 @@ import net.rs.lamsi.utils.DialogLoggerUtil;
 
 public class ModuleISDivide
     extends Collectable2DSettingsModule<SettingsImage2DQuantifierIS, Image2D> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
   private MODE lastMode = SettingsImage2DQuantifierIS.MODE.LINEAR;
   // save img IS
@@ -305,7 +308,7 @@ public class ModuleISDivide
         sett.setOnlySelected(getCbOnlyUseSelected().isSelected());
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
     } finally {
       // important
       if (currentImage != null && update)

@@ -14,6 +14,8 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.jfree.data.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -26,6 +28,7 @@ import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collectable2D>
     implements Consumer<ZoomHistoryEvent> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
   private JTextField txtXLower;
   private JTextField txtXUpper;
@@ -155,7 +158,7 @@ public class ModuleZoom extends Collectable2DSettingsModule<SettingsZoom, Collec
         changed = si.setYrange(new Range(xl, xu)) || changed;
 
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("", ex);
       }
     }
     return si;

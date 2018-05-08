@@ -205,7 +205,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
           ImageEditorWindow window = new ImageEditorWindow();
           window.setVisible(true);
         } catch (Exception e) {
-          e.printStackTrace();
+          logger.error("",e);
         }
       }
     });
@@ -423,7 +423,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
           logicRunner.combineImages();
         } catch (Exception e1) {
           DialogLoggerUtil.showErrorDialog(thisFrame, "Groups were not compatible", e1);
-          e1.printStackTrace();
+          logger.error("",e1);
         }
       }
     });
@@ -1099,7 +1099,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
       try {
         Thread.currentThread().sleep(100);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
   }

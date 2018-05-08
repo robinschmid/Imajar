@@ -107,10 +107,10 @@ public class Image2DImportExportUtil {
 
           addProgressStep(1);
         } catch (ZipException e) {
-          e.printStackTrace();
+          logger.error("",e);
           state = false;
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.error("",e);
           state = false;
         }
         addProgressStep(1);
@@ -123,7 +123,7 @@ public class Image2DImportExportUtil {
         try {
           out.finish();
         } catch (ZipException e) {
-          e.printStackTrace();
+          logger.error("",e);
           state = false;
         }
         // end
@@ -160,9 +160,9 @@ public class Image2DImportExportUtil {
       sett.saveToXML(out);
       out.closeEntry();
     } catch (ZipException e) {
-      e.printStackTrace();
+      logger.error("",e);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("",e);
     }
     if (task != null)
       task.addProgressStep(1.0 / steps);
@@ -180,10 +180,10 @@ public class Image2DImportExportUtil {
           out.closeEntry();
         } catch (ZipException e) {
           // TODO Auto-generated catch block
-          e.printStackTrace();
+          logger.error("",e);
         } catch (IOException e) {
           // TODO Auto-generated catch block
-          e.printStackTrace();
+          logger.error("",e);
         }
       }
     }
@@ -216,11 +216,11 @@ public class Image2DImportExportUtil {
         if (task != null)
           task.addProgressStep(1.0 / steps);
       } catch (ZipException e) {
-        e.printStackTrace();
+        logger.error("",e);
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("",e);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
     // for all overlays
@@ -237,9 +237,9 @@ public class Image2DImportExportUtil {
         if (task != null)
           task.addProgressStep(1.0 / steps);
       } catch (ZipException e) {
-        e.printStackTrace();
+        logger.error("",e);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
 
@@ -257,7 +257,7 @@ public class Image2DImportExportUtil {
         }
       }
     } catch (ZipException e) {
-      e.printStackTrace();
+      logger.error("",e);
     }
     logger.info("Group {} successfully written", group.getName());
   }
@@ -301,7 +301,7 @@ public class Image2DImportExportUtil {
         try {
           out.finish();
         } catch (ZipException e) {
-          e.printStackTrace();
+          logger.error("",e);
           state = false;
         }
         // end
@@ -323,7 +323,7 @@ public class Image2DImportExportUtil {
     // zipFile.addFile(bg, parameters);
     // }
     // } catch (ZipException e1) {
-    // e1.printStackTrace();
+    // logger.error("",e1);
     // }
   }
 
@@ -407,13 +407,13 @@ public class Image2DImportExportUtil {
           lines.add(new ScanLineMD(xi));
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("",e);
       } finally {
         try {
           if (br != null)
             br.close();
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.error("",e);
         }
       }
       logger.debug("reading x (FINISHED)");
@@ -471,13 +471,13 @@ public class Image2DImportExportUtil {
             lines.get(i).addDimension(y[i]);
 
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.error("",e);
         } finally {
           try {
             if (br != null)
               br.close();
           } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("",e);
           }
         }
         // finished y data
@@ -545,7 +545,7 @@ public class Image2DImportExportUtil {
             newov = new ImageOverlay(group, settov);
             group.add(newov);
           } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("",e);
           }
           // finished image overlay
           if (task != null)
@@ -1376,7 +1376,7 @@ public class Image2DImportExportUtil {
             z[i - 1].add(value);
           }
         } catch (Exception ex) {
-          ex.printStackTrace();
+          logger.error("",ex);
         }
       }
 
@@ -1400,7 +1400,7 @@ public class Image2DImportExportUtil {
           line++;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
 
     // Generate Image2D from scanLines
@@ -1756,7 +1756,7 @@ public class Image2DImportExportUtil {
 
                   z.add(Double.valueOf(intensity));
                 } catch (Exception e) {
-                  e.printStackTrace();
+                  logger.error("",e);
                 }
               }
               // set x

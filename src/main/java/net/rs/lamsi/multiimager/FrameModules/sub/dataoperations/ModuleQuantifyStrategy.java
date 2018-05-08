@@ -20,6 +20,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -38,6 +40,7 @@ import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 
 public class ModuleQuantifyStrategy
     extends Collectable2DSettingsModule<SettingsImage2DQuantifier, Image2D> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   //
   private MODE lastMode = SettingsImage2DQuantifier.MODE.LINEAR;
   // save img IS
@@ -330,7 +333,7 @@ public class ModuleQuantifyStrategy
           break;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("", ex);
     } finally {
       // important
       if (currentImage != null && update)

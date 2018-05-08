@@ -14,6 +14,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
@@ -28,6 +30,7 @@ import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 
 public class ModuleGeneralCollectable2D
     extends Collectable2DSettingsModule<SettingsGeneralCollecable2D, Collectable2D> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // AUTOGEN
   private JTextField txtTitle;
@@ -181,7 +184,7 @@ public class ModuleGeneralCollectable2D
         s.getTheme().setcBGShortTitle(colorBGShortTitle.getColor());
         s.getTheme().setFontShortTitle(fontShortTitle.getSelectedFont());
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("", ex);
       }
     }
     return settImage;

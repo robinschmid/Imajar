@@ -93,7 +93,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         lastSelected = (SingleParticleSettings) sett.copy();
         lastSelections = (SettingsSelections) img.getSettings().getSettSelections().copy();
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
 
@@ -526,7 +526,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         img.getSettings().getSettImage().setTitle(name);
         img.getSettings().getSettImage().setRAWFilepath(path);
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
   }

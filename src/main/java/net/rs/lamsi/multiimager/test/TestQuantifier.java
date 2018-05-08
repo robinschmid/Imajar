@@ -48,7 +48,7 @@ public class TestQuantifier {
 //					window.getLogicRunner().addImage(kali[1],"c3");
 //					window.getLogicRunner().addImage(kali[2],"c3");
 //				} catch(Exception ex) {
-//					ex.printStackTrace();
+//					logger.error("",ex);
 //				}
 //			}
 //		}); 

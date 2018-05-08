@@ -160,7 +160,7 @@ public abstract class Settings implements Serializable {
   // try {
   // cs.loadFromXML(file);
   // } catch (IOException e) {
-  // e.printStackTrace();
+  // logger.error("",e);
   // ImageEditorWindow.log("Cannot load settings", LOG.ERROR);
   // }
   // return cs;
@@ -836,7 +836,7 @@ public abstract class Settings implements Serializable {
       Class<?> clazz = Class.forName(className);
       return createSettings(clazz);
     } catch (Exception e) {
-      e.printStackTrace();
+      staticlogger.error("Cannot create settings for class {}", className, e);
     }
     return null;
   }
@@ -853,7 +853,7 @@ public abstract class Settings implements Serializable {
       Object object = ctor.newInstance();
       return (Settings) object;
     } catch (Exception e) {
-      e.printStackTrace();
+      staticlogger.error("Cannot create settings for class {}", clazz, e);
     }
     return null;
   }

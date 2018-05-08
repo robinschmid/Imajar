@@ -75,7 +75,7 @@ public class DelayedDocumentListener
       try {
         Thread.currentThread().sleep(80);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        logger.error("",e);
       }
     }
     isAutoUpdateStarted = false;

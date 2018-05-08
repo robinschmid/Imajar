@@ -12,11 +12,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.framework.basics.JColorList;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 
 public class ColorListPanel extends JPanel {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   private JColorList listColor;
   private DefaultListModel<JColorPickerButton> listModel;
   private JColorChooser chooser;
@@ -69,7 +72,7 @@ public class ColorListPanel extends JPanel {
         int b = Integer.valueOf(txtB.getText());
         addRGBColor(r, g, b);
       } catch (Exception e2) {
-        e2.printStackTrace();
+        logger.error("", e2);
       }
     });
     panel_1.add(btnAddRgb, "cell 1 0,growx");
@@ -118,7 +121,7 @@ public class ColorListPanel extends JPanel {
         float b = Float.valueOf(txtBrightness.getText()) / 100.f;
         addHSBColor(h, s, b);
       } catch (Exception e2) {
-        e2.printStackTrace();
+        logger.error("", e2);
       }
     });
     panel_1.add(btnAddHsb, "cell 1 5,growx");

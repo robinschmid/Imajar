@@ -1,6 +1,8 @@
 package net.rs.lamsi.general.settings.image;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import net.rs.lamsi.general.datamodel.image.Image2D;
@@ -27,6 +29,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D
     implements Image2DSett, PostProcessingOpProvider {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   protected transient Image2D currentImg = null;
   //
@@ -60,7 +63,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D
       addSettings(new SettingsSelections());
       addSettings(new SettingsCropAndShift());
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 
@@ -77,7 +80,7 @@ public class SettingsImage2D extends SettingsContainerCollectable2D
       addSettings(new SettingsSelections());
       addSettings(new SettingsCropAndShift());
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("", e);
     }
   }
 

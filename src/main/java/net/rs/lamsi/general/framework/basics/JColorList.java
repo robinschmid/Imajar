@@ -11,8 +11,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JColorList extends JList<JColorPickerButton> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private Border selected, undecorated;
 
@@ -27,7 +30,7 @@ public class JColorList extends JList<JColorPickerButton> {
               JColorPickerButton cbtn = (JColorPickerButton) getModel().getElementAt(index);
               cbtn.doClick();
             } catch (Exception ex) {
-              ex.printStackTrace();
+              logger.error("", ex);
             }
           }
         }

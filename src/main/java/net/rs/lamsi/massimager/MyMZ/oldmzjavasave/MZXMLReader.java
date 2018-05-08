@@ -17,7 +17,7 @@ public abstract class MZXMLReader {
 			return true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("",e);
 			throw e;
 		} 
 	}
@@ -30,7 +30,7 @@ public abstract class MZXMLReader {
 					MsnSpectrum spec= reader.next(); 
 					nextSpecFound(spec);
 				} catch (IOException e) { 
-					e.printStackTrace();
+					logger.error("",e);
 				} 
 			}
 		}
@@ -43,7 +43,7 @@ public abstract class MZXMLReader {
 			try{
 				reader.close(); 
 			}catch(Exception ex) {
-				ex.printStackTrace();
+				logger.error("",ex);
 			}
 		}
 	}

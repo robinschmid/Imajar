@@ -50,7 +50,7 @@ public class ModuleTree<T> extends Module {
       getRoot().removeAllChildren();
       reload();
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
     }
   }
 

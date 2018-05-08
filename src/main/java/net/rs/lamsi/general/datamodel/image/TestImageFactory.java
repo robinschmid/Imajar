@@ -2,11 +2,14 @@ package net.rs.lamsi.general.datamodel.image;
 
 import java.util.Arrays;
 import java.util.Random;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 
 public class TestImageFactory {
+  private static final Logger logger = LoggerFactory.getLogger(TestImageFactory.class);
 
 
   public static ImageGroupMD createNonNormalImage(int c) {
@@ -108,7 +111,7 @@ public class TestImageFactory {
       img.add(ov);
     } catch (Exception e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      logger.error("", e);
     }
 
     return img;

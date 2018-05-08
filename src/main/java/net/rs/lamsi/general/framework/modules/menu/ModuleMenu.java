@@ -15,6 +15,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
@@ -27,6 +29,7 @@ import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class ModuleMenu extends JButton {
+  private static final Logger logger = LoggerFactory.getLogger(ModuleMenu.class);
 
   private ArrayList<ModuleMenuApplyToImage> applyToListener;
 
@@ -100,7 +103,7 @@ public class ModuleMenu extends JButton {
           if (settingsChangedListener != null)
             settingsChangedListener.settingsChanged(sett.loadSettingsFromFile(mod));
         } catch (Exception e1) {
-          e1.printStackTrace();
+          logger.error("", e1);
           DialogLoggerUtil.showErrorDialog(mod, "Error while loading", e1);
         }
       }
@@ -155,7 +158,7 @@ public class ModuleMenu extends JButton {
                     }
                   }
                 } catch (Exception e1) {
-                  e1.printStackTrace();
+                  logger.error("", e1);
                   DialogLoggerUtil.showErrorDialog(mod,
                       "Error while applying settings to other images", e1);
                 }
@@ -193,7 +196,7 @@ public class ModuleMenu extends JButton {
           }.execute();
 
         } catch (Exception e1) {
-          e1.printStackTrace();
+          logger.error("", e1);
           DialogLoggerUtil.showErrorDialog(mod, "Error while applying settings to other images",
               e1);
         }

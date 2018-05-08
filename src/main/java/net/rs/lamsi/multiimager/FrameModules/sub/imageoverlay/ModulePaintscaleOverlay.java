@@ -21,6 +21,8 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -36,6 +38,7 @@ import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode
 
 public class ModulePaintscaleOverlay
     extends Collectable2DSettingsModule<SettingsImageOverlay, ImageOverlay> {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
   // ################################################################################################
   // MY STUFF
 
@@ -282,7 +285,7 @@ public class ModulePaintscaleOverlay
           ps.setLevels(levels);
         }
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("", ex);
       }
     }
     return sett;

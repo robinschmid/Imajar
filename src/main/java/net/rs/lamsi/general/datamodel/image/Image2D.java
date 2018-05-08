@@ -2063,7 +2063,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
       return new ImageIcon(img);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("",ex);
       return null;
     }
   }

@@ -3,6 +3,8 @@ package net.rs.lamsi.multiimager.test;
 import java.awt.EventQueue;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.Simple2DDataset;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
@@ -10,6 +12,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.SimpleImageFrame;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
 public class TestImagerWithSimulatedSPData {
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
   public static void main(String[] args) {
