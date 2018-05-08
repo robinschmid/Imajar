@@ -28,6 +28,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.jfree.chart.ui.RectangleInsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -46,6 +48,9 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 public abstract class Settings implements Serializable {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+
+  private final Logger logger = LoggerFactory.getLogger(getClass());
+  private static final Logger staticlogger = LoggerFactory.getLogger(Settings.class);
 
   // the super class
   protected static final String XMLATT_CLASS = "realClass";
@@ -530,6 +535,7 @@ public abstract class Settings implements Serializable {
     NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
     if (nodes.getLength() == 1) {
       Element el = (Element) nodes.item(0);
+      logger.debug("Loading {} settings", el.toString());
       loadValuesFromXML(el, doc);
     }
   }
@@ -777,15 +783,10 @@ public abstract class Settings implements Serializable {
    * @param nextElement
    * @return
    */
-  public static Class getHashedClassFromXML(Element nextElement) {
-    try {
-      // get super class name (hashed class name which was inserted to list)
-      Class hashedClass = Class.forName(nextElement.getNodeName());
-      return hashedClass;
-    } catch (Exception e) {
-      System.err.println("No class for xml object " + nextElement.getNodeName());
-    }
-    return null;
+  public static Class getHashedClassFromXML(Element nextElement) throws Exception {
+    // get super class name (hashed class name which was inserted to list)
+    Class hashedClass = Class.forName(nextElement.getNodeName());
+    return hashedClass;
   }
 
   /**
@@ -793,20 +794,15 @@ public abstract class Settings implements Serializable {
    * 
    * @return
    */
-  public static Class getRealClassFromXML(Element nextElement) {
-    try {
-      // get real class name (or super (hashed) class name which was inserted to list)
-      String realClassName = nextElement.getAttribute(XMLATT_CLASS);
-      if (realClassName.length() == 0)
-        return getHashedClassFromXML(nextElement);
-      else {
-        Class hashedClass = Class.forName(realClassName);
-        return hashedClass;
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+  public static Class getRealClassFromXML(Element nextElement) throws Exception {
+    // get real class name (or super (hashed) class name which was inserted to list)
+    String realClassName = nextElement.getAttribute(XMLATT_CLASS);
+    if (realClassName.length() == 0)
+      return getHashedClassFromXML(nextElement);
+    else {
+      Class hashedClass = Class.forName(realClassName);
+      return hashedClass;
     }
-    return null;
   }
 
   /**
@@ -817,8 +813,12 @@ public abstract class Settings implements Serializable {
    * @return
    */
   public boolean isSettingsNode(Element nextElement, Class c) {
-    Class hashedClass = getHashedClassFromXML(nextElement);
-    return (hashedClass != null && hashedClass.equals(c));
+    try {
+      Class hashedClass = getHashedClassFromXML(nextElement);
+      return (hashedClass != null && hashedClass.equals(c));
+    } catch (Exception ex) {
+      return false;
+    }
   }
   // '''''''''''''''''''''''''''''
   // load specific values

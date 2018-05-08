@@ -262,12 +262,14 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
           reductionMode = Mode.valueOf(nextElement.getTextContent());
         else if (paramName.equals("interpolation")) {
           // until version 3.39: Was double <0 - reduction
-          double r = doubleFromXML(nextElement);
-          if (r < 0) {
+          Double r = doubleFromXML(nextElement);
+          if (r == null)
+            interpolation = 1;
+          else if (r < 0) {
             reduction = (int) (1 / r);
             interpolation = 1;
           } else
-            interpolation = intFromXML(nextElement);
+            interpolation = r.intValue();
         } else if (paramName.equals("useInterpolation"))
           useInterpolation = booleanFromXML(nextElement);
         else if (paramName.equals("blurRadius"))
@@ -278,10 +280,15 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
           filepath = nextElement.getTextContent();
         else if (paramName.equals("isCropDataToMin"))
           isCropDataToMin = booleanFromXML(nextElement);
-        else if (isSettingsNode(nextElement, rotation.getSuperClass()))
-          rotation.loadValuesFromXML(nextElement, doc);
         else if (paramName.equals("trans"))
           trans = Transformation.valueOf(nextElement.getTextContent());
+        else {
+          try {
+            if (isSettingsNode(nextElement, rotation.getSuperClass()))
+              rotation.loadValuesFromXML(nextElement, doc);
+          } catch (Exception e) {
+          }
+        }
       }
     }
   }

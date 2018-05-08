@@ -12,6 +12,8 @@ import java.util.Map;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -26,6 +28,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectionTableRow;
 public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private static final Logger logger = LoggerFactory.getLogger(SettingsShapeSelection.class);
 
   // select,
   private static Map<SelectionMode, Color> colors = new HashMap<SelectionMode, Color>();
@@ -224,13 +227,21 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * @return
    */
   public static SettingsShapeSelection loadSettingsFromXML(Element elParent, Document doc) {
-    SettingsShapeSelection s =
-        (SettingsShapeSelection) Settings.createSettings(Settings.getRealClassFromXML(elParent));
-    if (s != null) {
-      // load shape and mode
-      s.loadValuesFromXML(elParent, doc);
+    Class c = null;
+    try {
+      c = Settings.getRealClassFromXML(elParent);
+    } catch (Exception e) {
+      logger.warn("Cannot create SettingsShapeSelection from {}", elParent.toString(), e);
     }
-    return s;
+    if (c != null) {
+      SettingsShapeSelection s = (SettingsShapeSelection) Settings.createSettings(c);
+      if (s != null) {
+        // load shape and mode
+        s.loadValuesFromXML(elParent, doc);
+      }
+      return s;
+    } else
+      return null;
   }
 
 
