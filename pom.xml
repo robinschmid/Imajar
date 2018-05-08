@@ -16,7 +16,8 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
-				<targetPath>${project.build.directory}</targetPath>
+				<targetPath>${basedir}/target/classes</targetPath>
+            <filtering>false</filtering>
 			</resource>
 			<resource>
 				<directory>src/test/resources</directory>
