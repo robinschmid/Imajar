@@ -35,11 +35,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -47,7 +45,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -173,8 +170,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   private final ButtonGroup buttonGroup_1 = new ButtonGroup();
   private JSplitPane splitPane;
   private JPanel west;
-  private JSplitPane splitNorthSouth;
-  private static JTextPane txtLog;
   private JPanel pnSouth;
   private JPanel pnDirectIANorthDisplay;
   private JTextField txtDirectTime;
@@ -205,7 +200,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
           ImageEditorWindow window = new ImageEditorWindow();
           window.setVisible(true);
         } catch (Exception e) {
-          logger.error("",e);
+          logger.error("", e);
         }
       }
     });
@@ -423,7 +418,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
           logicRunner.combineImages();
         } catch (Exception e1) {
           DialogLoggerUtil.showErrorDialog(thisFrame, "Groups were not compatible", e1);
-          logger.error("",e1);
+          logger.error("", e1);
         }
       }
     });
@@ -645,13 +640,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
       }
     });
 
-    splitNorthSouth = new JSplitPane();
-    splitNorthSouth.setResizeWeight(0.9);
-    splitNorthSouth.setOrientation(JSplitPane.VERTICAL_SPLIT);
-    splitNorthSouth.setMinimumSize(new Dimension(247, 20));
-    splitNorthSouth.setPreferredSize(new Dimension(200, 500));
-    getContentPane().add(splitNorthSouth, BorderLayout.CENTER);
-
     JPanel pnNorthContent = new JPanel();
     pnNorthContent.setLayout(new BorderLayout(0, 0));
 
@@ -792,28 +780,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     north.setLayout(new BorderLayout(0, 0));
 
     JPanel panel_1 = new JPanel();
-    splitNorthSouth.setLeftComponent(panel_1);
+    getContentPane().add(panel_1, BorderLayout.CENTER);
     panel_1.setLayout(new BorderLayout(0, 0));
     panel_1.add(pnNorthContent, BorderLayout.CENTER);
-
-    pnSouth = new JPanel();
-    splitNorthSouth.setRightComponent(pnSouth);
-    pnSouth.setLayout(new BorderLayout(0, 0));
-
-    JPanel pnLog = new JPanel();
-    pnSouth.add(pnLog, BorderLayout.CENTER);
-    pnLog.setLayout(new BorderLayout(0, 0));
-
-    JScrollPane scrollPane_1 = new JScrollPane();
-    pnLog.add(scrollPane_1, BorderLayout.CENTER);
-
-    txtLog = new JTextPane();
-    scrollPane_1.setViewportView(txtLog);
-    DefaultCaret caret = (DefaultCaret) txtLog.getCaret();
-    caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-
-    JLabel lblLog = new JLabel("Log");
-    pnLog.add(lblLog, BorderLayout.NORTH);
 
     pnNorth = new JPanel();
     getContentPane().add(pnNorth, BorderLayout.NORTH);
@@ -1099,7 +1068,7 @@ public class ImageEditorWindow extends JFrame implements Runnable {
       try {
         Thread.currentThread().sleep(100);
       } catch (InterruptedException e) {
-        logger.error("",e);
+        logger.error("", e);
       }
     }
   }
@@ -1388,7 +1357,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     }
     // resets size of split
     getSplitPane().resetToPreferredSizes();
-    getSplitNorthSouth().resetToPreferredSizes();
   }
 
   // ##########################################################################################
@@ -1452,14 +1420,6 @@ public class ImageEditorWindow extends JFrame implements Runnable {
   public int getCurrentView() {
     // TODO Auto-generated method stub
     return currentView;
-  }
-
-  public JSplitPane getSplitNorthSouth() {
-    return splitNorthSouth;
-  }
-
-  public JTextPane getTxtLog() {
-    return txtLog;
   }
 
   public JPanel getPnSouth() {
