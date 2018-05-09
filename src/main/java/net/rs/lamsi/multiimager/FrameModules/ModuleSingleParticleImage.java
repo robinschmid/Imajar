@@ -14,6 +14,7 @@ import net.rs.lamsi.multiimager.FrameModules.sub.ModuleGeneralCollectable2D;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModulePaintscale;
 import net.rs.lamsi.multiimager.FrameModules.sub.ModuleZoom;
 import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSPImage;
+import net.rs.lamsi.multiimager.FrameModules.sub.dataoperations.ModuleSelectExcludeData;
 import net.rs.lamsi.multiimager.FrameModules.sub.theme.ModuleThemes;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
@@ -27,6 +28,7 @@ public class ModuleSingleParticleImage
   private ModuleThemes moduleThemes;
   private ModuleBackgroundImg moduleBG;
   private ModuleSPImage moduleSPImage;
+  private ModuleSelectExcludeData moduleSelect;
   //
 
   /**
@@ -81,6 +83,9 @@ public class ModuleSingleParticleImage
 
     moduleThemes = new ModuleThemes();
     addModule(moduleThemes);
+
+    moduleSelect = new ModuleSelectExcludeData();
+    addModule(moduleSelect);
   }
 
 
@@ -110,5 +115,9 @@ public class ModuleSingleParticleImage
 
   public ModulePaintscale getModulePaintScale() {
     return modulePaintScale;
+  }
+
+  public ModuleSelectExcludeData getModuleSelect() {
+    return moduleSelect;
   }
 }

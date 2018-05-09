@@ -102,7 +102,8 @@ public class SettingsGeneralPreferences extends Settings {
     iconWidth = 60;
     iconHeight = 16;
     generatesIcons = true;
-    img2DHistory.removeAllElements();
+    if (img2DHistory != null)
+      img2DHistory.removeAllElements();
   }
 
   // ##########################################################

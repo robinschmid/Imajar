@@ -84,8 +84,8 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
       selectedFilteredData = img.toIMatrixOfSelected(true);
       logger.debug("image matrix generation");
       // filter out split events
-      selectedFilteredData = filterOutSplitPixelEvents(sett, selectedFilteredData, img.isRotated(),
-          Transformation.NONE);
+      selectedFilteredData = filterOutSplitPixelEventsAndTransform(sett, selectedFilteredData,
+          img.isRotated(), Transformation.NONE);
       logger.debug("split pixel event filter");
 
       // save settings
@@ -143,17 +143,27 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     filteredData = img.toIMatrix(true, true);
     // filter split pixel eventstimer
     logger.debug("toIMatrixOfSelected from img");
-    logger.debug("Start SPI counter: Data filtering");
-    filteredData =
-        filterOutSplitPixelEvents(sett, filteredData, img.isRotated(), sett.getTransform());
-    logger.debug("filter split particle events");
+    logger.debug("Start SPI counter: Data filtering and transform to {}", sett.getTransform());
+    filteredData = filterOutSplitPixelEventsAndTransform(sett, filteredData, img.isRotated(),
+        sett.getTransform());
+    logger.debug("DONE. filter split particle events ");
 
     // count particles
+    if (sett.isCountPixel())
+      countPixelInWindow(sett.getWindow());
+    return filteredData;
+  }
+
+  /**
+   * Converts the transformed intensity data into binary 0/1 states where intensity in window = 1.
+   * 
+   * @param window
+   */
+  private void countPixelInWindow(Range window) {
     int particles = 0;
-    Range window = sett.getWindow();
     if (window != null) {
       // count events
-      logger.debug("Start to count particles in window:{}", window.toString());
+      logger.debug("Start to count particles in window:{}", window);
       for (int i = 0; i < filteredData.length; i++) {
         for (int j = 0; j < filteredData[i].length; j++) {
           if (!Double.isNaN(filteredData[i][j])) {
@@ -167,9 +177,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
       }
     } else
       logger.info("SPI counter: no window defined");
-
-    logger.info("Particles in window {};  n={}", window.toString(), particles);
-    return filteredData;
+    logger.info("Particles in window {};  n={}", window, particles);
   }
 
   /**
@@ -181,8 +189,8 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * @param funct function to change resulting data matrix (e.g. apply cuberoot)
    * @return
    */
-  private double[][] filterOutSplitPixelEvents(SingleParticleSettings sett, double[][] data,
-      boolean rotated, Transformation funct) {
+  private double[][] filterOutSplitPixelEventsAndTransform(SingleParticleSettings sett,
+      double[][] data, boolean rotated, Transformation funct) {
 
     double noise = sett.getNoiseLevel();
     int pixel = sett.getSplitPixel();

@@ -72,7 +72,7 @@ public class ModuleImage2D extends MainSettingsModuleContainer<SettingsImage2D, 
     moduleThemes = new ModuleThemes();
     addModule(moduleThemes);
 
-    moduleSelect = new ModuleSelectExcludeData(window);
+    moduleSelect = new ModuleSelectExcludeData();
     addModule(moduleSelect);
 
     modISDivider = new ModuleISDivide(window);

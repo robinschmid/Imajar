@@ -22,6 +22,7 @@ public class SingleParticleSettings extends Settings {
   // count events in number of pixel
   private int numberOfPixel = 1000;
   private Transformation transform;
+  private boolean isCountPixel;
 
   public SingleParticleSettings(String path, String fileEnding) {
     super("SPSettings", path, fileEnding);
@@ -37,18 +38,22 @@ public class SingleParticleSettings extends Settings {
     noiseLevel = 0;
     splitPixel = 2;
     transform = Transformation.NONE;
+    isCountPixel = false;
   }
 
 
-  public boolean setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel) {
+  public boolean setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel,
+      boolean isCountPixel) {
     boolean diff =
         Double.compare(this.noiseLevel, noiseLevel) != 0 || (this.window == null && window != null)
             || (this.window != null && !this.window.equals(window))
-            || this.numberOfPixel != numberOfPixel || this.splitPixel != splitPixel;
+            || this.numberOfPixel != numberOfPixel || this.splitPixel != splitPixel
+            || this.isCountPixel != isCountPixel;
     this.noiseLevel = noiseLevel;
     this.splitPixel = splitPixel;
     this.window = window;
     this.numberOfPixel = numberOfPixel;
+    this.isCountPixel = isCountPixel;
     return diff;
   }
 
@@ -181,8 +186,17 @@ public class SingleParticleSettings extends Settings {
    * 
    * @param transform
    */
-  public void setTransform(Transformation transform) {
+  public boolean setTransform(Transformation transform) {
+    boolean changed = !transform.equals(this.transform);
     this.transform = transform;
+    return changed;
   }
 
+  public boolean isCountPixel() {
+    return isCountPixel;
+  }
+
+  public void setCountPixel(boolean isCountPixel) {
+    this.isCountPixel = isCountPixel;
+  }
 }

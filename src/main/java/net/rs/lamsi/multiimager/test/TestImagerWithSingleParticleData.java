@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
@@ -65,6 +66,15 @@ public class TestImagerWithSingleParticleData {
 
           img = TestImageFactory.createOverlayTest();
           window.getLogicRunner().addGroup(img, project2);
+
+          // simulated
+          SingleParticleImage spimg =
+              TestImageFactory.createPerfectSingleParticleImg(10, 1000, 10, 1000, 50000, 4);
+          ImageGroupMD g = spimg.getImageGroup();
+          ImagingProject spp = new ImagingProject("Simulated sp image");
+          spp.add(g);
+          window.getLogicRunner().addProject(spp, true);
+
         } catch (Exception ex) {
           ex.printStackTrace();
         }

@@ -122,7 +122,8 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
     super.resetAll();
     title = "";
     setToStandardColors();
-    psSettings.clear();
+    if (psSettings != null)
+      psSettings.clear();
   }
 
   @Override

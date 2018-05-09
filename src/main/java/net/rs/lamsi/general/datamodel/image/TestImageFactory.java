@@ -1,7 +1,5 @@
 package net.rs.lamsi.general.datamodel.image;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.Random;
 import org.jfree.data.Range;
@@ -179,8 +177,6 @@ public class TestImageFactory {
    */
   public static SingleParticleImage createPerfectSingleParticleImg(int rows, int dp,
       int particlesPerLine, int noise, int intensity, int splitPixel) {
-    assertThat(intensity, greaterThan(noise * 4));
-    assertThat(particlesPerLine, greaterThan(1));
 
     Random rand = new Random(System.currentTimeMillis());
     double f = 0.6;
@@ -234,7 +230,9 @@ public class TestImageFactory {
     // create spimg
     SingleParticleImage spimg = new SingleParticleImage(img.getFirstImage2D());
     SingleParticleSettings sett = spimg.getSettings().getSettSingleParticle();
-    sett.setAll(noise + 1, splitPixel, new Range(intensity - 2, intensity + 2), 1);
+    sett.setAll(noise + 1, splitPixel, new Range(intensity - 2, intensity + 2), 1, true);
+    // add to group
+    img.add(spimg);
     return spimg;
   }
 }
