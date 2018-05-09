@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 
@@ -23,6 +24,8 @@ public class SingleParticleSettings extends Settings {
   private int numberOfPixel = 1000;
   private Transformation transform;
   private boolean isCountPixel;
+  // if isCountPixel is selected this is replaced by Mode.SUM
+  private Mode reductionMode;
 
   public SingleParticleSettings(String path, String fileEnding) {
     super("SPSettings", path, fileEnding);
@@ -39,21 +42,23 @@ public class SingleParticleSettings extends Settings {
     splitPixel = 2;
     transform = Transformation.NONE;
     isCountPixel = false;
+    reductionMode = Mode.MAX;
   }
 
 
   public boolean setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel,
-      boolean isCountPixel) {
+      boolean isCountPixel, Mode reductionMode) {
     boolean diff =
         Double.compare(this.noiseLevel, noiseLevel) != 0 || (this.window == null && window != null)
             || (this.window != null && !this.window.equals(window))
             || this.numberOfPixel != numberOfPixel || this.splitPixel != splitPixel
-            || this.isCountPixel != isCountPixel;
+            || this.isCountPixel != isCountPixel || !this.reductionMode.equals(reductionMode);
     this.noiseLevel = noiseLevel;
     this.splitPixel = splitPixel;
     this.window = window;
     this.numberOfPixel = numberOfPixel;
     this.isCountPixel = isCountPixel;
+    this.reductionMode = reductionMode;
     return diff;
   }
 
@@ -84,6 +89,8 @@ public class SingleParticleSettings extends Settings {
     toXML(elParent, doc, "splitPixel", splitPixel);
     toXML(elParent, doc, "numberOfPixel", numberOfPixel);
     toXML(elParent, doc, "transform", transform);
+    toXML(elParent, doc, "isCountPixel", isCountPixel);
+    toXML(elParent, doc, "reductionMode", reductionMode);
   }
 
   @Override
@@ -105,8 +112,12 @@ public class SingleParticleSettings extends Settings {
           upper = doubleFromXML(nextElement);
         else if (paramName.equals("numberOfPixel"))
           numberOfPixel = intFromXML(nextElement);
+        else if (paramName.equals("isCountPixel"))
+          isCountPixel = booleanFromXML(nextElement);
         else if (paramName.equals("transform"))
           transform = Transformation.valueOf(nextElement.getTextContent());
+        else if (paramName.equals("transform"))
+          reductionMode = Mode.valueOf(nextElement.getTextContent());
       }
     }
 
@@ -198,5 +209,13 @@ public class SingleParticleSettings extends Settings {
 
   public void setCountPixel(boolean isCountPixel) {
     this.isCountPixel = isCountPixel;
+  }
+
+  public Mode getReductionMode() {
+    return reductionMode;
+  }
+
+  public void setReductionMode(Mode reductionMode) {
+    this.reductionMode = reductionMode;
   }
 }

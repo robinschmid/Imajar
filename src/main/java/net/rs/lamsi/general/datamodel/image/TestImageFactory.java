@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 
@@ -230,7 +231,7 @@ public class TestImageFactory {
     // create spimg
     SingleParticleImage spimg = new SingleParticleImage(img.getFirstImage2D());
     SingleParticleSettings sett = spimg.getSettings().getSettSingleParticle();
-    sett.setAll(noise + 1, splitPixel, new Range(intensity - 2, intensity + 2), 1, true);
+    sett.setAll(noise + 1, splitPixel, new Range(intensity - 2, intensity + 2), 1, true, Mode.MAX);
     // add to group
     img.add(spimg);
     return spimg;

@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.heatmap;
 
 import java.awt.Color;
+import java.util.List;
 import org.jfree.chart.renderer.GrayPaintScale;
 import org.jfree.chart.renderer.LookupPaintScale;
 import org.jfree.chart.renderer.PaintScale;
@@ -8,6 +9,7 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 
 
 public class PaintScaleGenerator {
+  private static final Color transparent = new Color(0, 0, 0, 0);
 
 
 
@@ -54,79 +56,122 @@ public class PaintScaleGenerator {
             ? settings.getMaxIAbs(min, max)
             : max);
 
-    boolean isHue = settings.isHueScale();
-    boolean isList = settings.isListScale();
-
-    // error when min == max
-    if (realmax <= realmin) {
-      realmin = realmax - 0.001;
-    }
-    // with minimum and maximum bounds
-    LookupPaintScale paintScale = new LookupPaintScale(min, max, Color.lightGray);
-    // Index
-    int i = 0;
-    // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
-    Color firstc = null;
-    Color lastc = null;
-    // Invisible or White / Black or min color
-    // color as min for one sided monochrome
-    if (settings.isMonochrom() && (settings.isUsesWAsMin() ^ settings.isUsesBAsMax())) {
-      Color c = settings.getMinColor();
-      firstc = settings.isInverted() ? (settings.isUsesBAsMax() ? Color.BLACK : c)
-          : (settings.isUsesWAsMin() ? Color.WHITE : c);
-      lastc = !settings.isInverted() ? (settings.isUsesBAsMax() ? Color.BLACK : c)
-          : (settings.isUsesWAsMin() ? Color.WHITE : c);
+    // generate list paint scale
+    if (settings.isListScale()) {
+      return generateColorListPaintScale(min, max, realmin, realmax, settings.getColorList(),
+          settings.isInverted(), settings.isUsesMinAsInvisible(), settings.isUsesMaxAsInvisible());
     } else {
-      // Black or white as start (also in monochroms)
-      if (settings.isLODMonochrome() || settings.isMonochrom()
-          || (settings.isUsesWAsMin() && !settings.isInverted())
-          || (settings.isUsesBAsMax() && settings.isInverted()))
-        firstc = settings.isInverted() ? Color.BLACK : Color.WHITE;
-      // min/max: inverted color as start
-      else if (isHue)
-        firstc = interpolate(settings.getMinColor(), settings.getMaxColor(),
-            settings.isInverted() ? 1 : 0);
-      else if (isList)
-        firstc = settings.getListColor(0);
+      boolean isHue = settings.isHueScale();
+      boolean isList = settings.isListScale();
 
-      // last color
-      if (settings.isMonochrom() || (settings.isUsesWAsMin() && settings.isInverted())
-          || (settings.isUsesBAsMax() && !settings.isInverted()))
-        lastc = !settings.isInverted() ? Color.BLACK : Color.WHITE;
-      // min/max: inverted color as start
-      else if (isHue)
-        lastc = interpolate(settings.getMinColor(), settings.getMaxColor(),
-            settings.isInverted() ? 0 : 1);
-      else if (isList)
-        firstc = settings.getListColor(1);
+      // error when min == max
+      if (realmax <= realmin) {
+        realmin = realmax - 0.001;
+      }
+      // with minimum and maximum bounds
+      LookupPaintScale paintScale = new LookupPaintScale(min, max, Color.lightGray);
+      // Index
+      int i = 0;
+      // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
+      Color firstc = null;
+      Color lastc = null;
+      // Invisible or White / Black or min color
+      // color as min for one sided monochrome
+      if (settings.isMonochrom() && (settings.isUsesWAsMin() ^ settings.isUsesBAsMax())) {
+        Color c = settings.getMinColor();
+        firstc = settings.isInverted() ? (settings.isUsesBAsMax() ? Color.BLACK : c)
+            : (settings.isUsesWAsMin() ? Color.WHITE : c);
+        lastc = !settings.isInverted() ? (settings.isUsesBAsMax() ? Color.BLACK : c)
+            : (settings.isUsesWAsMin() ? Color.WHITE : c);
+      } else {
+        // Black or white as start (also in monochroms)
+        if (settings.isLODMonochrome() || settings.isMonochrom()
+            || (settings.isUsesWAsMin() && !settings.isInverted())
+            || (settings.isUsesBAsMax() && settings.isInverted()))
+          firstc = settings.isInverted() ? Color.BLACK : Color.WHITE;
+        // min/max: inverted color as start
+        else if (isHue)
+          firstc = interpolate(settings.getMinColor(), settings.getMaxColor(),
+              settings.isInverted() ? 1 : 0);
+        else if (isList)
+          firstc = settings.getListColor(0);
+
+        // last color
+        if (settings.isMonochrom() || (settings.isUsesWAsMin() && settings.isInverted())
+            || (settings.isUsesBAsMax() && !settings.isInverted()))
+          lastc = !settings.isInverted() ? Color.BLACK : Color.WHITE;
+        // min/max: inverted color as start
+        else if (isHue)
+          lastc = interpolate(settings.getMinColor(), settings.getMaxColor(),
+              settings.isInverted() ? 0 : 1);
+        else if (isList)
+          firstc = settings.getListColor(1);
+      }
+
+      // 0 and min to Invis
+      if (settings.isUsesMinMax() && settings.isUsesMinAsInvisible())
+        firstc = transparent;
+      if (settings.isUsesMinMax() && settings.isUsesMaxAsInvisible())
+        lastc = transparent;
+
+      // add first two color steps
+      paintScale.add(min, firstc);
+      paintScale.add(realmin, firstc);
+      i++;
+
+      // adding color steps in middle
+      if (isList) {
+        int size = settings.getListColorSize();
+        addListColorSteps(realmin, realmax, settings, paintScale, i, size);
+      } else
+        addColorsteps(realmin, realmax, settings, paintScale, i);
+
+      // add end color step
+      if (max > settings.getMaxIAbs(min, max) && settings.isUsesMinMax()) {
+        paintScale.add(realmax + Double.MIN_VALUE, lastc);
+        paintScale.add(max, lastc);
+      }
+
+      //
+      return paintScale;
     }
+  }
 
-    // 0 and min to Invis
-    if (settings.isUsesMinMax() && settings.isUsesMinAsInvisible())
-      firstc = new Color(0, 0, 0, 0);
-    if (settings.isUsesMinMax() && settings.isUsesMaxAsInvisible())
-      lastc = new Color(0, 0, 0, 0);
 
-    // add first two color steps
-    paintScale.add(min, firstc);
-    paintScale.add(realmin, firstc);
-    i++;
+  public static PaintScale generateColorListPaintScale(double min, double max, double realmin,
+      double realmax, List<Color> list, boolean isInverted, boolean firstTransparent,
+      boolean lastTransparent) {
+    if ((max <= min) || (realmax <= realmin)) {
+      // no real data
+      return generateEmptyScale();
+    } else {
+      int size = list.size();
+      // with minimum and maximum bounds
+      LookupPaintScale paintScale = new LookupPaintScale(min, max, Color.lightGray);
+      Color c = firstTransparent ? transparent : list.get(isInverted ? size - 1 : 0);
+      paintScale.add(Double.NEGATIVE_INFINITY, c);
+      paintScale.add(realmin - Double.MIN_VALUE, c);
 
-    // adding color steps in middle
-    if (isList) {
-      int size = settings.getListColorSize();
-      addListColorSteps(realmin, realmax, settings, paintScale, i, size);
-    } else
-      addColorsteps(realmin, realmax, settings, paintScale, i);
 
-    // add end color step
-    if (max > settings.getMaxIAbs(min, max) && settings.isUsesMinMax()) {
-      paintScale.add(realmax + Double.MIN_VALUE, lastc);
-      paintScale.add(max, lastc);
+      // add list
+      for (int i = 0; i < list.size(); i++) {
+        double v = realmin + (realmax - realmin) * i / (list.size() - 1.0);
+        paintScale.add(v, list.get(isInverted ? size - 1 - i : i));
+      }
+
+      // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
+      c = lastTransparent ? transparent : list.get(isInverted ? 0 : size - 1);
+      paintScale.add(realmax + Double.MIN_VALUE, c);
+      paintScale.add(Double.MAX_VALUE, c);
+
+      //
+      return paintScale;
     }
+  }
 
-    //
-    return paintScale;
+  private static PaintScale generateEmptyScale() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   private static void addListColorSteps(double realmin, double realmax, SettingsPaintScale settings,

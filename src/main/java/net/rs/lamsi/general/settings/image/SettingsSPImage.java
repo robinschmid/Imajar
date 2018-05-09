@@ -66,10 +66,12 @@ public class SettingsSPImage extends SettingsContainerDataCollectable2D
    */
   @Override
   public List<PostProcessingOp> getPostProcessingOp() {
+    SingleParticleSettings sett = getSettSingleParticle();
     List<PostProcessingOp> op = new LinkedList<>();
-    if (getSettSingleParticle().getNumberOfPixel() > 1)
-      op.add(
-          new DPReduction(getSettSingleParticle().getNumberOfPixel(), Mode.SUM, img.isRotated()));
+    if (sett.getNumberOfPixel() > 1) {
+      Mode mode = sett.isCountPixel() ? Mode.SUM : sett.getReductionMode();
+      op.add(new DPReduction(getSettSingleParticle().getNumberOfPixel(), mode, img.isRotated()));
+    }
     return op;
   }
 

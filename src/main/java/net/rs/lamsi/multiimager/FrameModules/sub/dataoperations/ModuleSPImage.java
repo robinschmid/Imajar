@@ -27,6 +27,7 @@ import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.heatmap.Heatmap;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
@@ -60,6 +61,7 @@ public class ModuleSPImage
   private JLabel lblIntensityWindowafter;
   private Component verticalStrut;
   private Component verticalStrut_1;
+  private JComboBox comboReduction;
 
   // AUTOGEN
 
@@ -161,6 +163,12 @@ public class ModuleSPImage
     panel.add(txtNPixel, "cell 1 10,growx");
     txtNPixel.setColumns(10);
 
+    comboReduction = new JComboBox();
+    comboReduction.setModel(new DefaultComboBoxModel<Mode>(Mode.values()));
+    comboReduction
+        .setToolTipText("This reduction is replaced by sum if ocunt particles is selected");
+    panel.add(comboReduction, "cell 3 10,alignx left");
+
     cbCountParticles = new JCheckBox("count particles in window");
     panel.add(cbCountParticles, "cell 0 11 2 1");
 
@@ -222,6 +230,7 @@ public class ModuleSPImage
     txtNPixel.getDocument().addDocumentListener(dl);
     comboTransform.addItemListener(il);
     cbCountParticles.addItemListener(il);
+    comboReduction.addItemListener(il);
   }
 
   @Override
@@ -255,6 +264,8 @@ public class ModuleSPImage
       txtPM.setText("0");
     }
 
+    comboReduction.setSelectedItem(si.getReductionMode());
+
     cbCountParticles.setSelected(si.isCountPixel());
     comboTransform.setSelectedItem(si.getTransform());
     txtNoiseLevel.setText(String.valueOf(si.getNoiseLevel()));
@@ -275,8 +286,8 @@ public class ModuleSPImage
         int splitPixel = intFromTxt(txtSplitPixel);
         double noiseLevel = doubleFromTxt(txtNoiseLevel);
         int numberOfPixel = intFromTxt(txtNPixel);
-        boolean changed =
-            si.setAll(noiseLevel, splitPixel, window, numberOfPixel, cbCountParticles.isSelected());
+        boolean changed = si.setAll(noiseLevel, splitPixel, window, numberOfPixel,
+            cbCountParticles.isSelected(), (Mode) comboReduction.getSelectedItem());
 
         changed = changed || si.setTransform((Transformation) comboTransform.getSelectedItem());
         if (currentImage != null && changed)
@@ -302,5 +313,9 @@ public class ModuleSPImage
 
   public JComboBox getComboTransform() {
     return comboTransform;
+  }
+
+  public JComboBox getComboReduction() {
+    return comboReduction;
   }
 }

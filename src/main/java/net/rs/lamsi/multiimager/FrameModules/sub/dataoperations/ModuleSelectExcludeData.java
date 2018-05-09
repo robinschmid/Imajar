@@ -17,7 +17,6 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
@@ -101,13 +100,14 @@ public class ModuleSelectExcludeData
               if (currentHeat != null) {
                 currentHeat.updateSelectedExcludedRects();
                 // show stats
-                Image2D img = ((Image2D) currentHeat.getImage());
-                SettingsSelections sel = img.getSettings().getSettSelections();
+                DataCollectable2D img = ((DataCollectable2D) currentHeat.getImage());
+                SettingsSelections sel = (SettingsSelections) img.getSettings()
+                    .getSettingsByClass(SettingsSelections.class);
 
                 getLbSelectedRects().setText(String.valueOf(sel.count(SelectionMode.SELECT)));
                 getLbExcludedRects().setText(String.valueOf(sel.count(SelectionMode.EXCLUDE)));
                 double used =
-                    Math.round(img.getSelectedDPCount(true) * 1000.0 / img.getTotalDPCount())
+                    Math.round(img.getSelectedDPCount(true) * 1000.0 / img.getTotalDataPoints())
                         / 10.0;
                 getLbUsedDataPerc().setText(String.valueOf(used));
               }
