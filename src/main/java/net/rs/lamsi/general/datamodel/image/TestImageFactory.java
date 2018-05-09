@@ -1,12 +1,16 @@
 package net.rs.lamsi.general.datamodel.image;
 
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.Random;
+import org.jfree.data.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
+import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 
 public class TestImageFactory {
   private static final Logger logger = LoggerFactory.getLogger(TestImageFactory.class);
@@ -161,5 +165,76 @@ public class TestImageFactory {
     DatasetLinesMD data = new DatasetLinesMD(lines);
     ImageGroupMD img = data.createImageGroup("Gaussian");
     return img;
+  }
+
+  /**
+   * Creates a perfect single particle image
+   * 
+   * @param rows lines
+   * @param dp dp per line
+   * @param particlesPerLine minimum 2
+   * @param noise
+   * @param intensity has to be at least >4 times the noise
+   * @return
+   */
+  public static SingleParticleImage createPerfectSingleParticleImg(int rows, int dp,
+      int particlesPerLine, int noise, int intensity, int splitPixel) {
+    assertThat(intensity, greaterThan(noise * 4));
+    assertThat(particlesPerLine, greaterThan(1));
+
+    Random rand = new Random(System.currentTimeMillis());
+    double f = 0.6;
+    ScanLineMD[] lines = new ScanLineMD[rows];
+    // fill with noise
+    // add particle to start and end of lines
+    for (int i = 0; i < rows; i++) {
+      Double[] data = new Double[dp];
+      for (int l = 0; l < dp; l++) {
+        // first line first dp
+        if ((i == l) || (l == dp - 2 - i)) {
+          // first data point
+          // or second last dp
+          data[l] = intensity * f;
+        } else if ((i == l - 1) || (l == dp - 1 - i)) {
+          // second data point
+          // or last dp
+          data[l] = intensity * (1 - f);
+        } else
+          data[l] = (double) noise;
+      }
+      lines[i] = new ScanLineMD(data);
+    }
+    // add more particles
+    for (ScanLineMD l : lines) {
+      Double[] data = l.getIntensity().get(0);
+      int placed = 2;
+      while (placed < particlesPerLine) {
+        // place at random
+        int i = rand.nextInt(dp - (splitPixel - 1));
+        // only place if no particle is near
+        boolean free = true;
+        for (int d = Math.max(0, i - 1); free && d < Math.min(dp, i + splitPixel); d++)
+          if (data[d] > noise + 1)
+            free = false;
+
+        // add
+        if (free) {
+          data[i] = intensity * f;
+          for (int x = 1; x < splitPixel; x++)
+            data[i + x] = intensity * (1.0 - f) / (double) (splitPixel - 1);
+          placed++;
+        }
+      }
+    }
+    // the sum of all split pixel is always = intensity
+
+    // create img
+    DatasetLinesMD data = new DatasetLinesMD(lines);
+    ImageGroupMD img = data.createImageGroup("SP Test");
+    // create spimg
+    SingleParticleImage spimg = new SingleParticleImage(img.getFirstImage2D());
+    SingleParticleSettings sett = spimg.getSettings().getSettSingleParticle();
+    sett.setAll(noise + 1, splitPixel, new Range(intensity - 2, intensity + 2), 1);
+    return spimg;
   }
 }

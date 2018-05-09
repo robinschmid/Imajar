@@ -7,6 +7,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 
 public class SingleParticleSettings extends Settings {
   // do not change the version!
@@ -20,6 +21,7 @@ public class SingleParticleSettings extends Settings {
   private Range window;
   // count events in number of pixel
   private int numberOfPixel = 1000;
+  private Transformation transform;
 
   public SingleParticleSettings(String path, String fileEnding) {
     super("SPSettings", path, fileEnding);
@@ -34,6 +36,7 @@ public class SingleParticleSettings extends Settings {
     window = null;
     noiseLevel = 0;
     splitPixel = 2;
+    transform = Transformation.NONE;
   }
 
 
@@ -75,6 +78,7 @@ public class SingleParticleSettings extends Settings {
     toXML(elParent, doc, "noiseLevel", noiseLevel);
     toXML(elParent, doc, "splitPixel", splitPixel);
     toXML(elParent, doc, "numberOfPixel", numberOfPixel);
+    toXML(elParent, doc, "transform", transform);
   }
 
   @Override
@@ -96,6 +100,8 @@ public class SingleParticleSettings extends Settings {
           upper = doubleFromXML(nextElement);
         else if (paramName.equals("numberOfPixel"))
           numberOfPixel = intFromXML(nextElement);
+        else if (paramName.equals("transform"))
+          transform = Transformation.valueOf(nextElement.getTextContent());
       }
     }
 
@@ -103,7 +109,11 @@ public class SingleParticleSettings extends Settings {
       setWindow(lower, upper);
   }
 
-
+  /**
+   * Numbe rof pixel to count particles in
+   * 
+   * @return
+   */
   public int getNumberOfPixel() {
     return numberOfPixel;
   }
@@ -122,6 +132,11 @@ public class SingleParticleSettings extends Settings {
     return changed;
   }
 
+  /**
+   * Find particle intensities >noise
+   * 
+   * @return
+   */
   public double getNoiseLevel() {
     return noiseLevel;
   }
@@ -130,6 +145,12 @@ public class SingleParticleSettings extends Settings {
     this.noiseLevel = noiseLevel;
   }
 
+  /**
+   * Number of split pixels (intensity of one particle is split between 1 up to splitPixel data
+   * points)
+   * 
+   * @return
+   */
   public int getSplitPixel() {
     return splitPixel;
   }
@@ -138,8 +159,30 @@ public class SingleParticleSettings extends Settings {
     this.splitPixel = splitPixel;
   }
 
+  /**
+   * The intensity window (after applying the mathematical transformation) to count particles
+   * 
+   * @return
+   */
   public Range getWindow() {
     return window;
+  }
+
+  /**
+   * The mathematical transformation which is applied prior to counting
+   * 
+   */
+  public Transformation getTransform() {
+    return transform;
+  }
+
+  /**
+   * The mathematical transformation which is applied prior to counting
+   * 
+   * @param transform
+   */
+  public void setTransform(Transformation transform) {
+    this.transform = transform;
   }
 
 }

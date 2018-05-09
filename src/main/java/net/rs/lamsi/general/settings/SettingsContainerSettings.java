@@ -48,9 +48,10 @@ public abstract class SettingsContainerSettings extends Settings {
 
   @Override
   public void resetAll() {
-    for (Settings s : list.values())
-      if (s != null)
-        s.resetAll();
+    if (list != null)
+      for (Settings s : list.values())
+        if (s != null)
+          s.resetAll();
   }
 
   /**
@@ -145,7 +146,7 @@ public abstract class SettingsContainerSettings extends Settings {
                 replaceSettings(s);
             }
           } catch (Exception e) {
-            logger.error("",e);
+            logger.error("", e);
           }
         }
       }

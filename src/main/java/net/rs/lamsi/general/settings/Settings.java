@@ -70,6 +70,7 @@ public abstract class Settings implements Serializable {
     this.path = path;
     this.fileEnding = fileEnding;
     this.description = description;
+    resetAll();
   }
 
   /**

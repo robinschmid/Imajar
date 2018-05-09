@@ -93,7 +93,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         lastSelected = (SingleParticleSettings) sett.copy();
         lastSelections = (SettingsSelections) img.getSettings().getSettSelections().copy();
       } catch (Exception e) {
-        logger.error("",e);
+        logger.error("", e);
       }
     }
 
@@ -124,7 +124,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   /**
    * to xycounts array in regards to the rotation, reflection and imaging mode
    * 
-   * @return [lines][x,y,z] with z as number of particles
+   * @return [lines][z] with z as number of particles
    */
   public double[][] updateFilteredDataCountsArray() {
     SingleParticleSettings sett = getSettings().getSettSingleParticle();
@@ -134,7 +134,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   /**
    * to xycounts array in regards to the rotation, reflection and imaging mode
    * 
-   * @return [lines][x,y,z] with z as number of particles
+   * @return [lines][z] with z as number of particles
    */
   public double[][] toXYCountsArray(SingleParticleSettings sett) {
     logger.debug("Start single particle counter on {} with {}", img.getTitle(), sett.toString());
@@ -145,9 +145,10 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     logger.debug("toIMatrixOfSelected from img");
     logger.debug("Start SPI counter: Data filtering");
     filteredData =
-        filterOutSplitPixelEvents(sett, filteredData, img.isRotated(), Transformation.CUBEROOT);
+        filterOutSplitPixelEvents(sett, filteredData, img.isRotated(), sett.getTransform());
     logger.debug("filter split particle events");
 
+    // count particles
     int particles = 0;
     Range window = sett.getWindow();
     if (window != null) {
@@ -526,7 +527,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         img.getSettings().getSettImage().setTitle(name);
         img.getSettings().getSettImage().setRAWFilepath(path);
       } catch (Exception e) {
-        logger.error("",e);
+        logger.error("", e);
       }
     }
   }
