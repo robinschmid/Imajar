@@ -184,8 +184,8 @@ public class SettingsSelections extends Settings implements Serializable,
       // alpha map settings
       SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
 
-      float w = (float) currentImg.getAvgBlockWidth();
-      float h = (float) currentImg.getAvgBlockHeight();
+      float w = (float) currentImg.getAvgBlockWidth(false);
+      float h = (float) currentImg.getAvgBlockHeight(false);
 
       // for each data point
       for (int l = 0; l < z.length; l++) {
@@ -253,8 +253,8 @@ public class SettingsSelections extends Settings implements Serializable,
       // alpha map settings
       SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
 
-      float w = (float) currentImg.getAvgBlockWidth();
-      float h = (float) currentImg.getAvgBlockHeight();
+      float w = (float) currentImg.getAvgBlockWidth(false);
+      float h = (float) currentImg.getAvgBlockHeight(false);
 
       // for each data point
       for (int l = 0; l < z.length; l++) {
@@ -582,8 +582,8 @@ public class SettingsSelections extends Settings implements Serializable,
       int cselnonex = 0;
 
       // width height of data points
-      float w = (float) currentImg.getAvgBlockWidth();
-      float h = (float) currentImg.getAvgBlockHeight();
+      float w = (float) currentImg.getAvgBlockWidth(false);
+      float h = (float) currentImg.getAvgBlockHeight(false);
 
       // alpha map settings
       SettingsAlphaMap alpha = currentImg.getImageGroup().getSettAlphaMap();
@@ -764,8 +764,8 @@ public class SettingsSelections extends Settings implements Serializable,
         if (isnew)
           map = new State[z.length][];
 
-        float w = (float) currentImg.getAvgBlockWidth();
-        float h = (float) currentImg.getAvgBlockHeight();
+        float w = (float) currentImg.getAvgBlockWidth(false);
+        float h = (float) currentImg.getAvgBlockHeight(false);
 
         // for each line
         for (int l = 0; l < x.length; l++) {

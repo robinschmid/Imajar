@@ -9,14 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 
 public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> {
   // do not change the version!
   private static final long serialVersionUID = 1L;
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode) {
+  public SettingsPolygonSelection(DataCollectable2D currentImage, ROI roi, SelectionMode mode) {
     super(currentImage, roi, mode, new Polygon2D());
   }
 
@@ -27,13 +27,14 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
    * @param mode
    * @param s shape is going to be flattened {@link FlatteningPathIterator}
    */
-  public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode, Shape s) {
+  public SettingsPolygonSelection(DataCollectable2D currentImage, ROI roi, SelectionMode mode,
+      Shape s) {
     this(currentImage, roi, mode);
     setPolygonFromShape(s);
   }
 
-  public SettingsPolygonSelection(Image2D currentImage, ROI roi, SelectionMode mode, float x,
-      float y) {
+  public SettingsPolygonSelection(DataCollectable2D currentImage, ROI roi, SelectionMode mode,
+      float x, float y) {
     this(currentImage, roi, mode);
     shape.addPoint(x, y);
   }

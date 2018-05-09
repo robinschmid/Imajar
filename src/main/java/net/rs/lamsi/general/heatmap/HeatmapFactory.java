@@ -400,8 +400,8 @@ public class HeatmapFactory {
 
         // TODO nicht feste Blockwidth!
         // erstmal feste BlockWidth
-        renderer.setBlockWidth(counter, cimg.getMaxBlockWidth());
-        renderer.setBlockHeight(counter, cimg.getMaxBlockHeight());
+        renderer.setBlockWidth(counter, cimg.getMaxBlockWidth(true));
+        renderer.setBlockHeight(counter, cimg.getMaxBlockHeight(true));
 
 
         renderer.setSeriesPaint(counter, ps.getMinColor());

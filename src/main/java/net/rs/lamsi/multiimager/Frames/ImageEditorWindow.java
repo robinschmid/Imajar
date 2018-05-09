@@ -58,6 +58,7 @@ import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
@@ -307,8 +308,9 @@ public class ImageEditorWindow extends JFrame implements Runnable {
       public void actionPerformed(ActionEvent e) {
         // open data export dialog
         Collectable2D img = logicRunner.getSelectedImage();
-        if (img.isImage2D())
-          DialogDataSaver.startDialogWith(logicRunner.getListImage2DOnly(), (Image2D) img);
+        if (img instanceof DataCollectable2D)
+          DialogDataSaver.startDialogWith(logicRunner.getListDataCollectable2DOnly(),
+              (DataCollectable2D) img);
         else
           logger.error(
               "Select a standard image for data export (e.g. image overlay currently selected");

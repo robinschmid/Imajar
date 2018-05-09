@@ -328,8 +328,8 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   private void drawImage(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, CrosshairState crosshairState,
       DataCollectable2DDataset data, int series, double bw, double bh) {
-    float width = img.getAvgBlockWidth();
-    float height = img.getAvgBlockHeight();
+    float width = img.getAvgBlockWidth(true);
+    float height = img.getAvgBlockHeight(true);
     Range domain = domainAxis.getRange();
     Range range = rangeAxis.getRange();
     c = 0;
@@ -670,7 +670,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       this.img = img;
       this.sett = img.getImageGroup().getSettAlphaMap();
       // block width and height for range detection
-      setAvgBlockSize(img.getAvgBlockWidth(), img.getAvgBlockHeight());
+      setAvgBlockSize(img.getAvgBlockWidth(true), img.getAvgBlockHeight(true));
     }
   }
 

@@ -5,13 +5,15 @@ import java.util.Arrays;
 import java.util.List;
 import org.jfree.data.Range;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
-import net.rs.lamsi.general.settings.SettingsContainerSettings;
+import net.rs.lamsi.general.settings.image.SettingsContainerDataCollectable2D;
 import net.rs.lamsi.general.settings.image.operations.listener.IntensityProcessingChangedListener;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 
-public abstract class DataCollectable2D<T extends SettingsContainerSettings>
+public abstract class DataCollectable2D<T extends SettingsContainerDataCollectable2D>
     extends Collectable2D<T> implements PaintScaleTag, SelectionsTag {
   private static final long serialVersionUID = 1L;
   // image has nothing to do with quantifier class! so dont use a listener for data processing
@@ -40,6 +42,146 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
    * @return
    */
   public abstract int getTotalDataPoints();
+
+
+  /**
+   * Block width after or prior to post processing
+   * 
+   * @param postProcessing
+   * @return
+   */
+  public abstract float getMaxBlockWidth(boolean postProcessing);
+
+  public abstract float getMaxBlockHeight(boolean postProcessing);
+
+  /**
+   * maximum block width for renderer = distance between one and next block
+   * 
+   * @return
+   */
+  public abstract float getAvgBlockWidth(boolean postProcessing);
+
+  /**
+   * maximum block height for renderer = distance between one and next block in lines
+   * 
+   * @return
+   */
+  public abstract float getAvgBlockHeight(boolean postProcessing);
+
+  public abstract boolean hasOneDPWidth();
+
+  public abstract boolean hasOneDPHeight();
+
+
+  /**
+   * Sums up all the selected data with optional exclusion
+   * 
+   * @param excluded defines whether to exclude or not
+   * @return
+   */
+  public int getSelectedDPCount(boolean excluded) {
+    int counter = 0;
+    //
+    int lines = getMaxLinesCount();
+    int maxdp = getMaxLineLength();
+
+    for (int y = 0; y < lines; y++) {
+      for (int x = 0; x < maxdp; x++) {
+        if ((!excluded || !isExcludedDP(y, x)) && isSelectedDP(y, x))
+          counter++;
+      }
+    }
+    return counter;
+  }
+
+  /**
+   * Returns all selected and not excluded data points to an array
+   * 
+   * @return
+   */
+  public List<Double> getSelectedDataAsList(boolean raw, boolean excluded) {
+    ArrayList<Double> list = new ArrayList<>();
+    int lines = getMaxLinesCount();
+    int maxdp = getMaxLineLength();
+    for (int l = 0; l < lines; l++) {
+      for (int dp = 0; dp < maxdp; dp++) {
+        if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) {
+          list.add(getI(raw, l, dp));
+        }
+      }
+    }
+    return list;
+  }
+
+  /**
+   * checks if a dp is excluded by a rect in excluded list. Or in alpha map
+   * 
+   * @param l
+   * @param dp
+   * @return
+   */
+  public boolean isExcludedDP(int l, int dp) {
+    // out of bounds
+    if (!isInBounds(l, dp))
+      return true;
+
+    SettingsSelections sel = settings.getSettSelections();
+
+    // use alpha map as exclusion?
+    if (sel.isAlphaMapExclusionActive()) {
+      // check alpha map
+      if (getImageGroup() != null) {
+        SettingsAlphaMap a = getImageGroup().getSettAlphaMap();
+        if (a != null && a.isActive()) {
+          // same dimensions?
+          if (a.checkDimensions(this)) {
+            State b = a.getMapValue(l, dp);
+            // is excluded in alphamap:
+            if (b.isFalse())
+              return true;
+          } else
+            a.setActive(false);
+        }
+      }
+    }
+
+    // no exclusion rects?
+    if (!sel.hasExclusions())
+      return false;
+
+    // coordinates
+    float x = getX(false, l, dp);
+    float y = getY(false, l, dp);
+
+    // check if dp coordinates are in an exclude rect
+    return sel.isExcluded(x, y, (float) getAvgBlockWidth(false), (float) getAvgBlockHeight(false));
+  }
+
+  /**
+   * checks if a dp is selected (if there are no selected rects - it will always return true
+   * 
+   * @param l line
+   * @param dp datapoint
+   * @return
+   */
+  public boolean isSelectedDP(int l, int dp) {
+    // out of bounds
+    if (!isInBounds(l, dp))
+      return false;
+    // no selection rects?
+    SettingsSelections sel = settings.getSettSelections();
+    if (!sel.hasSelections())
+      return true;
+    else {
+      // coordinates
+      float x = getX(false, l, dp);
+      float y = getY(false, l, dp);
+
+      // check if dp coordinates are in an sel rect
+      return sel.isSelected(x, y, (float) getAvgBlockWidth(false), (float) getAvgBlockHeight(false),
+          false);
+    }
+  }
 
   /**
    * width of the image
@@ -152,25 +294,6 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
    */
   protected void checkForUpdateInParentIProcessing() {}
 
-
-
-  /**
-   * maximum block width for renderer = distance between one and next block
-   * 
-   * @return
-   */
-  public abstract float getAvgBlockWidth();
-
-  /**
-   * maximum block height for renderer = distance between one and next block in lines
-   * 
-   * @return
-   */
-  public abstract float getAvgBlockHeight();
-
-  public abstract boolean hasOneDPWidth();
-
-  public abstract boolean hasOneDPHeight();
 
 
   //
@@ -562,5 +685,9 @@ public abstract class DataCollectable2D<T extends SettingsContainerSettings>
   public abstract float getX0();
 
   public abstract float getY0();
+
+  public boolean isDataCollectable2D() {
+    return this instanceof DataCollectable2D;
+  }
 
 }

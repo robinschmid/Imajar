@@ -4,8 +4,6 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -32,7 +30,6 @@ import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.IMAGING_MODE;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
-import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
@@ -1660,8 +1657,9 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
-  public float getMaxBlockWidth() {
-    return getMaxBlockWidth(getSettings().getSettImage());
+  @Override
+  public float getMaxBlockWidth(boolean postProcessing) {
+    return getMaxBlockWidth(getSettings().getSettImage(), postProcessing);
   }
 
   /**
@@ -1669,14 +1667,19 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
-  public float getMaxBlockHeight() {
-    return getMaxBlockHeight(getSettings().getSettImage());
+  @Override
+  public float getMaxBlockHeight(boolean postProcessing) {
+    return getMaxBlockHeight(getSettings().getSettImage(), postProcessing);
   }
 
-  public float getMaxBlockWidth(SettingsGeneralImage settImg) {
-    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
-    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
-    return getMaxBlockWidth(settImg.getRotationOfData(), interpolation, reduction);
+  public float getMaxBlockWidth(SettingsGeneralImage settImg, boolean postProcessing) {
+    if (!postProcessing)
+      return getMaxBlockWidth(settImg.getRotationOfData(), 1, 1);
+    else {
+      int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
+      int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+      return getMaxBlockWidth(settImg.getRotationOfData(), interpolation, reduction);
+    }
   }
 
   public float getMaxBlockWidth(int rotation, int interpolation, int reduction) {
@@ -1689,10 +1692,14 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   }
 
 
-  public float getMaxBlockHeight(SettingsGeneralImage settImg) {
-    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
-    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
-    return getMaxBlockHeight(settImg.getRotationOfData(), interpolation, reduction);
+  public float getMaxBlockHeight(SettingsGeneralImage settImg, boolean postProcessing) {
+    if (!postProcessing)
+      return getMaxBlockHeight(settImg.getRotationOfData(), 1, 1);
+    else {
+      int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
+      int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+      return getMaxBlockHeight(settImg.getRotationOfData(), interpolation, reduction);
+    }
   }
 
   public float getMaxBlockHeight(int rotation, int interpolation, int redcution) {
@@ -1710,8 +1717,8 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @return
    */
   @Override
-  public float getAvgBlockWidth() {
-    return getAvgBlockWidth(getSettings().getSettImage());
+  public float getAvgBlockWidth(boolean postProcessing) {
+    return getAvgBlockWidth(getSettings().getSettImage(), postProcessing);
   }
 
   /**
@@ -1720,13 +1727,17 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @return
    */
   @Override
-  public float getAvgBlockHeight() {
-    return getAvgBlockHeight(getSettings().getSettImage());
+  public float getAvgBlockHeight(boolean postProcessing) {
+    return getAvgBlockHeight(getSettings().getSettImage(), postProcessing);
   }
 
-  public float getAvgBlockWidth(SettingsGeneralImage settImg) {
+  public float getAvgBlockWidth(SettingsGeneralImage settImg, boolean postProcessing) {
     int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
     int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+    if (!postProcessing) {
+      reduction = 1;
+      interpolation = 1;
+    }
     return getAvgBlockWidth(settImg.getRotationOfData(), interpolation, reduction);
   }
 
@@ -1740,9 +1751,10 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   }
 
 
-  public float getAvgBlockHeight(SettingsGeneralImage settImg) {
-    int interpolation = settImg.isUseInterpolation() ? settImg.getInterpolation() : 1;
-    int reduction = settImg.isUseReduction() ? settImg.getReduction() : 1;
+  public float getAvgBlockHeight(SettingsGeneralImage settImg, boolean postProcessing) {
+    int interpolation =
+        settImg.isUseInterpolation() && postProcessing ? settImg.getInterpolation() : 1;
+    int reduction = settImg.isUseReduction() && postProcessing ? settImg.getReduction() : 1;
     return getAvgBlockHeight(settImg.getRotationOfData(), interpolation, reduction);
   }
 
@@ -1865,117 +1877,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   }
 
   /**
-   * Sums up all the selected data with optional exclusion
-   * 
-   * @param excluded defines whether to exclude or not
-   * @return
-   */
-  public int getSelectedDPCount(boolean excluded) {
-    int counter = 0;
-    //
-    int lines = getMaxLinesCount();
-    int maxdp = getMaxLineLength();
-
-    for (int y = 0; y < lines; y++) {
-      for (int x = 0; x < maxdp; x++) {
-        if ((!excluded || !isExcludedDP(y, x)) && isSelectedDP(y, x))
-          counter++;
-      }
-    }
-    return counter;
-  }
-
-
-  /**
-   * Returns all selected and not excluded data points to an array
-   * 
-   * @return
-   */
-  public List<Double> getSelectedDataAsList(boolean raw, boolean excluded) {
-    ArrayList<Double> list = new ArrayList<>();
-    int lines = getMaxLinesCount();
-    int maxdp = getMaxLineLength();
-    for (int l = 0; l < lines; l++) {
-      for (int dp = 0; dp < maxdp; dp++) {
-        if ((!excluded || !isExcludedDP(l, dp)) && isSelectedDP(l, dp)) {
-          list.add(getI(raw, l, dp));
-        }
-      }
-    }
-    return list;
-  }
-
-  /**
-   * checks if a dp is excluded by a rect in excluded list. Or in alpha map
-   * 
-   * @param l
-   * @param dp
-   * @return
-   */
-  public boolean isExcludedDP(int l, int dp) {
-    // out of bounds
-    if (!isInBounds(l, dp))
-      return true;
-
-    SettingsSelections sel = settings.getSettSelections();
-
-    // use alpha map as exclusion?
-    if (sel.isAlphaMapExclusionActive()) {
-      // check alpha map
-      if (getImageGroup() != null) {
-        SettingsAlphaMap a = getImageGroup().getSettAlphaMap();
-        if (a != null && a.isActive()) {
-          // same dimensions?
-          if (a.checkDimensions(this)) {
-            State b = a.getMapValue(l, dp);
-            // is excluded in alphamap:
-            if (b.isFalse())
-              return true;
-          } else
-            a.setActive(false);
-        }
-      }
-    }
-
-    // no exclusion rects?
-    if (!sel.hasExclusions())
-      return false;
-
-    // coordinates
-    float x = getX(false, l, dp);
-    float y = getY(false, l, dp);
-
-    // check if dp coordinates are in an exclude rect
-    return sel.isExcluded(x, y, (float) getMaxBlockWidth(), (float) getMaxBlockHeight());
-  }
-
-  /**
-   * checks if a dp is selected (if there are no selected rects - it will always return true
-   * 
-   * @param l line
-   * @param dp datapoint
-   * @return
-   */
-  public boolean isSelectedDP(int l, int dp) {
-    // out of bounds
-    if (!isInBounds(l, dp))
-      return false;
-    // no selection rects?
-    SettingsSelections sel = settings.getSettSelections();
-    if (!sel.hasSelections())
-      return true;
-    else {
-      // coordinates
-      float x = getX(false, l, dp);
-      float y = getY(false, l, dp);
-
-      // check if dp coordinates are in an sel rect
-      return sel.isSelected(x, y, (float) getMaxBlockWidth(), (float) getMaxBlockHeight(), false);
-    }
-  }
-
-
-  /**
    * Copies the Image2D and sets this to parent settings will be connected
    * 
    * @return
@@ -2004,7 +1905,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
     return true;
   }
-
 
   // ###########################################################################
   // Info graphics> / icons
@@ -2063,7 +1963,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
       return new ImageIcon(img);
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return null;
     }
   }

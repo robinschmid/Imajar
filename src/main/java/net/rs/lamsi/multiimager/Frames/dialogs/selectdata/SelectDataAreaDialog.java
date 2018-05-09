@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.basics.strokechooser.JStrokeChooserPanel;
 import net.rs.lamsi.general.heatmap.Heatmap;
@@ -120,7 +121,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private final Logger logger = LoggerFactory.getLogger(getClass());
   // mystuff
   private Heatmap heat;
-  private Image2D img;
+  private DataCollectable2D img;
   // save the relation in hashmap
   private HashMap<SettingsShapeSelection, EXYShapeAnnotation> map;
   //
@@ -591,15 +592,16 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     // listeners?
   }
 
-  public void startDialog(Image2D img) {
+  public void startDialog(DataCollectable2D img) {
     if (img != null) {
       try {
         heat = HeatmapFactory.generateHeatmap(img);
-        this.img = (Image2D) heat.getImage();
+        this.img = img;
         // get all existing rects
         map = new HashMap<SettingsShapeSelection, EXYShapeAnnotation>();
 
-        settSel = img.getSettings().getSettSelections();
+        settSel =
+            (SettingsSelections) img.getSettings().getSettingsByClass(SettingsSelections.class);
         settSel.setCurrentImage(img, false);
 
         // set table model

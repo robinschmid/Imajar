@@ -119,7 +119,7 @@ public class ImageLogicRunner {
             }
           }
         } catch (Exception ex) {
-          logger.error("",ex);
+          logger.error("", ex);
         }
       }
     });
@@ -324,7 +324,7 @@ public class ImageLogicRunner {
         window.addHeatmapToPanel(currentHeat);
         return currentHeat;
       } catch (Exception ex) {
-        logger.error("",ex);
+        logger.error("", ex);
         // Dialog
         logger.error("Cannot create image from {}", selectedImage.getTitle(), ex.getMessage());
         JOptionPane.showMessageDialog(window,
@@ -481,7 +481,7 @@ public class ImageLogicRunner {
                   hasGroups = true;
               }
             } catch (Exception ex) {
-              logger.error("",ex);
+              logger.error("", ex);
             }
 
             if (hasGroups) {
@@ -500,7 +500,7 @@ public class ImageLogicRunner {
                   }
                 }
               } catch (Exception ex) {
-                logger.error("",ex);
+                logger.error("", ex);
               } finally {
                 // save changes
                 preferences.saveChanges();
@@ -549,7 +549,7 @@ public class ImageLogicRunner {
             }
 
           } catch (Exception ex) {
-            logger.error("",ex);
+            logger.error("", ex);
             // Dialog
             logger.error("Error while reading {}", f.getAbsolutePath(), ex);
             JOptionPane.showMessageDialog(window,
@@ -589,7 +589,7 @@ public class ImageLogicRunner {
             }
 
           } catch (Exception ex) {
-            logger.error("",ex);
+            logger.error("", ex);
             // Dialog
             logger.error("Error while reading {}", f.getAbsolutePath(), ex);
             JOptionPane.showMessageDialog(window,
@@ -1112,6 +1112,14 @@ public class ImageLogicRunner {
     for (Collectable2D c : getListImages())
       if (c.isImage2D())
         list.add((Image2D) c);
+    return list;
+  }
+
+  public List<DataCollectable2D> getListDataCollectable2DOnly() {
+    ArrayList<DataCollectable2D> list = new ArrayList<DataCollectable2D>();
+    for (Collectable2D c : getListImages())
+      if (c instanceof DataCollectable2D)
+        list.add((DataCollectable2D) c);
     return list;
   }
 

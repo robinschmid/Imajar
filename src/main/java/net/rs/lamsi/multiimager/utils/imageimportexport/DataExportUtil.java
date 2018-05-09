@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.selection.SettingsShapeSelection;
@@ -46,8 +47,8 @@ public class DataExportUtil {
    * @throws ExecutionException
    * @throws InterruptedException
    */
-  public static void exportDataImage2D(final Component parent, final List<Image2D> imgList,
-      final SettingsImage2DDataExport setImage2DDataExport)
+  public static void exportDataImage2D(final Component parent,
+      final List<DataCollectable2D> imgList, final SettingsImage2DDataExport setImage2DDataExport)
       throws InvalidFormatException, IOException, InterruptedException, ExecutionException {
     lastwb = null;
     // progress
@@ -82,7 +83,7 @@ public class DataExportUtil {
           }
         } catch (Exception ex) {
           this.setProgress(100);
-          logger.error("",ex);
+          logger.error("", ex);
           return false;
         }
         this.setProgress(100);
@@ -99,9 +100,9 @@ public class DataExportUtil {
           else
             DialogLoggerUtil.showErrorDialog(parent, "Not saved", "Error");
         } catch (InterruptedException e) {
-          logger.error("",e);
+          logger.error("", e);
         } catch (ExecutionException e) {
-          logger.error("",e);
+          logger.error("", e);
         }
       }
 
@@ -117,7 +118,7 @@ public class DataExportUtil {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  public static void exportDataImage2D(final Component parent, Image2D img,
+  public static void exportDataImage2D(final Component parent, DataCollectable2D img,
       SettingsImage2DDataExport s) throws InvalidFormatException, IOException {
 
     switch (s.getExportStructure()) {
@@ -143,7 +144,7 @@ public class DataExportUtil {
               ss.setPath(new File(folder, g.getName()));
               int size = g.image2dCount();
               for (int d = 0; d < size; d++) {
-                Image2D i = (Image2D) g.get(d);
+                DataCollectable2D i = (DataCollectable2D) g.get(d);
                 // name
                 // ss.setFilename(name+i.getTitle());
 
@@ -185,7 +186,7 @@ public class DataExportUtil {
                 //
                 int size = g.image2dCount();
                 for (int d = 0; d < size; d++) {
-                  Image2D i = (Image2D) g.get(d);
+                  DataCollectable2D i = (DataCollectable2D) g.get(d);
                   // name
                   // ss.setFilename(name+i.getTitle());
 
@@ -212,7 +213,7 @@ public class DataExportUtil {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  public static void exportDataImage2D(Image2D img, SettingsImage2DDataExport s)
+  public static void exportDataImage2D(DataCollectable2D img, SettingsImage2DDataExport s)
       throws InvalidFormatException, IOException {
     lastwb = null;
 
@@ -232,149 +233,154 @@ public class DataExportUtil {
    * @throws IOException
    * @throws InvalidFormatException
    */
-  private static void exportDataImage2D(Image2D img, SettingsImage2DDataExport sett,
+  private static void exportDataImage2D(DataCollectable2D img2, SettingsImage2DDataExport sett,
       String qualifier, boolean firstFile, boolean lastFile, boolean inFolder)
       throws InvalidFormatException, IOException {
-    // compute vtk
-    if (sett.getFileFormat() == FileType.VTK && !sett.isWritingToClipboard()) {
-      sett.setMode(ModeData.ONLY_Y);
-      sett.setSeparation(" ");
-    }
-    // get data
-    Object[][] data = null;
-    // only for x matrix
-    Object[][] xmatrix = null;
-    // get title row
-    String[] title = null;
-    // export line per line matrix of intensity
-    if (sett.getMode().equals(ModeData.XYZ)) {
-      // export xyz data
-      data = img.toXYIMatrix(sett.isExportRaw(), sett.isUseReflectRotate());
+    // TODO change to data collectable2d
+    if (img2 instanceof Image2D) {
+      Image2D img = (Image2D) img2;
+      // compute vtk
+      if (sett.getFileFormat() == FileType.VTK && !sett.isWritingToClipboard()) {
+        sett.setMode(ModeData.ONLY_Y);
+        sett.setSeparation(" ");
+      }
+      // get data
+      Object[][] data = null;
+      // only for x matrix
+      Object[][] xmatrix = null;
       // get title row
-      title = new String[] {"X", "Y", "I"};
-    } else if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
-      // intensity matrix
-      data = img.toDataArray(ModeData.ONLY_Y, sett.isExportRaw(), sett.isUseReflectRotate());
-      if (firstFile)
-        xmatrix = img.toXMatrix(sett.isExportRaw(), sett.isUseReflectRotate());
-    } else {
-      // intensity matrix
-      data = img.toDataArray(sett.getMode(), sett.isExportRaw(), sett.isUseReflectRotate());
-      // get title row
-      if (sett.isWriteTitleRow()) {
-        int size = data[0].length;
-        title = new String[size];
-        int line = 1;
-        for (int i = 0; i < size; i++) {
-          // write title X
-          if (((sett.getMode().equals(ModeData.XYYY) && i == 0)
-              || (sett.getMode().equals(ModeData.XYXY_ALTERN) && i % 2 == 0))) {
-            title[i] = "X" + line;
-          } else {
-            // write y and increment
-            title[i] = "Y" + line;
-            line++;
+      String[] title = null;
+      // export line per line matrix of intensity
+      if (sett.getMode().equals(ModeData.XYZ)) {
+        // export xyz data
+        data = img.toXYIMatrix(sett.isExportRaw(), sett.isUseReflectRotate());
+        // get title row
+        title = new String[] {"X", "Y", "I"};
+      } else if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
+        // intensity matrix
+        data = img.toDataArray(ModeData.ONLY_Y, sett.isExportRaw(), sett.isUseReflectRotate());
+        if (firstFile)
+          xmatrix = img.toXMatrix(sett.isExportRaw(), sett.isUseReflectRotate());
+      } else {
+        // intensity matrix
+        data = img.toDataArray(sett.getMode(), sett.isExportRaw(), sett.isUseReflectRotate());
+        // get title row
+        if (sett.isWriteTitleRow()) {
+          int size = data[0].length;
+          title = new String[size];
+          int line = 1;
+          for (int i = 0; i < size; i++) {
+            // write title X
+            if (((sett.getMode().equals(ModeData.XYYY) && i == 0)
+                || (sett.getMode().equals(ModeData.XYXY_ALTERN) && i % 2 == 0))) {
+              title[i] = "X" + line;
+            } else {
+              // write y and increment
+              title[i] = "Y" + line;
+              line++;
+            }
           }
         }
       }
-    }
-    // writer it to txt or xlsx
+      // writer it to txt or xlsx
 
-    if (sett.isWritingToClipboard()) {
-      // total string
-      String total = "";
-      // to clipboard
-      if (title != null) {
-        // title row
-        String realtitle = title[0];
-        for (int i = 1; i < title.length; i++)
-          realtitle += "\t" + title[i];
-        // write title line
-        total += realtitle + "\n";
-      }
-      // content
-      total += ClipboardWriter.dataToTabSepString(data, true);
-      ClipboardWriter.writeToClipBoard(total);
-
-      DialogLoggerUtil.showMessageDialogForTime(null, "Succeed",
-          "Data copied to clipboard use paste function to retrieve data", 2000);
-    } else if (sett.getFileFormat() == FileType.XLSX) {
-      String file = "";
-      XSSFWorkbook wb = null;
-      if (sett.isSavesAllFilesToOneXLS()) {
-        file = new File(sett.getPath(), FileAndPathUtil.eraseFormat((sett.getFilename())) + ".xlsx")
-            .getAbsolutePath();
-        wb = lastwb;
-      } else {
-        file = new File(sett.getPath(),
-            FileAndPathUtil.eraseFormat((sett.getFilename())) + qualifier + ".xlsx")
-                .getAbsolutePath();
-      }
-      if (wb == null)
-        wb = new XSSFWorkbook();
-      // create sheet
-      XSSFSheet sheet = xwriter.getSheet(wb, qualifier.length() < 1 ? "data" : qualifier);
-      // write title
-      if (title != null)
-        xwriter.writeLine(sheet, title, 0, 0);
-      // write data
-      xwriter.writeDataArrayToSheet(sheet, data, 0, title == null ? 0 : 1, true);
-      // final
-      lastwb = wb;
-      if (lastFile || !sett.isSavesAllFilesToOneXLS()) {
-        xwriter.saveWbToFile(new File(file), wb);
-        xwriter.closeAllWorkbooks();
-        lastwb = null;
-      }
-    } else {
-      // put into one folder? or create a new folder named after the raw file
-      File path = null;
-      if (inFolder) {
-        // create folder like filename
-        path = new File(sett.getPath(), img.getSettings().getSettImage().getRAWFileName());
-      } else {
-        path = sett.getPath();
-      }
-      File file = new File(path, FileAndPathUtil.eraseFormat((sett.getFilename())) + qualifier + "."
-          + sett.getFileFormat().toString());
-      file = FileAndPathUtil.applyMaxLength(file);
-
-
-      writer.openNewFileOutput(file.getAbsolutePath());
-
-      // vtk? write VTK header
-      if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
-        // do nothing... no tilte
-      } else if (sett.getFileFormat() == FileType.VTK)
-        writeVTKHeader(img, data, sett);
-      else {
-        // write title
+      if (sett.isWritingToClipboard()) {
+        // total string
+        String total = "";
+        // to clipboard
         if (title != null) {
           // title row
           String realtitle = title[0];
           for (int i = 1; i < title.length; i++)
-            realtitle += sett.getSeparation() + title[i];
+            realtitle += "\t" + title[i];
           // write title line
-          writer.writeLine(realtitle);
+          total += realtitle + "\n";
         }
-      }
-      // content
-      writer.writeDataArrayToCurrentFile(data, sett.getSeparation());
-      // end file
-      writer.closeDatOutput();
-      // log
-      logger.info("Written: {} to {}", file.getName(), file.getParent());
+        // content
+        total += ClipboardWriter.dataToTabSepString(data, true);
+        ClipboardWriter.writeToClipBoard(total);
 
-      // export x matrix
-      if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD) && firstFile && xmatrix != null) {
-        file = new File(path, "xmatrix." + sett.getFileFormat().toString());
+        DialogLoggerUtil.showMessageDialogForTime(null, "Succeed",
+            "Data copied to clipboard use paste function to retrieve data", 2000);
+      } else if (sett.getFileFormat() == FileType.XLSX) {
+        String file = "";
+        XSSFWorkbook wb = null;
+        if (sett.isSavesAllFilesToOneXLS()) {
+          file =
+              new File(sett.getPath(), FileAndPathUtil.eraseFormat((sett.getFilename())) + ".xlsx")
+                  .getAbsolutePath();
+          wb = lastwb;
+        } else {
+          file = new File(sett.getPath(),
+              FileAndPathUtil.eraseFormat((sett.getFilename())) + qualifier + ".xlsx")
+                  .getAbsolutePath();
+        }
+        if (wb == null)
+          wb = new XSSFWorkbook();
+        // create sheet
+        XSSFSheet sheet = xwriter.getSheet(wb, qualifier.length() < 1 ? "data" : qualifier);
+        // write title
+        if (title != null)
+          xwriter.writeLine(sheet, title, 0, 0);
+        // write data
+        xwriter.writeDataArrayToSheet(sheet, data, 0, title == null ? 0 : 1, true);
+        // final
+        lastwb = wb;
+        if (lastFile || !sett.isSavesAllFilesToOneXLS()) {
+          xwriter.saveWbToFile(new File(file), wb);
+          xwriter.closeAllWorkbooks();
+          lastwb = null;
+        }
+      } else {
+        // put into one folder? or create a new folder named after the raw file
+        File path = null;
+        if (inFolder) {
+          // create folder like filename
+          path = new File(sett.getPath(), img.getImageGroup().getName());
+        } else {
+          path = sett.getPath();
+        }
+        File file = new File(path, FileAndPathUtil.eraseFormat((sett.getFilename())) + qualifier
+            + "." + sett.getFileFormat().toString());
+        file = FileAndPathUtil.applyMaxLength(file);
+
+
         writer.openNewFileOutput(file.getAbsolutePath());
-        // content xmatrix
-        writer.writeDataArrayToCurrentFile(xmatrix, sett.getSeparation());
+
+        // vtk? write VTK header
+        if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD)) {
+          // do nothing... no tilte
+        } else if (sett.getFileFormat() == FileType.VTK)
+          writeVTKHeader(img, data, sett);
+        else {
+          // write title
+          if (title != null) {
+            // title row
+            String realtitle = title[0];
+            for (int i = 1; i < title.length; i++)
+              realtitle += sett.getSeparation() + title[i];
+            // write title line
+            writer.writeLine(realtitle);
+          }
+        }
+        // content
+        writer.writeDataArrayToCurrentFile(data, sett.getSeparation());
         // end file
         writer.closeDatOutput();
         // log
         logger.info("Written: {} to {}", file.getName(), file.getParent());
+
+        // export x matrix
+        if (sett.getMode().equals(ModeData.X_MATRIX_STANDARD) && firstFile && xmatrix != null) {
+          file = new File(path, "xmatrix." + sett.getFileFormat().toString());
+          writer.openNewFileOutput(file.getAbsolutePath());
+          // content xmatrix
+          writer.writeDataArrayToCurrentFile(xmatrix, sett.getSeparation());
+          // end file
+          writer.closeDatOutput();
+          // log
+          logger.info("Written: {} to {}", file.getName(), file.getParent());
+        }
       }
     }
   }
@@ -387,7 +393,8 @@ public class DataExportUtil {
    * 
    * @param sett
    */
-  private static void writeVTKHeader(Image2D img, Object[][] data, SettingsImage2DDataExport sett) {
+  private static void writeVTKHeader(DataCollectable2D img, Object[][] data,
+      SettingsImage2DDataExport sett) {
     // TODO Auto-generated method stub
     writer.writeLine("# vtk DataFile Version 2.0\n" + img.getTitle() + "\n" + "ASCII");
     if (sett.getMode().equals(ModeData.XYZ)) {
@@ -412,8 +419,9 @@ public class DataExportUtil {
    * @param setImage2DDataExport
    * @throws Exception
    */
-  public static void exportDataImage2DInRects(final Image2D img, final SettingsSelections sel,
-      final SettingsImage2DDataSelectionsExport sett) throws Exception {
+  public static void exportDataImage2DInRects(final DataCollectable2D img,
+      final SettingsSelections sel, final SettingsImage2DDataSelectionsExport sett)
+      throws Exception {
 
     new ProgressUpdateTask(4) {
 
@@ -514,7 +522,7 @@ public class DataExportUtil {
    * @throws InvalidFormatException
    * @throws IOException
    */
-  public static void exportDataReportOnOperations(Image2D img, File path, String fileName)
+  public static void exportDataReportOnOperations(DataCollectable2D img, File path, String fileName)
       throws InvalidFormatException, IOException {
     SettingsImage2DDataExport sett = new SettingsImage2DDataExport();
     sett.setIsExportRaw(false);
@@ -533,8 +541,8 @@ public class DataExportUtil {
     DialogLoggerUtil.showMessageDialogForTime(null, "Succeed", "File(s) saved successfully", 1000);
   }
 
-  public static void exportDataReportOnOperations(Image2D img, String classifier, XSSFWorkbook wb,
-      SettingsImage2DDataExport sett) throws InvalidFormatException, IOException {
+  public static void exportDataReportOnOperations(DataCollectable2D img, String classifier,
+      XSSFWorkbook wb, SettingsImage2DDataExport sett) throws InvalidFormatException, IOException {
     // stats
     /*
      * TODO XSSFSheet sheetStats = xwriter.getSheet(wb, classifier+"Stats");

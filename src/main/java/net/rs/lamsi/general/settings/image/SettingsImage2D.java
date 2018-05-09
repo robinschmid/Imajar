@@ -10,7 +10,6 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 import net.rs.lamsi.general.settings.Settings;
-import net.rs.lamsi.general.settings.image.filter.SettingsCropAndShift;
 import net.rs.lamsi.general.settings.image.operations.SettingsImage2DOperations;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifier;
 import net.rs.lamsi.general.settings.image.operations.quantifier.SettingsImage2DQuantifierIS;
@@ -25,7 +24,7 @@ import net.rs.lamsi.general.settings.interf.Image2DSett;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
-public class SettingsImage2D extends SettingsContainerCollectable2D
+public class SettingsImage2D extends SettingsContainerDataCollectable2D
     implements Image2DSett, PostProcessingOpProvider {
   // do not change the version!
   private static final long serialVersionUID = 1L;
@@ -36,53 +35,39 @@ public class SettingsImage2D extends SettingsContainerCollectable2D
 
   public SettingsImage2D() {
     super("SettingsImage2D", "/Settings/Image2d/", "setImg2d");
-
-    addSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
-    addSettings(new SettingsGeneralImage());
-    addSettings(new SettingsThemesContainer(true));
-    addSettings(new SettingsImage2DQuantifierLinear());
-    addSettings(new SettingsImage2DOperations());
-    addSettings(new SettingsImage2DQuantifierIS());
-    addSettings(new SettingsZoom());
-    addSettings(new SettingsSelections());
-    addSettings(new SettingsCropAndShift());
+    addStandardSettings();
   }
 
 
   // COntstruct
   public SettingsImage2D(SettingsPaintScale settPaintScale) {
-    super("SettingsImage2D", "/Settings/Image2d/", "setImg2d");
+    this();
     try {
       addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
-      addSettings(new SettingsGeneralImage());
-      addSettings(new SettingsThemesContainer(true));
-      addSettings(new SettingsImage2DQuantifierLinear());
-      addSettings(new SettingsImage2DOperations());
-      addSettings(new SettingsImage2DQuantifierIS());
-      addSettings(new SettingsZoom());
-      addSettings(new SettingsSelections());
-      addSettings(new SettingsCropAndShift());
     } catch (Exception e) {
       logger.error("", e);
     }
   }
 
   public SettingsImage2D(SettingsPaintScale settPaintScale, SettingsGeneralImage setImage) {
-    super("SettingsImage2D", "/Settings/Image2d/", "setImg2d");
+    this();
     try {
       addSettings((SettingsPaintScale) BinaryWriterReader.deepCopy(settPaintScale));
       addSettings((SettingsGeneralImage) BinaryWriterReader.deepCopy(setImage));
-      addSettings(new SettingsThemesContainer(true));
-      addSettings(new SettingsImage2DQuantifierLinear());
-      addSettings(new SettingsImage2DOperations());
-      addSettings(new SettingsImage2DQuantifierIS());
-      addSettings(new SettingsZoom());
-      addSettings(new SettingsSelections());
-      addSettings(new SettingsCropAndShift());
     } catch (Exception e) {
       logger.error("", e);
     }
   }
+
+  protected void addStandardSettings() {
+    super.addStandardSettings();
+    addSettings(new SettingsGeneralImage());
+    addSettings(SettingsPaintScale.createSettings(SettingsPaintScale.S_KARST_RAINBOW_INVERSE));
+    addSettings(new SettingsImage2DQuantifierLinear());
+    addSettings(new SettingsImage2DOperations());
+    addSettings(new SettingsImage2DQuantifierIS());
+  }
+
 
   @Override
   public void applyToImage(Collectable2D c) throws Exception {

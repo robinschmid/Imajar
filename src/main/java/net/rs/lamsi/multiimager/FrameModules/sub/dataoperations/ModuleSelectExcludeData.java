@@ -18,6 +18,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.heatmap.Heatmap;
@@ -27,7 +28,7 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.dialogs.selectdata.SelectDataAreaDialog;
 
 public class ModuleSelectExcludeData
-    extends Collectable2DSettingsModule<SettingsSelections, Image2D> {
+    extends Collectable2DSettingsModule<SettingsSelections, DataCollectable2D> {
   //
   private ImageEditorWindow window;
   private JLabel lbExcludedRects;
@@ -43,7 +44,7 @@ public class ModuleSelectExcludeData
    * Create the panel.
    */
   public ModuleSelectExcludeData() {
-    super("Data selection", false, SettingsSelections.class, Image2D.class);
+    super("Data selection", false, SettingsSelections.class, DataCollectable2D.class);
     setShowTitleAlways(true);
 
     JPanel panel = new JPanel();
@@ -89,9 +90,9 @@ public class ModuleSelectExcludeData
       @Override
       public void actionPerformed(ActionEvent e) {
         // open dialog with image ex
-        if (currentImage != null && currentImage.isImage2D()) {
+        if (currentImage != null && currentImage.isDataCollectable2D()) {
           final SelectDataAreaDialog dialog = new SelectDataAreaDialog();
-          dialog.startDialog((Image2D) currentImage);
+          dialog.startDialog((DataCollectable2D) currentImage);
           WindowAdapter wl = new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
@@ -145,9 +146,8 @@ public class ModuleSelectExcludeData
   public void setAllViaExistingSettings(SettingsSelections sel) throws Exception {
     getLbSelectedRects().setText(String.valueOf(sel.count(SelectionMode.SELECT)));
     getLbExcludedRects().setText(String.valueOf(sel.count(SelectionMode.EXCLUDE)));
-    double used =
-        Math.round(currentImage.getSelectedDPCount(true) * 1000.0 / currentImage.getTotalDPCount())
-            / 10.0;
+    double used = Math.round(
+        currentImage.getSelectedDPCount(true) * 1000.0 / currentImage.getTotalDataPoints()) / 10.0;
     getLbUsedDataPerc().setText(String.valueOf(used));
   }
 

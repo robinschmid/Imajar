@@ -10,15 +10,11 @@ import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
 import net.rs.lamsi.general.heatmap.dataoperations.DPReduction;
 import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
-import net.rs.lamsi.general.settings.image.filter.SettingsCropAndShift;
-import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralCollecable2D;
-import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
-import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
-public class SettingsSPImage extends SettingsContainerCollectable2D
+public class SettingsSPImage extends SettingsContainerDataCollectable2D
     implements PostProcessingOpProvider {
   // do not change the version!
   private static final long serialVersionUID = 1L;
@@ -28,14 +24,10 @@ public class SettingsSPImage extends SettingsContainerCollectable2D
 
   public SettingsSPImage() {
     super("SettingsSPImage", "/Settings/SPImage/", "setSPImg");
-
     addSettings(new SettingsGeneralCollecable2D());
-    addSettings(new SettingsThemesContainer(true));
-    addSettings(new SettingsZoom());
-    addSettings(new SettingsSelections());
-    addSettings(new SettingsCropAndShift());
     addSettings(new SingleParticleSettings());
     addSettings(new SettingsPaintScale());
+    addStandardSettings();
   }
 
   @Override
@@ -65,14 +57,6 @@ public class SettingsSPImage extends SettingsContainerCollectable2D
 
   public SingleParticleSettings getSettSingleParticle() {
     return (SingleParticleSettings) list.get(SingleParticleSettings.class);
-  }
-
-  public SettingsGeneralCollecable2D getSettImage() {
-    return (SettingsGeneralCollecable2D) list.get(SettingsGeneralCollecable2D.class);
-  }
-
-  public SettingsSelections getSettSelections() {
-    return (SettingsSelections) getSettingsByClass(SettingsSelections.class);
   }
 
   /**

@@ -24,7 +24,7 @@ import javax.swing.border.LineBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.dialogs.HeatmapGraphicsExportDialog.EXPORT_STRUCTURE;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
@@ -57,8 +57,8 @@ public class DialogDataSaver extends JFrame {
   //
   final private JFileChooser fcDirectoriesChooser = new JFileChooser();
   //
-  private Image2D img;
-  private List<Image2D> imgList;
+  private DataCollectable2D img;
+  private List<DataCollectable2D> imgList;
   private SettingsSelections selections;
   //
   private JPanel contentPane;
@@ -177,7 +177,7 @@ public class DialogDataSaver extends JFrame {
         try {
           settings.getSetImage2DDataExport().loadSettingsFromFile(thisFrame);
         } catch (Exception e1) {
-          logger.error("",e1);
+          logger.error("", e1);
           DialogLoggerUtil.showErrorDialog(thisFrame, "Error while loading ", e1);
         }
         setAllSettingsCb();
@@ -386,7 +386,7 @@ public class DialogDataSaver extends JFrame {
       }
     } catch (Exception ex) {
       DialogLoggerUtil.showErrorDialog(this, "Not saved", ex);
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -411,7 +411,7 @@ public class DialogDataSaver extends JFrame {
    * 
    * @param imgList
    */
-  public static void startDialogWith(List<Image2D> imgList, Image2D img) {
+  public static void startDialogWith(List<DataCollectable2D> imgList, DataCollectable2D img) {
     inst.setCurrentMode(MODE.ALL);
     inst.img = img;
     inst.imgList = imgList;
@@ -421,7 +421,7 @@ public class DialogDataSaver extends JFrame {
     inst.setVisible(true);
   }
 
-  public static void startDialogWith(Image2D img) {
+  public static void startDialogWith(DataCollectable2D img) {
     inst.setCurrentMode(MODE.ALL);
     inst.img = img;
     inst.imgList = null;
@@ -433,7 +433,7 @@ public class DialogDataSaver extends JFrame {
 
   // ##########################################################################################
   // exporting only selection rects data
-  public static void startDialogWith(Image2D img, SettingsSelections selections) {
+  public static void startDialogWith(DataCollectable2D img, SettingsSelections selections) {
     inst.img = img;
     inst.imgList = null;
     inst.selections = selections;

@@ -427,37 +427,45 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     return img.getHeightAsMaxDP();
   }
 
-  public double getMaxBlockWidth() {
-    return getMaxBlockWidth(img.getSettings().getSettImage());
+  @Override
+  public float getMaxBlockWidth(boolean postProcessing) {
+    return getMaxBlockWidth(img.getSettings().getSettImage(), postProcessing);
   }
 
-  public double getMaxBlockHeight() {
-    return getMaxBlockHeight(img.getSettings().getSettImage());
+  @Override
+  public float getMaxBlockHeight(boolean postProcessing) {
+    return getMaxBlockHeight(img.getSettings().getSettImage(), postProcessing);
   }
 
-  public double getMaxBlockWidth(SettingsGeneralImage settImage) {
+  public float getMaxBlockWidth(SettingsGeneralImage settImage, boolean postProcessing) {
     int rot = settImage.getRotationOfData();
-    double f = getSettings().getSettSingleParticle().getNumberOfPixel();
-    return img.getMaxBlockWidth(rot, 1, 1) * f;
+    float f = getSettings().getSettSingleParticle().getNumberOfPixel();
+    if (postProcessing)
+      return img.getMaxBlockWidth(rot, 1, 1) * f;
+    else
+      return img.getMaxBlockWidth(rot, 1, 1);
   }
 
-  public double getMaxBlockHeight(SettingsGeneralImage settImage) {
+  public float getMaxBlockHeight(SettingsGeneralImage settImage, boolean postProcessing) {
     int rot = settImage.getRotationOfData();
     return img.getMaxBlockHeight(rot, 1, 1);
   }
 
-  public float getAvgBlockWidth() {
-    return getAvgBlockWidth(img.getSettings().getSettImage());
+  public float getAvgBlockWidth(boolean postProcessing) {
+    return getAvgBlockWidth(img.getSettings().getSettImage(), postProcessing);
   }
 
-  public float getAvgBlockHeight() {
+  public float getAvgBlockHeight(boolean postProcessing) {
     return getAvgBlockHeight(img.getSettings().getSettImage());
   }
 
-  public float getAvgBlockWidth(SettingsGeneralImage settImage) {
+  public float getAvgBlockWidth(SettingsGeneralImage settImage, boolean postProcessing) {
     int rot = settImage.getRotationOfData();
     float f = getSettings().getSettSingleParticle().getNumberOfPixel();
-    return img.getAvgBlockWidth(rot, 1, 1) * f;
+    if (postProcessing)
+      return img.getAvgBlockWidth(rot, 1, 1) * f;
+    else
+      return img.getAvgBlockWidth(rot, 1, 1);
   }
 
   public float getAvgBlockHeight(SettingsGeneralImage settImage) {
@@ -634,4 +642,5 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   public int getTotalDataPoints() {
     return img.getTotalDataPoints();
   }
+
 }
