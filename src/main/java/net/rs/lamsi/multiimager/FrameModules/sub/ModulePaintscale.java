@@ -33,6 +33,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.xy.XYDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
@@ -44,7 +46,9 @@ import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
 import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.framework.modules.menu.ModuleMenu;
+import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.PaintScaleGenerator;
+import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ScaleType;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
@@ -124,6 +128,10 @@ public class ModulePaintscale
   private DelayedDocumentListener[] delayedDListener;
   private DelayedDocumentListener listenerMinAbs, listenerMinPerc, listenerMaxPerc, listenerMaxAbs,
       listenerMaxFilter, listenerMinFilter;
+
+  // data provider for max and min
+  private DataCollectable2DDataset data;
+
 
   /**
    * Create the panel.
@@ -594,6 +602,21 @@ public class ModulePaintscale
   }
 
   @Override
+  public void setCurrentHeatmap(Heatmap heat) {
+    super.setCurrentHeatmap(heat);
+    // extract data set
+    XYPlot plot = heat.getChart().getXYPlot();
+    if (plot != null) {
+      XYDataset d = plot.getDataset();
+      if (d != null && d instanceof DataCollectable2DDataset) {
+        data = (DataCollectable2DDataset) d;
+        // extract min max
+
+      }
+    }
+  }
+
+  @Override
   public JMenuItem addPreset(ModuleMenu menu, final SettingsPaintScale settings, String title) {
     // menuitem
     JMenuItem item = super.addPreset(menu, settings, title);
@@ -633,7 +656,11 @@ public class ModulePaintscale
       getSliderMinimum().setEnabled(true);
       getTxtMinPerc().setText(formatPercentNumber(f));
       // absolute
-      double absMin = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
+      double absMin = 0;
+      if (data == null)
+        absMin = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
+      else
+        absMin = data.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
       setMinimumValue(absMin, false);
     }
   }
@@ -644,8 +671,12 @@ public class ModulePaintscale
       // apply to all abs components
       getTxtMinimum().setText(formatAbsNumber(abs));
       // percentage
-      setMinimumValuePercentage(
-          currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected()), false);
+      double min = 0;
+      if (data == null)
+        min = currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected());
+      else
+        min = data.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected());
+      setMinimumValuePercentage(min, false);
     }
   }
 
@@ -660,7 +691,11 @@ public class ModulePaintscale
       getSliderMaximum().setEnabled(true);
       getTxtMaxPerc().setText(formatPercentNumber(f));
       // absolute
-      double absMax = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
+      double absMax = 0;
+      if (data == null)
+        absMax = currentImage.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
+      else
+        absMax = data.getIAbs(f, getCbOnlyUseSelectedMinMax().isSelected());
       setMaximumValue(absMax, false);
     }
   }
@@ -672,8 +707,12 @@ public class ModulePaintscale
       // apply to all abs components
       getTxtMaximum().setText(formatAbsNumber(abs));
       // percentage
-      setMaximumValuePercentage(
-          currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected()), false);
+      double max = 0;
+      if (data == null)
+        max = currentImage.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected());
+      else
+        max = data.getIPercentage(abs, getCbOnlyUseSelectedMinMax().isSelected());
+      setMaximumValuePercentage(max, false);
     }
   }
 
@@ -686,7 +725,7 @@ public class ModulePaintscale
       setMinimumValue(minZ, true);
       getTxtMinFilter().setBorder(emptyBorder);
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       getTxtMinFilter().setBorder(errorBorder);
     }
   }
@@ -699,7 +738,7 @@ public class ModulePaintscale
       setMaximumValue(maxZ, true);
       getTxtMaxFilter().setBorder(emptyBorder);
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       getTxtMaxFilter().setBorder(errorBorder);
     }
   }
@@ -867,7 +906,7 @@ public class ModulePaintscale
           break;
       }
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       switch (mode) {
         case ABSOLUTE:
           getTxtMinimum().setBorder(errorBorder);
@@ -897,7 +936,7 @@ public class ModulePaintscale
           break;
       }
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       switch (mode) {
         case ABSOLUTE:
           getTxtMaximum().setBorder(errorBorder);
@@ -1087,7 +1126,7 @@ public class ModulePaintscale
         /// renew histo
         // getPnHistogram().updateHisto(ps);
       } catch (Exception ex) {
-        logger.error("",ex);
+        logger.error("", ex);
       }
     }
     return ps;

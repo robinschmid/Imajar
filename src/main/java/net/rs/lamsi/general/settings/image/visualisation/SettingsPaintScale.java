@@ -1,6 +1,7 @@
 package net.rs.lamsi.general.settings.image.visualisation;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -663,6 +664,8 @@ public class SettingsPaintScale extends Settings {
   }
 
   public List<Color> getColorList() {
+    if (list == null || list.isEmpty())
+      initColorList();
     return list;
   }
 
@@ -684,16 +687,24 @@ public class SettingsPaintScale extends Settings {
   public Color getListColor(double i) {
     // list is sorted the opposite way. 0 is last color
     if (list == null || list.isEmpty()) {
-      if (getMinColor() != null)
-        return getMinColor();
-      else
-        return Color.MAGENTA;
+      initColorList();
     } else {
       int index = (int) ((list.size() - 1) * (1.0 - i));
       if (index < list.size() && index >= 0)
         return list.get(index);
     }
     return Color.MAGENTA;
+  }
+
+  /**
+   * Init list with standard colors
+   */
+  private void initColorList() {
+    Color[] c = new Color[] {Color.black, new Color(204, 0, 255), Color.BLUE, Color.cyan,
+        Color.green, Color.YELLOW, Color.orange, Color.RED};
+    list = new ArrayList<>();
+    for (Color g : c)
+      list.add(g);
   }
 
   /**

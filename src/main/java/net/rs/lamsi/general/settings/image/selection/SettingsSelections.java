@@ -325,9 +325,13 @@ public class SettingsSelections extends Settings implements Serializable,
    * 
    * @param x coordinate in the given processed data space (e.g. micro meters)
    * @param y coordinate in the given processed data space (e.g. micro meters)
-   * @return
+   * @return always true if nothing is selected or excluded
    */
   public boolean isSelected(float x, float y, float w, float h, boolean checkForExclusion) {
+    // special case if no sleections and exclusions
+    if (!hasSelections && (!checkForExclusion || !hasExclusions))
+      return true;
+
     boolean state = false;
     // is selected?
     if (hasSelections) {

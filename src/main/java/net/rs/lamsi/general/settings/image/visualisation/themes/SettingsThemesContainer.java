@@ -46,8 +46,8 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
       Color cAxesT, Font fAxesL, Color cAxesL, Font fTitle, Color cTitle, Font fScale, Color cScale,
       String chartTitle, RectangleInsets psMargin, int psWidth, double psTickUnit,
       boolean psAutoSelectTickUnit, String xAxisTitle, String yAxisTitle, boolean outline,
-      boolean xTick, boolean yTick, float xTickUnit, float yTickUnit, String xTickF,
-      String yTickF) {
+      boolean xTick, boolean yTick, float xTickUnit, float yTickUnit, String xTickF, String yTickF,
+      boolean isPaintScaleVisible) {
 
     getSettTheme().setAll(antiAlias, showTitle, noBG, cBG, cPlotBG, showXGrid, showYGrid, showXAxis,
         showYAxis, fMaster, cMaster, fAxesT, cAxesT, fAxesL, cAxesL, fTitle, cTitle, chartTitle,
@@ -59,7 +59,8 @@ public class SettingsThemesContainer extends SettingsContainerSettings {
     SettingsPaintscaleTheme pst = getSettPaintscaleTheme();
     if (pst != null)
       pst.setAll(isPaintScaleInPlot, useScientificIntensities, significantDigits, paintScaleTitle,
-          usePaintScaleTitle, psMargin, psWidth, psTickUnit, psAutoSelectTickUnit);
+          usePaintScaleTitle, psMargin, psWidth, psTickUnit, psAutoSelectTickUnit,
+          isPaintScaleVisible);
   }
 
 

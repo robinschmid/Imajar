@@ -1,5 +1,6 @@
 package net.rs.lamsi.general.myfreechart.plots.image2d.datasets;
 
+import java.util.Arrays;
 import java.util.List;
 import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
@@ -11,6 +12,7 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 
 /**
  * getX getY and getZ are deprecated
@@ -29,6 +31,8 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
   protected int linelength = 0;
   protected double maxZ;
   protected double minZ;
+  protected double minZSel;
+  protected double maxZSel;
 
   public DataCollectable2DDataset(DataCollectable2D img) {
     super();
@@ -173,9 +177,16 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
         if (tz == null)
           return false;
 
+        // selections
+        SettingsSelections sel = img.getSelections();
+        float bw = img.getAvgBlockWidth(true);
+        float bh = img.getAvgBlockHeight(true);
+
         // pre calc min and max
         minZ = Double.POSITIVE_INFINITY;
         maxZ = Double.NEGATIVE_INFINITY;
+        minZSel = Double.POSITIVE_INFINITY;
+        maxZSel = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < tz.length; i++) {
           for (int j = 0; j < tz[i].length; j++) {
             if (!Double.isNaN(tz[i][j])) {
@@ -183,6 +194,13 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
                 minZ = tz[i][j];
               if (tz[i][j] > maxZ)
                 maxZ = tz[i][j];
+              // selected
+              if (sel.isSelected(tx[i][j], ty[i][j], bw, bh, true)) {
+                if (tz[i][j] < minZSel)
+                  minZSel = tz[i][j];
+                if (tz[i][j] > maxZSel)
+                  maxZSel = tz[i][j];
+              }
             }
           }
         }
@@ -211,11 +229,85 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
     return false;
   }
 
-  public double getMinIntensity() {
-    return isProcessed() ? minZ : img.getMinIntensity(false);
+
+  /**
+   * [min, max]
+   * 
+   * @param onlySelected
+   * @return
+   */
+  public Range getIRange(boolean onlySelected) {
+    if (!isProcessed())
+      return img.getIRange(onlySelected);
+    else {
+      return new Range(this.getMinIntensity(onlySelected), this.getMaxIntensity(onlySelected));
+    }
   }
 
-  public double getMaxIntensity() {
-    return isProcessed() ? maxZ : img.getMaxIntensity(false);
+  /**
+   * 
+   * @return value (set in a paintscale) as a percentage of the maximum value (value==max:
+   *         result=100)
+   */
+  public double getIPercentage(double intensity, boolean onlySelected) {
+    if (!isProcessed())
+      return img.getIPercentage(intensity, onlySelected);
+    else {
+      Range r = getIRange(onlySelected);
+      return ((intensity - r.getLowerBound()) / r.getLength() * 100.0);
+    }
+  }
+
+  /**
+   * 
+   * @param value as percentage (0-100%)
+   * @param onlySelected
+   * @return value /100 * intensityRange
+   */
+  public double getIAbs(double value, boolean onlySelected) {
+    if (!isProcessed())
+      return img.getIAbs(value, onlySelected);
+    else {
+      Range r = getIRange(onlySelected);
+      return value / 100.0 * r.getLength() + r.getLowerBound();
+    }
+  }
+
+  /**
+   * 
+   * @param intensity
+   * @return the percentile of all intensities (if value is equal to max the result is 100)
+   */
+  public double getIPercentile(boolean raw, double intensity, boolean onlySelected) {
+    if (!isProcessed())
+      return img.getIPercentile(raw, intensity, onlySelected);
+    else {
+      // sort all z values
+      double[] z = Arrays.stream(data.getI()).flatMapToDouble(d -> Arrays.stream(d)).toArray();
+      Arrays.sort(z);
+
+      for (int i = 0; i < z.length; i++) {
+        if (z[i] <= intensity) {
+          return (i / (z.length - 1));
+        }
+      }
+      return 0;
+    }
+  }
+
+  public double getMinIntensity(boolean onlySelected) {
+    if (!isProcessed())
+      return img.getMinIntensity(onlySelected);
+    else {
+      return onlySelected ? minZSel : minZ;
+    }
+  }
+
+  public double getMaxIntensity(boolean onlySelected) {
+    if (!isProcessed())
+      return img.getMaxIntensity(onlySelected);
+    else {
+      return onlySelected ? maxZSel : maxZ;
+    }
   }
 }

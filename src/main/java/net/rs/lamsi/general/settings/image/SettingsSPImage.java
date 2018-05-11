@@ -13,6 +13,9 @@ import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralCollecable2D;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ScaleType;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
+import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsPaintscaleTheme;
 
 public class SettingsSPImage extends SettingsContainerDataCollectable2D
     implements PostProcessingOpProvider {
@@ -26,8 +29,22 @@ public class SettingsSPImage extends SettingsContainerDataCollectable2D
     super("SettingsSPImage", "/Settings/SPImage/", "setSPImg");
     addSettings(new SettingsGeneralCollecable2D());
     addSettings(new SingleParticleSettings());
-    addSettings(new SettingsPaintScale());
+
+    SettingsPaintScale ps = new SettingsPaintScale();
+    ps.setModeMin(ValueMode.ABSOLUTE);
+    ps.setMin(-0.5);
+    ps.setModeMax(ValueMode.RELATIVE);
+    ps.setScaleType(ScaleType.COLORLIST);
+    ps.setInverted(false);
+    addSettings(ps);
+    // add themes and zoom etc
     addStandardSettings();
+    // change theme
+    SettingsPaintscaleTheme t = getSettTheme().getSettPaintscaleTheme();
+    t.setUseScientificIntensities(false);
+    t.setSignificantDigits(0);
+    t.setAutoSelectTickUnit(false);
+    t.setPsTickUnit(1);
   }
 
   @Override

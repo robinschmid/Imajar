@@ -43,6 +43,7 @@ public class ModulePaintscaleTheme
   private JTextField txtPSWidth;
   private JTextField txtPSTickUnit;
   private JCheckBox cbAutoSelectTickPS;
+  private JCheckBox cbVisible;
 
 
   public ModulePaintscaleTheme() {
@@ -50,39 +51,43 @@ public class ModulePaintscaleTheme
 
     JPanel panel_4 = new JPanel();
     getPnContent().add(panel_4, BorderLayout.CENTER);
-    panel_4.setLayout(new MigLayout("", "[grow][grow][][grow]", "[][][][5px:n][][][][]"));
+    panel_4.setLayout(new MigLayout("", "[grow][grow][][grow]", "[][][][][5px:n][][][][]"));
+
+    cbVisible = new JCheckBox("visible");
+    cbVisible.setSelected(true);
+    panel_4.add(cbVisible, "cell 1 0");
 
     cbPaintscaleInPlot = new JCheckBox("in plot");
-    panel_4.add(cbPaintscaleInPlot, "cell 1 0");
+    panel_4.add(cbPaintscaleInPlot, "cell 1 1");
 
     cbScientificIntensities = new JCheckBox("scientific intensities");
-    panel_4.add(cbScientificIntensities, "flowy,cell 1 1");
+    panel_4.add(cbScientificIntensities, "flowy,cell 1 2");
     cbScientificIntensities.setSelected(true);
 
     txtCSignificantDigits = new JTextField();
-    panel_4.add(txtCSignificantDigits, "flowx,cell 2 1");
+    panel_4.add(txtCSignificantDigits, "flowx,cell 2 2");
     txtCSignificantDigits.setText("2");
     txtCSignificantDigits.setToolTipText("Number of significant digits (1.0E >> 2 significant)");
     txtCSignificantDigits.setHorizontalAlignment(SwingConstants.RIGHT);
     txtCSignificantDigits.setColumns(4);
 
     JLabel lblSignificantDifits = new JLabel("significant difits");
-    panel_4.add(lblSignificantDifits, "cell 2 1");
+    panel_4.add(lblSignificantDifits, "cell 2 2");
 
     cbUsePaintscaleTitle = new JCheckBox("use paintscale title");
-    panel_4.add(cbUsePaintscaleTitle, "cell 1 2");
+    panel_4.add(cbUsePaintscaleTitle, "cell 1 3");
     cbUsePaintscaleTitle.setSelected(true);
 
     txtPaintScaleTitle = new JTextField();
-    panel_4.add(txtPaintScaleTitle, "cell 2 2,growx");
+    panel_4.add(txtPaintScaleTitle, "cell 2 3,growx");
     txtPaintScaleTitle.setText("I");
     txtPaintScaleTitle.setColumns(10);
 
     JLabel lblPsMargin = new JLabel("ps margin");
-    panel_4.add(lblPsMargin, "cell 0 4,alignx right");
+    panel_4.add(lblPsMargin, "cell 0 5,alignx right");
 
     JPanel panel = new JPanel();
-    panel_4.add(panel, "cell 1 4 2 1");
+    panel_4.add(panel, "cell 1 5 2 1");
     panel.setLayout(new MigLayout("", "[][][][]", "[][]"));
 
     JLabel lblNewLabel = new JLabel("top");
@@ -126,24 +131,24 @@ public class ModulePaintscaleTheme
     panel.add(txtPSMarginRight, "cell 3 1,growx");
 
     JLabel lblWidth = new JLabel("width");
-    panel_4.add(lblWidth, "cell 0 5,alignx trailing");
+    panel_4.add(lblWidth, "cell 0 6,alignx trailing");
 
     txtPSWidth = new JTextField();
     txtPSWidth.setToolTipText("Paint scale legend width");
     txtPSWidth.setText("20");
-    panel_4.add(txtPSWidth, "flowy,cell 1 5 2 1,alignx left");
+    panel_4.add(txtPSWidth, "flowy,cell 1 6 2 1,alignx left");
     txtPSWidth.setColumns(4);
 
     cbAutoSelectTickPS = new JCheckBox("auto select tick unit");
     cbAutoSelectTickPS.setSelected(true);
-    panel_4.add(cbAutoSelectTickPS, "cell 1 6 2 1");
+    panel_4.add(cbAutoSelectTickPS, "cell 1 7 2 1");
 
     JLabel lblTickUnit = new JLabel("tick unit");
-    panel_4.add(lblTickUnit, "cell 0 7,alignx trailing");
+    panel_4.add(lblTickUnit, "cell 0 8,alignx trailing");
 
     txtPSTickUnit = new JTextField();
     txtPSTickUnit.setToolTipText("Tick unit (manual; uncheck auto selection)");
-    panel_4.add(txtPSTickUnit, "cell 1 7 2 1,alignx left");
+    panel_4.add(txtPSTickUnit, "cell 1 8 2 1,alignx left");
     txtPSTickUnit.setColumns(12);
   }
 
@@ -174,6 +179,8 @@ public class ModulePaintscaleTheme
     getCbAutoSelectTickPS().addItemListener(il);
     getTxtPSTickUnit().getDocument().addDocumentListener(dl);
 
+    getCbVisible().addItemListener(il);
+
   }
 
   // ################################################################################################
@@ -203,6 +210,7 @@ public class ModulePaintscaleTheme
       // paintscale title
       getCbUsePaintscaleTitle().setSelected(t.isUsePaintScaleTitle());
       getTxtPaintScaleTitle().setText(t.getPaintScaleTitle());
+      getCbVisible().setSelected(t.isPaintScaleVisible());
     }
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
@@ -220,9 +228,10 @@ public class ModulePaintscaleTheme
         t.setAll(getCbPaintscaleInPlot().isSelected(), cbScientificIntensities.isSelected(),
             intFromTxt(txtCSignificantDigits), txtPaintScaleTitle.getText(),
             cbUsePaintscaleTitle.isSelected(), r, intFromTxt(getTxtPSWidth()),
-            doubleFromTxt(getTxtPSTickUnit()), getCbAutoSelectTickPS().isSelected());
+            doubleFromTxt(getTxtPSTickUnit()), getCbAutoSelectTickPS().isSelected(),
+            getCbVisible().isSelected());
       } catch (Exception ex) {
-        logger.error("",ex);
+        logger.error("", ex);
       }
     }
     return t;
@@ -277,5 +286,9 @@ public class ModulePaintscaleTheme
 
   public JCheckBox getCbAutoSelectTickPS() {
     return cbAutoSelectTickPS;
+  }
+
+  public JCheckBox getCbVisible() {
+    return cbVisible;
   }
 }

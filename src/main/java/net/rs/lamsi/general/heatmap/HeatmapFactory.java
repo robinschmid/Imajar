@@ -491,8 +491,8 @@ public class HeatmapFactory {
 
       SettingsPaintScale ps = d.getPaintScaleSettings();
       if (ps != null) {
-        double zmin = data.getMinIntensity();
-        double zmax = data.getMaxIntensity();
+        double zmin = data.getMinIntensity(false);
+        double zmax = data.getMaxIntensity(false);
         // two ways of min or max z value:
         // min max values by filter
         if (ps.getModeMin().equals(ValueMode.PERCENTILE)) {
@@ -576,8 +576,8 @@ public class HeatmapFactory {
     DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
     dataset.applyPostProcessing();
     // absolute min max
-    double zmin = dataset.getMinIntensity();
-    double zmax = dataset.getMaxIntensity();
+    double zmin = dataset.getMinIntensity(false);
+    double zmax = dataset.getMaxIntensity(false);
     // no data!
     if (zmin >= zmax)
       zmax = zmin + 1;
@@ -702,8 +702,8 @@ public class HeatmapFactory {
     DataCollectable2DDataset dataset = new DataCollectable2DDataset(img);
     dataset.applyPostProcessing();
     // absolute min max
-    double zmin = dataset.getMinIntensity();
-    double zmax = dataset.getMaxIntensity();
+    double zmin = dataset.getMinIntensity(false);
+    double zmax = dataset.getMaxIntensity(false);
     if (zmax <= zmin)
       zmax = zmin + 1;
 
@@ -711,7 +711,7 @@ public class HeatmapFactory {
       settings = SettingsPaintScale.createStandardSettings();
       settings.setModeMax(ValueMode.RELATIVE);
       settings.setMax(100);
-      settings.setModeMin(ValueMode.ABSOLUTE);
+      settings.setModeMin(ValueMode.RELATIVE);
       settings.setMin(0);
     }
 
