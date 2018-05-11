@@ -38,8 +38,7 @@ public class ModuleTree<T> extends Module {
   }
 
   public void addNodeToRoot(DefaultMutableTreeNode node) {
-    root.add(node);
-    reload();
+    getTreeModel().insertNodeInto(node, root, root.getChildCount());
   }
 
   /**
@@ -50,7 +49,7 @@ public class ModuleTree<T> extends Module {
       getRoot().removeAllChildren();
       reload();
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -373,6 +372,16 @@ public class ModuleTree<T> extends Module {
       return g.getImageByTitle(pl.getSettings().getTitle());
     else
       return null;
+  }
+
+  /**
+   * Insert child into parent and update
+   * 
+   * @param child
+   * @param parent
+   */
+  public void add(DefaultMutableTreeNode child, DefaultMutableTreeNode parent) {
+    getTreeModel().insertNodeInto(child, parent, parent.getChildCount());
   }
 
 }

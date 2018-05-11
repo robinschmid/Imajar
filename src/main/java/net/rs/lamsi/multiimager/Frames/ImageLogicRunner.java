@@ -145,7 +145,7 @@ public class ImageLogicRunner {
     if (group != null) {
       group.add(i);
       IconNode node = addImageNode(i, group.getNode());
-      treeImg.getTreeModel().reload();
+      // treeImg.getTreeModel().reload();
     } else {
       // cerate and add group
       // create image group
@@ -168,7 +168,7 @@ public class ImageLogicRunner {
         window.isCreatingImageIcons() ? i.getIcon(sett.getIconWidth(), sett.getIconHeight())
             : null);
     if (parent != null)
-      parent.add(node);
+      treeImg.add(node, parent);
     else
       treeImg.addNodeToRoot(node);
     return node;
@@ -213,7 +213,7 @@ public class ImageLogicRunner {
     // add group to parentProject
     DefaultMutableTreeNode parent = new DefaultMutableTreeNode(group);
     group.setNode(parent);
-    parentPr.add(parent);
+    getTree().add(parent, parentPr);
 
     // create img nodes
     for (Collectable2D c2d : group.getImages()) {
@@ -227,7 +227,7 @@ public class ImageLogicRunner {
         addImageNode(c2d, parent);
       }
     }
-    treeImg.reload();
+    // treeImg.reload();
   }
 
   /**
@@ -251,6 +251,7 @@ public class ImageLogicRunner {
     DefaultMutableTreeNode node = new DefaultMutableTreeNode(project);
     project.setNode(node);
     treeImg.addNodeToRoot(node);
+    treeImg.reload();
 
     // add all groups
     if (addsGroups)
@@ -888,7 +889,7 @@ public class ImageLogicRunner {
 
           addImageNode(ov, selectedImage.getImageGroup().getNode());
           // update tree
-          treeImg.reload();
+          // treeImg.reload();
         }
       } catch (Exception e) {
         logger.error("", e);
@@ -968,7 +969,7 @@ public class ImageLogicRunner {
           if (node != null)
             addImageNode(spi, node);
           // update tree
-          treeImg.reload();
+          // treeImg.reload();
         }
       } catch (Exception e) {
         logger.error("Cannot create single particle image", e);
@@ -1046,7 +1047,7 @@ public class ImageLogicRunner {
           addImageNode(result, selectedImage.getImageGroup().getNode());
 
           // update tree
-          treeImg.reload();
+          // treeImg.reload();
         }
       } catch (IOException e) {
         logger.error("Import down sampled microscopic image failed", e);
