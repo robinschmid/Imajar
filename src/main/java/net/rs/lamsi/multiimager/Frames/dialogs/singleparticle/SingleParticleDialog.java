@@ -386,7 +386,7 @@ public class SingleParticleDialog extends JFrame {
           pnHistoFiltered.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
       }
     } catch (Exception e2) {
-      logger.error("",e2);
+      logger.error("", e2);
     }
   }
 
@@ -401,7 +401,7 @@ public class SingleParticleDialog extends JFrame {
           pnHistoFiltered.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
       }
     } catch (Exception e2) {
-      logger.error("",e2);
+      logger.error("", e2);
     }
   }
 
@@ -488,9 +488,10 @@ public class SingleParticleDialog extends JFrame {
               if (cbExcludeSmallerNoise.isSelected()) {
                 // get processed data from original image
                 double[] dlist = img.toIArray(true, true);
+                logger.debug("filter sp data by noise");
                 data = DoubleStream.of(dlist).filter(d -> d >= noise).toArray();
               } else
-                data = img.toIArray(false, true);
+                data = img.toIArray(true, true);
 
               Range r = EChartFactory.getBounds(data);
 
@@ -592,7 +593,7 @@ public class SingleParticleDialog extends JFrame {
             }
           }.execute();
         } catch (Exception e1) {
-          logger.error("",e1);
+          logger.error("", e1);
         }
 
       }
@@ -629,7 +630,7 @@ public class SingleParticleDialog extends JFrame {
 
       EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits, cbAnnotations.isSelected());
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
