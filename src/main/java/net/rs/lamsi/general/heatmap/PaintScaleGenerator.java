@@ -59,7 +59,8 @@ public class PaintScaleGenerator {
     // generate list paint scale
     if (settings.isListScale()) {
       return generateColorListPaintScale(min, max, realmin, realmax, settings.getColorList(),
-          settings.isInverted(), settings.isUsesMinAsInvisible(), settings.isUsesMaxAsInvisible());
+          settings.isInverted(), settings.isUsesMinAsInvisible(), settings.isUsesMaxAsInvisible(),
+          settings.getLevels(), false);
     } else {
       boolean isHue = settings.isHueScale();
       boolean isList = settings.isListScale();
@@ -138,29 +139,87 @@ public class PaintScaleGenerator {
   }
 
 
+  private static double calcRealMin(double min, double max, SettingsPaintScale settings) {
+    return ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())
+        ? settings.getMinIAbs(min, max)
+        : min);
+  }
+
+  private static double calcRealMax(double min, double max, SettingsPaintScale settings) {
+    return ((settings.getMaxIAbs(min, max) != 0
+        && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()))
+            ? settings.getMaxIAbs(min, max)
+            : max);
+  }
+
+  public static PaintScale generateColorListPaintScale(double min, double max,
+      SettingsPaintScale settings, boolean forLegend) {
+    if (max < min)
+      min = max - 0.000001;
+    // real min and max values as given by minz or min in settings
+    double realmin = calcRealMin(min, max, settings);
+    double realmax = calcRealMax(min, max, settings);
+
+    // generate list paint scale
+    return generateColorListPaintScale(min, max, realmin, realmax, settings.getColorList(),
+        settings.isInverted(), settings.isUsesMinAsInvisible(), settings.isUsesMaxAsInvisible(),
+        settings.getLevels(), forLegend);
+  }
+
+  /**
+   * 
+   * @param min the absolute data minimum
+   * @param max the absolute data maximum
+   * @param realmin the paintscale minimum
+   * @param realmax the paintscale maximum
+   * @param list colors
+   * @param isInverted invert colours
+   * @param firstTransparent values < realmin are transparent
+   * @param lastTransparent values > realmax are transparent
+   * @param steps how many steps
+   * @return
+   */
   public static PaintScale generateColorListPaintScale(double min, double max, double realmin,
       double realmax, List<Color> list, boolean isInverted, boolean firstTransparent,
-      boolean lastTransparent) {
+      boolean lastTransparent, int steps, boolean forLegend) {
     if ((max <= min) || (realmax <= realmin)) {
       // no real data
       return generateEmptyScale();
     } else {
       int size = list.size();
       // with minimum and maximum bounds
-      LookupPaintScale paintScale = new LookupPaintScale(min, max, Color.lightGray);
-      Color c = firstTransparent ? transparent : list.get(isInverted ? size - 1 : 0);
+      double lower = min;
+      double upper = max;
+      if (forLegend) {
+        lower = realmin;
+        upper = realmax;
+      }
+      LookupPaintScale paintScale = new LookupPaintScale(lower, upper, Color.lightGray);
+      Color c = null;
+      if (firstTransparent)
+        c = transparent;
+      else {
+        // non inverted
+        int i = 0;
+        if (isInverted)
+          i = steps < size ? steps - 1 : size - 1;
+        c = list.get(i);
+      }
       paintScale.add(Double.NEGATIVE_INFINITY, c);
       paintScale.add(realmin - Double.MIN_VALUE, c);
 
 
       // add list
-      for (int i = 0; i < list.size(); i++) {
-        double v = realmin + (realmax - realmin) * i / (list.size() - 1.0);
-        paintScale.add(v, list.get(isInverted ? size - 1 - i : i));
+      int rsteps = Math.min(steps, size);
+      for (int i = 0; i < rsteps; i++) {
+        double v = realmin + (realmax - realmin) * i / (rsteps);
+        c = list.get(isInverted ? size - 1 - i : i);
+        paintScale.add(v, c);
       }
 
       // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
-      c = lastTransparent ? transparent : list.get(isInverted ? 0 : size - 1);
+      if (lastTransparent)
+        c = transparent;
       paintScale.add(realmax + Double.MIN_VALUE, c);
       paintScale.add(Double.MAX_VALUE, c);
 
@@ -193,26 +252,30 @@ public class PaintScaleGenerator {
       paintScale.add(max, new Color(0, 0, 0, 0));
       return paintScale;
     } else {
-      // set min and max
-      double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())
-          ? settings.getMinIAbs(min, max)
-          : min);
-      double realmax = ((settings.getMaxIAbs(min, max) != 0
-          && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()))
-              ? settings.getMaxIAbs(min, max)
-              : max);
-      //
-      LookupPaintScale paintScale = new LookupPaintScale(realmin, realmax, Color.lightGray);
-      // set index to 0
+      if (settings.isListScale()) {
+        return generateColorListPaintScale(min, max, settings, true);
+      } else {
+        // set min and max
+        double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())
+            ? settings.getMinIAbs(min, max)
+            : min);
+        double realmax = ((settings.getMaxIAbs(min, max) != 0
+            && (settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection()))
+                ? settings.getMaxIAbs(min, max)
+                : max);
+        //
+        LookupPaintScale paintScale = new LookupPaintScale(realmin, realmax, Color.lightGray);
+        // set index to 0
 
-      boolean isList = settings.isListScale();
-      int size = settings.getListColorSize();
-      if (isList)
-        addListColorSteps(realmin, realmax, settings, paintScale, 0, size);
-      else
-        addColorsteps(realmin, realmax, settings, paintScale, 0);
-      //
-      return paintScale;
+        boolean isList = settings.isListScale();
+        int size = settings.getListColorSize();
+        if (isList)
+          addListColorSteps(realmin, realmax, settings, paintScale, 0, size);
+        else
+          addColorsteps(realmin, realmax, settings, paintScale, 0);
+        //
+        return paintScale;
+      }
     }
   }
 
