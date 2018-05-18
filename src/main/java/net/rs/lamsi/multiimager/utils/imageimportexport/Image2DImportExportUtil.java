@@ -55,6 +55,10 @@ public class Image2DImportExportUtil {
   private static final TxtWriter txtWriter = new TxtWriter();
   private static final String SEPARATION = ";";
 
+  public enum State {
+    SEARCH_FILE_HEADER, SEARCH_LINE_HEADER, SEARCH_COLUMN_HEADER, SEARCH_DATA, READ_DATA, END_OF_DATA, END_OF_FILE,
+  }
+
 
   // ######################################################################################
   // Standard format as zipped text files and settings
@@ -107,10 +111,10 @@ public class Image2DImportExportUtil {
 
           addProgressStep(1);
         } catch (ZipException e) {
-          logger.error("",e);
+          logger.error("", e);
           state = false;
         } catch (IOException e) {
-          logger.error("",e);
+          logger.error("", e);
           state = false;
         }
         addProgressStep(1);
@@ -123,7 +127,7 @@ public class Image2DImportExportUtil {
         try {
           out.finish();
         } catch (ZipException e) {
-          logger.error("",e);
+          logger.error("", e);
           state = false;
         }
         // end
@@ -160,9 +164,9 @@ public class Image2DImportExportUtil {
       sett.saveToXML(out);
       out.closeEntry();
     } catch (ZipException e) {
-      logger.error("",e);
+      logger.error("", e);
     } catch (Exception e) {
-      logger.error("",e);
+      logger.error("", e);
     }
     if (task != null)
       task.addProgressStep(1.0 / steps);
@@ -180,10 +184,10 @@ public class Image2DImportExportUtil {
           out.closeEntry();
         } catch (ZipException e) {
           // TODO Auto-generated catch block
-          logger.error("",e);
+          logger.error("", e);
         } catch (IOException e) {
           // TODO Auto-generated catch block
-          logger.error("",e);
+          logger.error("", e);
         }
       }
     }
@@ -216,11 +220,11 @@ public class Image2DImportExportUtil {
         if (task != null)
           task.addProgressStep(1.0 / steps);
       } catch (ZipException e) {
-        logger.error("",e);
+        logger.error("", e);
       } catch (IOException e) {
-        logger.error("",e);
+        logger.error("", e);
       } catch (Exception e) {
-        logger.error("",e);
+        logger.error("", e);
       }
     }
     // for all overlays
@@ -237,9 +241,9 @@ public class Image2DImportExportUtil {
         if (task != null)
           task.addProgressStep(1.0 / steps);
       } catch (ZipException e) {
-        logger.error("",e);
+        logger.error("", e);
       } catch (Exception e) {
-        logger.error("",e);
+        logger.error("", e);
       }
     }
 
@@ -257,7 +261,7 @@ public class Image2DImportExportUtil {
         }
       }
     } catch (ZipException e) {
-      logger.error("",e);
+      logger.error("", e);
     }
     logger.info("Group {} successfully written", group.getName());
   }
@@ -301,7 +305,7 @@ public class Image2DImportExportUtil {
         try {
           out.finish();
         } catch (ZipException e) {
-          logger.error("",e);
+          logger.error("", e);
           state = false;
         }
         // end
@@ -407,13 +411,13 @@ public class Image2DImportExportUtil {
           lines.add(new ScanLineMD(xi));
         }
       } catch (IOException e) {
-        logger.error("",e);
+        logger.error("", e);
       } finally {
         try {
           if (br != null)
             br.close();
         } catch (IOException e) {
-          logger.error("",e);
+          logger.error("", e);
         }
       }
       logger.debug("reading x (FINISHED)");
@@ -471,13 +475,13 @@ public class Image2DImportExportUtil {
             lines.get(i).addDimension(y[i]);
 
         } catch (IOException e) {
-          logger.error("",e);
+          logger.error("", e);
         } finally {
           try {
             if (br != null)
               br.close();
           } catch (IOException e) {
-            logger.error("",e);
+            logger.error("", e);
           }
         }
         // finished y data
@@ -545,7 +549,7 @@ public class Image2DImportExportUtil {
             newov = new ImageOverlay(group, settov);
             group.add(newov);
           } catch (Exception e) {
-            logger.error("",e);
+            logger.error("", e);
           }
           // finished image overlay
           if (task != null)
@@ -668,6 +672,8 @@ public class Image2DImportExportUtil {
         return new ImageGroupMD[] {importFromThermoiCapOneRowFileToImage(files, sett, task)};
       case PRESETS_SHIMADZU_ICP_MS:
         return importFromShimadzuICPMSToImage(files, sett, task);
+      case PRESETS_SHIMADZU_ICP_MS_2:
+        return importFromShimadzuICPMS2ToImage(files, sett, task);
     }
 
     return null;
@@ -1376,7 +1382,7 @@ public class Image2DImportExportUtil {
             z[i - 1].add(value);
           }
         } catch (Exception ex) {
-          logger.error("",ex);
+          logger.error("", ex);
         }
       }
 
@@ -1400,9 +1406,179 @@ public class Image2DImportExportUtil {
           line++;
       }
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
 
+    // Generate Image2D from scanLines
+    DatasetLinesMD data = new DatasetLinesMD(scanLines);
+    return data.createImageGroup(file, titles);
+  }
+
+  // ################################################################################
+  // Presets
+  /**
+   * imports from Shimadzu ICP MS Files (different separations) 0 1 2 3 4 MainRuns 0 75As (1) Y
+   * 7.5000022500006747 or x values for m/z --> delete MainRuns 0 75As (1) X [u] 74.9219970703125
+   * 
+   * @param file
+   * @param sett
+   * @return
+   * @throws Exception
+   */
+  public static ImageGroupMD[] importFromShimadzuICPMS2ToImage(File[] file,
+      SettingsImageDataImportTxt sett, ProgressUpdateTask task) throws Exception {
+    // images
+    ArrayList<ImageGroupMD> groups = new ArrayList<ImageGroupMD>();
+
+    // all files
+    for (File f : file) {
+      ImageGroupMD group = importFromShimadzuICPMS2ToImage(f, sett);
+
+      // newly loaded group size is 1 and dimensions are the same?
+      if (!groups.isEmpty() && group.size() == 1
+          && group.getData().hasSameDataDimensionsAs(groups.get(0).getData())) {
+        // add to data set
+        groups.get(0).getData().addDimension((Image2D) group.get(0));
+        // add image to first group
+        groups.get(0).add(group.get(0));
+      }
+      // else - add to group list
+      else {
+        if (group != null)
+          groups.add(group);
+      }
+
+      if (task != null)
+        task.addProgressStep(1.0);
+    }
+
+    // return image
+    ImageGroupMD imgArray[] = new ImageGroupMD[groups.size()];
+    imgArray = groups.toArray(imgArray);
+    return imgArray;
+  }
+
+  private static ImageGroupMD importFromShimadzuICPMS2ToImage(File file,
+      SettingsImageDataImportTxt sett) throws Exception {
+    int elements = 0;
+    String name = "";
+    int currentLine = -1;
+    int ndp = 0;
+    int iTime = -1;
+    State state = State.SEARCH_FILE_HEADER;
+    // store data in ArrayList
+    ScanLineMD[] scanLines = null;
+    // intensities
+    Double[][] z = null;
+    float[] x = null;
+    // set start to 0 for no shift
+    // NaN to use first value as start
+    float startx = sett.isShiftXValues() ? Float.NaN : 0;
+
+    String[] titles = null;
+
+    // end of data reached
+    boolean endLine = false;
+
+    // separation
+    String separation = sett.getSeparation();
+    // separation for UTF-8 space
+    char splitc = 0;
+    String splitUTF8 = String.valueOf(splitc);
+    // count data points
+    int dp = 0;
+    // line by line
+    BufferedReader br = txtWriter.getBufferedReader(file);
+    String s;
+
+    while ((s = br.readLine()) != null) {
+      if (state.equals(State.END_OF_FILE))
+        break;
+      // try to separate by separation
+      String[] sep = s.split(separation);
+      // if sep.size==1 try and split symbol=space try utf8 space
+      if (sep.length <= 1 && separation.equals(" ")) {
+        sep = s.split(splitUTF8);
+        if (sep.length > 1)
+          separation = splitUTF8;
+      }
+
+      // read first line parameters
+      if (state.equals(State.SEARCH_FILE_HEADER)) {
+        for (int i = 0; i < sep.length; i++) {
+          if (sep[i].equalsIgnoreCase("Sample Name"))
+            name = sep[i + 1];
+          if (sep[i].equalsIgnoreCase("Line Count"))
+            scanLines = new ScanLineMD[Integer.valueOf(sep[i + 1])];
+          if (sep[i].equalsIgnoreCase("Element Count"))
+            elements = Integer.valueOf(sep[i + 1]);
+        }
+        titles = new String[elements];
+        state = State.SEARCH_LINE_HEADER;
+      } else if (state.equals(State.SEARCH_LINE_HEADER) || state.equals(State.END_OF_DATA)) {
+        currentLine++;
+        ndp = 0;
+        // header of line
+        // ,Line No.,1,Start Time,2018/05/14 11:22:40,Data Count,20
+        for (int i = 0; i < sep.length; i++) {
+          if (sep[i].equalsIgnoreCase("Data Count")) {
+            ndp = Integer.valueOf(sep[i + 1]);
+            break;
+          }
+        }
+        if (ndp == 0)
+          state = State.END_OF_FILE;
+        // search for column header
+        // ,,No.,Time,P (31),Fe (57),Cu (63),Cu (65),Zn (66)
+        state = State.SEARCH_COLUMN_HEADER;
+        // generate array
+        z = new Double[elements][ndp];
+        x = new float[ndp];
+        dp = 0;
+      } else if (state.equals(State.SEARCH_COLUMN_HEADER)) {
+        // only once:
+        // get index of time and names of elements
+        if (iTime == -1) {
+          int el = 0;
+          // ,,No.,Time,P (31),Fe (57),Cu (63),Cu (65),Zn (66)
+          for (int i = 0; i < sep.length; i++) {
+            if (sep[i].startsWith("Time"))
+              iTime = i;
+            else if (iTime != -1) {
+              // read el names
+              titles[el] = sep[i];
+              el++;
+            }
+          }
+        }
+        state = State.READ_DATA;
+      } else if (state.equals(State.READ_DATA)) {
+        if (sep.length == 0) {
+          state = State.END_OF_DATA;
+        } else {
+          try {
+            x[dp] = Float.parseFloat(sep[iTime]);
+            // intensities
+            for (int i = 0; i < elements; i++) {
+              z[i][dp] = Double.parseDouble(sep[iTime + i + 1]);
+            }
+            dp++;
+          } catch (Exception e) {
+            state = State.END_OF_DATA;
+          }
+        }
+        // end?
+        if (state.equals(State.END_OF_DATA)) {
+          // end of data
+          state = State.SEARCH_LINE_HEADER;
+          // add data as line
+          if (currentLine >= scanLines.length)
+            logger.warn("File contains more lines than specified in header");
+          else
+            scanLines[currentLine] = new ScanLineMD(x, z);
+        }
+      }
+    }
     // Generate Image2D from scanLines
     DatasetLinesMD data = new DatasetLinesMD(scanLines);
     return data.createImageGroup(file, titles);
@@ -1756,7 +1932,7 @@ public class Image2DImportExportUtil {
 
                   z.add(Double.valueOf(intensity));
                 } catch (Exception e) {
-                  logger.error("",e);
+                  logger.error("", e);
                 }
               }
               // set x

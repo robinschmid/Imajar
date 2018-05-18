@@ -35,12 +35,22 @@ public class ScanLineMD implements Serializable {
     this.intensity = intensity;
   }
 
+  public ScanLineMD(float[] x, Double[][] i) {
+    super();
+    this.x = x;
+    this.intensity = new ArrayList<Double[]>();
+    for (Double[] d : i)
+      intensity.add(d);
+  }
+
   public ScanLineMD(float[] x, Double[] i) {
     super();
     this.x = x;
     this.intensity = new ArrayList<Double[]>();
     intensity.add(i);
   }
+
+
 
   public ScanLineMD(Double[] i) {
     super();

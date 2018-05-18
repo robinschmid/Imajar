@@ -113,6 +113,7 @@ public class ImportDataDialog extends JDialog {
   private JPanel panel_5;
   private JCheckBox cbShiftXValues;
   private JCheckBox cbShowImageSetup;
+  private JRadioButton rbShimadzuNeu;
 
 
   /**
@@ -134,7 +135,7 @@ public class ImportDataDialog extends JDialog {
         {
           panel_1 = new JPanel();
           tabMSPresets.add(panel_1, BorderLayout.NORTH);
-          panel_1.setLayout(new MigLayout("", "[][][]", "[][][][]"));
+          panel_1.setLayout(new MigLayout("", "[][][]", "[][][][][]"));
           {
             rbMP17Thermo = new JRadioButton("iCAP-Q - Thermo Fisher Scientific");
             rbMP17Thermo.addActionListener(new ActionListener() {
@@ -187,8 +188,13 @@ public class ImportDataDialog extends JDialog {
               buttonGroup_2.add(rbShimadzuICPMS);
               panel_1.add(rbShimadzuICPMS, "cell 0 2");
             }
+            {
+              rbShimadzuNeu = new JRadioButton("Sh neu");
+              buttonGroup_2.add(rbShimadzuNeu);
+              panel_1.add(rbShimadzuNeu, "cell 0 3");
+            }
             buttonGroup_2.add(rbNeptune);
-            panel_1.add(rbNeptune, "cell 0 3");
+            panel_1.add(rbNeptune, "cell 0 4");
           }
         }
         {
@@ -547,7 +553,7 @@ public class ImportDataDialog extends JDialog {
                   sett.loadSettingsFromFile(thisframe);
                   setAllViaExistingSettings(sett);
                 } catch (Exception e1) {
-                  logger.error("",e1);
+                  logger.error("", e1);
                   logger.error("Cannot load preset {}", e1.getMessage(), e);
                 }
               }
@@ -711,6 +717,24 @@ public class ImportDataDialog extends JDialog {
           }
           rbShimadzuICPMS.setSelected(true);
           break;
+        case PRESETS_SHIMADZU_ICP_MS_2:
+          getTabbedPane().setSelectedComponent(getTabMSPresets());
+
+          // seperation
+          if (sep.equals(","))
+            getComboSeparationSpecial().setSelectedIndex(0);
+          else if (sep.equals(" "))
+            getComboSeparationSpecial().setSelectedIndex(1);
+          else if (sep.equals(" "))
+            getComboSeparationSpecial().setSelectedIndex(2);
+          else if (sep.equals(";"))
+            getComboSeparationSpecial().setSelectedIndex(3);
+          else {
+            getComboSeparationSpecial().setSelectedIndex(4);
+            getTxtSpecialSeparation().setText(sep);
+          }
+          rbShimadzuNeu.setSelected(true);
+          break;
       }
     } else {
       // xlsx?
@@ -747,7 +771,7 @@ public class ImportDataDialog extends JDialog {
           }
         }
       } catch (Exception ex) {
-        logger.error("",ex);
+        logger.error("", ex);
       }
     }
   }
@@ -833,6 +857,10 @@ public class ImportDataDialog extends JDialog {
             null, filter, false, startLine, endLine, startDP, endDP);
       } else if (rbShimadzuICPMS.isSelected()) {
         IMPORT importMode = IMPORT.PRESETS_SHIMADZU_ICP_MS;
+        settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation,
+            null, filter, false, startLine, endLine, startDP, endDP);
+      } else if (rbShimadzuNeu.isSelected()) {
+        IMPORT importMode = IMPORT.PRESETS_SHIMADZU_ICP_MS_2;
         settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation,
             null, filter, false, startLine, endLine, startDP, endDP);
       }
