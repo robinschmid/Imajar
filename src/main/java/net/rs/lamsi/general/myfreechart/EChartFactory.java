@@ -21,9 +21,12 @@ import org.jfree.data.xy.XYBarDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.rs.lamsi.utils.math.Precision;
 
 public class EChartFactory {
+  private static final Logger logger = LoggerFactory.getLogger(EChartFactory.class);
 
 
 
@@ -71,7 +74,6 @@ public class EChartFactory {
       if (x >= gMin && x <= gMax)
         obs.add(x, data.getYValue(series, i));
     }
-
     double[] fit = GaussianCurveFitter.create().fit(obs.toList());
     return fit;
   }
