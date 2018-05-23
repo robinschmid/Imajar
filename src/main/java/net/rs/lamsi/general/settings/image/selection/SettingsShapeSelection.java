@@ -186,6 +186,14 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     return (float) shape.getBounds2D().getMaxY();
   }
 
+  public double getWidth() {
+    return shape.getBounds2D().getWidth();
+  }
+
+  public double getHeight() {
+    return shape.getBounds2D().getHeight();
+  }
+
   // #############################################################################
   //
 
@@ -489,10 +497,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    */
   public EXYShapeAnnotation createXYShapeAnnotation() {
     Color c = getColor();
-    BasicStroke s = getStrokeSettings().getStroke();
-    if (isHighlighted)
-      s = new BasicStroke(4f, s.getEndCap(), s.getLineJoin(), s.getMiterLimit(), s.getDashArray(),
-          s.getDashPhase());
+    BasicStroke s = createStroke();
     EXYShapeAnnotation ann = new EXYShapeAnnotation(this.getShape(), s, c) {
       @Override
       public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea, ValueAxis domainAxis,
@@ -506,6 +511,19 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     };
     ann.addTransformationListener(at -> transform(at));
     return ann;
+  }
+
+  /**
+   * Creates a BasicStroke object that is highlighted or not
+   * 
+   * @return
+   */
+  public BasicStroke createStroke() {
+    BasicStroke s = getStrokeSettings().getStroke();
+    if (isHighlighted)
+      s = new BasicStroke(4f, s.getEndCap(), s.getLineJoin(), s.getMiterLimit(), s.getDashArray(),
+          s.getDashPhase());
+    return s;
   }
 
   /**

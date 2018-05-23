@@ -274,6 +274,18 @@ public class EXYShapeAnnotation extends AbstractXYAnnotation
     this.shape = shape;
   }
 
+  public void setStroke(Stroke stroke) {
+    this.stroke = stroke;
+  }
+
+  public void setFillPaint(Paint fillPaint) {
+    this.fillPaint = fillPaint;
+  }
+
+  public void setOutlinePaint(Paint outlinePaint) {
+    this.outlinePaint = outlinePaint;
+  }
+
   /**
    * Transform shape by affine transform
    * 

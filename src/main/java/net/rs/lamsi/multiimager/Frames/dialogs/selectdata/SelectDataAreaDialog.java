@@ -367,23 +367,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         heat.getChartPanel().setMouseZoomable(((JToggleButton) e.getSource()).isSelected());
       }
     });
-    btnFinish.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        // concentration insert dialog for QUANTIFIER
-        if (currentSelect != null && currentSelect.getRoi().equals(ROI.QUANTIFIER)
-            && currentSelect.getConcentration() == 0) {
-          // open dialog
-          try {
-            double concentration =
-                Double.valueOf(JOptionPane.showInputDialog("concentration", "0"));
-            currentSelect.setConcentration(concentration);
-          } catch (Exception ex) {
-          }
-        }
-        // desselect
-        setCurrentSelect(null);
-      }
-    });
+    btnFinish.addActionListener(e -> finishShape(currentSelect));
     comboSelectionMode.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
@@ -476,6 +460,41 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   }
 
 
+  /**
+   * delete shape if too small. update stats. Set quantifier value
+   * 
+   * @param currentSelect2
+   */
+  private void finishShape(SettingsShapeSelection s) {
+    if (s == null)
+      return;
+    // is viable?
+    if (s.getWidth() != 0 && s.getHeight() != 0) {
+      // update selection stats and annotation
+      updateSelection(true);
+
+      // concentration insert dialog for QUANTIFIER
+      if (currentSelect.getRoi().equals(ROI.QUANTIFIER)) {
+        // open dialog
+        try {
+          lastConcentration = Double.valueOf(
+              JOptionPane.showInputDialog("concentration", String.valueOf(lastConcentration)));
+          logger.info("Concentration input for shape selection was {}", lastConcentration);
+          currentSelect.setConcentration(lastConcentration);
+        } catch (Exception ex) {
+          logger.warn(
+              "Invalid concentration input for shape selection! Input any floating point number or integer.");
+        }
+      }
+      setCurrentSelect(null);
+    } else {
+      logger.info("Shape width and height were 0. Therefore, the shape was discarded.");
+      // delete roi
+      deleteSelection(s);
+    }
+  }
+
+
   private void setAlphaMapExclude(boolean state) {
     // set to settSel
     settSel.setAlphaMapExclusionActive(state);
@@ -545,7 +564,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     if (key.equals(KEY.SHRINK))
       currentSelect.grow(-Math.abs(val), 0);
 
-    updateSelection();
+    updateSelection(true);
   }
 
   protected void shiftCurrentRectY(int i, KEY key) {
@@ -563,7 +582,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     if (key.equals(KEY.SHRINK))
       currentSelect.grow(0, -Math.abs(val));
 
-    updateSelection();
+    updateSelection(true);
   }
 
   /**
@@ -572,13 +591,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
    * @param r
    */
   protected void deleteSelection(SettingsShapeSelection r) {
-
-    // tableModel.removeAllRows();
-    // currentSelect = null;
-    // settSel.removeAllSelections();
-    // heat.getPlot().clearAnnotations();
-    // heat.getChart().fireChartChanged();
-
     if (r != null) {
       // remove annotation
       EXYShapeAnnotation currentAnn = map.get(r);
@@ -696,12 +708,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       // add listener
       currentAnn.addChangeListener(e -> {
         // update statistics on change
-        updateSelection(r);
-        updateHistoPanelData();
+        updateSelection(r, true);
       });
     } else {
       // set shape
       currentAnn.setShape(r.getShape());
+
     }
   }
 
@@ -718,40 +730,48 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     // put data in table
     tableModel.addRow(r, false);
     // update statistics
-    updateSelection();
+    updateSelection(false);
+    // update table
+    tableModel.fireTableDataChanged();
   }
 
 
   /**
    * update statistics, add annotation and show all in chart call on size/position/data processing
-   * change
+   * changecbPer
+   * 
    */
-  protected void updateSelection() {
-    updateSelection(currentSelect);
-    updateHistoPanelData();
+  protected void updateSelection(boolean updateStats) {
+    updateSelection(currentSelect, updateStats);
   }
 
   /**
    * update statistics, add annotation and show all in chart call on size/position/data processing
    * change
    */
-  protected void updateSelection(SettingsShapeSelection currentSelect) {
+  protected void updateSelection(SettingsShapeSelection s, boolean updateStats) {
+    if (s == null)
+      return;
     if (img != null)
       img.getImageGroup().getSettAlphaMap().setActive(cbAlphaMapAsExclusion.isSelected());
     // Update rects
-    if (currentSelect != null && currentSelect.getMode() == SelectionMode.EXCLUDE) {
-      // update all rects
-      settSel.updateStatistics();
-    } else {
-      // update this selection
-      settSel.updateStatistics(currentSelect);
-      tableModel.updateRow(currentSelect);
+    if (updateStats) {
+      if (s.getMode() == SelectionMode.EXCLUDE) {
+        // update all rects
+        settSel.updateStatistics();
+      } else {
+        // update this selection
+        settSel.updateStatistics(s);
+        tableModel.updateRow(s);
+      }
+      // update table
+      tableModel.fireTableDataChanged();
+      // update histo
+      if (s.equals(currentSelect))
+        updateHistoPanelData();
     }
     // update annotation of current only
-    updateAnnotation(currentSelect);
-
-    // update table
-    tableModel.fireTableDataChanged();
+    updateAnnotation(s);
 
     // update map
     showMarkingMap(getCbMarkDp().isSelected());
@@ -784,7 +804,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
             y1 = (float) pos.getY();
             ((SettingsPolygonSelection) currentSelect).addPoint(x1, y1);
             lastMouseEvent = e;
-            updateSelection();
+            updateSelection(!cbPerformance.isSelected());
           }
         } else {
           // end other shapes
@@ -817,7 +837,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
           lastMouseEvent = e;
           // update selection stats and annotation
-          updateSelection();
+          updateSelection(!cbPerformance.isSelected());
         }
       }
     }
@@ -861,7 +881,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         }
 
         // update selection stats and annotation
-        updateSelection();
+        updateSelection(!cbPerformance.isSelected());
       }
     }
   }
@@ -956,22 +976,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
               break;
           }
         }
-        // update selection stats and annotation
-        updateSelection();
-
-        // concentration insert dialog for QUANTIFIER
-        if (currentSelect.getRoi().equals(ROI.QUANTIFIER)) {
-          // open dialog
-          try {
-            lastConcentration = Double.valueOf(
-                JOptionPane.showInputDialog("concentration", String.valueOf(lastConcentration)));
-            currentSelect.setConcentration(lastConcentration);
-          } catch (Exception ex) {
-          }
-        }
+        // finalise
+        finishShape(currentSelect);
       }
     }
   }
+
 
   /**
    * keys
