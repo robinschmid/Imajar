@@ -150,7 +150,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private JButton btnRegression;
   private JColorPickerButton cbtnColor;
   private JStrokeChooserPanel strokeChooserPanel;
-  private JCheckBox cbShowAnnotations;
   private JCheckBox cbAlphaMapAsExclusion;
   // histo panel
   private HistogramPanel histoPanel;
@@ -266,12 +265,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     cbAlphaMapAsExclusion
         .addItemListener(il -> setAlphaMapExclude(cbAlphaMapAsExclusion.isSelected()));
 
-
-    cbShowAnnotations = new JCheckBox("show annotations");
-    cbShowAnnotations
-        .setToolTipText("Show annotations for blank application direction and other descriptors");
-    cbShowAnnotations.setSelected(true);
-    pnNorthMenu.add(cbShowAnnotations);
 
     cbPerformance = new JCheckBox("Performance");
     cbPerformance.setToolTipText(
@@ -1183,10 +1176,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   public JStrokeChooserPanel getStrokeChooserPanel() {
     return strokeChooserPanel;
-  }
-
-  public JCheckBox getCbShowAnnotations() {
-    return cbShowAnnotations;
   }
 
   public JPanel getPnSplitTop() {
