@@ -713,7 +713,8 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     } else {
       // set shape
       currentAnn.setShape(r.getShape());
-
+      currentAnn.setStroke(r.createStroke());
+      currentAnn.setOutlinePaint(r.getColor());
     }
   }
 
