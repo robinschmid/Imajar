@@ -65,7 +65,9 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
   }
 
   public void removeRow(SettingsShapeSelection r, boolean update) {
-    removeRow(selections.getSelections().indexOf(r), update);
+    int i = selections.getSelections().indexOf(r);
+    if (i != -1)
+      removeRow(i, update);
   }
 
   public void removeRow(int i, boolean update) {

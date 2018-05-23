@@ -95,22 +95,6 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   // the Shape
   protected T shape;
 
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof SettingsShapeSelection))
-      return false;
-    else {
-      SettingsShapeSelection that = (SettingsShapeSelection) o;
-      if (this.mode != that.mode || this.roi != that.roi || this.concentration != that.concentration
-          || this.orderNumber != that.orderNumber || Float.compare(this.getX0(), that.getX0()) == 0
-          || Float.compare(this.getX1(), that.getX1()) == 0
-          || Float.compare(this.getY0(), that.getY0()) == 0
-          || Float.compare(this.getY1(), that.getY1()) == 0)
-        return false;
-      else
-        return true;
-    }
-  }
 
   public SettingsShapeSelection(DataCollectable2D currentImage, ROI roi, SelectionMode mode,
       T shape) {

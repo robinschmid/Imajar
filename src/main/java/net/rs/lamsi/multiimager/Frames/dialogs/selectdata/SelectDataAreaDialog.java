@@ -566,7 +566,19 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     updateSelection();
   }
 
+  /**
+   * Delete roi selection, annotation
+   * 
+   * @param r
+   */
   protected void deleteSelection(SettingsShapeSelection r) {
+
+    // tableModel.removeAllRows();
+    // currentSelect = null;
+    // settSel.removeAllSelections();
+    // heat.getPlot().clearAnnotations();
+    // heat.getChart().fireChartChanged();
+
     if (r != null) {
       // remove annotation
       EXYShapeAnnotation currentAnn = map.get(r);
@@ -574,6 +586,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         heat.getPlot().removeAnnotation(currentAnn, false);
       // remove from map
       map.remove(r);
+      boolean state = true;
       // remove from tableModel (and ArrayList)
       // and automatically update statistics if it was an exclusion
       tableModel.removeRow(r, true);
