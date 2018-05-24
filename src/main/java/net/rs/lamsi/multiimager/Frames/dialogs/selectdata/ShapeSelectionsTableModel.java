@@ -20,12 +20,13 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
   /**
    * 
    */
-  private final String[] title = new String[] {"Order", "Type", "ROI", "conc.", "x0", "y0", "x1",
-      "y1", "n", "sum", "I min", "I max", "I avg", "I median", "I 99%", "I stdev", "Histo"};
-  private final Class[] type =
-      new Class[] {Integer.class, SelectionMode.class, ROI.class, Double.class, Float.class,
-          Float.class, Float.class, Float.class, Integer.class, Double.class, Double.class,
-          Double.class, Double.class, Double.class, Double.class, Double.class, ChartPanel.class};
+  private final String[] title =
+      new String[] {"Order", "Type", "ROI", "conc.", "x0", "y0", "x1", "y1", "n", "sum", "I min",
+          "I max", "I avg", "I median", "I 99%", "I stdev", "I stdev (%)", "Histo"};
+  private final Class[] type = new Class[] {Integer.class, SelectionMode.class, ROI.class,
+      Double.class, Float.class, Float.class, Float.class, Float.class, Integer.class, Double.class,
+      Double.class, Double.class, Double.class, Double.class, Double.class, Double.class,
+      Double.class, ChartPanel.class};
   private static final long serialVersionUID = 1L;
 
   private SettingsSelections selections;
@@ -157,13 +158,15 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
       case 15:
         return r.getSdev();
       case 16:
+        return r.getSdevRel();
+      case 17:
         return r.getHisto();
     }
     return null;
   }
 
   public boolean isCellEditable(int row, int col) {
-    return (col == 0 || col == 1 || col == 2 || col == 3 || col == 16);
+    return (col == 0 || col == 1 || col == 2 || col == 3);
   }
 
 

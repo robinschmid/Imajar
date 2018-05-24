@@ -343,6 +343,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnFinish = new JButton("Finish shape");
     panel_1.add(btnFinish);
+    btnFinish.addActionListener(e -> finishShape(currentSelect, false));
 
     btnChoose = new JToggleButton("Choose/Zoom");
     panel_1.add(btnChoose);
@@ -360,7 +361,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         heat.getChartPanel().setMouseZoomable(((JToggleButton) e.getSource()).isSelected());
       }
     });
-    btnFinish.addActionListener(e -> finishShape(currentSelect));
     comboSelectionMode.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
@@ -458,7 +458,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
    * 
    * @param currentSelect2
    */
-  private void finishShape(SettingsShapeSelection s) {
+  private void finishShape(SettingsShapeSelection s, boolean deselect) {
     if (s == null)
       return;
     // is viable?
@@ -479,7 +479,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
               "Invalid concentration input for shape selection! Input any floating point number or integer.");
         }
       }
-      setCurrentSelect(null);
+      s.setFinished(true);
+      if (deselect)
+        setCurrentSelect(null);
     } else {
       logger.info("Shape width and height were 0. Therefore, the shape was discarded.");
       // delete roi
@@ -844,10 +846,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   public void mouseClicked(MouseEvent e) {
     if (e.getButton() == MouseEvent.BUTTON1) {
       if (getBtnChoose().isSelected()) {
+        // select or zoom
         ChartPanel cp = heat.getChartPanel();
         Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY());
 
-        setCurrentSelect(null);
+        boolean found = false;
         // choose current rect
         for (int i = 0; getSelections() != null && i < getSelections().size(); i++) {
           SettingsShapeSelection s = getSelections().get(i);
@@ -856,22 +859,30 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
             // found rect
             setCurrentSelect(s);
             lastMouseEvent = e;
+            found = true;
             return;
           }
         }
+        if (!found)
+          setCurrentSelect(null);
       } else if (getCurrentShape().equals(SHAPE.POLYGON)) {
+        // Add point? or create new
         ChartPanel cp = heat.getChartPanel();
         Point2D pos = ChartLogics.mouseXYToPlotXY(cp, e.getX(), e.getY());
-        if (currentSelect == null || !SettingsPolygonSelection.class.isInstance(currentSelect)) {
+        if (currentSelect == null || !SettingsPolygonSelection.class.isInstance(currentSelect)
+            || currentSelect.isFinished()) {
           // create new
           addNewSelection(new SettingsPolygonSelection(img, getCurrentRoiMode(),
               getCurrentSelectionMode(), x0, y0));
           lastMouseEvent = e;
         } else {
-          // add points
-          ((SettingsPolygonSelection) currentSelect).addPoint((float) pos.getX(),
-              (float) pos.getY());
-          lastMouseEvent = e;
+          // only add point if not already finished
+          if (!currentSelect.isFinished()) {
+            // add points
+            ((SettingsPolygonSelection) currentSelect).addPoint((float) pos.getX(),
+                (float) pos.getY());
+            lastMouseEvent = e;
+          }
         }
 
         // update selection stats and annotation
@@ -884,6 +895,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private void setCurrentSelect(SettingsShapeSelection s) {
     // deselect old
     if (currentSelect != null) {
+      // finish last selection
+      if (!currentSelect.isFinished())
+        finishShape(currentSelect, false);
       currentSelect.setHighlighted(false);
       updateAnnotation(currentSelect);
     }
@@ -971,7 +985,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
           }
         }
         // finalise
-        finishShape(currentSelect);
+        finishShape(currentSelect, false);
       }
     }
   }

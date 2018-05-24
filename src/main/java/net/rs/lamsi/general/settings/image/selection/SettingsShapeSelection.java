@@ -94,6 +94,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   protected boolean isHighlighted = false;
   // the Shape
   protected T shape;
+  private boolean isFinished;
 
 
   public SettingsShapeSelection(DataCollectable2D currentImage, ROI roi, SelectionMode mode,
@@ -141,7 +142,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
     return new Object[] {orderNumber, mode.toString(), roi.toString(), concentration, x0, y0, x1,
         y1, r.getN(), r.getSum(), r.getMin(), r.getMax(), r.getAvg(), r.getMedian(), r.getP99(),
-        r.getSdev(), r.getHisto()};
+        r.getSdev(), r.getSdevRel(), r.getHisto()};
   }
 
   /**
@@ -159,7 +160,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
 
     return new Object[] {orderNumber, mode.toString(), roi.toString(), concentration, x0, y0, x1,
         y1, r.getN(), r.getSum(), r.getMin(), r.getMax(), r.getAvg(), r.getMedian(), r.getP99(),
-        r.getSdev()};
+        r.getSdev(), r.getSdevRel()};
   }
 
   /**
@@ -167,7 +168,7 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    */
   public static Object[] getTitleArrayExport() {
     return new Object[] {"Order", "Mode", "ROI", "conc.", "x0", "y0", "x1", "y1", "n", "sum",
-        "I min", "I max", "I avg", "I median", "I 99%", "Stdev"};
+        "I min", "I max", "I avg", "I median", "I 99%", "Stdev", "Stdev rel (%)"};
   }
 
   public float getX0() {
@@ -619,5 +620,17 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
       statsRegardingExclusion.clearData();
     if (statsRegardingExclusionAndMap != null)
       statsRegardingExclusionAndMap.clearData();
+  }
+
+  public void setFinished(boolean b) {
+    isFinished = b;
+  }
+
+  /**
+   * 
+   * @return
+   */
+  public boolean isFinished() {
+    return isFinished;
   }
 }

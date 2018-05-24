@@ -17,7 +17,7 @@ public class SelectionTableRow implements Serializable {
   private ArrayList<Double> data = null;
 
   // statistics
-  private double max, min, median, p99, avg, sdev, sum;
+  private double max, min, median, p99, avg, sdev, sdevRel, sum;
   private int n;
 
   // keep data for rows/columns for blank subtraction
@@ -81,6 +81,7 @@ public class SelectionTableRow implements Serializable {
       }
       // calc stdev
       sdev = Math.sqrt(sdev / (double) (data.size() - 1));
+      sdevRel = sdev / avg * 100.0;
 
       // erase data
       // need to keep for histogram
@@ -97,6 +98,7 @@ public class SelectionTableRow implements Serializable {
     avg = 0;
     n = 0;
     sdev = 0;
+    sdevRel = 0;
     sum = 0;
     histo = null;
   }
@@ -148,5 +150,9 @@ public class SelectionTableRow implements Serializable {
 
   public double getSum() {
     return sum;
+  }
+
+  public double getSdevRel() {
+    return sdevRel;
   }
 }
