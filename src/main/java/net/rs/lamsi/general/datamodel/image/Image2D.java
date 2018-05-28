@@ -107,7 +107,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
       int scanpoints = mzchrom[i].getItemCount();
       float startTime = mzchrom[i].getX(0).floatValue();
       float[] x = new float[scanpoints];
-      Double[] z = new Double[scanpoints];
+      double[] z = new double[scanpoints];
       // x, i datapoints
       for (int d = 0; d < scanpoints; d++) {
         x[d] = mzchrom[i].getX(d).floatValue() - startTime;
@@ -132,7 +132,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
     // data points
     int scanpoints = mzchrom.getItemCount();
     float[] x = new float[scanpoints];
-    Double[] z = new Double[scanpoints];
+    double[] z = new double[scanpoints];
     // Daten eintragen und zwischen speichern
     for (int i = 0; i < scanpoints; i++) {
       x[i] = mzchrom.getX(i).floatValue() - startTime;

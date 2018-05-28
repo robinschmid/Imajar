@@ -1,12 +1,9 @@
 package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import net.rs.lamsi.general.datamodel.image.Image2D;
-import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
-import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralRotation;
 
 /**
@@ -82,75 +79,6 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
     }
   }
 
-
-  public ImageGroupMD createImageGroup() {
-    if (lines == null || lines.length == 0)
-      return null;
-
-    ImageGroupMD group = new ImageGroupMD();
-    for (int i = 0; i < getImageCount(); i++) {
-      Image2D img = new Image2D(this, i);
-      group.add(img);
-    }
-    return group;
-  }
-
-  public ImageGroupMD createImageGroup(File dataFile) {
-    ImageGroupMD g = createImageGroup();
-    // set data path and name
-    if (dataFile != null) {
-      g.getSettings().setName((dataFile.getName()));
-      g.getSettings().setPathData(dataFile.getAbsolutePath());
-    }
-    return g;
-  }
-
-  public ImageGroupMD createImageGroup(File dataFile, List<String> titles) {
-    ImageGroupMD g = createImageGroup();
-    // set data path and name
-    if (dataFile != null) {
-      g.getSettings().setName((dataFile.getName()));
-      g.getSettings().setPathData(dataFile.getAbsolutePath());
-    }
-
-    // set titles
-    int i = 0;
-    for (Collectable2D c : g.getImages()) {
-      ((Image2D) c).getSettings().getSettImage().setTitle(titles.get(i));
-      i++;
-    }
-    return g;
-  }
-
-  public ImageGroupMD createImageGroup(File dataFile, String[] titles) {
-    ImageGroupMD g = createImageGroup();
-    // set data path and name
-    if (dataFile != null) {
-      g.getSettings().setName((dataFile.getName()));
-      g.getSettings().setPathData(dataFile.getAbsolutePath());
-    }
-
-    // set titles
-    int i = 0;
-    for (Collectable2D c : g.getImages()) {
-      ((Image2D) c).getSettings().getSettImage().setTitle(titles[i]);
-      i++;
-    }
-    return g;
-  }
-
-  public ImageGroupMD createImageGroup(String name) {
-    ImageGroupMD g = createImageGroup();
-    // set data path and name
-    if (name != null)
-      g.getSettings().setName(name);
-    return g;
-  }
-
-  private int getImageCount() {
-    return lines == null || lines.length == 0 ? 0 : lines[0].getImageCount();
-  }
-
   // ##################################################
   // Multi dimensional
   @Override
@@ -164,7 +92,7 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
   }
 
   @Override
-  public int addDimension(List<Double[]> dim) {
+  public int addDimension(List<double[]> dim) {
     for (int i = 0; i < lines.length; i++)
       lines[i].addDimension(dim.get(i));
     return lines[0].getImageCount() - 1;
@@ -179,7 +107,7 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
         for (int y = 0; y < lines.length; y++) {
           int dps = img.getData().getLineLength(y);
           float[] xx = new float[dps];
-          Double[] ii = new Double[dps];
+          double[] ii = new double[dps];
           for (int x = 0; x < dps; x++) {
             xx[x] = img.getData().getX(y, x);
             ii[x] = img.getData().getI(0, y, x);

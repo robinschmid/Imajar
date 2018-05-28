@@ -1469,7 +1469,7 @@ public class Image2DImportExportUtil {
     // store data in ArrayList
     ScanLineMD[] scanLines = null;
     // intensities
-    Double[][] z = null;
+    double[][] z = null;
     float[] x = null;
     // set start to 0 for no shift
     // NaN to use first value as start
@@ -1532,7 +1532,7 @@ public class Image2DImportExportUtil {
         // ,,No.,Time,P (31),Fe (57),Cu (63),Cu (65),Zn (66)
         state = State.SEARCH_COLUMN_HEADER;
         // generate array
-        z = new Double[elements][ndp];
+        z = new double[elements][ndp];
         x = new float[ndp];
         dp = 0;
       } else if (state.equals(State.SEARCH_COLUMN_HEADER)) {

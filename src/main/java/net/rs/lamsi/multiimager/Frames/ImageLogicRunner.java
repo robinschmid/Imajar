@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -28,6 +27,7 @@ import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -846,7 +846,7 @@ public class ImageLogicRunner {
                       swapped = true;
                       // swap dimensions
                       for (ScanLineMD l : lines) {
-                        Double[] dim = l.getIntensity().remove(i);
+                        double[] dim = l.getIntensity().remove(i);
                         l.getIntensity().add(t, dim);
                       }
                     }
@@ -977,6 +977,76 @@ public class ImageLogicRunner {
     }
   }
 
+
+  /**
+   * Convert current image group to continuous data to resplit lines
+   * 
+   * @return
+   */
+  public ImageGroupMD convertImageGroupToContinuousData() {
+    if (getSelectedImage() != null)
+      return convertImageGroupToContinuousData(selectedImage.getImageGroup());
+    else
+      return null;
+  }
+
+  /**
+   * Convert current image group to continuous data to resplit lines
+   * 
+   * @return
+   */
+  public ImageGroupMD convertImageGroupToContinuousData(ImageGroupMD g) {
+    if (g == null)
+      return null;
+    else {
+      MDDataset data = g.getData();
+      if (data instanceof DatasetContinuousMD)
+        return g;
+      else {
+        ScanLineMD line = new ScanLineMD();
+        // create new group
+        int dim = data.size();
+        List<Float> x = new ArrayList<Float>();
+        Image2D[] img = g.getImagesOnly();
+
+        String[] titles = new String[img.length];
+        int c = 0;
+        for (Image2D i : img) {
+          double[] d = i.toIArray(true);
+          line.addDimension(d);
+          titles[c] = i.getTitle();
+          c++;
+        }
+
+        // x
+        float lastV = 0;
+        // width
+        float space = data.getLastXLine(0) - data.getX(0, 0);
+        space = space / data.getLineLength(0);
+        for (int l = 0; l < data.getLinesCount(); l++) {
+          // x0 of line
+          float x0 = data.getX(l, 0);
+          for (int dp = 0; dp < data.getLineLength(l); dp++) {
+            float xv = lastV + data.getX(l, dp) - x0;
+            x.add(xv);
+          }
+          lastV = x.get(x.size() - 1) + space;
+        }
+
+        line.setX(x);
+
+        DatasetContinuousMD dat2 = new DatasetContinuousMD(line);
+        ImageGroupMD g2 = dat2.createImageGroup(
+            new File(g.getFirstImage2D().getSettings().getSettImage().getRAWFilepath()), titles);
+        g2.setGroupName(g.getName() + "(continuous)");
+
+        g.getProject().add(g2);
+        addGroup(g2, g.getProject());
+        return g2;
+      }
+    }
+  }
+
   /**
    * imports a down sampled microscopic image to the selected image group
    */
@@ -1004,12 +1074,12 @@ public class ImageLogicRunner {
               .getRotationOfData();
 
           // generate dataset
-          Vector<Double[]> data = new Vector<Double[]>();
+          List<double[]> data = new ArrayList<double[]>();
 
           if (rot == 0 || rot == 180) {
 
             for (int l = 0; l < th; l++) {
-              data.add(new Double[tw]);
+              data.add(new double[tw]);
               for (int dp = 0; dp < tw; dp++) {
                 int rgb = scaled.getRGB(dp, l);
                 int r = (rgb >> 16) & 0xFF;
@@ -1022,7 +1092,7 @@ public class ImageLogicRunner {
             }
           } else {
             for (int l = 0; l < tw; l++) {
-              data.add(new Double[th]);
+              data.add(new double[th]);
               for (int dp = 0; dp < th; dp++) {
                 int rgb = scaled.getRGB(l, dp);
                 int r = (rgb >> 16) & 0xFF;

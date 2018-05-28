@@ -20,7 +20,7 @@ public class TestImageFactory {
     ScanLineMD[] lines = new ScanLineMD[24];
     for (int f = 0; f < c; f++) {
       for (int l = 0; l < lines.length; l++) {
-        Double[] i = new Double[240 - l * 2];
+        double[] i = new double[240 - l * 2];
         for (int d = 0; d < i.length; d++) {
           // middle the highest
           double in = (int) (l / 4) * 200.0;
@@ -49,7 +49,7 @@ public class TestImageFactory {
     ScanLineMD[] lines = new ScanLineMD[24];
     for (int f = 0; f < c; f++) {
       for (int l = 0; l < lines.length; l++) {
-        Double[] i = new Double[240];
+        double[] i = new double[240];
         for (int d = 0; d < i.length; d++) {
           // middle the highest
           double in = (int) (l / 4) * 200.0;
@@ -80,7 +80,7 @@ public class TestImageFactory {
     int c = 3;
     for (int f = 0; f < c; f++) {
       for (int l = 0; l < lines.length; l++) {
-        Double[] i = new Double[100];
+        double[] i = new double[100];
         for (int d = 0; d < i.length; d++) {
           // middle the highest
           double in = 0;
@@ -133,7 +133,7 @@ public class TestImageFactory {
     ScanLineMD[] lines = new ScanLineMD[n * rowsPerStandard];
     for (int i = 0; i < n; i++) {
       for (int l = 0; l < rowsPerStandard; l++) {
-        Double[] data = new Double[dp];
+        double[] data = new double[dp];
         Arrays.fill(data, (double) i);
         lines[i * rowsPerStandard + l] = new ScanLineMD(data);
       }
@@ -155,7 +155,7 @@ public class TestImageFactory {
     Random rand = new Random(System.currentTimeMillis());
     ScanLineMD[] lines = new ScanLineMD[rows];
     for (int i = 0; i < rows; i++) {
-      Double[] data = new Double[dp];
+      double[] data = new double[dp];
       for (int l = 0; l < dp; l++) {
         data[l] = rand.nextGaussian() + 1;
       }
@@ -185,7 +185,7 @@ public class TestImageFactory {
     // fill with noise
     // add particle to start and end of lines
     for (int i = 0; i < rows; i++) {
-      Double[] data = new Double[dp];
+      double[] data = new double[dp];
       for (int l = 0; l < dp; l++) {
         // first line first dp
         if ((i == l) || (l == dp - 2 - i)) {
@@ -203,7 +203,7 @@ public class TestImageFactory {
     }
     // add more particles
     for (ScanLineMD l : lines) {
-      Double[] data = l.getIntensity().get(0);
+      double[] data = l.getIntensity().get(0);
       int placed = 2;
       while (placed < particlesPerLine) {
         // place at random

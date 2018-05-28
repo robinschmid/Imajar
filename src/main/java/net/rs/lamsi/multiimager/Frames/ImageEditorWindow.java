@@ -442,6 +442,10 @@ public class ImageEditorWindow extends JFrame implements Runnable {
     btnCreateSP.addActionListener(e -> logicRunner.createSingleParticleImage());
     mnAction.add(btnCreateSP);
 
+    JMenuItem menuItem = new JMenuItem("Resplit data lines");
+    menuItem.addActionListener(e -> logicRunner.convertImageGroupToContinuousData());
+    mnAction.add(menuItem);
+
     JMenuItem btnImportMicroscopic = new JMenuItem("Add down sampled microscopic image");
     btnImportMicroscopic.addActionListener(e -> logicRunner.importMicroscopicImageDownSampled());
     mnAction.add(btnImportMicroscopic);

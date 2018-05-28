@@ -21,7 +21,7 @@ public class TestDataRotationReflection {
     for (int i = 0; i < 10; i++) {
       // for 5 dp
       float[] x = new float[dpc];
-      Double[] val = new Double[dpc];
+      double[] val = new double[dpc];
       for (int d = 0; d < dpc; d++) {
         // only intensity
         val[d] = (double) d * (i + 1);

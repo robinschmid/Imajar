@@ -21,46 +21,46 @@ public class ScanLineMD implements Serializable {
   protected float endX = -1;
 
   // all dimensions
-  protected List<Double[]> intensity = null;
+  protected List<double[]> intensity = null;
 
-  public ScanLineMD(List<Float> x, List<Double[]> intensity) {
+  public ScanLineMD(List<Float> x, List<double[]> intensity) {
     super();
     setX(x);
     this.intensity = intensity;
   }
 
-  public ScanLineMD(float[] x, List<Double[]> intensity) {
+  public ScanLineMD(float[] x, List<double[]> intensity) {
     super();
     this.x = x;
     this.intensity = intensity;
   }
 
-  public ScanLineMD(float[] x, Double[][] i) {
+  public ScanLineMD(float[] x, double[][] i) {
     super();
     this.x = x;
-    this.intensity = new ArrayList<Double[]>();
-    for (Double[] d : i)
+    this.intensity = new ArrayList<double[]>();
+    for (double[] d : i)
       intensity.add(d);
   }
 
-  public ScanLineMD(float[] x, Double[] i) {
+  public ScanLineMD(float[] x, double[] i) {
     super();
     this.x = x;
-    this.intensity = new ArrayList<Double[]>();
+    this.intensity = new ArrayList<double[]>();
     intensity.add(i);
   }
 
 
 
-  public ScanLineMD(Double[] i) {
+  public ScanLineMD(double[] i) {
     super();
-    this.intensity = new ArrayList<Double[]>();
+    this.intensity = new ArrayList<double[]>();
     intensity.add(i);
   }
 
   public ScanLineMD() {
     super();
-    this.intensity = new ArrayList<Double[]>();
+    this.intensity = new ArrayList<double[]>();
   }
 
   public ScanLineMD(List<Float> x) {
@@ -78,11 +78,10 @@ public class ScanLineMD implements Serializable {
     return false;
   }
 
-  public int addDimension(Double[] dim) {
+  public int addDimension(double[] dim) {
     intensity.add(dim);
     return intensity.size() - 1;
   }
-
 
   /**
    * adds the dimension of line i
@@ -100,7 +99,7 @@ public class ScanLineMD implements Serializable {
       }
     }
     // add dimension
-    Double[] z = new Double[dp];
+    double[] z = new double[dp];
     for (int i = 0; i < dp; i++) {
       z[i] = img.getIRaw(line, i);
     }
@@ -118,7 +117,8 @@ public class ScanLineMD implements Serializable {
    * @param i
    */
   public void addDimension(List<Double> i) {
-    addDimension(i.toArray(new Double[i.size()]));
+    double[] d = i.stream().mapToDouble(val -> val).toArray();
+    addDimension(d);
   }
 
   public float[] getX() {
@@ -197,11 +197,11 @@ public class ScanLineMD implements Serializable {
   }
 
 
-  public List<Double[]> getIntensity() {
+  public List<double[]> getIntensity() {
     return intensity;
   }
 
-  public void setIntensity(List<Double[]> intensity) {
+  public void setIntensity(List<double[]> intensity) {
     this.intensity = intensity;
   }
 
@@ -235,4 +235,5 @@ public class ScanLineMD implements Serializable {
   public float getX0() {
     return x != null ? x[0] : 0;
   }
+
 }
