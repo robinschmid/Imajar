@@ -55,6 +55,7 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.Valu
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.ColorListDialog;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintScaleHistogram;
 import net.rs.lamsi.multiimager.FrameModules.sub.paintscale.PaintscaleIcon;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 
@@ -102,7 +103,7 @@ public class ModulePaintscale
   private JButton btnSwitchColors;
   private JCheckBox cbOnlyUseSelectedMinMax;
   private JCheckBox cbBlackAsMax;
-  private JPanel panel_1;
+  private JPanel pnLOD;
   private JTextField txtLOD;
   private JLabel lblLod;
   private JLabel lblAbs_2;
@@ -139,7 +140,7 @@ public class ModulePaintscale
   public ModulePaintscale() {
     super("Paintscale", false, SettingsPaintScale.class, Image2D.class);
     colorDialog = new ColorListDialog();
-    getPnContent().setLayout(new MigLayout("", "[188px,grow]", "[176px][][30.00px]"));
+    getPnContent().setLayout(new MigLayout("hidemode 3", "[188px,grow]", "[176px][][30.00px]"));
 
     formatAbs.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
     formatAbsSmall.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ENGLISH));
@@ -152,7 +153,7 @@ public class ModulePaintscale
     comboScaleType = new JComboBox<ScaleType>();
     comboScaleType.setModel(new DefaultComboBoxModel<ScaleType>(ScaleType.values()));
     comboScaleType.setSelectedIndex(1);
-    panel.add(comboScaleType, "cell 0 0 2 1,alignx left");
+    panel.add(comboScaleType, "flowx,cell 0 0 2 1,alignx left");
     comboScaleType
         .addItemListener(e -> setSelectedScaleType((ScaleType) comboScaleType.getSelectedItem()));
 
@@ -256,7 +257,7 @@ public class ModulePaintscale
     panel.add(cbBlackAsMax, "cell 0 2");
 
     cbInvert = new JCheckBox("invert");
-    panel.add(cbInvert, "cell 0 2");
+    panel.add(cbInvert, "cell 0 0");
 
     pnMonoScale = new JPanel();
     pnMonoScale.setLayout(new MigLayout("", "[grow][][][grow]", "[][]"));
@@ -288,24 +289,24 @@ public class ModulePaintscale
       }
     });
 
-    panel_1 = new JPanel();
-    getPnContent().add(panel_1, "cell 0 2,grow");
-    panel_1.setLayout(new MigLayout("", "[][grow]", "[][]"));
+    pnLOD = new JPanel();
+    getPnContent().add(pnLOD, "cell 0 2,grow");
+    pnLOD.setLayout(new MigLayout("", "[][grow]", "[][]"));
 
     cbLODMonochrome = new JCheckBox("LOD monochrome");
-    panel_1.add(cbLODMonochrome, "cell 0 0 2 1");
+    pnLOD.add(cbLODMonochrome, "cell 0 0 2 1");
 
     lblLod = new JLabel("LOD");
-    panel_1.add(lblLod, "cell 0 1,alignx trailing");
+    pnLOD.add(lblLod, "cell 0 1,alignx trailing");
 
     txtLOD = new JTextField();
     txtLOD.setHorizontalAlignment(SwingConstants.RIGHT);
     txtLOD.setText("0");
-    panel_1.add(txtLOD, "flowx,cell 1 1,growx");
+    pnLOD.add(txtLOD, "flowx,cell 1 1,growx");
     txtLOD.setColumns(10);
 
     lblAbs_2 = new JLabel("abs");
-    panel_1.add(lblAbs_2, "cell 1 1");
+    pnLOD.add(lblAbs_2, "cell 1 1");
 
     pnMinMax = new JPanel();
     getPnContent().add(pnMinMax, "cell 0 1,growx,aligny top");
@@ -511,23 +512,33 @@ public class ModulePaintscale
       JPanel pn = getPnScaleType();
       pn.removeAll();
       pn.setVisible(true);
+      cbWhiteAsMin.setVisible(true);
+      cbBlackAsMax.setVisible(true);
+      pnLOD.setVisible(true);
       switch (type) {
         case GREYSCALE:
           pn.setVisible(false);
+          cbWhiteAsMin.setVisible(false);
+          cbBlackAsMax.setVisible(false);
+          pnLOD.setVisible(false);
           break;
         case MONOCHROME:
           pn.add(pnMonoScale);
+          pnLOD.setVisible(false);
           break;
         case HUESCALE:
           pn.add(pnHueScale);
           break;
         case COLORLIST:
           pn.add(pnListScale);
+          cbWhiteAsMin.setVisible(false);
+          cbBlackAsMax.setVisible(false);
           break;
       }
       getSettings().setScaleTypeAndReset(type);
       pn.getParent().revalidate();
       pn.getParent().repaint();
+      ImageEditorWindow.getEditor().writeAllSettingsFromModules(false);
     }
   }
 
@@ -1277,5 +1288,9 @@ public class ModulePaintscale
 
   public JColorPickerButton getBtnMonoColor() {
     return btnMonoColor;
+  }
+
+  public JPanel getPnLOD() {
+    return pnLOD;
   }
 }
