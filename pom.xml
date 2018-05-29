@@ -11,7 +11,7 @@
 		<tag>HEAD</tag>
 		<url>http://127.0.0.1/dummy</url>
 	</scm>
-	
+
 	<properties>
 		<junit.version>4.12</junit.version>
 		<mockito.version>2.10.0</mockito.version>
@@ -23,7 +23,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<targetPath>${basedir}/target/classes</targetPath>
-            <filtering>false</filtering>
+				<filtering>false</filtering>
 			</resource>
 			<resource>
 				<directory>src/test/resources</directory>
@@ -324,6 +324,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.7</version>
 		</dependency>
 
 		<!-- zipping -->
