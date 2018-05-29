@@ -6,7 +6,7 @@ import javax.swing.SwingWorker;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 
-public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
+public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
   ProgressDialog progressDialog;
   private double stepwidth = 0;
   private double progress = 0;
@@ -49,14 +49,14 @@ public abstract class ProgressUpdateTask extends SwingWorker<Boolean, Void> {
   }
 
 
-  protected Boolean doInBackground() throws Exception {
+  protected T doInBackground() throws Exception {
     wasStarted();
-    boolean result = doInBackground2();
+    T result = doInBackground2();
     return result;
   }
 
   // process everything here
-  protected abstract Boolean doInBackground2() throws Exception;
+  protected abstract T doInBackground2() throws Exception;
 
 
 

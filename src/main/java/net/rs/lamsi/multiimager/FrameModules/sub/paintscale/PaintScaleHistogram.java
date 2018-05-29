@@ -2,6 +2,7 @@ package net.rs.lamsi.multiimager.FrameModules.sub.paintscale;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
@@ -77,9 +78,10 @@ public class PaintScaleHistogram extends JPanel {
   public void startUpdateTask() {
     logger.debug("HISTOGRAM task was started");
     // task gets started after 1 second delay (if not stopped before)
-    task = new DelayedProgressUpdateTask(1, 1000) {
+
+    task = new DelayedProgressUpdateTask<JFreeChart>(1, 1000) {
       @Override
-      protected Boolean doInBackground2() throws Exception {
+      protected JFreeChart doInBackground2() throws Exception {
         DataCollectable2D img = lastImg;
         if (img != null) {
           try {
@@ -103,9 +105,9 @@ public class PaintScaleHistogram extends JPanel {
                     bins1 = 100000;
 
                   logger.debug("bi1: {}  bins2: {}", bins1, bins2);
-                  JFreeChart chart1 = EChartFactory.createHistogram(dat1, bins1);
+                  JFreeChart chart1 = EChartFactory.createHistogram(dat1, binwidth2);
                   XYPlot plot1 = chart1.getXYPlot();
-                  JFreeChart chart2 = EChartFactory.createHistogram(dat2, bins2);
+                  JFreeChart chart2 = EChartFactory.createHistogram(dat2, binwidth2);
                   XYPlot plot2 = chart2.getXYPlot();
 
                   Marker minM = new ValueMarker(min);
@@ -130,29 +132,42 @@ public class PaintScaleHistogram extends JPanel {
 
                   JFreeChart c = new JFreeChart(combined);
                   c.getLegend().setVisible(false);
-                  chart = new EChartPanel(c);
-
-                  // add to panel
-                  removeAll();
-                  add(chart, BorderLayout.CENTER);
-                  revalidate();
 
                   isUptodate = true;
                   lastMin = min;
                   lastMax = max;
+                  return c;
                 }
               }
             }
           } catch (Exception e) {
-            logger.error("",e);
-            return false;
+            logger.error("", e);
+            return null;
           }
-          return true;
         }
-        return false;
+        return null;
+      }
+
+      @Override
+      protected void done() {
+        removeAll();
+        // show histo
+        JFreeChart histo = null;
+        try {
+          histo = get();
+        } catch (InterruptedException | ExecutionException e) {
+          logger.error("Error while creating paintscale histogram", e);
+        }
+
+        if (histo != null) {
+          chart = new EChartPanel(histo);
+          // add to panel
+          add(chart, BorderLayout.CENTER);
+        }
+        revalidate();
       }
     };
-
+    // start
     task.startDelayed();
   }
 }

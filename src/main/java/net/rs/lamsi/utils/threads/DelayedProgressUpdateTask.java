@@ -3,7 +3,7 @@ package net.rs.lamsi.utils.threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class DelayedProgressUpdateTask extends ProgressUpdateTask {
+public abstract class DelayedProgressUpdateTask<T> extends ProgressUpdateTask<T> {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // timer
@@ -29,7 +29,7 @@ public abstract class DelayedProgressUpdateTask extends ProgressUpdateTask {
       stop();
 
     // start
-    final DelayedProgressUpdateTask thistask = this;
+    final DelayedProgressUpdateTask<T> thistask = this;
     t = new Thread(r = new StoppableRunnable() {
 
       long startTime = -1;
