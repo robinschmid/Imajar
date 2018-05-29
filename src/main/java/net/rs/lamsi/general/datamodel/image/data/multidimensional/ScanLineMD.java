@@ -3,6 +3,7 @@ package net.rs.lamsi.general.datamodel.image.data.multidimensional;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import com.google.common.primitives.Floats;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 
@@ -130,9 +131,7 @@ public class ScanLineMD implements Serializable {
   }
 
   public void setX(List<Float> lx) {
-    x = new float[lx.size()];
-    for (int i = 0; i < x.length; i++)
-      x[i] = lx.get(i);
+    x = Floats.toArray(lx);
   }
 
   /**

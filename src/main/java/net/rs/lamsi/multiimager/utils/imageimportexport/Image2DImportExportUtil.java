@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.primitives.Doubles;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipOutputStream;
 import net.lingala.zip4j.model.ZipParameters;
@@ -674,6 +675,8 @@ public class Image2DImportExportUtil {
         return importFromShimadzuICPMSToImage(files, sett, task);
       case PRESETS_SHIMADZU_ICP_MS_2:
         return importFromShimadzuICPMS2ToImage(files, sett, task);
+      case PRESETS_THERMO_ELEMENT2:
+        return importFromThermoElement2ToImage(files, sett, task);
     }
 
     return null;
@@ -1416,6 +1419,127 @@ public class Image2DImportExportUtil {
 
   // ################################################################################
   // Presets
+
+  /**
+   * imports from Shimadzu ICP MS Files (different separations) 0 1 2 3 4 MainRuns 0 75As (1) Y
+   * 7.5000022500006747 or x values for m/z --> delete MainRuns 0 75As (1) X [u] 74.9219970703125
+   * 
+   * @param file
+   * @param sett
+   * @return
+   * @throws Exception
+   */
+  public static ImageGroupMD[] importFromThermoElement2ToImage(File[] files,
+      SettingsImageDataImportTxt sett, ProgressUpdateTask task) throws Exception {
+    // all files
+    ImageGroupMD group = importFromThermoElement2ToImage(files, sett);
+
+    if (task != null)
+      task.addProgressStep(1.0);
+    // return image
+    return new ImageGroupMD[] {group};
+  }
+
+  private static ImageGroupMD importFromThermoElement2ToImage(File[] files,
+      SettingsImageDataImportTxt sett) throws Exception {
+    int elements = 0;
+    String name = "";
+    int iTime = 0;
+
+    String[] titles = null;
+
+    // lines
+    List<ScanLineMD> scanLines = new ArrayList<>();
+
+    // separation
+    String separation = sett.getSeparation();
+    // separation for UTF-8 space
+    char splitc = 0;
+    String splitUTF8 = String.valueOf(splitc);
+
+    for (File file : files) {
+      // set start to 0 for no shift
+      // NaN to use first value as start
+      float startx = sett.isShiftXValues() ? Float.NaN : 0;
+      // intensities
+      List<Double>[] z = null;
+      List<Float> x = new ArrayList<Float>();
+      State state = State.SEARCH_LINE_HEADER;
+      // line by line
+      BufferedReader br = txtWriter.getBufferedReader(file);
+      String s;
+      while ((s = br.readLine()) != null) {
+        if (state.equals(State.END_OF_FILE))
+          break;
+
+        // try to separate by separation
+        String[] sep = s.split(separation);
+        // if sep.size==1 try and split symbol=space try utf8 space
+        if (sep.length <= 1 && separation.equals(" ")) {
+          sep = s.split(splitUTF8);
+          if (sep.length > 1)
+            separation = splitUTF8;
+        }
+
+        if (sep.length > 0) {
+
+          // read first line parameters
+          if (state.equals(State.SEARCH_LINE_HEADER)) {
+            titles = new String[sep.length - 1];
+
+            for (int i = 1; i < sep.length; i++) {
+              titles[i - 1] = sep[i];
+            }
+            elements = titles.length;
+            z = new ArrayList[elements];
+            for (int i = 0; i < elements; i++)
+              z[i] = new ArrayList<Double>();
+            // search for time column
+            state = State.SEARCH_COLUMN_HEADER;
+          } else if (state.equals(State.SEARCH_COLUMN_HEADER)) {
+            // time column?
+            if (sep[0].startsWith("Time")) {
+              // skip to time
+              br.readLine();
+              br.readLine();
+              state = State.READ_DATA;
+            }
+          } else if (state.equals(State.READ_DATA)) {
+            if (sep.length == 0) {
+              state = State.END_OF_FILE;
+            } else {
+              try {
+                float xv = Float.parseFloat(sep[iTime]);
+                if (Float.isNaN(startx))
+                  startx = xv;
+                xv -= startx;
+                x.add(xv);
+                // intensities
+                for (int i = 0; i < elements; i++) {
+                  z[i].add(Double.parseDouble(sep[iTime + i + 1]));
+                }
+              } catch (Exception e) {
+                state = State.END_OF_FILE;
+              }
+            }
+          }
+        }
+      }
+      // create line
+      ScanLineMD line = new ScanLineMD();
+      line.setX(x);
+      for (int i = 0; i < z.length; i++) {
+        double[] zarray = Doubles.toArray(z[i]);
+        line.addDimension(zarray);
+      }
+      scanLines.add(line);
+    }
+    // Generate Image2D from scanLines
+    DatasetLinesMD data = new DatasetLinesMD(scanLines);
+    return data.createImageGroup(files[0], titles);
+  }
+
+
   /**
    * imports from Shimadzu ICP MS Files (different separations) 0 1 2 3 4 MainRuns 0 75As (1) Y
    * 7.5000022500006747 or x values for m/z --> delete MainRuns 0 75As (1) X [u] 74.9219970703125

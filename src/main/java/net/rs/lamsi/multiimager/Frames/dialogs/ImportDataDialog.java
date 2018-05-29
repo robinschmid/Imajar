@@ -50,7 +50,6 @@ public class ImportDataDialog extends JDialog {
   // presets
   private ArrayList<SettingsImageDataImportTxt> presets;
   private JTextField txtOwnSeperation;
-  private final ButtonGroup buttonGroup = new ButtonGroup();
   private JPanel tabTXT;
   private JPanel panEXCEL;
   private JCheckBox chckbxSearchForMeta;
@@ -59,7 +58,6 @@ public class ImportDataDialog extends JDialog {
   private JLabel lblLoadAnImage;
   private JTextField txt2DOwn;
   private JCheckBox cb2DMetadata;
-  private final ButtonGroup buttonGroup_1 = new ButtonGroup();
   private JPanel tabMSPresets;
   private JPanel panel_1;
   private JRadioButton rbMP17Thermo;
@@ -114,6 +112,7 @@ public class ImportDataDialog extends JDialog {
   private JCheckBox cbShiftXValues;
   private JCheckBox cbShowImageSetup;
   private JRadioButton rbShimadzuNeu;
+  private JRadioButton rbElement2;
 
 
   /**
@@ -135,7 +134,7 @@ public class ImportDataDialog extends JDialog {
         {
           panel_1 = new JPanel();
           tabMSPresets.add(panel_1, BorderLayout.NORTH);
-          panel_1.setLayout(new MigLayout("", "[][][]", "[][][][][]"));
+          panel_1.setLayout(new MigLayout("", "[][][]", "[][][][][][]"));
           {
             rbMP17Thermo = new JRadioButton("iCAP-Q - Thermo Fisher Scientific");
             rbMP17Thermo.addActionListener(new ActionListener() {
@@ -194,7 +193,12 @@ public class ImportDataDialog extends JDialog {
               panel_1.add(rbShimadzuNeu, "cell 0 3");
             }
             buttonGroup_2.add(rbNeptune);
-            panel_1.add(rbNeptune, "cell 0 4");
+            panel_1.add(rbNeptune, "flowy,cell 0 4");
+          }
+          {
+            rbElement2 = new JRadioButton("Thermo Element 2");
+            buttonGroup_2.add(rbElement2);
+            panel_1.add(rbElement2, "cell 0 5");
           }
         }
         {
@@ -735,6 +739,24 @@ public class ImportDataDialog extends JDialog {
           }
           rbShimadzuNeu.setSelected(true);
           break;
+        case PRESETS_THERMO_ELEMENT2:
+          getTabbedPane().setSelectedComponent(getTabMSPresets());
+
+          // seperation
+          if (sep.equals(","))
+            getComboSeparationSpecial().setSelectedIndex(0);
+          else if (sep.equals(" "))
+            getComboSeparationSpecial().setSelectedIndex(1);
+          else if (sep.equals(" "))
+            getComboSeparationSpecial().setSelectedIndex(2);
+          else if (sep.equals(";"))
+            getComboSeparationSpecial().setSelectedIndex(3);
+          else {
+            getComboSeparationSpecial().setSelectedIndex(4);
+            getTxtSpecialSeparation().setText(sep);
+          }
+          rbElement2.setSelected(true);
+          break;
       }
     } else {
       // xlsx?
@@ -790,8 +812,6 @@ public class ImportDataDialog extends JDialog {
     ((DefaultListModel) (getListPresets().getModel())).addElement(title);
     presets.add(settings);
   }
-
-
 
   protected SettingsImageDataImportTxt createSettingsForImport() {
     // fileformatfilter
@@ -863,11 +883,14 @@ public class ImportDataDialog extends JDialog {
         IMPORT importMode = IMPORT.PRESETS_SHIMADZU_ICP_MS_2;
         settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation,
             null, filter, false, startLine, endLine, startDP, endDP);
+      } else if (rbElement2.isSelected()) {
+        IMPORT importMode = IMPORT.PRESETS_THERMO_ELEMENT2;
+        settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation,
+            null, filter, false, startLine, endLine, startDP, endDP);
       }
     }
 
     settingsDataImport.setOpenImageSetupDialog(cbShowImageSetup.isSelected());
-
     return settingsDataImport;
   }
 
@@ -1031,5 +1054,9 @@ public class ImportDataDialog extends JDialog {
 
   public JCheckBox getCbShowImageSetup() {
     return cbShowImageSetup;
+  }
+
+  public JRadioButton getRbElement2() {
+    return rbElement2;
   }
 }
