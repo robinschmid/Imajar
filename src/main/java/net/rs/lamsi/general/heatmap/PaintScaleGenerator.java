@@ -61,6 +61,9 @@ public class PaintScaleGenerator {
       return generateColorListPaintScale(min, max, realmin, realmax, settings.getColorList(),
           settings.isInverted(), settings.isUsesMinAsInvisible(), settings.isUsesMaxAsInvisible(),
           settings.getLevels(), false);
+    } else if (settings.isGrey()) {
+      //
+      return generateGreyscale(min, max, settings, false);
     } else {
       boolean isHue = settings.isHueScale();
       boolean isList = settings.isListScale();
@@ -166,6 +169,86 @@ public class PaintScaleGenerator {
         settings.getLevels(), forLegend);
   }
 
+
+  public static PaintScale generateGreyscale(double min, double max, SettingsPaintScale settings,
+      boolean forLegend) {
+    if (max < min)
+      min = max - 0.000001;
+    // real min and max values as given by minz or min in settings
+    double realmin = calcRealMin(min, max, settings);
+    double realmax = calcRealMax(min, max, settings);
+
+    // generate list paint scale
+    return generateGreyscale(min, max, realmin, realmax, settings.isInverted(),
+        settings.isUsesMinAsInvisible(), settings.isUsesMaxAsInvisible(), settings.getLevels(),
+        forLegend);
+  }
+
+  /**
+   * 
+   * @param min the absolute data minimum
+   * @param max the absolute data maximum
+   * @param realmin the paintscale minimum
+   * @param realmax the paintscale maximum
+   * @param list colors
+   * @param isInverted invert colours
+   * @param firstTransparent values < realmin are transparent
+   * @param lastTransparent values > realmax are transparent
+   * @param steps how many steps
+   * @return
+   */
+  public static PaintScale generateGreyscale(double min, double max, double realmin, double realmax,
+      boolean isInverted, boolean firstTransparent, boolean lastTransparent, int steps,
+      boolean forLegend) {
+    if ((max <= min) || (realmax <= realmin)) {
+      // no real data
+      return generateEmptyScale();
+    } else {
+      // with minimum and maximum bounds
+      double lower = min;
+      double upper = max;
+      if (forLegend) {
+        lower = realmin;
+        upper = realmax;
+      }
+      LookupPaintScale paintScale = new LookupPaintScale(lower, upper, Color.lightGray);
+      Color c = null;
+      if (firstTransparent)
+        c = transparent;
+      else {
+        float i = isInverted ? 0 : 1;
+        c = new Color(i, i, i);
+      }
+      paintScale.add(Double.NEGATIVE_INFINITY, c);
+      paintScale.add(realmin - Double.MIN_VALUE, c);
+
+
+      // add list
+      for (int i = 1; i < steps; i++) {
+        float p = i / (float) (steps - 1.f);
+        double v = (float) (realmin + (realmax - realmin) * p);
+        if (!isInverted)
+          p = 1.f - p;
+        c = new Color(p, p, p);
+        paintScale.add(v, c);
+      }
+
+      // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
+      if (lastTransparent)
+        c = transparent;
+      else {
+        float i = isInverted ? 1 : 0;
+        c = new Color(i, i, i);
+      }
+      paintScale.add(realmax + Double.MIN_VALUE, c);
+      paintScale.add(Double.MAX_VALUE, c);
+
+      //
+      return paintScale;
+    }
+  }
+
+
   /**
    * 
    * @param min the absolute data minimum
@@ -254,6 +337,8 @@ public class PaintScaleGenerator {
     } else {
       if (settings.isListScale()) {
         return generateColorListPaintScale(min, max, settings, true);
+      } else if (settings.isGrey()) {
+        return generateGreyscale(min, max, settings, true);
       } else {
         // set min and max
         double realmin = ((settings.isUsesMinMax() || settings.isUsesMinMaxFromSelection())
