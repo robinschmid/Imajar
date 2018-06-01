@@ -114,6 +114,8 @@ public class PlotSpectraLabelGenerator implements XYItemLabelGenerator {
    */
   private int calcChargeByIsotopePattern(XYDataset dataset, int series, int item) {
     SettingsChargeCalculator settings = Window.getWindow().getSettings().getSetChargeCalc();
+    if (settings == null)
+      settings = new SettingsChargeCalculator();
     int charge = 0;
 
     // find all peaks in range and put them in this vector

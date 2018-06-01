@@ -236,6 +236,7 @@ public class Window {
           }
         }
       }
+
     });
   }
 
@@ -344,7 +345,7 @@ public class Window {
           getListFiles().setSelectedIndex(0);
           runner.setSelectedFileIndex(getListFiles().getSelectedIndex());
         } catch (Exception ex) {
-          logger.error("",ex);
+          logger.error("", ex);
         }
       }
     });
@@ -806,7 +807,7 @@ public class Window {
         currentMode = (isMS ? MODE_MS : MODE_OES);
       }
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 

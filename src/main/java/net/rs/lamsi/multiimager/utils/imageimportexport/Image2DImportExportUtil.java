@@ -725,11 +725,16 @@ public class Image2DImportExportUtil {
               int c = 0;
               for (int i = sett.getStartLine() == 0 ? 0 : sett.getEndLine() - 1; i < sep.length
                   && (sett.getEndLine() == 0 || i < sett.getEndLine()); i++) {
+                float xv = Float.NaN;
+                try {
+                  xv = Float.valueOf(sep[i]);
+                } catch (Exception e) {
+                }
                 if (x[c] == null) {
                   x[c] = new ArrayList<Float>();
-                  startXValue[c] = sett.isShiftXValues() ? Float.valueOf(sep[i]) : 0;
+                  startXValue[c] = sett.isShiftXValues() ? xv : 0;
                 }
-                x[c].add(Float.valueOf(sep[i]) - startXValue[c]);
+                x[c].add(xv - startXValue[c]);
                 c++;
               }
             }
