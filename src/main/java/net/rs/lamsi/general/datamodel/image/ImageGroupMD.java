@@ -104,7 +104,8 @@ public class ImageGroupMD implements Serializable {
               } catch (Exception e) {
                 logger.error("", e);
               }
-        }
+        } else
+          addDim = true;
       } else {
         // non multi dimensional?
         addDim = true;

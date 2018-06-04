@@ -147,9 +147,9 @@ public class LogicRunner {
      * if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase("RAW")) { loadRawFile(f); } //
      * mzXML ? if(FileTypeFilter.getExtensionFromFile(f).equalsIgnoreCase("mzXML")) {
      * loadMzXMLFile(f); } // Progress: addProgressStep(1); } try { // show extracted
-     * masschromatogram setNewFileSelectedAndShowAll(0); }catch(Exception ex) {
-     * logger.error("",ex); } } catch(Exception ex) { } finally {
-     * ProgressDialog.getInst().setVisibleDialog(false); } } // return state; } }); }
+     * masschromatogram setNewFileSelectedAndShowAll(0); }catch(Exception ex) { logger.error("",ex);
+     * } } catch(Exception ex) { } finally { ProgressDialog.getInst().setVisibleDialog(false); } }
+     * // return state; } }); }
      */
   }
 
@@ -584,7 +584,7 @@ public class LogicRunner {
       }
 
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return false;
     }
     return true;
@@ -648,7 +648,7 @@ public class LogicRunner {
       }
 
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return false;
     }
     return true;
@@ -738,7 +738,7 @@ public class LogicRunner {
       else
         return null;
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return null;
     }
   }
@@ -751,7 +751,7 @@ public class LogicRunner {
       else
         return null;
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return null;
     }
   }
@@ -794,7 +794,7 @@ public class LogicRunner {
           return null;
       }
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return null;
     }
   }
@@ -896,7 +896,7 @@ public class LogicRunner {
           return null;
       }
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return null;
     }
   }
@@ -940,8 +940,8 @@ public class LogicRunner {
       // set Path from first rawfile TODO
       // setMSICon.setRAWFilepath(listSpecFiles.get(selectedFileIndex).getFile().getPath());
       // create image
-      Image2D img = Image2D.generateImage2DFromCon(window.getSettings().getSetPaintScale(),
-          setMSICon, settSplit, mzChrom);
+      SettingsPaintScale ps = SettingsPaintScale.createStandardSettings();
+      Image2D img = Image2D.generateImage2DFromCon(ps, setMSICon, settSplit, mzChrom);
 
       setCurrentImage(img);
       return img;

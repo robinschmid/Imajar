@@ -668,7 +668,10 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   public void setImage(DataCollectable2D img) {
     if (this.img != img) {
       this.img = img;
-      this.sett = img.getImageGroup().getSettAlphaMap();
+      if (img.getImageGroup() != null)
+        this.sett = img.getImageGroup().getSettAlphaMap();
+      else
+        this.sett = null;
       // block width and height for range detection
       setAvgBlockSize(img.getAvgBlockWidth(true), img.getAvgBlockHeight(true));
     }
