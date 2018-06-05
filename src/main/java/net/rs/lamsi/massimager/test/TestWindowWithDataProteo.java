@@ -25,6 +25,7 @@ public class TestWindowWithDataProteo {
           File[] files = new File[1];
           files[0] = new File(window.getPathOfJar().getParent() + "/data/proteo.mzXML");
           MZMineLogicsConnector.importRawDataDirect(files);
+
         } catch (Exception e) {
           e.printStackTrace();
         }

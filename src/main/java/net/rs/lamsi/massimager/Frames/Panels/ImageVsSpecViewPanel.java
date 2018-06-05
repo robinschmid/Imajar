@@ -1457,7 +1457,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       else
         settSplitCon.setSplitAfterX(Module.floatFromTxt(getTxtTimePerLine()));
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       JOptionPane.showMessageDialog(window.getFrame(),
           "Wrong input in text fields for image settings. " + ex.getMessage(), "ERROR",
           JOptionPane.ERROR_MESSAGE);
@@ -1848,7 +1848,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       startTime = -1;
       renewMiddleImageChrom(selectedVsMiddleMZ, selectedVsMiddlePM);
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 

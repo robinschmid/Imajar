@@ -27,6 +27,7 @@ import net.sf.mzmine.taskcontrol.TaskPriority;
 
 
 public class MZMineLogicsConnector {
+  public static String MODULE_PROJECT_IMPORT = "Open project";
   public static String MODULE_RAW_IMPORT = "Raw data import";
   public static String MODULE_MASSDETECT_WAVELET = "Wavelet transform",
       MODULE_MASSDETECT_EXACT = "Exact mass";

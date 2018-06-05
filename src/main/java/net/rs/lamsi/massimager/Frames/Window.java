@@ -64,11 +64,16 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter;
+import net.sf.mzmine.desktop.ImportantJFrame;
 
 
 public class Window {
+  private static final Logger logger = LoggerFactory.getLogger(Window.class);
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  private static java.util.logging.Logger jlogger =
+      java.util.logging.Logger.getLogger(Window.class.getName());
+
   public static final int MODE_MS = 0, MODE_OES = 1;
   // My Stuff
   // ###############################################################################
@@ -112,7 +117,7 @@ public class Window {
 
   // ###############################################################################
 
-  private JFrame frame;
+  private ImportantJFrame frame;
   private JTextField txtMZ;
   private JTextField txtMZplusminus;
   private JList listMZ;
@@ -154,14 +159,20 @@ public class Window {
   public static void main(String[] args) {
     // connect to mzmine
     // have to load it before everything else
+    jlogger.info("Starting mass imager and MZmine");
+
+    jlogger.info("Start MZmine and connect to MassImager");
     MZMineLogicsConnector.connectToMZMine();
 
     // start MassImager application
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         try {
+          jlogger.info("Start MassImager window");
           Window window = new Window();
           window.frame.setVisible(true);
+
+          jlogger.info("Startup DONE");
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -268,7 +279,7 @@ public class Window {
    * Initialize the contents of the frame.
    */
   private void initialize() {
-    frame = new JFrame();
+    frame = new ImportantJFrame();
     frame.setBounds(100, 100, 931, 626);
     // frame.setDefaultCloseOperation(MyFrame.EXIT_ON_CLOSE);
     frame.addWindowListener(new WindowAdapter() {
@@ -927,11 +938,6 @@ public class Window {
   public JFrame getFrame() {
     return frame;
   }
-
-  public void setFrame(JFrame frame) {
-    this.frame = frame;
-  }
-
 
   public SettingsHolder getSettings() {
     return SettingsHolder.getSettings();
