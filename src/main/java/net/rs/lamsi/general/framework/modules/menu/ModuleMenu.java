@@ -17,7 +17,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
@@ -153,8 +152,8 @@ public class ModuleMenu extends JButton {
                       applyToImagingProject(mod.getSettings(), (ImagingProject) o, this);
                     } else if (ImageGroupMD.class.isInstance(o)) {
                       applyToImageGroup(mod.getSettings(), (ImageGroupMD) o, this);
-                    } else if (Image2D.class.isInstance(o)) {
-                      applyToImage(mod.getSettings(), (Image2D) o, this);
+                    } else if (Collectable2D.class.isInstance(o)) {
+                      applyToImage(mod.getSettings(), (Collectable2D) o, this);
                     }
                   }
                 } catch (Exception e1) {
@@ -177,14 +176,13 @@ public class ModuleMenu extends JButton {
             private void applyToImageGroup(Settings sett, ImageGroupMD img, ProgressUpdateTask task)
                 throws Exception {
               for (Collectable2D c : img.getImages()) {
-                if (Image2D.class.isInstance(c))
-                  applyToImage(sett, (Image2D) c, task);
+                applyToImage(sett, c, task);
 
                 addProgressStep(-1.0 + 1.0 / img.getImages().size());
               }
             }
 
-            private void applyToImage(Settings sett, Image2D img, ProgressUpdateTask task)
+            private void applyToImage(Settings sett, Collectable2D img, ProgressUpdateTask task)
                 throws Exception {
               sett.applyToImage(img);
               if (menu.applyToListener != null)
@@ -215,11 +213,10 @@ public class ModuleMenu extends JButton {
 
   public void applyToImageGroup(Settings sett, ImageGroupMD img) throws Exception {
     for (Collectable2D c : img.getImages())
-      if (Image2D.class.isInstance(c))
-        applyToImage(sett, (Image2D) c);
+      applyToImage(sett, c);
   }
 
-  public void applyToImage(Settings sett, Image2D img) throws Exception {
+  public void applyToImage(Settings sett, Collectable2D img) throws Exception {
     sett.applyToImage(img);
     if (applyToListener != null)
       for (ModuleMenuApplyToImage l : applyToListener)

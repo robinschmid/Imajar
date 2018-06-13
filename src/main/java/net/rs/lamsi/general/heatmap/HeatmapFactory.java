@@ -103,6 +103,7 @@ public class HeatmapFactory {
       xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
       xAxis.setLowerMargin(0.0);
       xAxis.setUpperMargin(0.0);
+      xAxis.setAutoRangeIncludesZero(false);
       // Y Achse
       NumberAxis yAxis = new NumberAxis(yTitle);
       yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
@@ -364,7 +365,7 @@ public class HeatmapFactory {
     NumberAxis yAxis = createAxis(yTitle);
     // XYBlockRenderer
     ImageOverlayRenderer renderer = new ImageOverlayRenderer(seriesCount, settings.getBlend());
-
+    renderer.setAutoPopulateSeriesPaint(false);
     List<PaintScale> psList = new ArrayList<PaintScale>();
     // create one paintscale for each active image
     int counter = 0;
@@ -403,9 +404,7 @@ public class HeatmapFactory {
         renderer.setBlockWidth(counter, cimg.getMaxBlockWidth(true));
         renderer.setBlockHeight(counter, cimg.getMaxBlockHeight(true));
 
-
-        renderer.setSeriesPaint(counter, ps.getMinColor());
-
+        renderer.setSeriesPaint(counter, ps.getMinColor(), true);
         counter++;
       }
     }

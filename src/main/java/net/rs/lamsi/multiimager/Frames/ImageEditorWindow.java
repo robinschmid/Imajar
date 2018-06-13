@@ -413,22 +413,23 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     mnAction.add(btnCrop);
 
     JMenuItem mntmCombineImages = new JMenuItem("Combine images");
-    mntmCombineImages.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        // Open Dialog
-        try {
-          logicRunner.combineImages();
-        } catch (Exception e1) {
-          DialogLoggerUtil.showErrorDialog(thisFrame, "Groups were not compatible", e1);
-          logger.error("", e1);
-        }
+    mntmCombineImages.setToolTipText(
+        "Combine multiple images to one large image. Groups are selected. All images with the same titles are combined.");
+    mntmCombineImages.addActionListener(e -> {
+      // Open Dialog
+      try {
+        logicRunner.combineImages();
+      } catch (Exception e1) {
+        DialogLoggerUtil.showErrorDialog(thisFrame, "Groups were not compatible", e1);
+        logger.error("", e1);
       }
     });
     mnAction.add(mntmCombineImages);
 
-    JMenuItem mntmSplitImages = new JMenuItem("Split images");
-    mnAction.add(mntmSplitImages);
+    JMenuItem mntmImagesToOneGroup = new JMenuItem("Images to one group");
+    mntmImagesToOneGroup.setToolTipText("Combined group of images with the same data dimensions");
+    mntmImagesToOneGroup.addActionListener(e -> logicRunner.imagesToOneGroup());
+    mnAction.add(mntmImagesToOneGroup);
 
 
     JMenuItem btnCreateOverlay = new JMenuItem("Create overlay");
@@ -452,16 +453,13 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     mnAction.add(btnImportMicroscopic);
 
     JMenuItem btnImportMicroscopic2 = new JMenuItem("Add microscopic image to background");
-    btnImportMicroscopic2.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        // Open Dialog
-        if (activeModuleContainer != null) {
-          ModuleBackgroundImg mod = (ModuleBackgroundImg) activeModuleContainer
-              .getModuleByClass(ModuleBackgroundImg.class);
-          if (mod != null) {
-            mod.getBtnAddImage().doClick();
-          }
+    btnImportMicroscopic2.addActionListener(e -> {
+      // Open Dialog
+      if (activeModuleContainer != null) {
+        ModuleBackgroundImg mod =
+            (ModuleBackgroundImg) activeModuleContainer.getModuleByClass(ModuleBackgroundImg.class);
+        if (mod != null) {
+          mod.getBtnAddImage().doClick();
         }
       }
     });

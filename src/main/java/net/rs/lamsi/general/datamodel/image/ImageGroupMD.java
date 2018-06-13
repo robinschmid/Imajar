@@ -37,7 +37,7 @@ public class ImageGroupMD implements Serializable {
 
   // dataset
   protected MDDataset data = null;
-  protected ArrayList<Collectable2D> images;
+  protected List<Collectable2D> images;
   // treenode in tree view
   protected DefaultMutableTreeNode node = null;
   // background microscopic image
@@ -354,7 +354,7 @@ public class ImageGroupMD implements Serializable {
     return Math.min(getData().size(), images.size());
   }
 
-  public ArrayList<Collectable2D> getImages() {
+  public List<Collectable2D> getImages() {
     return images;
   }
 

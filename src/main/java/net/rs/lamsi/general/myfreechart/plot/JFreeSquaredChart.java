@@ -169,7 +169,13 @@ public class JFreeSquaredChart extends JFreeChart {
       logger.debug("IT {}", iteration);
 
     Rectangle2D newChartArea = plot.calc(g2, chartArea, plotArea, plotInfo, iteration);
-    if (newChartArea.equals(chartArea) || iteration > MAX_ITERATIONS) {
+    // too small
+    if (plotArea.getWidth() < 100 || plotArea.getHeight() < 100) {
+      iteration = Integer.MAX_VALUE - 1;
+      // draw in full size
+      g2.setClip(savedClip);
+      draw(g2, origChartArea, anchor, info);
+    } else if (newChartArea.equals(chartArea) || iteration > MAX_ITERATIONS) {
       // final paint
       logger.debug("Final PAINT at iteration: {}", iteration);
       iteration = 0;
@@ -186,11 +192,13 @@ public class JFreeSquaredChart extends JFreeChart {
       newChartArea.setRect(x, y, newChartArea.getWidth(), newChartArea.getHeight());
 
       // too small
-      if (newChartArea.getWidth() < 50 || newChartArea.getHeight() < 50) {
+      if (newChartArea.getWidth() < 180 || newChartArea.getHeight() < 120) {
         iteration = Integer.MAX_VALUE - 1;
         // draw in full size
+        g2.setClip(savedClip);
         draw(g2, origChartArea, anchor, info);
       } else {
+        g2.setClip(savedClip);
         // else try to draw chart with new size
         draw(g2, newChartArea, anchor, info);
       }

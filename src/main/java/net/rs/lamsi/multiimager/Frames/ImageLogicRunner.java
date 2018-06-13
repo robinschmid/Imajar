@@ -803,7 +803,7 @@ public class ImageLogicRunner {
   }
 
   /**
-   * combine multiple images by selection in tree
+   * combine multiple images to one large image by selection in tree (all lines are combined)
    * 
    * @throws Exception
    */
@@ -867,8 +867,56 @@ public class ImageLogicRunner {
             }
           }
         }
-
       }
+    }
+  }
+
+
+  /**
+   * Create one group of multiple images with the same dimensions
+   */
+  public void imagesToOneGroup() {
+    try {
+      // search for the same image size
+      TreePath[] add = DialogLoggerUtil.showTreeDialogAndChoose(window, getTree().getTree(),
+          TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION, "Multi selection",
+          "Select multiple groups to merge");
+
+      if (add.length <= 1) {
+        DialogLoggerUtil.showErrorDialog(window, "Error",
+            "Please select multiple groups to create one group");
+        logger.error("Please select multiple groups to create one group");
+        return;
+      }
+
+      ImageGroupMD result = new ImageGroupMD();
+      ImagingProject project = null;
+
+      for (TreePath a : add) {
+        ImageGroupMD group = getTree().getImageGroup(a);
+        // error
+        if (group == null) {
+          DialogLoggerUtil.showErrorDialog(window, "Error",
+              "Please select multiple groups to create one group");
+          logger.error("Please select multiple groups to create one group");
+          return;
+        } else {
+          if (project == null)
+            project = group.getProject();
+          // add all images
+          // TODO copy
+          for (Image2D d : group.getImagesOnly())
+            result.add(d);
+        }
+      }
+
+      result.setGroupName("Combined");
+      project.add(result);
+      addGroup(result, project);
+    } catch (Exception e1) {
+      DialogLoggerUtil.showErrorDialog(window,
+          "Groups were not compatible (need to have the same data dimensions", e1);
+      logger.error("Groups were not compatible (need to have the same data dimensions", e1);
     }
   }
 

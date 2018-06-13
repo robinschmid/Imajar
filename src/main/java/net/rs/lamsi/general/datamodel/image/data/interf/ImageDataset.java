@@ -138,7 +138,7 @@ public abstract class ImageDataset implements Serializable {
    * @return
    */
   public float getWidthX() {
-    return getRightEdgeX();
+    return getRightEdgeX() - getX0();
   }
 
 
