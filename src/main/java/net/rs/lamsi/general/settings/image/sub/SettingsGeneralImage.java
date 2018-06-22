@@ -89,8 +89,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     }
   }
 
-  public static int MODE_SCANS_PER_LINE = 0, MODE_TIME_PER_LINE = 1;
-
   protected String filepath = "";
 
   protected float velocity, spotsize;
@@ -101,8 +99,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   protected SettingsGeneralRotation rotation;
   // rotate 0 90 180 270
   //
-  protected double timePerLine = 1;
-  protected int modeTimePerLine = MODE_TIME_PER_LINE;
   protected boolean isTriggered = false;
 
   protected boolean allFiles, isBinaryData = false;
@@ -145,7 +141,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     title = "";
     showShortTitle = true;
     isTriggered = false;
-    timePerLine = 60;
     deleteCropMarks();
 
     if (rotation == null)
@@ -214,7 +209,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     toXML(elParent, doc, "spotsize", spotsize);
     toXML(elParent, doc, "allFiles", allFiles);
     toXML(elParent, doc, "isTriggered", isTriggered);
-    toXML(elParent, doc, "timePerLine", timePerLine);
     toXML(elParent, doc, "isBinaryData", isBinaryData);
     toXML(elParent, doc, "filepath", filepath);
     toXML(elParent, doc, "interpolation", interpolation);
@@ -250,8 +244,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
           intensityFactor = doubleFromXML(nextElement);
         else if (paramName.equals("isTriggered"))
           isTriggered = booleanFromXML(nextElement);
-        else if (paramName.equals("timePerLine"))
-          timePerLine = doubleFromXML(nextElement);
         else if (paramName.equals("isBinaryData"))
           isBinaryData = booleanFromXML(nextElement);
         else if (paramName.equals("reduction"))
@@ -377,29 +369,12 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     this.metadata = metadata;
   }
 
-  public double getTimePerLine() {
-    return timePerLine;
-  }
-
-  public void setTimePerLine(double timePerLine) {
-    this.timePerLine = timePerLine;
-  }
-
   public boolean isTriggered() {
     return isTriggered;
   }
 
   public void setTriggered(boolean isTriggert) {
     this.isTriggered = isTriggert;
-  }
-
-
-  public int getModeTimePerLine() {
-    return modeTimePerLine;
-  }
-
-  public void setModeTimePerLine(int modeTimePerLine) {
-    this.modeTimePerLine = modeTimePerLine;
   }
 
   public IMAGING_MODE getImagingMode() {

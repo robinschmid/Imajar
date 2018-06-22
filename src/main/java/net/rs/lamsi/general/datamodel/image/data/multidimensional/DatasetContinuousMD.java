@@ -52,7 +52,7 @@ public class DatasetContinuousMD extends MDDataset implements Serializable {
     } else if (sett.getSplitMode() == XUNIT.s && sett.getSplitAfterX() == 0) {
 
     }
-    // split data TODO
+    // split data after time TODO
     if (sett.getSplitMode() == XUNIT.s) {
       lineStart = new int[getLinesCount()];
       int start = 0;

@@ -1,7 +1,6 @@
 package net.rs.lamsi.massimager.Frames.Panels;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -16,6 +15,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
+import java.util.concurrent.ExecutionException;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
@@ -51,8 +51,8 @@ import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.framework.modules.ModuleListWithOptions;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
-import net.rs.lamsi.general.myfreechart.plots.spectra.PlotSpectraLineAndShapeRenderer;
 import net.rs.lamsi.general.settings.SettingsHolder;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
@@ -61,6 +61,7 @@ import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.SelectMZDirectDialog;
 import net.rs.lamsi.massimager.Frames.Menu.MenuChartActions;
 import net.rs.lamsi.massimager.Frames.Menu.MenuTableActions;
+import net.rs.lamsi.massimager.Frames.Panels.peaktable.PeakTableRow;
 import net.rs.lamsi.massimager.Frames.Panels.peaktable.PnTableMZPick;
 import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.massimager.MyMZ.MZDataFactory;
@@ -68,6 +69,7 @@ import net.rs.lamsi.massimager.MyMZ.MZIon;
 import net.rs.lamsi.massimager.MyMZ.preprocessing.filtering.peaklist.chargecalculation.MZChargeCalculatorMZMine;
 import net.rs.lamsi.massimager.mzmine.MZMineCallBackListener;
 import net.rs.lamsi.massimager.mzmine.MZMineLogicsConnector;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.ImagingRawData;
 import net.sf.mzmine.datamodel.PeakList;
@@ -138,6 +140,10 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
   private Heatmap currentHeat;
 
   private boolean isImagingRawData = false;
+
+  // task for updates
+  private ProgressUpdateTask<ChartPanel> taskTop, taskMiddle, taskBottom;
+  private ProgressUpdateTask<MZChromatogram> taskSpectrumGenerator;
 
 
 
@@ -216,19 +222,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
           int row = tableMzPeak.getTable().getSelectedRow();
           if (row != -1) {
             // image of selected peak
-            Feature[] peak =
-                tableMzPeak.getTableModel().getPeakRowList().get(row).getPeakRow().getPeaks();
-            double minmz = Double.MAX_VALUE;
-            double maxmz = Double.MIN_VALUE;
-            for (Feature p : peak) {
-              if (p.getRawDataPointsMZRange().lowerEndpoint() < minmz)
-                minmz = p.getRawDataPointsMZRange().lowerEndpoint();
-              if (p.getRawDataPointsMZRange().upperEndpoint() > maxmz)
-                maxmz = p.getRawDataPointsMZRange().upperEndpoint();
-            }
+            PeakTableRow prow = tableMzPeak.getTableModel().getPeakRowList().get(row);
+            com.google.common.collect.Range<Double> mz = prow.getMzRange();
             //
-            selectedVsMiddleMZ = (minmz + maxmz) / 2;
-            selectedVsMiddlePM = selectedVsMiddleMZ - minmz;
+            selectedVsMiddleMZ = prow.getMz();
+            selectedVsMiddlePM = (mz.upperEndpoint() - mz.lowerEndpoint()) / 2.0;
             renewMiddleImageChrom(selectedVsMiddleMZ, selectedVsMiddlePM);
           }
         }
@@ -916,27 +914,33 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
   // #############################################################################
   // Chart Logics
   public void renewAll() {
+    LogicRunner runner = window.getLogicRunner();
+    Image2D img = runner.getCurrentImage();
+    SettingsImageContinousSplit split = settSplitCon;
+    SettingsGeneralImage sett = settImage;
+    if (img != null) {
+      sett = img.getSettings().getSettImage();
+      settSplitCon =
+          (SettingsImageContinousSplit) img.getSettingsByClass(SettingsImageContinousSplit.class);
+    }
+
     renewTopChrom(selectedVsTopMZ, selectedVsTopPM);
     renewMiddleImageChrom(selectedVsMiddleMZ, selectedVsMiddlePM);
 
-    LogicRunner runner = window.getLogicRunner();
-    Image2D img = runner.getCurrentImage();
     // get selected File
     if (specSelectionMode == SPECTRUM_SELECTION_MODE_RT) {
       selectedSpectrum = window.getLogicRunner().generateSpectrumSUMByRT(selectedVsRetentionTime[0],
           selectedVsRetentionTime[1]);
     } else {
       Rectangle2D rec = selectedImageRectForSpec;
-      selectedSpectrum = runner
-          .generateSpectrumByXY(img != null ? img.getSettings().getSettImage() : settImage, rec);
+      selectedSpectrum = runner.generateSpectrumByXY(split, sett, rec);
     }
     // got spec?
     if (selectedSpectrum == null) {
       if (isImagingRawData) {
         setSelectedXY(1, 1, 1, 1);
         Rectangle2D rec = selectedImageRectForSpec;
-        selectedSpectrum = window.getLogicRunner()
-            .generateSpectrumByXY(img != null ? img.getSettings().getSettImage() : settImage, rec);
+        selectedSpectrum = window.getLogicRunner().generateSpectrumByXY(split, sett, rec);
       } else {
         setSelectedVsRetentionTime(0, 0);
         selectedSpectrum =
@@ -954,15 +958,31 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       // get ViewPanel
       JPanel view = getPnBottomSpec().getPnChartView();
       view.removeAll();
-      ChartPanel chart = spec.getChromChartPanel("", "m/z", "intensity");
 
-      // Renderer with label generator
-      PlotSpectraLineAndShapeRenderer renderer =
-          new PlotSpectraLineAndShapeRenderer(chart, Color.RED);
+      //
+      if (taskBottom != null)
+        taskBottom.cancel(true);
+      taskBottom = new ProgressUpdateTask<ChartPanel>(1) {
+        @Override
+        protected ChartPanel doInBackground2() throws Exception {
+          return spec.getChromChartPanel("", "m/z", "intensity");
+        }
 
-      setChartBottomSpectrum(chart);
-      view.add(chart, BorderLayout.CENTER);
-      view.validate();
+        @Override
+        protected void done() {
+          try {
+            if (!isCancelled() && get() != null) {
+              // set chart
+              setChartBottomSpectrum(get());
+            } else
+              logger.warn("No spectrum created");
+          } catch (InterruptedException | ExecutionException e) {
+            logger.warn("No spectrum created", e);
+          }
+        }
+      };
+      Thread t = new Thread(taskBottom);
+      t.start();
     }
   }
 
@@ -972,66 +992,88 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       JPanel view = getPnMiddleImageChrom().getPnChartView();
       view.removeAll();
       //
-      ChartPanel chart = null;
-      // TIC
-      if (selectedModeMiddle == MODE_TIC)
-        chart = window.getLogicRunner().generateTICAsChartPanel();
-      else if (mz != -1) {
-        // set mz
-        selectedVsMiddleMZ = mz;
-        selectedVsMiddlePM = pm;
-        // IMAGE?
-        if (selectedModeMiddle == MODE_IMAGE_CON || selectedModeMiddle == MODE_IMAGE_DISCON
-            || selectedModeMiddle == MODE_IMAGE) {
-          // First get new Imagesettings
-          setupNewImageSettingsFromPanel();
-          Image2D image = null;
+      if (taskMiddle != null)
+        taskMiddle.cancel(true);
+      taskMiddle = new ProgressUpdateTask<ChartPanel>(1) {
+        @Override
+        protected ChartPanel doInBackground2() throws Exception {
+          ChartPanel chart = null;
+          // TIC
+          if (selectedModeMiddle == MODE_TIC)
+            chart = window.getLogicRunner().generateTICAsChartPanel();
+          else if (mz != -1) {
+            // IMAGE?
+            if (selectedModeMiddle == MODE_IMAGE_CON || selectedModeMiddle == MODE_IMAGE_DISCON
+                || selectedModeMiddle == MODE_IMAGE) {
+              // First get new Imagesettings
+              setupNewImageSettingsFromPanel();
+              Image2D image = null;
+              MZIon ion = settImage.getMZIon();
+              ion.setMz(mz);
+              ion.setPm(pm);
 
-          // Image Con
-          if (selectedModeMiddle == MODE_IMAGE_CON) {
-            image = window.getLogicRunner().generateImageCon(settImage, settSplitCon);
+
+              // Image Con
+              if (selectedModeMiddle == MODE_IMAGE_CON) {
+                image = window.getLogicRunner().generateImageCon(settImage, settSplitCon);
+              }
+              // Image Discon
+              if (selectedModeMiddle == MODE_IMAGE_DISCON) {
+                image = window.getLogicRunner().generateImageDiscon(settImage);
+              }
+              // image generation if raw data is imaging raw data file
+              if (selectedModeMiddle == MODE_IMAGE)
+                image = window.getLogicRunner().generateImage(settImage,
+                    window.getLogicRunner().getSelectedRawDataFile());
+              // set chart
+              if (image != null) {
+                currentHeat = window.getHeatFactory().generateHeatmap(image);
+                chart = currentHeat.getChartPanel();
+              }
+            }
+            // EIC
+            if (selectedModeMiddle == MODE_EIC)
+              chart = window.getLogicRunner()
+                  .generateEICAsChartPanel(new MZIon("", selectedVsMiddleMZ, selectedVsMiddlePM));
           }
-          // Image Discon
-          if (selectedModeMiddle == MODE_IMAGE_DISCON) {
-            image = window.getLogicRunner().generateImageDiscon(settImage);
-          }
-          // image generation if raw data is imaging raw data file
-          if (selectedModeMiddle == MODE_IMAGE)
-            image = window.getLogicRunner().generateImage(settImage,
-                window.getLogicRunner().getSelectedRawDataFile());
-          // set chart
-          if (image != null) {
-            currentHeat = window.getHeatFactory().generateHeatmap(image);
-            chart = currentHeat.getChartPanel();
+          return chart;
+        }
+
+        @Override
+        protected void done() {
+          try {
+            if (!isCancelled() && get() != null) {
+              // set chart
+              setChartMiddleImageChrom(get());
+              if (mz != -1 && selectedModeTop == MODE_EIC) {
+                // set mz
+                selectedVsTopMZ = mz;
+                selectedVsTopPM = pm;
+                // show
+                getLbMZMiddle().setText("mz=" + window.round(mz, 4));
+                getLbPMMiddle().setText("pm=" + window.round(pm, 4));
+              }
+            } else
+              logger.warn("Middle not updated");
+          } catch (InterruptedException | ExecutionException e) {
+            logger.warn("Middle not updated", e);
           }
         }
-        // EIC
-        if (selectedModeMiddle == MODE_EIC)
-          chart = window.getLogicRunner()
-              .generateEICAsChartPanel(new MZIon("", selectedVsMiddleMZ, selectedVsMiddlePM));
+      };
+      Thread t = new Thread(taskMiddle);
+      t.start();
 
-        // show
-        getLbMZMiddle().setText("mz=" + window.round(mz, 6));
-        getLbPMMiddle().setText("pm=" + window.round(pm, 6));
-      }
-      // chart hinzufügen
-      if (chart != null) {
-        setChartMiddleImageChrom(chart);
-        view.add(chart, BorderLayout.CENTER);
-        view.validate();
-      }
     } catch (Exception e) {
       logger.error("", e);
     }
   }
 
-  public void renewTopChrom(double mz, double pm) {
+  public void renewTopChrom(final double mz, final double pm) {
     try {
       // get ViewPanel
       JPanel view = getPnTopEICTIC().getPnChartView();
       view.removeAll();
       //
-      ChartPanel chart = null;
       // First Mode = Peak List?!
       if (selectedModeTop == MODE_PEAK_LIST) {
         // Open Peak List
@@ -1049,28 +1091,48 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
         getMenuTop().repaint();
 
         // Chartpanel if not a List
-        // TIC
-        if (selectedModeTop == MODE_TIC)
-          chart = window.getLogicRunner().generateTICAsChartPanel();
-        else if (mz != -1) {
-          // set mz
-          selectedVsTopMZ = mz;
-          selectedVsTopPM = pm;
-          // EIC
-          if (selectedModeTop == MODE_EIC)
-            chart = window.getLogicRunner()
-                .generateEICAsChartPanel(new MZIon("", selectedVsTopMZ, selectedVsTopPM));
+        // TIC or EIC
+        if (taskTop != null)
+          taskTop.cancel(true);
+        taskTop = new ProgressUpdateTask<ChartPanel>(1) {
+          @Override
+          protected ChartPanel doInBackground2() throws Exception {
+            ChartPanel chart = null;
+            if (selectedModeTop == MODE_TIC)
+              chart = window.getLogicRunner().generateTICAsChartPanel();
+            else if (mz != -1) {
+              // EIC
+              if (selectedModeTop == MODE_EIC)
+                chart = window.getLogicRunner().generateEICAsChartPanel(new MZIon("", mz, pm));
+            }
+            return chart;
+          }
 
-          // show
-          getLbMZTop().setText("mz=" + window.round(mz, 6));
-          getLbPMTop().setText("pm=" + window.round(pm, 6));
-        }
-        // chart hinzufügen
-        if (chart != null) {
-          setChartTopChrom(chart);
-          view.add(chart, BorderLayout.CENTER);
-          view.validate();
-        }
+          @Override
+          protected void done() {
+            try {
+              if (!isCancelled()) {
+                if (get() != null) {
+                  // set chart
+                  setChartTopChrom(get());
+                  if (mz != -1 && selectedModeTop == MODE_EIC) {
+                    // set mz
+                    selectedVsTopMZ = mz;
+                    selectedVsTopPM = pm;
+                    // show
+                    getLbMZTop().setText("mz=" + window.round(mz, 4));
+                    getLbPMTop().setText("pm=" + window.round(pm, 4));
+                  }
+                } else
+                  logger.warn("No TIC created");
+              }
+            } catch (InterruptedException | ExecutionException e) {
+              logger.warn("No TIC created", e);
+            }
+          }
+        };
+        Thread t = new Thread(taskTop);
+        t.start();
       }
     } catch (Exception e) {
       logger.error("", e);
@@ -1177,6 +1239,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       @Override
       public void mouseClicked(MouseEvent e) {}
     });
+
+    // add
+    JPanel view = getPnBottomSpec().getPnChartView();
+    view.add(chartSpec2, BorderLayout.CENTER);
+    view.validate();
   }
 
   public void setChartMiddleImageChrom(ChartPanel chartChrom2) {
@@ -1223,31 +1290,57 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
             System.out.println("OK released");
             // nur die Aktionen ausführen wenn kein MouseResize
             if (!chartMiddle.isDomainZoomable()) {
-              // Aktionen ausführen: hier: Chrom/Image wurde angeklickt
-              if (selectedModeMiddle == MODE_EIC || selectedModeMiddle == MODE_TIC) {
-                // MZ ausgewählt mit pm
-                double rt = pressed.getX();
-                double rt2 = released.getX();
-                // renew spec
-                MZChromatogram spec = window.getLogicRunner().generateSpectrumSUMByRT(rt, rt2);
-                renewBottomSpectrum(spec);
-                //
-                setSelectedVsRetentionTime(rt, rt2);
-              } else if (selectedModeMiddle == MODE_IMAGE_CON
-                  || selectedModeMiddle == MODE_IMAGE_DISCON || selectedModeMiddle == MODE_IMAGE) {
-                // area on Image selected
-                float x = (float) pressed.getX();
-                float y = (float) pressed.getY();
-                float x2 = (float) released.getX();
-                float y2 = (float) released.getY();
-                Image2D img = window.getLogicRunner().getCurrentImage();
-                // renew spec by img area
-                MZChromatogram spec = window.getLogicRunner().generateSpectrumByXY(
-                    img != null ? img.getSettings().getSettImage() : settImage, x, y, x2, y2);
-                renewBottomSpectrum(spec);
-                //
-                setSelectedXY(x, y, x2, y2);
-              }
+              // renew spec
+              if (taskSpectrumGenerator != null)
+                taskSpectrumGenerator.cancel(true);
+
+              taskSpectrumGenerator = new ProgressUpdateTask<MZChromatogram>(1) {
+                protected MZChromatogram doInBackground2() throws Exception {
+                  if (selectedModeMiddle == MODE_EIC || selectedModeMiddle == MODE_TIC) {
+                    // MZ ausgewählt mit pm
+                    double rt = pressed.getX();
+                    double rt2 = released.getX();
+                    setSelectedVsRetentionTime(rt, rt2);
+                    // renew spec
+                    MZChromatogram spec = window.getLogicRunner().generateSpectrumSUMByRT(rt, rt2);
+                    return spec;
+                  } else if (selectedModeMiddle == MODE_IMAGE_CON
+                      || selectedModeMiddle == MODE_IMAGE_DISCON
+                      || selectedModeMiddle == MODE_IMAGE) {
+                    // area on Image selected
+                    float x = (float) pressed.getX();
+                    float y = (float) pressed.getY();
+                    float x2 = (float) released.getX();
+                    float y2 = (float) released.getY();
+                    setSelectedXY(x, y, x2, y2);
+                    Image2D img = window.getLogicRunner().getCurrentImage();
+                    // renew spec by img area
+                    SettingsImageContinousSplit split = settSplitCon;
+                    SettingsGeneralImage sett = settImage;
+                    if (img != null) {
+                      sett = img.getSettings().getSettImage();
+                      settSplitCon = (SettingsImageContinousSplit) img
+                          .getSettingsByClass(SettingsImageContinousSplit.class);
+                    }
+                    MZChromatogram spec =
+                        window.getLogicRunner().generateSpectrumByXY(split, sett, x, y, x2, y2);
+                    return spec;
+                  }
+                  return null;
+                }
+
+                protected void done() {
+                  try {
+                    if (!isCancelled() && get() != null) {
+                      renewBottomSpectrum(get());
+                    }
+                  } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                  }
+                }
+              };
+              Thread t = new Thread(taskSpectrumGenerator);
+              t.start();
             }
           }
         }
@@ -1278,6 +1371,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       @Override
       public void mouseClicked(MouseEvent e) {}
     });
+
+    // add
+    JPanel view = getPnMiddleImageChrom().getPnChartView();
+    view.add(chartChrom2, BorderLayout.CENTER);
+    view.validate();
   }
 
   protected ChartPanel getCurrentChartMiddle() {
@@ -1323,10 +1421,27 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
                 double rt = pressed.getX();
                 double rt2 = released.getX();
                 // renew spec
-                MZChromatogram spec = window.getLogicRunner().generateSpectrumSUMByRT(rt, rt2);
-                renewBottomSpectrum(spec);
-                //
-                setSelectedVsRetentionTime(rt, rt2);
+                if (taskSpectrumGenerator != null)
+                  taskSpectrumGenerator.cancel(true);
+
+                taskSpectrumGenerator = new ProgressUpdateTask<MZChromatogram>(1) {
+                  protected MZChromatogram doInBackground2() throws Exception {
+                    return window.getLogicRunner().generateSpectrumSUMByRT(rt, rt2);
+                  }
+
+                  protected void done() {
+                    try {
+                      if (!isCancelled() && get() != null) {
+                        renewBottomSpectrum(get());
+                        setSelectedVsRetentionTime(rt, rt2);
+                      }
+                    } catch (InterruptedException | ExecutionException e) {
+                      e.printStackTrace();
+                    }
+                  }
+                };
+                Thread t = new Thread(taskSpectrumGenerator);
+                t.start();
               }
             }
           }
@@ -1356,6 +1471,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       @Override
       public void mouseClicked(MouseEvent e) {}
     });
+
+    // add
+    JPanel view = getPnTopEICTIC().getPnChartView();
+    view.add(chartChrom2, BorderLayout.CENTER);
+    view.validate();
   }
 
 
@@ -1449,6 +1569,9 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
 
       settImage.setSpotsize(Float.valueOf(getTxtSpotsize().getText()));
       settImage.setVelocity(Float.valueOf(getTxtVelocity().getText()));
+
+      // trigger? or continuous data
+      settImage.setTriggered(selectedModeMiddle == MODE_IMAGE_DISCON);
 
       settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
       settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));

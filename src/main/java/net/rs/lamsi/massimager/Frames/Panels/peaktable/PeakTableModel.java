@@ -1,202 +1,186 @@
 package net.rs.lamsi.massimager.Frames.Panels.peaktable;
 
-import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.util.Vector;
-
 import javax.swing.table.AbstractTableModel;
-
 import net.sf.mzmine.datamodel.PeakList;
- 
+
 
 public class PeakTableModel extends AbstractTableModel {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-    private Vector<PeakTableRow> peakRowList = new Vector<PeakTableRow>();
-    
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+  private Vector<PeakTableRow> peakRowList = new Vector<PeakTableRow>();
 
-    /**
-     * Constructor, assign given dataset to this table
-     */
-    public PeakTableModel() {  
+
+  /**
+   * Constructor, assign given dataset to this table
+   */
+  public PeakTableModel() {}
+
+  public void addRow(PeakTableRow row) {
+    peakRowList.add(row);
+    fireTableDataChanged();
+  }
+
+  public void removeRow(int i) {
+    if (i < peakRowList.size())
+      peakRowList.removeElementAt(i);
+    // fire update
+    fireTableRowsDeleted(i, i);
+  }
+
+  public void removeRows(int[] selectedRows) {
+    for (int i = selectedRows.length - 1; i >= 0; i--) {
+      removeRow(selectedRows[i]);
     }
-    
-    public void addRow(PeakTableRow row) {
-    	peakRowList.add(row);
-    	fireTableDataChanged();
-    }
-    public void removeRow(int i) {
-    	if(i<peakRowList.size())
-    		peakRowList.removeElementAt(i);
-    	// fire update
-    	fireTableRowsDeleted(i, i);
-    } 
-	public void removeRows(int[] selectedRows) { 
-		for(int i=selectedRows.length-1; i>=0; i--) { 
-			removeRow(selectedRows[i]);
-		}
-	} 
-    public void removeAllRows() {
-    	int size = peakRowList.size();
-    	peakRowList.removeAllElements();
-    	fireTableRowsDeleted(0, size-1);
-    }
+  }
 
-    public int getColumnCount() {
-        return PeakTableColumnType.values().length;
-    }
+  public void removeAllRows() {
+    int size = peakRowList.size();
+    peakRowList.removeAllElements();
+    fireTableRowsDeleted(0, size - 1);
+  }
 
-    public int getRowCount() {
-        return peakRowList.size();
-    }
+  public int getColumnCount() {
+    return PeakTableColumnType.values().length;
+  }
 
-    public String getColumnName(int col) {
-        return getCommonColumn(col).getColumnName();
-    }
+  public int getRowCount() {
+    return peakRowList.size();
+  }
 
-    public Class<?> getColumnClass(int col) { 
-            PeakTableColumnType commonColumn = getCommonColumn(col);
-            return commonColumn.getColumnClass();  
-    }
-    
+  public String getColumnName(int col) {
+    return getCommonColumn(col).getColumnName();
+  }
 
-    /**
-     * This method returns the value at given coordinates of the dataset or null
-     * if it is a missing value
-     */
+  public Class<?> getColumnClass(int col) {
+    PeakTableColumnType commonColumn = getCommonColumn(col);
+    return commonColumn.getColumnClass();
+  }
 
-    public Object getValueAt(int row, int col) {
-    	try {
 
-        PeakTableRow peakRow = peakRowList.get(row);
+  /**
+   * This method returns the value at given coordinates of the dataset or null if it is a missing
+   * value
+   */
 
-            PeakTableColumnType commonColumn = getCommonColumn(col);
+  public Object getValueAt(int row, int col) {
+    try {
 
-            switch (commonColumn) {
-            case ROWID:
-                return new String(peakRow.getID());
-            case FILENAME:
-                return new String(peakRow.getRawDataName());
-            case PEAKLISTNAME:
-                return new String(peakRow.getPeakListName());
-            case MZ:
-                return peakRow.getMz(); 
-            case AREA:
-                return new Double(peakRow.getArea()); 
-            case HEIGHT:
-                return new Double(peakRow.getHeight()); 
-            case MASS:
-                return peakRow.getMass(); 
-            case MONOISOTOPICMASS:
-                return peakRow.getMonoisotopicMass(); 
-            case RT:
-                return new Double(peakRow.getRt()); 
-            case RTMAX:
-                return new Double(peakRow.getRtMax()); 
-            case RTMIN:
-                return new Double(peakRow.getRtMin()); 
-            case MINUSMASSRULE:
-                return new Double(peakRow.getMinusMassRule()); 
-            case CHARGE:
-                return new Integer(peakRow.getCharge());  
-            }
+      PeakTableRow peakRow = peakRowList.get(row);
 
-			
-		} catch (Exception e) {
-			return null;
-		}
+      PeakTableColumnType commonColumn = getCommonColumn(col);
 
-        return null;
-
-    }
-
-    public boolean isCellEditable(int row, int col) { 
-        PeakTableColumnType columnType = getCommonColumn(col);
-
-        return ((columnType == PeakTableColumnType.CHARGE) || (columnType == PeakTableColumnType.ROWID)|| (columnType == PeakTableColumnType.MINUSMASSRULE));
-    }
-
-    public void setValueAt(Object value, int row, int col) { 
-        PeakTableColumnType columnType = getCommonColumn(col);
-        setValueAt(value, row, columnType);
-    }
-    public void setValueAt(Object value, int row, PeakTableColumnType columnType) {  
-        
-        PeakTableRow prow = peakRowList.get(row);
-        // maybe set it here
-        switch (columnType) {
+      switch (commonColumn) {
         case ROWID:
-        	prow.setID(String.valueOf(value));
-        	break;
+          return new String(peakRow.getID());
         case FILENAME:
-        	prow.setRawDataName(String.valueOf(value));
-        	break;
+          return new String(peakRow.getRawDataName());
         case PEAKLISTNAME:
-        	prow.setPeakList((PeakList)value);
-        	break;
-        case AREA:
-        	prow.setArea((double)value);
-        	break;
-        case HEIGHT:
-        	prow.setHeight((double)value);
-        	break;
-        case MASS:
-        	prow.setMass((double)value);
-        	// calc monoisotopic mass
-        	double calcmass1 = prow.getMass()-prow.getMinusMassRule();
-        	setValueAt(calcmass1, row, PeakTableColumnType.MONOISOTOPICMASS);
-        	break;
-        case MINUSMASSRULE:
-        	prow.setMinusMassRule((double)value);
-        	// calc monoisotopic mass
-        	double calcmass2 = prow.getMass()-prow.getMinusMassRule();
-        	setValueAt(calcmass2, row, PeakTableColumnType.MONOISOTOPICMASS);
-        	break;
-        case MONOISOTOPICMASS:
-        	prow.setMonoisotopicMass((double)value);
-        	break;
+          return new String(peakRow.getPeakListName());
         case MZ:
-        	prow.setMz((double)value);
-        	break;
+          return peakRow.getMz();
+        case AREA:
+          return new Double(peakRow.getArea());
+        case HEIGHT:
+          return new Double(peakRow.getHeight());
+        case MASS:
+          return peakRow.getMass();
         case RT:
-        	prow.setRt((double)value);
-        	break;
+          return new Double(peakRow.getRt());
         case RTMAX:
-        	prow.setRtMax((double)value);
-        	break;
+          return new Double(peakRow.getRtMax());
         case RTMIN:
-        	prow.setRtMin((double)value);
-        	break;
+          return new Double(peakRow.getRtMin());
         case CHARGE:
-        	prow.setCharge((int)(value));
-        	// calc Mass
-        	double calcmass = prow.getMz()*prow.getCharge();
-        	setValueAt(calcmass, row, PeakTableColumnType.MASS);
-        	break; 
-        }
-        fireTableCellUpdated(row, columnType.ordinal());
-        // update repaint
-    } 
+          return new Integer(peakRow.getCharge());
+      }
 
-    boolean isCommonColumn(int col) {
-        return col < PeakTableColumnType.values().length;
+
+    } catch (Exception e) {
+      return null;
     }
 
-    public static PeakTableColumnType getCommonColumn(int col) {
+    return null;
 
-        PeakTableColumnType commonColumns[] = PeakTableColumnType.values();
+  }
 
-        if (col < commonColumns.length)
-            return commonColumns[col];
+  public boolean isCellEditable(int row, int col) {
+    PeakTableColumnType columnType = getCommonColumn(col);
 
-        return null; 
+    return ((columnType == PeakTableColumnType.CHARGE)
+        || (columnType == PeakTableColumnType.ROWID));
+  }
+
+  public void setValueAt(Object value, int row, int col) {
+    PeakTableColumnType columnType = getCommonColumn(col);
+    setValueAt(value, row, columnType);
+  }
+
+  public void setValueAt(Object value, int row, PeakTableColumnType columnType) {
+
+    PeakTableRow prow = peakRowList.get(row);
+    // maybe set it here
+    switch (columnType) {
+      case ROWID:
+        prow.setID(String.valueOf(value));
+        break;
+      case FILENAME:
+        prow.setRawDataName(String.valueOf(value));
+        break;
+      case PEAKLISTNAME:
+        prow.setPeakList((PeakList) value);
+        break;
+      case AREA:
+        prow.setArea((double) value);
+        break;
+      case HEIGHT:
+        prow.setHeight((double) value);
+        break;
+      case MASS:
+        prow.setMass((double) value);
+        break;
+      case MZ:
+        prow.setMz((double) value);
+        break;
+      case RT:
+        prow.setRt((double) value);
+        break;
+      case RTMAX:
+        prow.setRtMax((double) value);
+        break;
+      case RTMIN:
+        prow.setRtMin((double) value);
+        break;
+      case CHARGE:
+        prow.setCharge((int) (value));
+        // calc Mass
+        double calcmass = prow.getMz() * prow.getCharge();
+        setValueAt(calcmass, row, PeakTableColumnType.MASS);
+        break;
     }
+    fireTableCellUpdated(row, columnType.ordinal());
+    // update repaint
+  }
 
-	public Vector<PeakTableRow> getPeakRowList() {
-		return peakRowList;
-	}
-      
+  boolean isCommonColumn(int col) {
+    return col < PeakTableColumnType.values().length;
+  }
+
+  public static PeakTableColumnType getCommonColumn(int col) {
+
+    PeakTableColumnType commonColumns[] = PeakTableColumnType.values();
+
+    if (col < commonColumns.length)
+      return commonColumns[col];
+
+    return null;
+  }
+
+  public Vector<PeakTableRow> getPeakRowList() {
+    return peakRowList;
+  }
+
 }

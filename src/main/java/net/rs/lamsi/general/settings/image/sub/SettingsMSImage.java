@@ -14,7 +14,6 @@ public class SettingsMSImage extends SettingsGeneralImage {
     super("/Settings/MSImage/", "setMSI");
     this.velocity = 50;
     this.spotsize = 50;
-    this.timePerLine = 1;
     this.isTriggered = true;
   }
 
@@ -23,7 +22,6 @@ public class SettingsMSImage extends SettingsGeneralImage {
     super("/Settings/MSImage/", "setMSI");
     this.velocity = velocity;
     this.spotsize = spotsize;
-    this.timePerLine = timePerLine;
     this.mzIon = mzIon;
     this.isTriggered = isTriggert;
     this.allFiles = allFiles;

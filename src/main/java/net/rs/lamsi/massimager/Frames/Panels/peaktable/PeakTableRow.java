@@ -1,174 +1,182 @@
 package net.rs.lamsi.massimager.Frames.Panels.peaktable;
 
+import com.google.common.collect.Range;
+import net.sf.mzmine.datamodel.Feature;
 import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
 
 public class PeakTableRow {
-	// "File", "PeakList", "MZ", "z (charge)", "Mass", "- Mass (rule)", "Monoisotopic mass", "Height", "Area", "rt(min)", "rt", "rt(max)"
-	private String rawDataName, ID;
-	private PeakList peakList;
-	private PeakListRow peakRow;
-	private double mz, mass, monoisotopicMass, height, area, rtMin, rt, rtMax;
-	private double minusMassRule = 0;
-	private int charge;
-	
-	public PeakTableRow(String ID, String rawDataName, PeakList peakList, double mz,
-			double mass, double monoisotopicMass, double height, double area,
-			double rtMin, double rt, double rtMax, int charge, double minusMassRule) {
-		super();
-		this.ID = ID;
-		this.rawDataName = rawDataName;
-		this.peakList = peakList;
-		this.mz = mz;
-		this.mass = mass;
-		this.monoisotopicMass = monoisotopicMass;
-		this.height = height;
-		this.rtMin = rtMin;
-		this.rt = rt;
-		this.rtMax = rtMax;
-		this.charge = charge;
-		this.area = area;
-		this.minusMassRule = minusMassRule;
-	}
-	
-	public PeakTableRow(String ID, String rawDataName, PeakList peakList, PeakListRow r, double rtMin, double rtMax, double minusMassRule) {
-		this.ID = ID;
-		this.rawDataName = rawDataName;
-		this.peakList = peakList;
-		this.peakRow = r;
-		this.mz = r.getAverageMZ();
-		this.height = r.getAverageHeight();
-		this.area = r.getAverageArea();
-		this.rt = r.getAverageRT(); 
-		this.rtMin = rtMin;
-		this.rtMax = rtMax; 
-		if(r.getBestPeak()!=null) this.charge = r.getBestPeak().getCharge();
-		else this.charge = 0;
-		this.minusMassRule = minusMassRule;
-		// 
-		this.mass = mz*charge;
-		this.monoisotopicMass = mass-minusMassRule; 
-	}
+  // "File", "PeakList", "MZ", "z (charge)", "Mass", "- Mass (rule)", "Monoisotopic mass", "Height",
+  // "Area", "rt(min)", "rt", "rt(max)"
+  private String rawDataName, ID;
+  private PeakList peakList;
+  private PeakListRow peakRow;
+  private double mz, mass, monoisotopicMass, height, area, rtMin, rt, rtMax;
+  private double minusMassRule = 0;
+  private int charge;
 
-	public Object[] toArray() {
-		return getArray();
-	}
-	
-	public Object[] getArray() {
-		Object[] array = {rawDataName, peakList, mz, charge, mass, minusMassRule, monoisotopicMass, height, area, rtMin, rt, rtMax};
-		return array;
-	}
-	
-	
-	public String getRawDataName() {
-		return rawDataName;
-	}
+  private Range<Double> mzRange = null;
 
-	public void setRawDataName(String rawDataName) {
-		this.rawDataName = rawDataName;
-	}
+  public PeakTableRow(String ID, String rawDataName, PeakList peakList, PeakListRow r, double rtMin,
+      double rtMax, double minusMassRule) {
+    this.ID = ID;
+    this.rawDataName = rawDataName;
+    this.peakList = peakList;
+    this.peakRow = r;
+    this.mz = r.getAverageMZ();
+    this.height = r.getAverageHeight();
+    this.area = r.getAverageArea();
+    this.rt = r.getAverageRT();
+    this.rtMin = rtMin;
+    this.rtMax = rtMax;
+    if (r.getBestPeak() != null)
+      this.charge = r.getBestPeak().getCharge();
+    else
+      this.charge = 0;
+    this.minusMassRule = minusMassRule;
+    //
+    this.mass = mz * charge;
+    this.monoisotopicMass = mass - minusMassRule;
 
-	public String getPeakListName() {
-		if(peakList==null) return "";
-		return peakList.getName();
-	}
+    // create range
+    for (Feature f : peakRow.getPeaks()) {
+      if (mzRange == null)
+        mzRange = f.getRawDataPointsMZRange();
+      else
+        mzRange.span(f.getRawDataPointsMZRange());
+    }
+  }
 
-	public void setPeakList(PeakList peakList) {
-		this.peakList = peakList;
-	}
-	public PeakList getPeakList() {
-		return peakList;
-	}
+  public Object[] toArray() {
+    return getArray();
+  }
 
-	public double getMz() {
-		return mz;
-	}
+  public Object[] getArray() {
+    Object[] array = {rawDataName, peakList, mz, charge, mass, height, area, rtMin, rt, rtMax};
+    return array;
+  }
 
-	public void setMz(double mz) {
-		this.mz = mz;
-	}
+  /**
+   * Range from min to max
+   * 
+   * @return
+   */
+  public Range<Double> getMzRange() {
+    return mzRange;
+  }
 
-	public double getMass() {
-		return mass;
-	}
 
-	public void setMass(double mass) {
-		this.mass = mass;
-	}
+  public String getRawDataName() {
+    return rawDataName;
+  }
 
-	public double getMonoisotopicMass() {
-		return monoisotopicMass;
-	}
+  public void setRawDataName(String rawDataName) {
+    this.rawDataName = rawDataName;
+  }
 
-	public void setMonoisotopicMass(double monoisotopicMass) {
-		this.monoisotopicMass = monoisotopicMass;
-	} 
+  public String getPeakListName() {
+    if (peakList == null)
+      return "";
+    return peakList.getName();
+  }
 
-	public double getRtMin() {
-		return rtMin;
-	}
+  public void setPeakList(PeakList peakList) {
+    this.peakList = peakList;
+  }
 
-	public void setRtMin(double rtMin) {
-		this.rtMin = rtMin;
-	}
+  public PeakList getPeakList() {
+    return peakList;
+  }
 
-	public double getRtMax() {
-		return rtMax;
-	}
+  public double getMz() {
+    return mz;
+  }
 
-	public void setRtMax(double rtMax) {
-		this.rtMax = rtMax;
-	}
+  public void setMz(double mz) {
+    this.mz = mz;
+  }
 
-	public int getCharge() {
-		return charge;
-	}
+  public double getMass() {
+    return mass;
+  }
 
-	public void setCharge(int charge) {
-		this.charge = charge;
-	}
+  public void setMass(double mass) {
+    this.mass = mass;
+  }
 
-	public double getHeight() {
-		return height;
-	}
+  public double getMonoisotopicMass() {
+    return monoisotopicMass;
+  }
 
-	public void setHeight(double height) {
-		this.height = height;
-	}
+  public void setMonoisotopicMass(double monoisotopicMass) {
+    this.monoisotopicMass = monoisotopicMass;
+  }
 
-	public double getArea() {
-		return area;
-	}
+  public double getRtMin() {
+    return rtMin;
+  }
 
-	public void setArea(double area) {
-		this.area = area;
-	}
+  public void setRtMin(double rtMin) {
+    this.rtMin = rtMin;
+  }
 
-	public double getRt() {
-		return rt;
-	}
+  public double getRtMax() {
+    return rtMax;
+  }
 
-	public void setRt(double rt) {
-		this.rt = rt;
-	}
+  public void setRtMax(double rtMax) {
+    this.rtMax = rtMax;
+  }
 
-	public double getMinusMassRule() {
-		return minusMassRule;
-	}
+  public int getCharge() {
+    return charge;
+  }
 
-	public void setMinusMassRule(double minusMassRule) {
-		this.minusMassRule = minusMassRule;
-	}
+  public void setCharge(int charge) {
+    this.charge = charge;
+  }
 
-	public String getID() {
-		return ID;
-	}
+  public double getHeight() {
+    return height;
+  }
 
-	public void setID(String iD) {
-		ID = iD;
-	}
+  public void setHeight(double height) {
+    this.height = height;
+  }
 
-	public PeakListRow getPeakRow() {
-		return peakRow;
-	} 
+  public double getArea() {
+    return area;
+  }
+
+  public void setArea(double area) {
+    this.area = area;
+  }
+
+  public double getRt() {
+    return rt;
+  }
+
+  public void setRt(double rt) {
+    this.rt = rt;
+  }
+
+  public double getMinusMassRule() {
+    return minusMassRule;
+  }
+
+  public void setMinusMassRule(double minusMassRule) {
+    this.minusMassRule = minusMassRule;
+  }
+
+  public String getID() {
+    return ID;
+  }
+
+  public void setID(String iD) {
+    ID = iD;
+  }
+
+  public PeakListRow getPeakRow() {
+    return peakRow;
+  }
 }

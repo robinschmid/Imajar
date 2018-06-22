@@ -20,7 +20,10 @@ public abstract class ChromGenType {
           if (mostIntense == null || mostIntense.getIntensity() < d.getIntensity())
             mostIntense = d;
         }
-        return mostIntense.getIntensity();
+        if (mostIntense == null)
+          return 0;
+        else
+          return mostIntense.getIntensity();
       } catch (Exception ex) {
         return 0;
       }

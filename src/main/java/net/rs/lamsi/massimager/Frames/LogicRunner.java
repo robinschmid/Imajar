@@ -19,6 +19,7 @@ import net.rs.lamsi.general.datamodel.image.data.twodimensional.Simple2DDataset;
 import net.rs.lamsi.general.settings.SettingsDataSaver;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
+import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
 import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
@@ -757,7 +758,8 @@ public class LogicRunner {
   }
 
   // get spectrum from point in image. with image settings!
-  public Scan generateSpectrumByXY(SettingsGeneralImage sett, double x, double y) {
+  public Scan generateSpectrumByXY(SettingsImageContinousSplit split, SettingsGeneralImage sett,
+      double x, double y) {
     try {
       // raw data is imaging raw data - non retention time data
       if (getSelectedFile() instanceof ImagingRawData) {
@@ -785,7 +787,8 @@ public class LogicRunner {
           // Continuous
           // x und y gehen in zeit ein
           filei = selectedFileIndex;
-          rt = Math.floor(y / sett.getSpotsize()) * sett.getTimePerLine() + x / sett.getVelocity();
+          rt = split.getStartX() + Math.floor(y / sett.getSpotsize()) * split.getSplitAfterX()
+              + x / sett.getVelocity();
         }
         // find File for y value
         if (filei != -1)
@@ -800,17 +803,18 @@ public class LogicRunner {
   }
 
   // get SUM spectrum from area in image. with image settings!
-  public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, Rectangle2D rect) {
+  public MZChromatogram generateSpectrumByXY(SettingsImageContinousSplit split,
+      SettingsGeneralImage sett, Rectangle2D rect) {
     float x = (float) rect.getX();
     float y = (float) rect.getY();
     float x2 = (float) rect.getMaxX();
     float y2 = (float) rect.getMaxY();
-    return generateSpectrumByXY(sett, x, y, x2, y2);
+    return generateSpectrumByXY(split, sett, x, y, x2, y2);
   }
 
   // get SUM spectrum from area in image. with image settings!
-  public MZChromatogram generateSpectrumByXY(SettingsGeneralImage sett, float x, float y, float x2,
-      float y2) {
+  public MZChromatogram generateSpectrumByXY(SettingsImageContinousSplit split,
+      SettingsGeneralImage sett, float x, float y, float x2, float y2) {
     try {
       // raw data is imaging raw data - non retention time data
       if (getSelectedFile() instanceof ImagingRawData) {
@@ -847,24 +851,24 @@ public class LogicRunner {
           rt2 = x2 / sett.getVelocity();
         } else {
           // Continuous
-          // x und y gehen in zeit ein
+          // x and y for time
           fileiStart = selectedFileIndex;
           fileiEnd = selectedFileIndex;
           // time per line
-          if (sett.getModeTimePerLine() == SettingsGeneralImage.MODE_TIME_PER_LINE) {
+          if (split.getSplitMode().equals(XUNIT.s)) {
             // get Spectrum by time per line
-            rt = Math.floor(y / sett.getSpotsize()) * sett.getTimePerLine()
-                + x / sett.getVelocity();
-            rt2 = Math.floor(y2 / sett.getSpotsize()) * sett.getTimePerLine()
-                + x2 / sett.getVelocity();
+            rt = Math.floor(y / sett.getSpotsize()) * split.getSplitAfterX()
+                + x / sett.getVelocity() + split.getStartX();
+            rt2 = Math.floor(y2 / sett.getSpotsize()) * split.getSplitAfterX()
+                + x2 / sett.getVelocity() + split.getStartX();
           } else {
             // resolution in scans per line
             // get Spectrum by direct spectrum number
             // TODO wenn der mode umgestellt wird dann muss hier eine andere art zur berechnung des
             // ausgewählten spektrums her
-            rt = Math.floor(y / sett.getSpotsize()) * sett.getTimePerLine()
+            rt = Math.floor(y / sett.getSpotsize()) * split.getSplitAfterDP()
                 + x / sett.getVelocity();
-            rt2 = Math.floor(y2 / sett.getSpotsize()) * sett.getTimePerLine()
+            rt2 = Math.floor(y2 / sett.getSpotsize()) * split.getSplitAfterDP()
                 + x2 / sett.getVelocity();
           }
         }
@@ -927,9 +931,9 @@ public class LogicRunner {
   public Image2D generateImageCon(SettingsMSImage setMSICon,
       SettingsImageContinousSplit settSplit) {
     // pass options to reader.
-    // TODO nicht immer SUM_PEAKS
-    MZChromatogram mzChrom =
-        MZDataFactory.getMZChrom(getSelectedFile(), setMSICon.getMZIon(), ChromGenType.SUM_PEAKS);
+    // TODO change to options: SUM_PEAKS max peak
+    MZChromatogram mzChrom = MZDataFactory.getMZChrom(getSelectedFile(), setMSICon.getMZIon(),
+        ChromGenType.HIGHEST_PEAK);
     // Panel as ChartViewer
     if (mzChrom != null) {
       // set title
