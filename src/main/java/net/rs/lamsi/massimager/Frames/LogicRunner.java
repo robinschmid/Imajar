@@ -938,7 +938,7 @@ public class LogicRunner {
     if (mzChrom != null) {
       // set title
       NumberFormat form = SettingsHolder.getSettings().getSetGeneralValueFormatting().getMZFormat();
-      String title = "m/z = " + form.format(setMSICon.getMZIon().getMz()) + "(+- "
+      String title = "mz = " + form.format(setMSICon.getMZIon().getMz()) + "(+- "
           + form.format(setMSICon.getMZIon().getPm()) + ")";
       setMSICon.setTitle(title);
       // set Path from first rawfile TODO
@@ -974,7 +974,7 @@ public class LogicRunner {
       // set title
       String title = setMSIDiscon.getMZIon().getName();
       if (title == null || title.length() <= 0)
-        title = "m/z = " + setMSIDiscon.getMZIon().getMz();
+        title = "mz = " + setMSIDiscon.getMZIon().getMz();
       setMSIDiscon.setTitle(title);
       // set Path from first rawfile TODO
       // setMSIDiscon.setRAWFilepath(specList.firstElement().getFile().getPath());
@@ -1029,6 +1029,7 @@ public class LogicRunner {
           new Simple2DDataset((float) param.getPixelWidth(), (float) param.getPixelShape(), data);
 
       Image2D image = new Image2D(idata);
+      image.getSettings().replaceSettings(setMSI, false);
       setCurrentImage(image);
       return image;
     }

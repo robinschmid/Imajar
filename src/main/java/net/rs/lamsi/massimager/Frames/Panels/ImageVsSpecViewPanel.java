@@ -740,6 +740,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       }
     });
 
+
     lblProject = new JLabel("project");
     pnSettImageCon.add(lblProject, "cell 0 5,alignx trailing");
 
@@ -759,6 +760,11 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
     txtImgGroupID.setColumns(10);
     btnSendImage.setToolTipText("Sends image to image editor");
     pnSettImageCon.add(btnSendImage, "cell 1 7");
+
+    btnSendAllImages = new JButton("Send all images");
+    btnSendAllImages.setToolTipText("Sends all images from the upper table to the image editor");
+    pnSettImageCon.add(btnSendAllImages, "cell 1 8");
+    btnSendAllImages.addActionListener(e -> sendAllImagesToImageEditor());
 
     pnPeakList = new ModuleListWithOptions("PeakLists", true, wnd.getLogicRunner().getPeakLists());
     pnPeakList.getList().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -790,6 +796,55 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
     setKeyBindings();
     // init dialogs
     initDialogs();
+  }
+
+  /**
+   * Sends all images from table to imageeditor
+   */
+  private void sendAllImagesToImageEditor() {
+    // send image to imageeditor // TODO
+    if (selectedModeMiddle == MODE_IMAGE_CON || selectedModeMiddle == MODE_IMAGE_DISCON
+        || selectedModeMiddle == MODE_IMAGE) {
+      // table is not empty?
+      if (tableMzPeak.getTable().getRowCount() > 0) {
+        // First get new Imagesettings
+        setupNewImageSettingsFromPanel();
+        //
+        String project = getTxtProject().getText();
+        String group = getTxtImgGroupID().getText();
+        // all rows
+        for (int i = 0; i < tableMzPeak.getTable().getRowCount(); i++) {
+          // image of selected peak
+          PeakTableRow prow = tableMzPeak.getTableModel().getPeakRowList().get(i);
+          com.google.common.collect.Range<Double> mz = prow.getMzRange();
+          //
+          double center = prow.getMz();
+          double pm = (mz.upperEndpoint() - mz.lowerEndpoint()) / 2.0;
+
+
+          Image2D image = null;
+          MZIon ion = settImage.getMZIon();
+          ion.setMz(center);
+          ion.setPm(pm);
+
+          // generate image
+          switch (selectedModeMiddle) {
+            case MODE_IMAGE: // ImagingRawDataFile (e.g. imzML)
+              image = window.getLogicRunner().generateImage(settImage,
+                  window.getLogicRunner().getSelectedRawDataFile());
+              break;
+            case MODE_IMAGE_CON: // continuous data
+              image = window.getLogicRunner().generateImageCon(settImage, settSplitCon);
+              break;
+            case MODE_IMAGE_DISCON: // line per line data
+              image = window.getLogicRunner().generateImageDiscon(settImage);
+              break;
+          }
+          if (image != null)
+            window.sendImage2DToImageEditor(image, project, group);
+        }
+      }
+    }
   }
 
   private void initDialogs() {
@@ -1573,8 +1628,12 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       // trigger? or continuous data
       settImage.setTriggered(selectedModeMiddle == MODE_IMAGE_DISCON);
 
-      settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
-      settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));
+      try {
+        settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
+        settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));
+      } catch (Exception e) {
+        settSplitCon.setSplitMode(XUNIT.DP);
+      }
       if (settSplitCon.getSplitMode() == XUNIT.DP)
         settSplitCon.setSplitAfterDP(Module.intFromTxt(getTxtTimePerLine()));
       else
@@ -1955,6 +2014,7 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
   private JPanel panel;
   private JLabel lblProject;
   private JTextField txtProject;
+  private JButton btnSendAllImages;
 
   public void startImageUpdater() {
     if (startTime == -1) {
