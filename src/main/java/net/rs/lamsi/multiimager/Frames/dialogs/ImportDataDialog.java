@@ -11,6 +11,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -113,6 +114,13 @@ public class ImportDataDialog extends JDialog {
   private JCheckBox cbShowImageSetup;
   private JRadioButton rbShimadzuNeu;
   private JRadioButton rbElement2;
+  private JPanel pnSkipLines;
+  private JLabel lblTextLines;
+  private JLabel lblSkipFirst;
+  private JTextField txtSkipFirstRows;
+  private Component horizontalStrut;
+  private JLabel lblSkipBetweenTitles;
+  private JTextField txtSkipRowsTitlesToData;
 
 
   /**
@@ -516,6 +524,45 @@ public class ImportDataDialog extends JDialog {
           panel_3.add(txtEndsWith);
           txtEndsWith.setText("csv");
           txtEndsWith.setColumns(10);
+        }
+      }
+      {
+        pnSkipLines = new JPanel();
+        south.add(pnSkipLines);
+        {
+          lblTextLines = new JLabel("Text lines:");
+          lblTextLines.setFont(new Font("Tahoma", Font.BOLD, 11));
+          pnSkipLines.add(lblTextLines);
+        }
+        {
+          lblSkipFirst = new JLabel("skip first");
+          pnSkipLines.add(lblSkipFirst);
+        }
+        {
+          txtSkipFirstRows = new JTextField();
+          txtSkipFirstRows
+              .setToolTipText("First scan line to import (use 0 or no input for no filtering)");
+          txtSkipFirstRows.setText("0");
+          txtSkipFirstRows.setHorizontalAlignment(SwingConstants.RIGHT);
+          txtSkipFirstRows.setColumns(5);
+          pnSkipLines.add(txtSkipFirstRows);
+        }
+        {
+          horizontalStrut = Box.createHorizontalStrut(20);
+          pnSkipLines.add(horizontalStrut);
+        }
+        {
+          lblSkipBetweenTitles = new JLabel("skip between titles and data");
+          pnSkipLines.add(lblSkipBetweenTitles);
+        }
+        {
+          txtSkipRowsTitlesToData = new JTextField();
+          txtSkipRowsTitlesToData
+              .setToolTipText("First scan line to import (use 0 or no input for no filtering)");
+          txtSkipRowsTitlesToData.setText("0");
+          txtSkipRowsTitlesToData.setHorizontalAlignment(SwingConstants.RIGHT);
+          txtSkipRowsTitlesToData.setColumns(5);
+          pnSkipLines.add(txtSkipRowsTitlesToData);
         }
       }
       {
@@ -1058,5 +1105,13 @@ public class ImportDataDialog extends JDialog {
 
   public JRadioButton getRbElement2() {
     return rbElement2;
+  }
+
+  public JTextField getTxtSkipRowsTitlesToData() {
+    return txtSkipRowsTitlesToData;
+  }
+
+  public JTextField getTxtSkipFirstRows() {
+    return txtSkipFirstRows;
   }
 }

@@ -45,6 +45,10 @@ public class SettingsImageDataImportTxt extends Settings {
   protected boolean isShiftXValues;
   protected boolean openImageSetupDialog;
 
+  // skip first text lines, skip lines between titles/data
+  protected int skipFirstLines = 0, skipLinesBetweenTitleData = 0;
+
+
   public IMPORT getModeImport() {
     return modeImport;
   }
