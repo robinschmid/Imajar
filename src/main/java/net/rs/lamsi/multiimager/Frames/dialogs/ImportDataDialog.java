@@ -11,6 +11,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -113,6 +114,13 @@ public class ImportDataDialog extends JDialog {
   private JCheckBox cbShowImageSetup;
   private JRadioButton rbShimadzuNeu;
   private JRadioButton rbElement2;
+  private JPanel pnSkipLines;
+  private JLabel lblTextLines;
+  private JLabel lblSkipFirst;
+  private JTextField txtSkipFirstRows;
+  private Component horizontalStrut;
+  private JLabel lblSkipBetweenTitles;
+  private JTextField txtSkipRowsTitlesToData;
 
 
   /**
@@ -496,6 +504,44 @@ public class ImportDataDialog extends JDialog {
         }
       }
       {
+        pnSkipLines = new JPanel();
+        south.add(pnSkipLines);
+        {
+          lblTextLines = new JLabel("Text lines:");
+          lblTextLines.setFont(new Font("Tahoma", Font.BOLD, 11));
+          pnSkipLines.add(lblTextLines);
+        }
+        {
+          lblSkipFirst = new JLabel("skip first");
+          pnSkipLines.add(lblSkipFirst);
+        }
+        {
+          txtSkipFirstRows = new JTextField();
+          txtSkipFirstRows.setToolTipText("Skip the first lines in the text files");
+          txtSkipFirstRows.setText("0");
+          txtSkipFirstRows.setHorizontalAlignment(SwingConstants.RIGHT);
+          txtSkipFirstRows.setColumns(5);
+          pnSkipLines.add(txtSkipFirstRows);
+        }
+        {
+          horizontalStrut = Box.createHorizontalStrut(20);
+          pnSkipLines.add(horizontalStrut);
+        }
+        {
+          lblSkipBetweenTitles = new JLabel("skip between titles and data");
+          pnSkipLines.add(lblSkipBetweenTitles);
+        }
+        {
+          txtSkipRowsTitlesToData = new JTextField();
+          txtSkipRowsTitlesToData
+              .setToolTipText("Skip lines in the text file between the title line and data ");
+          txtSkipRowsTitlesToData.setText("0");
+          txtSkipRowsTitlesToData.setHorizontalAlignment(SwingConstants.RIGHT);
+          txtSkipRowsTitlesToData.setColumns(5);
+          pnSkipLines.add(txtSkipRowsTitlesToData);
+        }
+      }
+      {
         panel_3 = new JPanel();
         south.add(panel_3);
         {
@@ -606,6 +652,11 @@ public class ImportDataDialog extends JDialog {
       getTxtLastLine().setText(String.valueOf(s.getEndLine()));
       getTxtFirstDP().setText(String.valueOf(s.getStartDP()));
       getTxtLastDP().setText(String.valueOf(s.getEndDP()));
+
+      // skip text lines
+      getTxtSkipFirstRows().setText(String.valueOf(s.getSkipFirstLines()));
+      getTxtSkipRowsTitlesToData().setText(String.valueOf(s.getSkipLinesBetweenTitleData()));
+
 
       getCbShiftXValues().setSelected(sett.isShiftXValues());
 
@@ -823,6 +874,10 @@ public class ImportDataDialog extends JDialog {
     int startDP = Module.intFromTxt(getTxtFirstDP());
     int endDP = Module.intFromTxt(getTxtLastDP());
 
+    // skip text lines
+    int skipFirstLines = Module.intFromTxt(getTxtSkipFirstRows());
+    int skipRowsBetweenTitlesAndData = Module.intFromTxt(getTxtSkipRowsTitlesToData());
+
     boolean isShiftXValues = getCbShiftXValues().isSelected();
 
     // text file
@@ -890,6 +945,8 @@ public class ImportDataDialog extends JDialog {
       }
     }
 
+    settingsDataImport.setSkipLinesBetweenTitleData(skipRowsBetweenTitlesAndData);
+    settingsDataImport.setSkipFirstLines(skipFirstLines);
     settingsDataImport.setOpenImageSetupDialog(cbShowImageSetup.isSelected());
     return settingsDataImport;
   }
@@ -1058,5 +1115,13 @@ public class ImportDataDialog extends JDialog {
 
   public JRadioButton getRbElement2() {
     return rbElement2;
+  }
+
+  public JTextField getTxtSkipRowsTitlesToData() {
+    return txtSkipRowsTitlesToData;
+  }
+
+  public JTextField getTxtSkipFirstRows() {
+    return txtSkipFirstRows;
   }
 }
