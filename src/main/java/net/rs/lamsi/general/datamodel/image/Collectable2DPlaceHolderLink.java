@@ -25,6 +25,10 @@ public class Collectable2DPlaceHolderLink extends Collectable2D<SettingsCollecta
     super(settings);
   }
 
+  public Collectable2DPlaceHolderLink(Collectable2D img) {
+    this(new SettingsCollectable2DPlaceHolder(img));
+  }
+
   /**
    * returns an easy icon
    * 

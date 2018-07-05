@@ -2,11 +2,17 @@ package net.rs.lamsi.general.settings.image;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import net.rs.lamsi.general.datamodel.image.Collectable2DPlaceHolderLink;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.PostProcessingOpProvider;
+import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.dataoperations.DPReduction;
 import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
@@ -21,9 +27,11 @@ public class SettingsSPImage extends SettingsContainerDataCollectable2D
     implements PostProcessingOpProvider {
   // do not change the version!
   private static final long serialVersionUID = 1L;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   // the original image
-  private Image2D img;
+  private Collectable2DPlaceHolderLink imgLink;
+  private transient Image2D img;
 
   public SettingsSPImage() {
     super("SettingsSPImage", "/Settings/SPImage/", "setSPImg");
@@ -103,8 +111,34 @@ public class SettingsSPImage extends SettingsContainerDataCollectable2D
   // ###########################################################
   // XML
   @Override
-  public void appendSettingsValuesToXML(Element elParent, Document doc) {}
+  public void appendSettingsValuesToXML(Element elParent, Document doc) {
+    toXML(elParent, doc, "img", img);
+  }
 
   @Override
-  public void loadValuesFromXML(Element el, Document doc) {}
+  public void loadValuesFromXML(Element el, Document doc) {
+    super.loadValuesFromXML(el, doc);
+    NodeList list = el.getChildNodes();
+    for (int i = 0; i < list.getLength(); i++) {
+      if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
+        Element nextElement = (Element) list.item(i);
+        String paramName = nextElement.getNodeName();
+        if (paramName.equals("img"))
+          imgLink = c2dFromXML(nextElement);
+      }
+    }
+  }
+
+  @Override
+  public void replacePlaceHoldersInSettings(ModuleTree<Collectable2D> tree) {
+    if (imgLink != null) {
+      try {
+        img = (Image2D) tree.getCollectable2DFromPlaceHolder(imgLink);
+        if (img != null)
+          imgLink = null;
+      } catch (Exception e) {
+        logger.error("Cannot replace img placeholder {}", imgLink.toString(), e);
+      }
+    }
+  }
 }

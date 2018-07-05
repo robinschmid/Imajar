@@ -29,7 +29,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   // ############################################################
   // data
-  protected final Image2D img;
+  // store in image in SettingsSPImage
 
   // last settings for calculations
   protected SingleParticleSettings lastSelected, lastFull;
@@ -46,7 +46,6 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   public SingleParticleImage(Image2D img, SettingsSPImage sett) {
     super(sett);
-    this.img = img;
     sett.setImg(img);
   }
 
@@ -56,7 +55,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * @return
    */
   public Image2D getImage() {
-    return img;
+    return getSettings().getImg();
   }
 
 
@@ -79,19 +78,19 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   public double[] getSPDataArraySelected(SingleParticleSettings sett) {
     // if not yet filtered or settings have changed
     if (selectedFilteredData == null || !lastSelected.equals(sett)
-        || !img.getSettings().getSettSelections().equals(lastSelections)) {
+        || !getImage().getSettings().getSettSelections().equals(lastSelections)) {
       // get data matrix of selected DP
-      selectedFilteredData = img.toIMatrixOfSelected(true);
+      selectedFilteredData = getImage().toIMatrixOfSelected(true);
       logger.debug("image matrix generation");
       // filter out split events
       selectedFilteredData = filterOutSplitPixelEventsAndTransform(sett, selectedFilteredData,
-          img.isRotated(), Transformation.NONE);
+          getImage().isRotated(), Transformation.NONE);
       logger.debug("split pixel event filter");
 
       // save settings
       try {
         lastSelected = (SingleParticleSettings) sett.copy();
-        lastSelections = (SettingsSelections) img.getSettings().getSettSelections().copy();
+        lastSelections = (SettingsSelections) getImage().getSettings().getSettSelections().copy();
       } catch (Exception e) {
         logger.error("", e);
       }
@@ -137,14 +136,15 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    * @return [lines][z] with z as number of particles
    */
   public double[][] toXYCountsArray(SingleParticleSettings sett) {
-    logger.debug("Start single particle counter on {} with {}", img.getTitle(), sett.toString());
+    logger.debug("Start single particle counter on {} with {}", getImage().getTitle(),
+        sett.toString());
     logger.debug("Start SPI counter: ");
 
-    filteredData = img.toIMatrix(true, true);
+    filteredData = getImage().toIMatrix(true, true);
     // filter split pixel eventstimer
     logger.debug("toIMatrixOfSelected from img");
     logger.debug("Start SPI counter: Data filtering and transform to {}", sett.getTransform());
-    filteredData = filterOutSplitPixelEventsAndTransform(sett, filteredData, img.isRotated(),
+    filteredData = filterOutSplitPixelEventsAndTransform(sett, filteredData, getImage().isRotated(),
         sett.getTransform());
     logger.debug("DONE. filter split particle events ");
 
@@ -396,7 +396,9 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    */
   @Override
   public Icon getIcon(int maxw, int maxh) {
-    return img.getIcon(maxw, maxh);
+    if (getImage() == null)
+      return null;
+    return getImage().getIcon(maxw, maxh);
   }
 
   // end of visual extras
@@ -404,11 +406,11 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
 
   public ImageDataset getData() {
-    return img.getData();
+    return getImage().getData();
   }
 
   public int getIndex() {
-    return img.getIndex();
+    return getImage().getIndex();
   }
 
   // a name for lists
@@ -419,90 +421,90 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   @Override
   public int getWidthAsMaxDP() {
-    return img.getWidthAsMaxDP();
+    return getImage().getWidthAsMaxDP();
   }
 
   @Override
   public int getHeightAsMaxDP() {
-    return img.getHeightAsMaxDP();
+    return getImage().getHeightAsMaxDP();
   }
 
   @Override
   public float getMaxBlockWidth(boolean postProcessing) {
-    return getMaxBlockWidth(img.getSettings().getSettImage(), postProcessing);
+    return getMaxBlockWidth(getImage().getSettings().getSettImage(), postProcessing);
   }
 
   @Override
   public float getMaxBlockHeight(boolean postProcessing) {
-    return getMaxBlockHeight(img.getSettings().getSettImage(), postProcessing);
+    return getMaxBlockHeight(getImage().getSettings().getSettImage(), postProcessing);
   }
 
   public float getMaxBlockWidth(SettingsGeneralImage settImage, boolean postProcessing) {
     int rot = settImage.getRotationOfData();
     float f = getSettings().getSettSingleParticle().getNumberOfPixel();
     if (postProcessing)
-      return img.getMaxBlockWidth(rot, 1, 1) * f;
+      return getImage().getMaxBlockWidth(rot, 1, 1) * f;
     else
-      return img.getMaxBlockWidth(rot, 1, 1);
+      return getImage().getMaxBlockWidth(rot, 1, 1);
   }
 
   public float getMaxBlockHeight(SettingsGeneralImage settImage, boolean postProcessing) {
     int rot = settImage.getRotationOfData();
-    return img.getMaxBlockHeight(rot, 1, 1);
+    return getImage().getMaxBlockHeight(rot, 1, 1);
   }
 
   public float getAvgBlockWidth(boolean postProcessing) {
-    return getAvgBlockWidth(img.getSettings().getSettImage(), postProcessing);
+    return getAvgBlockWidth(getImage().getSettings().getSettImage(), postProcessing);
   }
 
   public float getAvgBlockHeight(boolean postProcessing) {
-    return getAvgBlockHeight(img.getSettings().getSettImage());
+    return getAvgBlockHeight(getImage().getSettings().getSettImage());
   }
 
   public float getAvgBlockWidth(SettingsGeneralImage settImage, boolean postProcessing) {
     int rot = settImage.getRotationOfData();
     float f = getSettings().getSettSingleParticle().getNumberOfPixel();
     if (postProcessing)
-      return img.getAvgBlockWidth(rot, 1, 1) * f;
+      return getImage().getAvgBlockWidth(rot, 1, 1) * f;
     else
-      return img.getAvgBlockWidth(rot, 1, 1);
+      return getImage().getAvgBlockWidth(rot, 1, 1);
   }
 
   public float getAvgBlockHeight(SettingsGeneralImage settImage) {
     int rot = settImage.getRotationOfData();
-    return img.getAvgBlockHeight(rot, 1, 1);
+    return getImage().getAvgBlockHeight(rot, 1, 1);
   }
 
 
   @Override
   public boolean hasOneDPWidth() {
-    return img.hasOneDPWidth();
+    return getImage().hasOneDPWidth();
   }
 
   @Override
   public boolean hasOneDPHeight() {
-    return img.hasOneDPHeight();
+    return getImage().hasOneDPHeight();
   }
 
 
   @Override
   public float getX0() {
-    return img.getX0();
+    return getImage().getX0();
   }
 
   @Override
   public float getY0() {
-    return img.getY0();
+    return getImage().getY0();
   }
 
   @Override
   public float getWidth() {
-    return img.getWidth(false);
+    return getImage().getWidth(false);
   }
 
   @Override
   public float getHeight() {
-    return img.getHeight(false);
+    return getImage().getHeight(false);
   }
 
   @Override
@@ -551,18 +553,18 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   @Override
   public float getX(boolean raw, int l, int dp) {
-    return img.getX(false, l, dp);
+    return getImage().getX(false, l, dp);
   }
 
   @Override
   public float getY(boolean raw, int l, int dp) {
-    return img.getY(false, l, dp);
+    return getImage().getY(false, l, dp);
   }
 
   @Override
   public double getI(boolean raw, int l, int dp) {
     if (raw)
-      return img.getI(false, l, dp);
+      return getImage().getI(false, l, dp);
     else {
       if (filteredData == null)
         updateFilteredDataCountsArray();
@@ -572,39 +574,39 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   @Override
   public int getMinLineLength() {
-    return img.getMinLineLength();
+    return getImage().getMinLineLength();
   }
 
   @Override
   public int getMaxLineLength() {
-    return img.getMaxLineLength();
+    return getImage().getMaxLineLength();
   }
 
   @Override
   public int getMinLinesCount() {
-    return img.getMinLinesCount();
+    return getImage().getMinLinesCount();
   }
 
   @Override
   public int getMaxLinesCount() {
-    return img.getMaxLinesCount();
+    return getImage().getMaxLinesCount();
   }
 
   @Override
   public int getLineLength(int l) {
-    return img.getLineLength(l);
+    return getImage().getLineLength(l);
   }
 
   @Override
   public int getLineCount(int dp) {
-    return img.getLineCount(dp);
+    return getImage().getLineCount(dp);
   }
 
   @Override
   public double[] toIArray(boolean raw, boolean onlySelected, boolean excluded) {
     if (raw)
       // return processed data of original image
-      return img.toIArray(false, onlySelected, excluded);
+      return getImage().toIArray(false, onlySelected, excluded);
     else {
       if (filteredData == null)
         updateFilteredDataCountsArray();
@@ -621,7 +623,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    */
   @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
-    XYIDataMatrix d = img.toXYIDataMatrix(false, useSettings, false);
+    XYIDataMatrix d = getImage().toXYIDataMatrix(false, useSettings, false);
     if (raw) {
       return d;
     } else {
@@ -640,7 +642,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   @Override
   public int getTotalDataPoints() {
-    return img.getTotalDataPoints();
+    return getImage().getTotalDataPoints();
   }
 
 }

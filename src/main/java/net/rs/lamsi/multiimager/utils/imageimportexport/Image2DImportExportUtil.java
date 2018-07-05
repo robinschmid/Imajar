@@ -27,6 +27,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
+import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
@@ -38,6 +39,7 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.SettingsImagingProject;
+import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.XUNIT;
 import net.rs.lamsi.general.settings.image.sub.SettingsImageContinousSplit;
@@ -516,7 +518,7 @@ public class Image2DImportExportUtil {
       }
     }
 
-
+    // create group, read overlays, ....
     // add new Image to image group
     if (lines.size() > 0) {
       DatasetLinesMD data = new DatasetLinesMD(lines);
@@ -534,9 +536,11 @@ public class Image2DImportExportUtil {
       // image overlays
       // settings
       SettingsImageOverlay tmpov = new SettingsImageOverlay();
+      SettingsSPImage tmpspimg = new SettingsSPImage();
 
       // y data
       for (String fileName : files.keySet()) {
+        // overlays
         if (fileName.endsWith(tmpov.getFileEnding())) {
           logger.info("reading overlay file {}", fileName);
 
@@ -549,6 +553,26 @@ public class Image2DImportExportUtil {
           try {
             newov = new ImageOverlay(group, settov);
             group.add(newov);
+          } catch (Exception e) {
+            logger.error("", e);
+          }
+          // finished image overlay
+          if (task != null)
+            task.addProgressStep(1.0 / steps);
+        }
+
+        // single particle images
+        if (fileName.endsWith(tmpspimg.getFileEnding())) {
+          logger.info("reading overlay file {}", fileName);
+
+          //
+          InputStream isSett = files.get(fileName);
+          SettingsSPImage settspimg = new SettingsSPImage();
+          settspimg.loadFromXML(isSett);
+
+          try {
+            SingleParticleImage newspImage = new SingleParticleImage(null, settspimg);
+            group.add(newspImage);
           } catch (Exception e) {
             logger.error("", e);
           }
