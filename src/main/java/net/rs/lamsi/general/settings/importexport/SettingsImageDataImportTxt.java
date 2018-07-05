@@ -126,6 +126,9 @@ public class SettingsImageDataImportTxt extends Settings {
     isFilesInSeparateFolders = false;
     isShiftXValues = true;
     openImageSetupDialog = true;
+
+    skipFirstLines = 0;
+    skipLinesBetweenTitleData = 0;
   }
 
   // ##########################################################
@@ -152,6 +155,8 @@ public class SettingsImageDataImportTxt extends Settings {
     toXML(elParent, doc, "filter.ext", filter.getExt());
     toXML(elParent, doc, "filter.start", filter.getStartsWith());
     toXML(elParent, doc, "openImageSetupDialog", openImageSetupDialog);
+    toXML(elParent, doc, "skipLinesBetweenTitleData", skipLinesBetweenTitleData);
+    toXML(elParent, doc, "skipFirstLines", skipFirstLines);
   }
 
   @Override
@@ -188,6 +193,12 @@ public class SettingsImageDataImportTxt extends Settings {
           startLine = intFromXML(nextElement);
         else if (paramName.equals("endLine"))
           endLine = intFromXML(nextElement);
+
+
+        else if (paramName.equals("skipFirstLines"))
+          skipFirstLines = intFromXML(nextElement);
+        else if (paramName.equals("skipLinesBetweenTitleData"))
+          skipLinesBetweenTitleData = intFromXML(nextElement);
 
         else if (paramName.equals("sSeparation"))
           sSeparation = nextElement.getTextContent();
@@ -412,4 +423,21 @@ public class SettingsImageDataImportTxt extends Settings {
   public void setShiftXValues(boolean isShiftXValues) {
     this.isShiftXValues = isShiftXValues;
   }
+
+  public int getSkipFirstLines() {
+    return skipFirstLines;
+  }
+
+  public void setSkipFirstLines(int skipFirstLines) {
+    this.skipFirstLines = skipFirstLines;
+  }
+
+  public int getSkipLinesBetweenTitleData() {
+    return skipLinesBetweenTitleData;
+  }
+
+  public void setSkipLinesBetweenTitleData(int skipLinesBetweenTitleData) {
+    this.skipLinesBetweenTitleData = skipLinesBetweenTitleData;
+  }
+
 }

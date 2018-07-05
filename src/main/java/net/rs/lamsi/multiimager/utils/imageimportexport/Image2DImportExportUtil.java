@@ -1045,7 +1045,11 @@ public class Image2DImportExportUtil {
       // more than one intensity column? then extract all cols (if true)
       boolean dataFound = false;
       // for metadata collection if selected in settings
-      String[] lastLine = null;
+      // multiple last lines[] if skipLinesBetweenTitleAndData>0
+      int skipLinesBetweenTitle = sett.getSkipLinesBetweenTitleData();
+      String[][] lastLine = new String[skipLinesBetweenTitle + 1][];
+      int lastLineI = -1;
+
       // track data points
       int dp = 0;
       // starting data points for splitting of continuous data
@@ -1058,7 +1062,13 @@ public class Image2DImportExportUtil {
       BufferedReader br = txtWriter.getBufferedReader(f);
       String sline;
       int k = 0;
+      int textline = -1;
       while ((sline = br.readLine()) != null) {
+        textline++;
+        // skip first lines
+        if (textline < sett.getSkipFirstLines())
+          continue;
+
         // try to seperate by seperation
         String[] sep = sline.split(separation);
         // data
@@ -1082,13 +1092,16 @@ public class Image2DImportExportUtil {
             colCount += -(sett.isNoXData() ? 0 : 1);
             iList = new ArrayList[colCount];
 
+            // title row is the first that was inserted into lastLine
+            String[] trow = lastLine[(lastLineI + 1) % lastLine.length];
+
             // set titles only once
-            if (titleLine == null && lastLine != null && lastLine.length == sep.length) {
+            if (titleLine == null && trow != null && trow.length == sep.length) {
               int img = 1;
               int ex = 0;
               titleLine = new String[colCount + 1];
               titleLine[0] = "x";
-              for (int s = (sett.isNoXData() ? firstCol : firstCol + 1); s < lastLine.length; s++) {
+              for (int s = (sett.isNoXData() ? firstCol : firstCol + 1); s < trow.length; s++) {
                 boolean isExcluded = false;
                 // add title if not excluded
                 if (excludedCol != null) {
@@ -1102,7 +1115,7 @@ public class Image2DImportExportUtil {
                   }
                 }
                 if (!isExcluded) {
-                  titleLine[img] = lastLine[s];
+                  titleLine[img] = trow[s];
                   img++;
                 }
               }
@@ -1231,7 +1244,10 @@ public class Image2DImportExportUtil {
           metadata += sline + "\n";
         }
         // last line
-        lastLine = sep;
+        lastLineI++;
+        if (lastLineI >= lastLine.length)
+          lastLineI = 0;
+        lastLine[lastLineI] = sep;
         k++;
       }
 
@@ -1782,7 +1798,13 @@ public class Image2DImportExportUtil {
     // line by line
     BufferedReader br = txtWriter.getBufferedReader(file);
     String s;
+    int textline = -1;
     while ((s = br.readLine()) != null) {
+      textline++;
+      // skip first lines
+      if (textline < sett.getSkipFirstLines())
+        continue;
+
       // try to separate by separation
       String[] sep = s.split(separation);
       // if sep.size==1 try and split symbol=space try utf8 space
