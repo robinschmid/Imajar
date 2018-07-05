@@ -39,6 +39,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   protected double[][] selectedFilteredData;
   protected double[][] filteredData;
 
+  //
+  protected int lastSolvedEvents = 0;
+  protected int solvedEventsSelected = 0;
+  protected int solvedEvents = 0;
+
+  protected int selectedDP = 0;
+
 
   public SingleParticleImage(Image2D img) {
     this(img, new SettingsSPImage());
@@ -85,6 +92,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
       // filter out split events
       selectedFilteredData = filterOutSplitPixelEventsAndTransform(sett, selectedFilteredData,
           getImage().isRotated(), Transformation.NONE);
+      solvedEventsSelected = lastSolvedEvents;
       logger.debug("split pixel event filter");
 
       // save settings
@@ -114,7 +122,8 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
         }
       }
     }
-    logger.debug("2D array to 1D of selected {}", size);
+    selectedDP = size;
+    logger.debug("2D array to 1D of selected {}", selectedDP);
     return arr;
   }
 
@@ -146,6 +155,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     logger.debug("Start SPI counter: Data filtering and transform to {}", sett.getTransform());
     filteredData = filterOutSplitPixelEventsAndTransform(sett, filteredData, getImage().isRotated(),
         sett.getTransform());
+    solvedEvents = lastSolvedEvents;
     logger.debug("DONE. filter split particle events ");
 
     // count particles
@@ -379,6 +389,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
         logger.info("Split pixel filter: result {} data points: solved events={}",
             lastSelectedDPCount, solved);
+        lastSolvedEvents = solved;
         // return
         return result;
       } else
@@ -645,4 +656,15 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     return getImage().getTotalDataPoints();
   }
 
+  public int getSelectedDPFiltered() {
+    return selectedDP;
+  }
+
+  public int getSolvedEventsSelected() {
+    return solvedEventsSelected;
+  }
+
+  public int getSolvedEvents() {
+    return solvedEvents;
+  }
 }

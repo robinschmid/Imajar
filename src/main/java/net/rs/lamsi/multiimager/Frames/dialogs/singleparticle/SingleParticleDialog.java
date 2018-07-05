@@ -3,7 +3,9 @@ package net.rs.lamsi.multiimager.Frames.dialogs.singleparticle;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.function.DoubleFunction;
@@ -20,7 +22,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
@@ -35,17 +36,13 @@ import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.myfreechart.EChartFactory;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
-import net.rs.lamsi.multiimager.FrameModules.ModuleSingleParticleImage;
-import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 
 public class SingleParticleDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final JPanel contentPanel = new JPanel();
-
-  private ModuleSingleParticleImage module;
   private SingleParticleImage img;
-  private DelayedDocumentListener ddlUpdate, ddlRepaint;
+  private DelayedDocumentListener ddlUpdate;
   private EChartPanel pnHisto, pnHistoFiltered, pnHeat;
   private JPanel southwest;
   private JPanel southeast;
@@ -61,6 +58,10 @@ public class SingleParticleDialog extends JFrame {
   private JTextField txtGaussianUpper;
   private JTextField txtPrecision;
   private JCheckBox cbGaussianFit;
+  private JTextField txtNoiseLevel;
+  private JTextField txtSplitPixel;
+
+  private static final DecimalFormat form = new DecimalFormat("0.0");
 
   /**
    * Launch the application.
@@ -85,19 +86,6 @@ public class SingleParticleDialog extends JFrame {
     getContentPane().add(contentPanel, BorderLayout.CENTER);
     contentPanel.setLayout(new BorderLayout(0, 0));
     {
-      JPanel west = new JPanel();
-      contentPanel.add(west, BorderLayout.WEST);
-      west.setLayout(new BorderLayout(0, 0));
-      {
-        module = new ModuleSingleParticleImage(ImageEditorWindow.getEditor(), false, e -> update());
-        west.add(module, BorderLayout.CENTER);
-      }
-      {
-        JPanel panel = new JPanel();
-        west.add(panel, BorderLayout.NORTH);
-      }
-    }
-    {
       JPanel center1 = new JPanel();
       contentPanel.add(center1, BorderLayout.CENTER);
       center1.setLayout(new BorderLayout(0, 0));
@@ -117,6 +105,47 @@ public class SingleParticleDialog extends JFrame {
         JPanel box = new JPanel();
         center1.add(box, BorderLayout.SOUTH);
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
+        {
+          JPanel pnSplitFilter = new JPanel();
+          box.add(pnSplitFilter);
+          {
+            JLabel lblSplitPixelSettings = new JLabel("Split pixel settings:");
+            lblSplitPixelSettings.setFont(new Font("Tahoma", Font.BOLD, 11));
+            pnSplitFilter.add(lblSplitPixelSettings);
+          }
+          {
+            JLabel lblNoiseLevel = new JLabel("noise level:");
+            pnSplitFilter.add(lblNoiseLevel);
+          }
+          {
+            txtNoiseLevel = new JTextField();
+            txtNoiseLevel.setToolTipText(
+                "Noise level for split pixel filter. (Only data points>noise level are used)");
+            txtNoiseLevel.setText("0");
+            pnSplitFilter.add(txtNoiseLevel);
+            txtNoiseLevel.setColumns(10);
+          }
+          {
+            Component horizontalStrut = Box.createHorizontalStrut(20);
+            pnSplitFilter.add(horizontalStrut);
+          }
+          {
+            JLabel lblSplitPixel = new JLabel("split event pixel:");
+            pnSplitFilter.add(lblSplitPixel);
+          }
+          {
+            txtSplitPixel = new JTextField();
+            txtSplitPixel.setToolTipText("Maximum number of data points in a split particle event");
+            txtSplitPixel.setText("2");
+            pnSplitFilter.add(txtSplitPixel);
+            txtSplitPixel.setColumns(5);
+          }
+          {
+            JButton btnUpdate = new JButton("update");
+            btnUpdate.addActionListener(e -> update());
+            pnSplitFilter.add(btnUpdate);
+          }
+        }
         {
           JPanel pnstats = new JPanel();
           box.add(pnstats);
@@ -313,13 +342,8 @@ public class SingleParticleDialog extends JFrame {
       buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
       getContentPane().add(buttonPane, BorderLayout.SOUTH);
       {
-        JButton okButton = new JButton("OK");
-        buttonPane.add(okButton);
-        getRootPane().setDefaultButton(okButton);
       }
       {
-        JButton cancelButton = new JButton("Cancel");
-        buttonPane.add(cancelButton);
       }
     }
 
@@ -343,13 +367,7 @@ public class SingleParticleDialog extends JFrame {
   }
 
   private void addListener() {
-    ddlUpdate = new DelayedDocumentListener(e -> autoUpdate());
-    ddlRepaint = new DelayedDocumentListener(e -> repaint());
-    //
-    module.addAutoupdater(al -> autoUpdate(), cl -> autoUpdate(), ddlUpdate, e -> autoUpdate(),
-        il -> autoUpdate());
-    module.addAutoRepainter(al -> repaint(), cl -> repaint(), ddlRepaint, e -> repaint(),
-        il -> repaint());
+    ddlUpdate = new DelayedDocumentListener(e -> update());
 
     // ranges
     DelayedDocumentListener ddlx = new DelayedDocumentListener(e -> applyXRange());
@@ -369,6 +387,9 @@ public class SingleParticleDialog extends JFrame {
     txtBinShift.getDocument()
         .addDocumentListener(new DelayedDocumentListener(e -> updateHistograms()));
 
+
+    txtSplitPixel.getDocument().addDocumentListener(ddlUpdate);
+    txtNoiseLevel.getDocument().addDocumentListener(ddlUpdate);
 
     // add gaussian?
     cbGaussianFit.addItemListener(e -> updateGaussian());
@@ -414,50 +435,18 @@ public class SingleParticleDialog extends JFrame {
   public void setSPImage(SingleParticleImage img) {
     this.img = img;
     if (img != null) {
-      boolean auto = module.isAutoUpdating();
-      module.setAutoUpdating(false);
       // set to
-      module.setCurrentImage(img, true);
-      ddlUpdate.stop();
-      ddlRepaint.stop();
-      updateHistograms();
-      // add image
-      updateHeatmap();
+      settingsToPanel(img.getSettings().getSettSingleParticle());
 
-      module.setAutoUpdating(auto);
+      ddlUpdate.stop();
+      updateHistograms();
+
       contentPanel.revalidate();
       contentPanel.repaint();
     }
   }
 
-  /**
-   * Create new histograms
-   */
-  private void updateHeatmap() {
-    if (img != null) {
-      try {
 
-        new SwingWorker<ChartPanel, Void>() {
-          @Override
-          protected ChartPanel doInBackground() throws Exception {
-            return null;
-            // return pnHeat = HeatmapFactory.generateHeatmap(img).getChartPanel();
-          }
-
-          @Override
-          protected void done() {
-            north.removeAll();
-            if (pnHeat != null)
-              north.add(pnHeat, BorderLayout.CENTER);
-            north.revalidate();
-            north.repaint();
-          }
-        }.execute();
-      } catch (Exception e) {
-        logger.error("", e);
-      }
-    }
-  }
 
   /**
    * Create new histograms
@@ -565,6 +554,13 @@ public class SingleParticleDialog extends JFrame {
 
             @Override
             protected void done() {
+              // set stats
+              double perc =
+                  (img.getSelectedDPFiltered() / (double) img.getTotalDataPoints()) * 100.0;
+              lbStats.setText("Stats: Solved events=" + img.getSolvedEventsSelected() + " in "
+                  + img.getSelectedDPFiltered() + " selected of " + img.getTotalDataPoints()
+                  + " total data points (" + form.format(perc) + "%)");
+              // add histo
               JFreeChart histo;
               try {
                 Range x = null, y = null;
@@ -686,23 +682,26 @@ public class SingleParticleDialog extends JFrame {
     return img.getSettings().getSettSingleParticle();
   }
 
-  public void autoUpdate() {
-    if (module.isAutoUpdating())
-      update();
-  }
-
   public void update() {
     if (img != null) {
-      module.writeAllToSettings(img.getSettings());
+      writeAllToSettings(img.getSettings().getSettSingleParticle());
       updateHistograms();
-      updateHeatmap();
     }
   }
 
-  public void repaint() {
-    if (img != null)
-      module.writeAllToSettings(img.getSettings());
+  private void writeAllToSettings(SingleParticleSettings sett) {
+    try {
+      sett.setNoiseLevel(Module.doubleFromTxt(txtNoiseLevel));
+      sett.setSplitPixel(Module.intFromTxt(txtSplitPixel));
+    } catch (Exception e) {
+    }
   }
+
+  private void settingsToPanel(SingleParticleSettings sett) {
+    txtSplitPixel.setText(String.valueOf(sett.getSplitPixel()));
+    txtNoiseLevel.setText(String.valueOf(sett.getNoiseLevel()));
+  }
+
 
   public JPanel getSouthwest() {
     return southwest;
@@ -758,5 +757,13 @@ public class SingleParticleDialog extends JFrame {
 
   public JTextField getTxtPrecision() {
     return txtPrecision;
+  }
+
+  public JTextField getTxtSplitPixel() {
+    return txtSplitPixel;
+  }
+
+  public JTextField getTxtNoiseLevel() {
+    return txtNoiseLevel;
   }
 }
