@@ -131,37 +131,41 @@ public class MyStandardChartTheme extends StandardChartTheme {
     // all axes
     for (int i = 0; i < chart.getXYPlot().getDomainAxisCount(); i++) {
       NumberAxis a = (NumberAxis) chart.getXYPlot().getDomainAxis(i);
-      a.setTickMarkPaint(axisLinePaint);
-      a.setAxisLinePaint(axisLinePaint);
-      a.setAxisLineVisible(true);
-      // ticks
-      a.setAutoTickUnitSelection(useXAutoTick);
-      if (!useXAutoTick) {
-        DecimalFormat f = xTickFormat;
-        if (f != null)
-          a.setTickUnit(new NumberTickUnit(xTickUnit, f), false, true);
-        else
-          a.setTickUnit(new NumberTickUnit(xTickUnit), false, true);
+      if (a != null) {
+        a.setTickMarkPaint(axisLinePaint);
+        a.setAxisLinePaint(axisLinePaint);
+        a.setAxisLineVisible(true);
+        // ticks
+        a.setAutoTickUnitSelection(useXAutoTick);
+        if (!useXAutoTick) {
+          DecimalFormat f = xTickFormat;
+          if (f != null)
+            a.setTickUnit(new NumberTickUnit(xTickUnit, f), false, true);
+          else
+            a.setTickUnit(new NumberTickUnit(xTickUnit), false, true);
+        }
+        // visible?
+        a.setVisible(showXAxis);
       }
-      // visible?
-      a.setVisible(showXAxis);
     }
     for (int i = 0; i < chart.getXYPlot().getRangeAxisCount(); i++) {
       NumberAxis a = (NumberAxis) chart.getXYPlot().getRangeAxis(i);
-      a.setTickMarkPaint(axisLinePaint);
-      a.setAxisLinePaint(axisLinePaint);
-      a.setAxisLineVisible(true);
-      // ticks
-      a.setAutoTickUnitSelection(useYAutoTick);
-      if (!useYAutoTick) {
-        DecimalFormat f = yTickFormat;
-        if (f != null)
-          a.setTickUnit(new NumberTickUnit(yTickUnit, f), false, true);
-        else
-          a.setTickUnit(new NumberTickUnit(yTickUnit), false, true);
+      if (a != null) {
+        a.setTickMarkPaint(axisLinePaint);
+        a.setAxisLinePaint(axisLinePaint);
+        a.setAxisLineVisible(true);
+        // ticks
+        a.setAutoTickUnitSelection(useYAutoTick);
+        if (!useYAutoTick) {
+          DecimalFormat f = yTickFormat;
+          if (f != null)
+            a.setTickUnit(new NumberTickUnit(yTickUnit, f), false, true);
+          else
+            a.setTickUnit(new NumberTickUnit(yTickUnit), false, true);
+        }
+        // visible?
+        a.setVisible(showYAxis);
       }
-      // visible?
-      a.setVisible(showYAxis);
     }
     // apply bg
     chart.setBackgroundPaint(this.getChartBackgroundPaint());
