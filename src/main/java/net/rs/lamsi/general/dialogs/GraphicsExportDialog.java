@@ -147,6 +147,9 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
   }
 
 
+  /**
+   * must run on ADT Thread
+   */
   protected void renewPreview() {
     // set dimensions to chartpanel
     // set height
@@ -200,7 +203,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
       setChartSize(sett.getSize());
       getPnChartPreview().repaint();
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 

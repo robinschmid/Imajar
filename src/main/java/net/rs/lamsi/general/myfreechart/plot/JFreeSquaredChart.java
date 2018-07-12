@@ -170,16 +170,16 @@ public class JFreeSquaredChart extends JFreeChart {
 
     Rectangle2D newChartArea = plot.calc(g2, chartArea, plotArea, plotInfo, iteration);
     // too small
-    if (plotArea.getWidth() < 100 || plotArea.getHeight() < 100) {
-      iteration = Integer.MAX_VALUE - 1;
-      // draw in full size
-      g2.setClip(savedClip);
-      draw(g2, origChartArea, anchor, info);
-    } else if (newChartArea.equals(chartArea) || iteration > MAX_ITERATIONS) {
+    if (newChartArea.equals(chartArea) || iteration > MAX_ITERATIONS) {
       // final paint
       logger.debug("Final PAINT at iteration: {}", iteration);
       iteration = 0;
       this.getPlot().draw(g2, plotArea, anchor, null, plotInfo);
+    } else if (plotArea.getWidth() < 30 || plotArea.getHeight() < 30) {
+      iteration = Integer.MAX_VALUE - 1;
+      // draw in full size
+      g2.setClip(savedClip);
+      draw(g2, origChartArea, anchor, info);
     } else {
       // chart area has changed repaint!
       Composite tmp = g2.getComposite();
@@ -192,7 +192,7 @@ public class JFreeSquaredChart extends JFreeChart {
       newChartArea.setRect(x, y, newChartArea.getWidth(), newChartArea.getHeight());
 
       // too small
-      if (newChartArea.getWidth() < 180 || newChartArea.getHeight() < 120) {
+      if (newChartArea.getWidth() < 50 || newChartArea.getHeight() < 10) {
         iteration = Integer.MAX_VALUE - 1;
         // draw in full size
         g2.setClip(savedClip);
