@@ -353,6 +353,8 @@ public class FullImageRenderer extends AbstractXYItemRenderer
             // set transparency if used
             if (markAlpha)
               g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+            else // reset
+              g2.setComposite(BlendComposite.Normal);
           }
         }
         // not in map so paint... if
@@ -457,8 +459,11 @@ public class FullImageRenderer extends AbstractXYItemRenderer
             // set transparency if used
             if (markAlpha)
               g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
+            else // reset
+              g2.setComposite(BlendComposite.Normal);
           }
         }
+        // current is a dp
         if (!currentNoDP || lastPaint != null) {
           // not in map so paint... if
           // paint block
@@ -475,12 +480,12 @@ public class FullImageRenderer extends AbstractXYItemRenderer
             currentNoDP = true;
         }
 
-        // paint last dp
+        // always paint the previous dp
         if (lastPaint != null) {
           // paint with bw if current dp was
           double xx1 = currentPaint == null ? lxx0 + bw : cxx0;
 
-          // paint dp
+          // paint previous dp
           drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState,
               lxx0, xx1, lyy0, lyy0 - bh, lastPaint);
         }
