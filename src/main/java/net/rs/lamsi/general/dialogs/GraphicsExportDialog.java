@@ -164,9 +164,16 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
       // Size only by width?
       if (sett.isUseOnlyWidth()) {
         if (chartPanel.getChart().getXYPlot() instanceof XYSquaredPlot) {
+          // change size if for plot
+          if (sett.getFixedSize().equals(FIXED_SIZE.PLOT)) {
+            // fixed plot width
+            sett.setSize(ChartLogics.calcSizeForPlotWidth(chartPanel, sett.getSize().getWidth()));
+          }
+
+
           XYSquaredPlot plot = (XYSquaredPlot) chartPanel.getChart().getXYPlot();
           plot.setScaleMode(Scale.FIXED_WIDTH);
-          Dimension d = new Dimension((int) sett.getSize().getSize().getWidth(), 900);
+          Dimension d = new Dimension((int) sett.getSize().getWidth(), 900);
           // setChartSize(d);
           chartPanel.setSize(d);
           // paint and get size from chart
