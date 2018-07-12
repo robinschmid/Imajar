@@ -468,9 +468,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     } else {
       // rotate selected
       if (currentSelect != null) {
-        // angle
-        double angle = Math.atan(Math.toRadians(45));
-        currentSelect.rotate(angle);
+        currentSelect.rotate(45);
       }
     }
   }

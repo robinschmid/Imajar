@@ -634,8 +634,28 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     return isFinished;
   }
 
-  public void rotate(double angle) {
-    AffineTransform.getRotateInstance(angle, cx, cy);
+  /**
+   * Rotate around center
+   * 
+   * @param degreeAngle degree 0-360
+   */
+  public void rotate(double degreeAngle) {
+    // angle
+    double angle = Math.atan(Math.toRadians(degreeAngle));
+    AffineTransform at =
+        AffineTransform.getRotateInstance(angle, getWidth() / 2.0, getHeight() / 2.0);
+    transform(at);
+  }
 
+  /**
+   * Reflect horizontally
+   * 
+   */
+  public void reflectH() {
+    // angle
+    double angle = Math.atan(Math.toRadians(degreeAngle));
+    AffineTransform at =
+        AffineTransform.getRotateInstance(angle, getWidth() / 2.0, getHeight() / 2.0);
+    transform(at);
   }
 }
