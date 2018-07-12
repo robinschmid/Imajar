@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -27,11 +28,13 @@ import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -53,6 +56,7 @@ import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.framework.basics.JColorPickerButton;
 import net.rs.lamsi.general.framework.basics.strokechooser.JStrokeChooserPanel;
+import net.rs.lamsi.general.framework.modules.Module;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.heatmap.HeatmapFactory;
 import net.rs.lamsi.general.myfreechart.ChartLogics;
@@ -157,6 +161,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private JPanel pnSplitTop;
   private JSplitPane splitCenter;
   private JButton btnShowData;
+  private JPanel panel_2;
+  private JLabel lblTransform;
+  private JCheckBox cbAll;
+  private JButton btnRotateCcw;
+  private JButton btnRotateCw;
+  private JButton btnHReflect;
+  private JButton btnVReflect;
 
 
   /**
@@ -350,6 +361,49 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnDelete = new JButton("Delete");
     panel_1.add(btnDelete);
+
+    panel_2 = new JPanel();
+    pnNorthMenuContainer.add(panel_2, BorderLayout.SOUTH);
+
+    lblTransform = new JLabel("Transform");
+    panel_2.add(lblTransform);
+
+    cbAll = new JCheckBox("all");
+    panel_2.add(cbAll);
+
+    btnRotateCcw = new JButton("");
+    btnRotateCcw.addActionListener(e -> rotateCCW());
+    btnRotateCcw.setPreferredSize(new Dimension(31, 31));
+    btnRotateCcw.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_rotate_ccw.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    panel_2.add(btnRotateCcw);
+
+    btnRotateCw = new JButton("");
+    btnRotateCw.addActionListener(e -> rotateCW());
+    btnRotateCw.setPreferredSize(new Dimension(31, 31));
+    btnRotateCw.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_rotate_cw.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    panel_2.add(btnRotateCw);
+
+    btnHReflect = new JButton("");
+    btnHReflect.addActionListener(e -> reflectHorizontally());
+    btnHReflect.setPreferredSize(new Dimension(31, 31));
+    btnHReflect.setIcon(new ImageIcon(
+        new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_vertical.png")).getImage()
+            .getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    panel_2.add(btnHReflect);
+
+    btnVReflect = new JButton("");
+    btnVReflect.addActionListener(e -> reflectVertically());
+    btnVReflect.setPreferredSize(new Dimension(31, 31));
+    btnVReflect.setIcon(new ImageIcon(
+        new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_horizontal.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    panel_2.add(btnVReflect);
+
+
     btnDelete.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         deleteSelection(currentSelect);
@@ -400,6 +454,29 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     contentPane.requestFocusInWindow();
   }
+
+  private void reflectHorizontally() {}
+
+
+  private void reflectVertically() {}
+
+
+  private void rotateCCW() {
+    boolean all = cbAll.isSelected();
+    if (all) {
+
+    } else {
+      // rotate selected
+      if (currentSelect != null) {
+        // angle
+        double angle = Math.atan(Math.toRadians(45));
+        currentSelect.rotate(angle);
+      }
+    }
+  }
+
+  private void rotateCW() {}
+
 
   private void showDataDialog() {
     if (currentSelect != null) {
@@ -1198,5 +1275,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   public JSplitPane getSplitCenter() {
     return splitCenter;
+  }
+
+  public JCheckBox getCbAll() {
+    return cbAll;
   }
 }

@@ -633,4 +633,9 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   public boolean isFinished() {
     return isFinished;
   }
+
+  public void rotate(double angle) {
+    AffineTransform.getRotateInstance(angle, cx, cy);
+
+  }
 }
