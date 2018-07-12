@@ -209,6 +209,20 @@ public class ModuleTree<T> extends Module {
     return ImagingProject.class.isInstance(node.getUserObject());
   }
 
+
+  public List<ImagingProject> getProjects() {
+    ArrayList<ImagingProject> list = new ArrayList<ImagingProject>();
+    for (int i = 0; i < root.getChildCount(); i++) {
+      if (root.getChildAt(i) instanceof DefaultMutableTreeNode) {
+        DefaultMutableTreeNode tn = (DefaultMutableTreeNode) root.getChildAt(i);
+        if (tn.getUserObject() instanceof ImagingProject) {
+          list.add((ImagingProject) tn.getUserObject());
+        }
+      }
+    }
+    return list;
+  }
+
   public void toList(List list, Class c) {
     toList(list, c, root.getFirstLeaf());
   }

@@ -398,6 +398,10 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     JMenu mnAction = new JMenu("Action");
     menuBar.add(mnAction);
 
+    JMenuItem btnRecalcStats = new JMenuItem("Recalc all ROI statistics");
+    btnRecalcStats.addActionListener(e -> logicRunner.recalculateAllStatistics());
+    mnAction.add(btnRecalcStats);
+
     JMenuItem btnCrop = new JMenuItem("Crop images");
     btnCrop.addActionListener(new ActionListener() {
       @Override

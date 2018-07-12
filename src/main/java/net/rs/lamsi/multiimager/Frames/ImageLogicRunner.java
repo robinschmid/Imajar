@@ -42,6 +42,7 @@ import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImageMerge;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
+import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.sub.SettingsImage2DSetup;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
@@ -57,6 +58,7 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
+import net.rs.lamsi.utils.threads.EasyTask;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class ImageLogicRunner {
@@ -758,6 +760,27 @@ public class ImageLogicRunner {
     }
   }
 
+  /**
+   * Recalculate all ROI statistics of all images in all projects
+   */
+  public void recalculateAllStatistics() {
+    List<ImagingProject> list = getProjects();
+    for (ImagingProject p : list) {
+      for (ImageGroupMD g : p.getGroups()) {
+        for (int i = 0; i < g.size(); i++) {
+          if (g.get(i) instanceof DataCollectable2D) {
+            DataCollectable2D img = (DataCollectable2D) g.get(i);
+            final SettingsSelections sel = img.getSelections();
+            if (sel != null) {
+              // in new thread
+              new EasyTask(() -> sel.updateStatistics()).execute();
+            }
+          }
+        }
+      }
+    }
+  }
+
 
   /**
    * exports a data report on quantification
@@ -1219,6 +1242,9 @@ public class ImageLogicRunner {
 
   // ##################################################################################
   // GETTERS AND SETTERS
+  public List<ImagingProject> getProjects() {
+    return treeImg.getProjects();
+  }
 
   public List<Collectable2D> getListImages() {
     ArrayList<Collectable2D> list = new ArrayList<Collectable2D>();
@@ -1269,5 +1295,6 @@ public class ImageLogicRunner {
   public ModuleTree<Collectable2D> getTree() {
     return treeImg;
   }
+
 
 }
