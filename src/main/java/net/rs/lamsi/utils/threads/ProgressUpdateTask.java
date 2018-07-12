@@ -7,6 +7,9 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 
 public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
+
+  protected String threadName = "UpdateTask";
+
   ProgressDialog progressDialog;
   private double stepwidth = 0;
   private double progress = 0;
@@ -38,6 +41,16 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
     });
   }
 
+  public ProgressUpdateTask(String name, int steps) {
+    this(name, steps, 1000);
+  }
+
+  public ProgressUpdateTask(String name, int steps, long millisToPopUp) {
+    this(steps, millisToPopUp);
+    threadName = name;
+  }
+
+
   @Override
   protected void done() {
     super.done();
@@ -51,6 +64,7 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
 
   protected T doInBackground() throws Exception {
     wasStarted();
+    Thread.currentThread().setName(threadName);
     T result = doInBackground2();
     return result;
   }
@@ -60,7 +74,7 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
 
 
 
-  private void wasStarted() {
+  protected void wasStarted() {
     isStarted = true;
     startTime = System.currentTimeMillis();
     // open dialog?
