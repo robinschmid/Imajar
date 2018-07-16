@@ -77,7 +77,6 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
   private JCheckBox cbInterpolate;
   private JCheckBox cbBlurRadius;
   private JTextField txtBlurRadius;
-  private JCheckBox cbCropDataToMin;
   private JTextField txtIntensityFactor;
   private JLabel lblIntensityFactor;
   private JCheckBox cbKeepAspectRatio;
@@ -164,10 +163,6 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     cbKeepAspectRatio.setToolTipText(
         "Check if X and Y have the same dimension units. Uncheck to get maximum scaling.");
     pnTitleANdLaser.add(cbKeepAspectRatio, "cell 0 7 2 1");
-
-    cbCropDataToMin = new JCheckBox("crop data to minimum");
-    cbCropDataToMin.setToolTipText("Crops all lines to the length of the shortest line.");
-    pnTitleANdLaser.add(cbCropDataToMin, "cell 0 8 2 1");
 
     cbInterpolate = new JCheckBox("interpolate");
     cbInterpolate.setToolTipText("Use bilinear interpolation.");
@@ -436,7 +431,6 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     getCbBlurRadius().addItemListener(il);
     getTxtBlurRadius().getDocument().addDocumentListener(dl);
 
-    cbCropDataToMin.addItemListener(il);
     comboTransform.addItemListener(il);
 
     getCbReduce().addItemListener(il);
@@ -468,7 +462,6 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     // new reseted ps
     if (si != null) {
       // crop to min
-      cbCropDataToMin.setSelected(si.isCropDataToMinGetRealValue());
       // interpolation
       getTxtInterpolate().setText(String.valueOf(si.getInterpolation()));
       getCbInterpolate().setSelected(si.isUseInterpolation());
@@ -553,9 +546,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
             getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation,
             getCbBiaryData().isSelected(), getCbInterpolate().isSelected(),
             intFromTxt(getTxtInterpolate()), getCbBlurRadius().isSelected(),
-            doubleFromTxt(getTxtBlurRadius()), getCbCropDataToMin().isSelected(),
-            getCbKeepAspectRatio().isSelected(), cbReduce.isSelected(), intFromTxt(txtReduce),
-            (Mode) comboReduce.getSelectedItem());
+            doubleFromTxt(getTxtBlurRadius()), getCbKeepAspectRatio().isSelected(),
+            cbReduce.isSelected(), intFromTxt(txtReduce), (Mode) comboReduce.getSelectedItem());
 
         // update intensity processing
         update = update || settings.setIntensityFactor(doubleFromTxt(getTxtIntensityFactor()));
@@ -672,10 +664,6 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
   public JTextField getTxtBlurRadius() {
     return txtBlurRadius;
-  }
-
-  public JCheckBox getCbCropDataToMin() {
-    return cbCropDataToMin;
   }
 
   public JTextField getTxtIntensityFactor() {

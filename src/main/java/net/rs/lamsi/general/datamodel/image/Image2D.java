@@ -652,15 +652,8 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   public double[][] toXYIArray(boolean raw, boolean useSettings) {
     if (useSettings) {
       SettingsGeneralImage s = settings.getSettImage();
-      int diff = data.getMaxDP() - data.getMinDP();
-      // crop?
-      if (s.isCropDataToMin() && diff != 0) {
-        return toXYIDataMatrix(raw, useSettings).toLinearArray();
-      } else {
-        // no crop
-        return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), s.isReflectHorizontal(),
-            s.isReflectVertical());
-      }
+      return toXYIArray(raw, s.getImagingMode(), s.getRotationOfData(), s.isReflectHorizontal(),
+          s.isReflectVertical());
     } else
       return toXYIArrayNoRot();
   }
@@ -850,118 +843,29 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @param useSettings rotation and imaging mode
    * @return
    */
-  @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
-    SettingsGeneralImage sett = settings.getSettImage();
-    return toXYIDataMatrix(raw, useSettings, sett.isCropDataToMin());
-  }
-
-  public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings, boolean cropDataToMin) {
-    logger.debug("toXYIDataMatrix(raw={}, rotation={}, cropToMin={}) on image {}", raw, useSettings,
-        cropDataToMin, getTitle());
+    logger.debug("toXYIDataMatrix(raw={}, rotation={}) on image {}", raw, useSettings, getTitle());
     if (useSettings) {
       SettingsGeneralImage sett = settings.getSettImage();
-      int diff = data.getMaxDP() - data.getMinDP();
-      // apply crop?
-      if (cropDataToMin && diff != 0) {
-        int rot = sett.getRotationOfData();
-        boolean reflectH = sett.isReflectHorizontal();
-        // exclude last line? if shorter than 0.8 of avg
+      int cols = getMaxLinesCount();
+      int rows = getMaxLineLength();
 
-        // get full matrix
-        final int cols = getMaxLinesCount();
-        final int rows = getMaxLineLength();
+      double[][] z = new double[cols][rows];
+      float[][] x = new float[cols][rows], y = new float[cols][rows];
 
-        Double[][] z = new Double[cols][rows];
-        Float[][] x = new Float[cols][rows], y = new Float[cols][rows];
-
-        // track first dp / first line / last dp/line index
-        int firstDP = 0, lastDP = rows;
-
-        // c for lines
-        for (int c = 0; c < cols; c++) {
-          int l = c;
-          // increment l
-          for (int r = 0; r < rows; r++) {
-            int dp = r;
-            // only if not null: write Intensity
-            double tmp = getI(raw, l, dp);
-            z[c][r] = tmp;
-            // NaN?
-            if (!Double.isNaN(tmp)) {
-              x[c][r] = getX(raw, l, dp);
-              y[c][r] = getY(raw, l, dp);
-            } else {
-              x[c][r] = Float.NaN;
-              y[c][r] = Float.NaN;
-
-              // set last and first dp
-              if (r == firstDP)
-                firstDP++;
-              else if (r > firstDP && r < lastDP)
-                lastDP = r;
-            }
-          }
+      // c for lines
+      for (int c = 0; c < cols; c++) {
+        // increment l
+        for (int r = 0; r < rows; r++) {
+          // only if not null: write Intensity
+          double tmp = getI(raw, c, r);
+          z[c][r] = tmp;
+          // NaN?
+          x[c][r] = !Double.isNaN(tmp) ? getX(raw, c, r) : Float.NaN;
+          y[c][r] = !Double.isNaN(tmp) ? getY(raw, c, r) : Float.NaN;
         }
-
-        int firstLine = 0;
-        int lastLine = z.length;
-        // find first and last line
-        for (int l = 0; l < z.length && lastLine == z.length; l++) {
-          for (int dp = firstDP; dp < lastDP; dp++) {
-            // one NaN in line?
-            if (Double.isNaN(z[l][dp])) {
-              if (l == firstLine)
-                firstLine++;
-              else if (l > firstLine && l < lastLine)
-                lastLine = l;
-              // end line
-              break;
-            }
-          }
-        }
-
-        // new size: between first and last dp/line
-        int w = lastDP - firstDP;
-        int h = lastLine - firstLine;
-
-        // shift by start x and y
-        float startx = x[firstLine][firstDP], starty = y[firstLine][firstDP];
-
-        double[][] newz = new double[h][w];
-        float[][] newx = new float[h][w], newy = new float[h][w];
-
-        for (int l = 0; l < h; l++) {
-          for (int dp = 0; dp < w; dp++) {
-            newz[l][dp] = z[l + firstLine][dp + firstDP];
-            newx[l][dp] = x[l + firstLine][dp + firstDP] - startx;
-            newy[l][dp] = y[l + firstLine][dp + firstDP] - starty;
-          }
-        }
-        // return data
-        return new XYIDataMatrix(newx, newy, newz);
-      } else {
-        // no cropping
-        int cols = getMaxLinesCount();
-        int rows = getMaxLineLength();
-
-        double[][] z = new double[cols][rows];
-        float[][] x = new float[cols][rows], y = new float[cols][rows];
-
-        // c for lines
-        for (int c = 0; c < cols; c++) {
-          // increment l
-          for (int r = 0; r < rows; r++) {
-            // only if not null: write Intensity
-            double tmp = getI(raw, c, r);
-            z[c][r] = tmp;
-            // NaN?
-            x[c][r] = !Double.isNaN(tmp) ? getX(raw, c, r) : Float.NaN;
-            y[c][r] = !Double.isNaN(tmp) ? getY(raw, c, r) : Float.NaN;
-          }
-        }
-        return new XYIDataMatrix(x, y, z);
       }
+      return new XYIDataMatrix(x, y, z);
     } else {
       int cols = data.getLinesCount();
 

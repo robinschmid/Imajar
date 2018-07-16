@@ -117,8 +117,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   protected boolean useBlur;
   protected double blurRadius;
 
-  protected boolean isCropDataToMin;
-
   protected Transformation trans = Transformation.NONE;
 
 
@@ -152,7 +150,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     useInterpolation = false;
     useBlur = false;
     blurRadius = 2;
-    isCropDataToMin = true;
     intensityFactor = 1;
     trans = Transformation.NONE;
     reduction = 1;
@@ -164,8 +161,8 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos,
       float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz,
       boolean reflectVert, int rotationOfData, boolean isBinaryData, boolean useInterpolation,
-      int interpolation, boolean useBlur, double blurRadius, boolean isCropDataToMin,
-      boolean keepAspectRatio, boolean useReduction, int reduction, Mode redMode) {
+      int interpolation, boolean useBlur, double blurRadius, boolean keepAspectRatio,
+      boolean useReduction, int reduction, Mode redMode) {
     this.velocity = velocity;
     this.spotsize = spotsize;
     this.isBinaryData = isBinaryData;
@@ -174,7 +171,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     this.useInterpolation = useInterpolation;
     this.blurRadius = blurRadius;
     this.useBlur = useBlur;
-    this.isCropDataToMin = isCropDataToMin;
     this.reduction = reduction;
     this.useReduction = useReduction;
     this.reductionMode = redMode;
@@ -215,7 +211,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     toXML(elParent, doc, "useInterpolation", useInterpolation);
     toXML(elParent, doc, "useBlur", useBlur);
     toXML(elParent, doc, "blurRadius", blurRadius);
-    toXML(elParent, doc, "isCropDataToMin", isCropDataToMin);
     toXML(elParent, doc, "intensityFactor", intensityFactor);
     toXML(elParent, doc, "trans", trans);
 
@@ -270,8 +265,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
           useBlur = booleanFromXML(nextElement);
         else if (paramName.equals("filepath"))
           filepath = nextElement.getTextContent();
-        else if (paramName.equals("isCropDataToMin"))
-          isCropDataToMin = booleanFromXML(nextElement);
         else if (paramName.equals("trans"))
           trans = Transformation.valueOf(nextElement.getTextContent());
         else {
@@ -492,19 +485,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
   public void setBlurRadius(double blurRadius) {
     this.blurRadius = blurRadius;
-  }
-
-  public boolean isCropDataToMin() {
-    return isCropDataToMin || isUseBlur();
-  }
-
-
-  public boolean isCropDataToMinGetRealValue() {
-    return isCropDataToMin;
-  }
-
-  public void setCropDataToMin(boolean isCropDataToMin) {
-    this.isCropDataToMin = isCropDataToMin;
   }
 
   public double getIntensityFactor() {

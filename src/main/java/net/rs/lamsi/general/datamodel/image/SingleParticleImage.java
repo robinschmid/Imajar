@@ -634,7 +634,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
    */
   @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
-    XYIDataMatrix d = getImage().toXYIDataMatrix(false, useSettings, false);
+    XYIDataMatrix d = getImage().toXYIDataMatrix(false, useSettings);
     if (raw) {
       return d;
     } else {
