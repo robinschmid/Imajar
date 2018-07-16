@@ -679,12 +679,12 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     transform(at);
   }
 
-  /**
-   * translate (shift) ROI
-   */
-  public void translate(double tx, double ty) {
-    transform(AffineTransform.getTranslateInstance(tx, ty));
-  }
+  // /**
+  // * translate (shift) ROI
+  // */
+  // public void translate(double tx, double ty) {
+  // transform(AffineTransform.getTranslateInstance(tx, ty));
+  // }
 
   @Override
   public Settings copy() throws Exception {

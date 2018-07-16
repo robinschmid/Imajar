@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
-import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -174,9 +173,18 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private JButton btnRotateCw;
   private JButton btnHReflect;
   private JButton btnVReflect;
-  private Component horizontalStrut;
   private JTextField txtAngle;
   private JButton btnRotateBy;
+  private JTextField txtShiftX;
+  private JButton btnLeft;
+  private JButton btnRight;
+  private JPanel panel_3;
+  private JPanel panel_4;
+  private JPanel panel_5;
+  private JPanel panel_6;
+  private JButton btnDown;
+  private JTextField txtShiftY;
+  private JButton btnUp;
 
 
   /**
@@ -372,6 +380,8 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_1.add(btnDelete);
 
     panel_2 = new JPanel();
+    FlowLayout flowLayout_5 = (FlowLayout) panel_2.getLayout();
+    flowLayout_5.setHgap(10);
     pnNorthMenuContainer.add(panel_2, BorderLayout.SOUTH);
 
     lblTransform = new JLabel("Transform");
@@ -380,52 +390,62 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     cbAll = new JCheckBox("all");
     panel_2.add(cbAll);
 
+    panel_5 = new JPanel();
+    FlowLayout flowLayout_3 = (FlowLayout) panel_5.getLayout();
+    flowLayout_3.setHgap(0);
+    flowLayout_3.setVgap(0);
+    panel_2.add(panel_5);
+
     btnRotateCcw = new JButton("");
+    panel_5.add(btnRotateCcw);
     btnRotateCcw.setToolTipText("Rotate");
     btnRotateCcw.addActionListener(e -> rotateCCW());
     btnRotateCcw.setPreferredSize(new Dimension(31, 31));
     btnRotateCcw.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_rotate_ccw.png"))
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
-    panel_2.add(btnRotateCcw);
 
     btnRotateCw = new JButton("");
+    panel_5.add(btnRotateCw);
     btnRotateCw.setToolTipText("Rotate");
     btnRotateCw.addActionListener(e -> rotateCW());
     btnRotateCw.setPreferredSize(new Dimension(31, 31));
     btnRotateCw.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_rotate_cw.png"))
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
-    panel_2.add(btnRotateCw);
 
     btnHReflect = new JButton("");
+    panel_5.add(btnHReflect);
     btnHReflect.setToolTipText("Reflect");
     btnHReflect.addActionListener(e -> reflectHorizontally());
     btnHReflect.setPreferredSize(new Dimension(31, 31));
     btnHReflect.setIcon(new ImageIcon(
         new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_horizontal.png"))
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
-    panel_2.add(btnHReflect);
 
     btnVReflect = new JButton("");
+    panel_5.add(btnVReflect);
     btnVReflect.setToolTipText("Reflect");
     btnVReflect.addActionListener(e -> reflectVertically());
     btnVReflect.setPreferredSize(new Dimension(31, 31));
     btnVReflect.setIcon(new ImageIcon(
         new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_vertical.png")).getImage()
             .getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
-    panel_2.add(btnVReflect);
 
-    horizontalStrut = Box.createHorizontalStrut(20);
-    panel_2.add(horizontalStrut);
+    panel_4 = new JPanel();
+    FlowLayout flowLayout_2 = (FlowLayout) panel_4.getLayout();
+    flowLayout_2.setVgap(0);
+    flowLayout_2.setHgap(0);
+    panel_2.add(panel_4);
 
     txtAngle = new JTextField();
+    panel_4.add(txtAngle);
     txtAngle.setHorizontalAlignment(SwingConstants.RIGHT);
     txtAngle.setText("15");
-    panel_2.add(txtAngle);
     txtAngle.setColumns(3);
 
     btnRotateBy = new JButton("");
+    panel_4.add(btnRotateBy);
     btnRotateBy.addActionListener(e -> {
       try {
         double angle = -Module.doubleFromTxt(txtAngle);
@@ -438,7 +458,95 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     btnRotateBy.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_rotate_cw.png"))
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
-    panel_2.add(btnRotateBy);
+
+    panel_3 = new JPanel();
+    FlowLayout flowLayout_1 = (FlowLayout) panel_3.getLayout();
+    flowLayout_1.setVgap(0);
+    flowLayout_1.setHgap(0);
+    panel_2.add(panel_3);
+
+    btnLeft = new JButton("");
+    panel_3.add(btnLeft);
+    btnLeft.setToolTipText("Rotate");
+    btnLeft.setPreferredSize(new Dimension(31, 31));
+    btnLeft.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_left.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+
+    txtShiftX = new JTextField();
+    txtShiftX.setToolTipText("Translate x");
+    panel_3.add(txtShiftX);
+    txtShiftX.setText("15");
+    txtShiftX.setHorizontalAlignment(SwingConstants.CENTER);
+    txtShiftX.setColumns(6);
+
+    btnRight = new JButton("");
+    panel_3.add(btnRight);
+    btnRight.setToolTipText("Rotate");
+    btnRight.setPreferredSize(new Dimension(31, 31));
+    btnRight.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_right.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+
+    panel_6 = new JPanel();
+    FlowLayout flowLayout_4 = (FlowLayout) panel_6.getLayout();
+    flowLayout_4.setVgap(0);
+    flowLayout_4.setHgap(0);
+    panel_2.add(panel_6);
+
+    btnDown = new JButton("");
+    btnDown.setToolTipText("Rotate");
+    btnDown.setPreferredSize(new Dimension(31, 31));
+    panel_6.add(btnDown);
+    btnDown.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_down.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+
+    txtShiftY = new JTextField();
+    txtShiftY.setToolTipText("Translate y");
+    txtShiftY.setText("15");
+    txtShiftY.setHorizontalAlignment(SwingConstants.CENTER);
+    txtShiftY.setColumns(6);
+    panel_6.add(txtShiftY);
+
+    btnUp = new JButton("");
+    btnUp.setToolTipText("Rotate");
+    btnUp.setPreferredSize(new Dimension(31, 31));
+    btnUp.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_up.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    panel_6.add(btnUp);
+
+
+    btnLeft.addActionListener(e -> {
+      try {
+        float d = Module.floatFromTxt(txtShiftX);
+        translate(-d, 0);
+      } catch (Exception ex) {
+      }
+    });
+    btnRight.addActionListener(e -> {
+      try {
+        float d = Module.floatFromTxt(txtShiftX);
+        translate(d, 0);
+      } catch (Exception ex) {
+      }
+    });
+
+    btnUp.addActionListener(e -> {
+      try {
+        float d = Module.floatFromTxt(txtShiftY);
+        translate(0, d);
+      } catch (Exception ex) {
+      }
+    });
+    btnDown.addActionListener(e -> {
+      try {
+        float d = Module.floatFromTxt(txtShiftY);
+        translate(0, -d);
+      } catch (Exception ex) {
+      }
+    });
 
 
     btnDelete.addActionListener(new ActionListener() {
@@ -491,6 +599,26 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     contentPane.requestFocusInWindow();
   }
+
+  private void translate(float dx, float dy) {
+    if (cbAll.isSelected()) {
+      if (settSel != null) {
+        for (SettingsShapeSelection sel : settSel.getSelections()) {
+          sel.translate(dx, dy);
+        }
+        updateAllStats();
+        updateAllAnnotations();
+        repaintChart();
+      }
+    } else {
+      // reflect selected
+      if (currentSelect != null) {
+        currentSelect.translate(dx, dy);
+        updateSelection(currentSelect, true);
+      }
+    }
+  }
+
 
   private void reflectHorizontally() {
     if (cbAll.isSelected()) {
@@ -928,15 +1056,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     // update annotation of current only
     updateAnnotation(s);
 
-    // update map
-    showMarkingMap(getCbMarkDp().isSelected());
-
     repaintChart();
     //
     logger.debug("UPDATE CHART");
   }
 
   private void repaintChart() {
+    // update map
+    showMarkingMap(getCbMarkDp().isSelected());
     // update chart
     JFreeChart chart = heat.getChart();
     chart.fireChartChanged();
@@ -1399,5 +1526,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   public JTextField getTxtAngle() {
     return txtAngle;
+  }
+
+  public JTextField getTxtShiftY() {
+    return txtShiftY;
+  }
+
+  public JTextField getTxtShiftX() {
+    return txtShiftX;
   }
 }
