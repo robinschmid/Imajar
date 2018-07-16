@@ -179,6 +179,10 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     return (float) shape.getBounds2D().getMaxX();
   }
 
+  public float getCenterX() {
+    return (float) shape.getBounds2D().getCenterX();
+  }
+
   public float getY0() {
     return (float) shape.getBounds2D().getMinY();
   }
@@ -186,6 +190,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   public float getY1() {
     return (float) shape.getBounds2D().getMaxY();
   }
+
+  public float getCenterY() {
+    return (float) shape.getBounds2D().getCenterY();
+  }
+
 
   public double getWidth() {
     return shape.getBounds2D().getWidth();
@@ -641,9 +650,8 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    */
   public void rotate(double degreeAngle) {
     // angle
-    double angle = Math.atan(Math.toRadians(degreeAngle));
-    AffineTransform at =
-        AffineTransform.getRotateInstance(angle, getWidth() / 2.0, getHeight() / 2.0);
+    double angle = Math.toRadians(degreeAngle);
+    AffineTransform at = AffineTransform.getRotateInstance(angle, getCenterX(), getCenterY());
     transform(at);
   }
 
@@ -652,10 +660,30 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
    * 
    */
   public void reflectH() {
-    // angle
-    double angle = Math.atan(Math.toRadians(degreeAngle));
-    AffineTransform at =
-        AffineTransform.getRotateInstance(angle, getWidth() / 2.0, getHeight() / 2.0);
+    AffineTransform at = new AffineTransform();
+    at.translate(getCenterX(), getCenterY());
+    at.scale(-1, 1);
+    at.translate(-getCenterX(), -getCenterY());
     transform(at);
   }
+
+  /**
+   * Reflect vertically
+   * 
+   */
+  public void reflectV() {
+    AffineTransform at = new AffineTransform();
+    at.translate(getCenterX(), getCenterY());
+    at.scale(1, -1);
+    at.translate(-getCenterX(), -getCenterY());
+    transform(at);
+  }
+
+  /**
+   * translate (shift) ROI
+   */
+  public void translate(double tx, double ty) {
+    transform(AffineTransform.getTranslateInstance(tx, ty));
+  }
+
 }

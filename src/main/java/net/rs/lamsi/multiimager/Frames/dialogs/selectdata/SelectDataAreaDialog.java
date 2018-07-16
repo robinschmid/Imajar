@@ -372,6 +372,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_2.add(cbAll);
 
     btnRotateCcw = new JButton("");
+    btnRotateCcw.setToolTipText("Rotate");
     btnRotateCcw.addActionListener(e -> rotateCCW());
     btnRotateCcw.setPreferredSize(new Dimension(31, 31));
     btnRotateCcw.setIcon(
@@ -380,6 +381,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_2.add(btnRotateCcw);
 
     btnRotateCw = new JButton("");
+    btnRotateCw.setToolTipText("Rotate");
     btnRotateCw.addActionListener(e -> rotateCW());
     btnRotateCw.setPreferredSize(new Dimension(31, 31));
     btnRotateCw.setIcon(
@@ -388,19 +390,21 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_2.add(btnRotateCw);
 
     btnHReflect = new JButton("");
+    btnHReflect.setToolTipText("Reflect");
     btnHReflect.addActionListener(e -> reflectHorizontally());
     btnHReflect.setPreferredSize(new Dimension(31, 31));
     btnHReflect.setIcon(new ImageIcon(
-        new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_vertical.png")).getImage()
-            .getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+        new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_horizontal.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
     panel_2.add(btnHReflect);
 
     btnVReflect = new JButton("");
+    btnVReflect.setToolTipText("Reflect");
     btnVReflect.addActionListener(e -> reflectVertically());
     btnVReflect.setPreferredSize(new Dimension(31, 31));
     btnVReflect.setIcon(new ImageIcon(
-        new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_horizontal.png"))
-            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+        new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_vertical.png")).getImage()
+            .getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
     panel_2.add(btnVReflect);
 
 
@@ -455,25 +459,72 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     contentPane.requestFocusInWindow();
   }
 
-  private void reflectHorizontally() {}
-
-
-  private void reflectVertically() {}
-
-
-  private void rotateCCW() {
-    boolean all = cbAll.isSelected();
-    if (all) {
-
+  private void reflectHorizontally() {
+    if (cbAll.isSelected()) {
+      if (settSel != null) {
+        for (SettingsShapeSelection sel : settSel.getSelections()) {
+          sel.reflectH();
+        }
+        updateAllStats();
+        updateAllAnnotations();
+        repaintChart();
+      }
     } else {
-      // rotate selected
+      // reflect selected
       if (currentSelect != null) {
-        currentSelect.rotate(45);
+        currentSelect.reflectH();
+        updateSelection(currentSelect, true);
       }
     }
   }
 
-  private void rotateCW() {}
+
+  private void reflectVertically() {
+    if (cbAll.isSelected()) {
+      if (settSel != null) {
+        for (SettingsShapeSelection sel : settSel.getSelections()) {
+          sel.reflectV();
+        }
+        updateAllStats();
+        updateAllAnnotations();
+        repaintChart();
+      }
+    } else {
+      // reflect selected
+      if (currentSelect != null) {
+        currentSelect.reflectV();
+        updateSelection(currentSelect, true);
+      }
+    }
+  }
+
+
+  private void rotateCCW() {
+    rotate(45);
+  }
+
+  private void rotateCW() {
+    rotate(-45);
+  }
+
+  private void rotate(double degAngle) {
+    if (cbAll.isSelected()) {
+      if (settSel != null) {
+        for (SettingsShapeSelection sel : settSel.getSelections()) {
+          sel.rotate(degAngle);
+        }
+        updateAllStats();
+        updateAllAnnotations();
+        repaintChart();
+      }
+    } else {
+      // rotate selected
+      if (currentSelect != null) {
+        currentSelect.rotate(degAngle);
+        updateSelection(currentSelect, true);
+      }
+    }
+  }
 
 
   private void showDataDialog() {
@@ -847,13 +898,18 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     // update map
     showMarkingMap(getCbMarkDp().isSelected());
 
+    repaintChart();
+    //
+    logger.debug("UPDATE CHART");
+  }
+
+  private void repaintChart() {
     // update chart
     JFreeChart chart = heat.getChart();
     chart.fireChartChanged();
     this.repaint();
-    //
-    logger.debug("UPDATE CHART");
   }
+
 
   @Override
   public void mouseDragged(MouseEvent e) {
