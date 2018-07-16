@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -40,8 +41,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -168,6 +171,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private JButton btnRotateCw;
   private JButton btnHReflect;
   private JButton btnVReflect;
+  private Component horizontalStrut;
+  private JTextField txtAngle;
+  private JButton btnRotateBy;
 
 
   /**
@@ -406,6 +412,30 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         new ImageIcon(Module.class.getResource("/img/btn_imaging_reflect_vertical.png")).getImage()
             .getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
     panel_2.add(btnVReflect);
+
+    horizontalStrut = Box.createHorizontalStrut(20);
+    panel_2.add(horizontalStrut);
+
+    txtAngle = new JTextField();
+    txtAngle.setHorizontalAlignment(SwingConstants.RIGHT);
+    txtAngle.setText("15");
+    panel_2.add(txtAngle);
+    txtAngle.setColumns(3);
+
+    btnRotateBy = new JButton("");
+    btnRotateBy.addActionListener(e -> {
+      try {
+        double angle = -Module.doubleFromTxt(txtAngle);
+        rotate(angle);
+      } catch (Exception ex) {
+      }
+    });
+    btnRotateBy.setToolTipText("Rotate");
+    btnRotateBy.setPreferredSize(new Dimension(31, 31));
+    btnRotateBy.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_rotate_cw.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+    panel_2.add(btnRotateBy);
 
 
     btnDelete.addActionListener(new ActionListener() {
@@ -1333,5 +1363,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   public JCheckBox getCbAll() {
     return cbAll;
+  }
+
+  public JTextField getTxtAngle() {
+    return txtAngle;
   }
 }
