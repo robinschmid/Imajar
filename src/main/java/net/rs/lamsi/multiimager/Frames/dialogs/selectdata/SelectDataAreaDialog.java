@@ -139,6 +139,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   // active selection (can be deleted, shifted etc)
   private SettingsShapeSelection currentSelect;
+  // copy paste
+  private SettingsShapeSelection currentCopied;
+
   private boolean isPressed = false;
   // coordinates of first and second mouse event (data space)
   private float x0, x1, y0, y1;
@@ -1171,6 +1174,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK), "ctrl UP");
     im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK), "ctrl DOWN");
 
+
+    // copy paste
+    im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "ctrl C");
+    im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK), "ctrl V");
+
+
     im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK),
         "ctrl shift LEFT");
     im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK),
@@ -1253,6 +1262,29 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       @Override
       public void actionPerformed(ActionEvent e) {
         shiftCurrentRectY(-1, KEY.SHIFT);
+      }
+    });
+
+
+    pn.getActionMap().put("ctrl C", new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // copy
+        currentCopied = currentSelect;
+      }
+    });
+    pn.getActionMap().put("ctrl V", new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // copy
+        if (currentCopied != null) {
+          try {
+            SettingsShapeSelection copy = (SettingsShapeSelection) currentCopied.copy();
+            addNewSelection(copy);
+          } catch (Exception ex) {
+            logger.error("Cannot copy ROI settings", ex);
+          }
+        }
       }
     });
 

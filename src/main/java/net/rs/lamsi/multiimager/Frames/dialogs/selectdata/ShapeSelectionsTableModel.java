@@ -120,6 +120,9 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
   public Object getValueAt(int row, int col) {
     SettingsShapeSelection sel = selections.getSelections().get(row);
     SelectionTableRow r = sel.getDefaultTableRow(selections.isAlphaMapExclusionActive());
+
+    if (r == null)
+      return null;
     // 0 1 2 3 4 5 6 7 8 9 10 11 9
     // orderNumber "Type", ROI, Concent. "x0", "y0", "x1", "y1", n sum "I min", "I max", "I avg", "I
     // median", "I 99%", "I stdev", "Histo"

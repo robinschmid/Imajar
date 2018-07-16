@@ -686,4 +686,11 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     transform(AffineTransform.getTranslateInstance(tx, ty));
   }
 
+  @Override
+  public Settings copy() throws Exception {
+    SettingsShapeSelection copy = (SettingsShapeSelection) super.copy();
+    copy.setCurrentImage(currentImg);
+    return copy;
+  }
+
 }
