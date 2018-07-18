@@ -185,6 +185,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private JButton btnDown;
   private JTextField txtShiftY;
   private JButton btnUp;
+  private JPanel panel_7;
+  private JLabel lblXywh;
+  private JTextField txtX;
+  private JTextField txtY;
+  private JTextField txtW;
+  private JTextField txtH;
+  private JButton btnApplyCoordinates;
 
 
   /**
@@ -212,7 +219,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   public SelectDataAreaDialog() {
     final JFrame thisframe = this;
     setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    setBounds(100, 100, 778, 767);
+    setBounds(100, 100, 945, 791);
     contentPane = new JPanel();
     contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
     contentPane.setLayout(new BorderLayout(0, 0));
@@ -478,7 +485,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_3.add(txtShiftX);
     txtShiftX.setText("15");
     txtShiftX.setHorizontalAlignment(SwingConstants.CENTER);
-    txtShiftX.setColumns(6);
+    txtShiftX.setColumns(4);
 
     btnRight = new JButton("");
     panel_3.add(btnRight);
@@ -506,7 +513,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     txtShiftY.setToolTipText("Translate y");
     txtShiftY.setText("15");
     txtShiftY.setHorizontalAlignment(SwingConstants.CENTER);
-    txtShiftY.setColumns(6);
+    txtShiftY.setColumns(4);
     panel_6.add(txtShiftY);
 
     btnUp = new JButton("");
@@ -516,6 +523,77 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_up.png"))
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
     panel_6.add(btnUp);
+
+    panel_7 = new JPanel();
+    FlowLayout flowLayout_6 = (FlowLayout) panel_7.getLayout();
+    flowLayout_6.setVgap(0);
+    flowLayout_6.setHgap(0);
+    panel_2.add(panel_7);
+
+    lblXywh = new JLabel("x:y:w:h");
+    panel_7.add(lblXywh);
+
+    txtX = new JTextField();
+    txtX.setToolTipText("X coordinate");
+    txtX.setText("0");
+    txtX.setHorizontalAlignment(SwingConstants.CENTER);
+    txtX.setColumns(4);
+    panel_7.add(txtX);
+
+    txtY = new JTextField();
+    txtY.setToolTipText("Y coordinate");
+    txtY.setText("0");
+    txtY.setHorizontalAlignment(SwingConstants.CENTER);
+    txtY.setColumns(4);
+    panel_7.add(txtY);
+
+    btnApplyCoordinates = new JButton("");
+    panel_7.add(btnApplyCoordinates);
+    btnApplyCoordinates.setToolTipText("Apply coordinates");
+    btnApplyCoordinates.setPreferredSize(new Dimension(31, 31));
+    btnApplyCoordinates
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_check.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+
+    btnApplyCoordinates.addActionListener(e -> {
+      try {
+        float x = Module.floatFromTxt(txtX);
+        float y = Module.floatFromTxt(txtX);
+        applyCoordinates(x, y);
+      } catch (Exception ex) {
+      }
+    });
+
+    txtW = new JTextField();
+    txtW.setToolTipText("Width");
+    txtW.setText("0");
+    txtW.setHorizontalAlignment(SwingConstants.CENTER);
+    txtW.setColumns(4);
+    panel_7.add(txtW);
+
+    txtH = new JTextField();
+    txtH.setToolTipText("Height");
+    txtH.setText("0");
+    txtH.setHorizontalAlignment(SwingConstants.CENTER);
+    txtH.setColumns(4);
+    panel_7.add(txtH);
+
+    JButton btnApplySize = new JButton("");
+    panel_7.add(btnApplySize);
+    btnApplySize.setToolTipText("Apply size");
+    btnApplySize.setPreferredSize(new Dimension(31, 31));
+    btnApplySize
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_check.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+
+    btnApplySize.addActionListener(e -> {
+      try {
+        float w = Module.floatFromTxt(txtX);
+        float h = Module.floatFromTxt(txtX);
+        applySize(w, h);
+      } catch (Exception ex) {
+      }
+    });
 
 
     btnLeft.addActionListener(e -> {
@@ -600,15 +678,74 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     contentPane.requestFocusInWindow();
   }
 
+
+
+  private void showDataDialog() {
+    if (currentSelect != null) {
+      SelectionTableRow row = currentSelect.getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
+      List<Double> d = row.getData();
+      if (d != null) {
+        DataDialog dialog = new DataDialog("Data of ROI " + currentSelect.getOrderNumber(), d);
+        dialog.setVisible(true);
+      }
+    }
+  }
+
+  /**
+   * Set coordinates of all or one ROI
+   * 
+   * @param x
+   * @param y
+   */
+  private void applyCoordinates(float x, float y) {
+    if (cbAll.isSelected()) {
+      if (settSel != null) {
+        for (SettingsShapeSelection sel : settSel.getSelections()) {
+          sel.setPosition(x, y);
+        }
+        updateAndRepaintAll();
+      }
+    } else {
+      // only selected
+      if (currentSelect != null) {
+        currentSelect.setPosition(x, y);
+        updateSelection(currentSelect, true);
+      }
+    }
+  }
+
+  /**
+   * Set size of all or one ROI
+   * 
+   * @param w
+   * @param h
+   */
+  private void applySize(float w, float h) {
+    if (cbAll.isSelected()) {
+      if (settSel != null) {
+        for (SettingsShapeSelection sel : settSel.getSelections()) {
+          sel.setSize(w, h);
+        }
+        updateAndRepaintAll();
+      }
+    } else {
+      // only selected
+      if (currentSelect != null) {
+        currentSelect.setSize(w, h);
+        updateSelection(currentSelect, true);
+      }
+    }
+  }
+
+
+
   private void translate(float dx, float dy) {
     if (cbAll.isSelected()) {
       if (settSel != null) {
         for (SettingsShapeSelection sel : settSel.getSelections()) {
           sel.translate(dx, dy);
         }
-        updateAllStats();
-        updateAllAnnotations();
-        repaintChart();
+        updateAndRepaintAll();
       }
     } else {
       // reflect selected
@@ -626,9 +763,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         for (SettingsShapeSelection sel : settSel.getSelections()) {
           sel.reflectH();
         }
-        updateAllStats();
-        updateAllAnnotations();
-        repaintChart();
+        updateAndRepaintAll();
       }
     } else {
       // reflect selected
@@ -646,9 +781,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         for (SettingsShapeSelection sel : settSel.getSelections()) {
           sel.reflectV();
         }
-        updateAllStats();
-        updateAllAnnotations();
-        repaintChart();
+        updateAndRepaintAll();
       }
     } else {
       // reflect selected
@@ -674,27 +807,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         for (SettingsShapeSelection sel : settSel.getSelections()) {
           sel.rotate(degAngle);
         }
-        updateAllStats();
-        updateAllAnnotations();
-        repaintChart();
+        updateAndRepaintAll();
       }
     } else {
       // rotate selected
       if (currentSelect != null) {
         currentSelect.rotate(degAngle);
         updateSelection(currentSelect, true);
-      }
-    }
-  }
-
-
-  private void showDataDialog() {
-    if (currentSelect != null) {
-      SelectionTableRow row = currentSelect.getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
-      List<Double> d = row.getData();
-      if (d != null) {
-        DataDialog dialog = new DataDialog("Data of ROI " + currentSelect.getOrderNumber(), d);
-        dialog.setVisible(true);
       }
     }
   }
@@ -961,8 +1080,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     }
   }
 
-  private ArrayList<SettingsShapeSelection> getSelections() {
-    return settSel.getSelections();
+
+  /**
+   * Update stats, annotations and repaint chart
+   */
+  private void updateAndRepaintAll() {
+    updateAllStats();
+    updateAllAnnotations();
+    repaintChart();
   }
 
   private void updateAllAnnotations() {
@@ -1198,6 +1323,16 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       currentSelect.setHighlighted(true);
       updateAnnotation(currentSelect);
       updateHistoPanelData();
+
+      txtX.setText(String.valueOf(s.getX0()));
+      txtY.setText(String.valueOf(s.getY0()));
+      txtW.setText(String.valueOf(s.getWidth()));
+      txtH.setText(String.valueOf(s.getHeight()));
+    } else {
+      txtX.setText("");
+      txtY.setText("");
+      txtW.setText("");
+      txtH.setText("");
     }
     JFreeChart chart = heat.getChart();
     chart.fireChartChanged();
@@ -1448,6 +1583,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   @Override
   public void mouseExited(MouseEvent e) {}
 
+
+  private ArrayList<SettingsShapeSelection> getSelections() {
+    return settSel.getSelections();
+  }
+
   public JToggleButton getBtnChoose() {
     return btnChoose;
   }
@@ -1534,5 +1674,21 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   public JTextField getTxtShiftX() {
     return txtShiftX;
+  }
+
+  public JTextField getTxtX() {
+    return txtX;
+  }
+
+  public JTextField getTxtY() {
+    return txtY;
+  }
+
+  public JTextField getTxtW() {
+    return txtW;
+  }
+
+  public JTextField getTxtH() {
+    return txtH;
   }
 }

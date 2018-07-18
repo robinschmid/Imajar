@@ -148,7 +148,9 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
 
   public void setBounds(float x, float y, float w, float h) {}
 
-  public void setSize(float w, float h) {}
+  public void setSize(float w, float h) {
+    AffineTransform at = AffineTransform.getScaleInstance(sx, sy)
+  }
 
   public void setPosition(float x, float y) {}
 
