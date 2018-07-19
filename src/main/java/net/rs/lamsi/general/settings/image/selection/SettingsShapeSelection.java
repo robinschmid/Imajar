@@ -299,11 +299,6 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     }
   }
 
-
-  // ##########################################################
-  // shape logic
-  public abstract void setBounds(float x, float y, float w, float h);
-
   /**
    * sets the second anchor (end point) calculate size and position new
    * 
@@ -321,41 +316,6 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
   public void setSecondAnchor(double x, double y) {
     setSecondAnchor((float) x, (float) y);
   }
-
-
-  public void setSize(float w, float h) {
-    Rectangle2D r = shape.getBounds2D();
-    setBounds((float) r.getX(), (float) r.getY(), w, h);
-  }
-
-  public void setPosition(float x, float y) {
-    Rectangle2D r = shape.getBounds2D();
-    setBounds(x, y, (float) r.getWidth(), (float) r.getHeight());
-  }
-
-  /**
-   * translate / shift rect by distance
-   * 
-   * @param px
-   * @param py
-   */
-  public void translate(float px, float py) {
-    Rectangle2D r = shape.getBounds2D();
-    setPosition((float) r.getX() + px, (float) r.getY() + py);
-  }
-
-  /**
-   * grow or shrink(if negative)
-   * 
-   * @param px
-   * @param py
-   */
-  public void grow(float px, float py) {
-    Rectangle2D r = shape.getBounds2D();
-    setSize((float) r.getWidth() + px, (float) r.getHeight() + py);
-  }
-
-  public abstract void transform(AffineTransform at);
 
   // ##########################################################
   // statistics
@@ -679,6 +639,47 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     transform(at);
   }
 
+  // ##########################################################
+  // shape logic
+  public void setBounds(float x, float y, float w, float h) {
+    setSize(w, h);
+    setPosition(x, y);
+  }
+
+
+  public void setSize(float w, float h) {
+    grow((float) (w / getWidth()), (float) (h / getHeight()));
+  }
+
+  public void setPosition(float x, float y) {
+    translate((float) (x - getX0()), (float) (y - getY0()));
+  }
+
+  /**
+   * translate / shift rect by distance
+   * 
+   * @param px
+   * @param py
+   */
+  public void translate(float px, float py) {
+    transform(AffineTransform.getTranslateInstance(px, py));
+  }
+
+  /**
+   * grow or shrink(if negative)
+   * 
+   * @param px
+   * @param py
+   */
+  public void grow(float px, float py) {
+    AffineTransform at = new AffineTransform();
+    at.translate(getCenterX(), getCenterY());
+    at.scale(px, py);
+    at.translate(-getCenterX(), -getCenterY());
+    transform(at);
+  }
+
+  public abstract void transform(AffineTransform at);
   // /**
   // * translate (shift) ROI
   // */

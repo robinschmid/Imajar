@@ -146,20 +146,13 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
     shape.reset();
   }
 
-  public void setBounds(float x, float y, float w, float h) {}
-
-  public void setSize(float w, float h) {
-    AffineTransform at = AffineTransform.getScaleInstance(sx, sy)
-  }
-
-  public void setPosition(float x, float y) {}
-
   /**
    * translate / shift rect by distance
    * 
    * @param px
    * @param py
    */
+  @Override
   public void translate(float px, float py) {
     Polygon2D poly = new Polygon2D();
     for (int i = 0; i < shape.npoints; i++) {
@@ -168,19 +161,8 @@ public class SettingsPolygonSelection extends SettingsShapeSelection<Polygon2D> 
     shape = poly;
   }
 
-  /**
-   * grow or shrink(if negative)
-   * 
-   * @param px
-   * @param py
-   */
-  public void grow(float px, float py) {
-    setSize((float) shape.getBounds2D().getWidth() + px,
-        (float) shape.getBounds2D().getHeight() + py);
-  }
-
   @Override
-  public void setSecondAnchor(float x, float y) {}
+  public void setSecondAnchor(float xy, float y) {}
 
   public void setFirstAndSecondMouseEvent(float x0, float y0, float x1, float y1) {
     addPoint(x1, y1);

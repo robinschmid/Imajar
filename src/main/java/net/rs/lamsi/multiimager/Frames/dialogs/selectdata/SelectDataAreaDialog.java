@@ -558,7 +558,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     btnApplyCoordinates.addActionListener(e -> {
       try {
         float x = Module.floatFromTxt(txtX);
-        float y = Module.floatFromTxt(txtX);
+        float y = Module.floatFromTxt(txtY);
         applyCoordinates(x, y);
       } catch (Exception ex) {
       }
@@ -588,8 +588,8 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnApplySize.addActionListener(e -> {
       try {
-        float w = Module.floatFromTxt(txtX);
-        float h = Module.floatFromTxt(txtX);
+        float w = Module.floatFromTxt(txtW);
+        float h = Module.floatFromTxt(txtH);
         applySize(w, h);
       } catch (Exception ex) {
       }
