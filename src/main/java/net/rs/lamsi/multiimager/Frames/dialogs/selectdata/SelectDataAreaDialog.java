@@ -539,6 +539,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     txtX.setHorizontalAlignment(SwingConstants.CENTER);
     txtX.setColumns(4);
     panel_7.add(txtX);
+    txtX.addActionListener(e -> {
+      try {
+        float x = Module.floatFromTxt(txtX);
+        applyXCoordinate(x);
+        requestFocusOnChart();
+      } catch (Exception ex) {
+      }
+    });
 
     txtY = new JTextField();
     txtY.setToolTipText("Y coordinate");
@@ -546,6 +554,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     txtY.setHorizontalAlignment(SwingConstants.CENTER);
     txtY.setColumns(4);
     panel_7.add(txtY);
+    txtY.addActionListener(e -> {
+      try {
+        float y = Module.floatFromTxt(txtY);
+        applyYCoordinate(y);
+        requestFocusOnChart();
+      } catch (Exception ex) {
+      }
+    });
 
     btnApplyCoordinates = new JButton("");
     panel_7.add(btnApplyCoordinates);
@@ -570,6 +586,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     txtW.setHorizontalAlignment(SwingConstants.CENTER);
     txtW.setColumns(4);
     panel_7.add(txtW);
+    txtW.addActionListener(e -> {
+      try {
+        float w = Module.floatFromTxt(txtW);
+        applyWidth(w);
+        requestFocusOnChart();
+      } catch (Exception ex) {
+      }
+    });
 
     txtH = new JTextField();
     txtH.setToolTipText("Height");
@@ -577,6 +601,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     txtH.setHorizontalAlignment(SwingConstants.CENTER);
     txtH.setColumns(4);
     panel_7.add(txtH);
+    txtH.addActionListener(e -> {
+      try {
+        float h = Module.floatFromTxt(txtH);
+        applyHeight(h);
+        requestFocusOnChart();
+      } catch (Exception ex) {
+      }
+    });
 
     JButton btnApplySize = new JButton("");
     panel_7.add(btnApplySize);
@@ -641,7 +673,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     comboSelectionMode.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
-        contentPane.requestFocusInWindow();
+        requestFocusOnChart();
         // change color and stroke
         Color c = SettingsShapeSelection.getColorForSelectionMode(getCurrentSelectionMode());
         getCbtnColor().setColor(c);
@@ -650,7 +682,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     comboRoi.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
-        contentPane.requestFocusInWindow();
+        requestFocusOnChart();
         // change color and stroke
         SettingsBasicStroke stroke = SettingsShapeSelection.getStrokeForROI(getCurrentRoiMode());
         getStrokeChooserPanel().setStroke(stroke);
@@ -659,7 +691,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     comboShape.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(ItemEvent e) {
-        contentPane.requestFocusInWindow();
+        requestFocusOnChart();
       }
     });
     //
@@ -675,9 +707,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     };
     this.addWindowListener(wl);
 
-    contentPane.requestFocusInWindow();
+    requestFocusOnChart();
   }
 
+
+
+  private void requestFocusOnChart() {
+    getContentPane().requestFocusInWindow();
+  }
 
 
   private void showDataDialog() {
@@ -692,10 +729,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   }
 
   /**
-   * Set coordinates of all or one ROI
+   * Set coordinates of all or one ROI Float.NaN
    * 
-   * @param x
-   * @param y
+   * @param x Float.NaN if this value should not be changed
+   * @param y Float.NaN if this value should not be changed
    */
   private void applyCoordinates(float x, float y) {
     if (cbAll.isSelected()) {
@@ -715,10 +752,29 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   }
 
   /**
+   * Set coordinates of all or one ROI
+   * 
+   * @param x Float.NaN if this value should not be changed
+   */
+  private void applyXCoordinate(float x) {
+    applyCoordinates(x, Float.NaN);
+  }
+
+  /**
+   * Set coordinates of all or one ROI
+   * 
+   * @param y Float.NaN if this value should not be changed
+   */
+  private void applyYCoordinate(float y) {
+    applyCoordinates(Float.NaN, y);
+  }
+
+
+  /**
    * Set size of all or one ROI
    * 
-   * @param w
-   * @param h
+   * @param w Float.NaN if this value should not be changed
+   * @param h Float.NaN if this value should not be changed
    */
   private void applySize(float w, float h) {
     if (cbAll.isSelected()) {
@@ -735,6 +791,24 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         updateSelection(currentSelect, true);
       }
     }
+  }
+
+  /**
+   * Set size of all or one ROI
+   * 
+   * @param w
+   */
+  private void applyWidth(float w) {
+    applySize(w, Float.NaN);
+  }
+
+  /**
+   * Set size of all or one ROI
+   * 
+   * @param h
+   */
+  private void applyHeight(float h) {
+    applySize(Float.NaN, h);
   }
 
 
@@ -1460,6 +1534,15 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         "ctrl shift UP");
     im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK + InputEvent.SHIFT_MASK),
         "ctrl shift DOWN");
+
+    // remove focus
+    im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "ENTER");
+    pn.getActionMap().put("ENTER", new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        requestFocusOnChart();
+      }
+    });
 
     // shift
     pn.getActionMap().put("shift LEFT", new AbstractAction() {

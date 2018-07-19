@@ -646,12 +646,30 @@ public abstract class SettingsShapeSelection<T extends Shape> extends Settings {
     setPosition(x, y);
   }
 
-
+  /**
+   * Sets the size or width and height only
+   * 
+   * @param w Float.NaN if this value should not be changed
+   * @param h Float.NaN if this value should not be changed
+   */
   public void setSize(float w, float h) {
+    if (Float.isNaN(w))
+      w = (float) getWidth();
+    if (Float.isNaN(h))
+      h = (float) getHeight();
+
     grow((float) (w / getWidth()), (float) (h / getHeight()));
   }
 
+  /**
+   * @param x Float.NaN if this value should not be changed
+   * @param y Float.NaN if this value should not be changed
+   */
   public void setPosition(float x, float y) {
+    if (Float.isNaN(x))
+      x = (float) getX0();
+    if (Float.isNaN(y))
+      y = (float) getY0();
     translate((float) (x - getX0()), (float) (y - getY0()));
   }
 
