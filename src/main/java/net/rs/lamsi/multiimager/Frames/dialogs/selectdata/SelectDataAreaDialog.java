@@ -957,8 +957,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     ChartPanel cp = heat.getChartPanel();
     float val = (float) ChartLogics.screenValueToPlotValue(cp, i).getX();
     // shift
-    if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0)))
+    if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0))) {
+      try {
+        val = i * Module.floatFromTxt(txtShiftX);
+      } catch (Exception e) {
+      }
       currentSelect.translate(val, 0);
+    }
     // enlarge?
     if (key.equals(KEY.ENLARGE))
       currentSelect.grow(Math.abs(val), 0);
@@ -975,8 +980,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     ChartPanel cp = heat.getChartPanel();
     float val = (float) ChartLogics.screenValueToPlotValue(cp, i).getY();
     // shift
-    if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0)))
+    if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0))) {
+      try {
+        val = i * Module.floatFromTxt(txtShiftY);
+      } catch (Exception e) {
+      }
       currentSelect.translate(0, val);
+    }
     // enlarge?
     if (key.equals(KEY.ENLARGE))
       currentSelect.grow(0, Math.abs(val));
