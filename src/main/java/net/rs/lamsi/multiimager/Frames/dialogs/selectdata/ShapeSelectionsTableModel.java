@@ -65,8 +65,14 @@ public class ShapeSelectionsTableModel extends AbstractTableModel {
       fireTableDataChanged();
   }
 
+  public int indexOf(SettingsShapeSelection r) {
+    if (selections == null || selections.getSelections() == null)
+      return -1;
+    return selections.getSelections().indexOf(r);
+  }
+
   public void removeRow(SettingsShapeSelection r, boolean update) {
-    int i = selections.getSelections().indexOf(r);
+    int i = indexOf(r);
     if (i != -1)
       removeRow(i, update);
   }

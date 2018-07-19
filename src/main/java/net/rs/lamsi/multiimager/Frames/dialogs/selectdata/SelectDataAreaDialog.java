@@ -140,6 +140,9 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private SettingsShapeSelection currentSelect;
   // copy paste
   private SettingsShapeSelection currentCopied;
+  // list of selections
+  private List<SettingsShapeSelection> listSelected = new ArrayList<SettingsShapeSelection>();
+  private List<SettingsShapeSelection> listCopied = new ArrayList<SettingsShapeSelection>();
 
   private boolean isPressed = false;
   // coordinates of first and second mouse event (data space)
@@ -315,6 +318,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       public void actionPerformed(ActionEvent e) {
         tableModel.removeAllRows();
         currentSelect = null;
+        listSelected.clear();
         settSel.removeAllSelections();
         heat.getPlot().clearAnnotations();
         heat.getChart().fireChartChanged();
@@ -662,7 +666,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     btnDelete.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         deleteSelection(currentSelect);
-        currentSelect = null;
+        setCurrentSelect(null, false);
       }
     });
     btnChoose.addItemListener(new ItemListener() {
@@ -961,7 +965,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       }
       s.setFinished(true);
       if (deselect)
-        setCurrentSelect(null);
+        setCurrentSelect(null, false);
     } else {
       logger.info("Shape width and height were 0. Therefore, the shape was discarded.");
       // delete roi
@@ -1122,9 +1126,23 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
           @Override
           public void valueChanged(ListSelectionEvent e) {
             if (!e.getValueIsAdjusting()) {
-              int i = table.getSelectedRow();
-              if (i != -1)
-                setCurrentSelect(getSelections().get(i));
+              int[] i = table.getSelectedRows();
+              if (i.length > 0) {
+                SettingsShapeSelection cs = getSelections().get(i[0]);
+                if (i.length == 1)
+                  if (!cs.equals(currentSelect))
+                    setCurrentSelect(cs, false);
+                  else if (i.length > 1) {
+                    // select first
+                    if (!cs.equals(currentSelect))
+                      setCurrentSelect(cs, false);
+                    // clear and add all selected rows
+                    listSelected.clear();
+                    for (int j = 0; j < i.length; j++) {
+                      listSelected.add(getSelections().get(i[j]));
+                    }
+                  }
+              }
             }
           }
         };
@@ -1214,10 +1232,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
    * 
    * @param r
    */
-  private void addNewSelection(SettingsShapeSelection r) {
+  private void addNewSelection(SettingsShapeSelection r, boolean multiSelect) {
     r.setColor(getCurrentColor());
     r.setStroke(getCurrentStroke());
-    setCurrentSelect(r);
+    setCurrentSelect(r, multiSelect);
 
     // put data in table
     tableModel.addRow(r, false);
@@ -1225,6 +1243,15 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     updateSelection(false);
     // update table
     tableModel.fireTableDataChanged();
+  }
+
+  /**
+   * adds a selection to the list and an annotation to the plot
+   * 
+   * @param r
+   */
+  private void addNewSelection(SettingsShapeSelection r) {
+    addNewSelection(r, false);
   }
 
 
@@ -1356,15 +1383,15 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
           SettingsShapeSelection s = getSelections().get(i);
           if ((currentSelect == null || !currentSelect.equals(s))
               && s.contains(pos.getX(), pos.getY())) {
-            // found rect
-            setCurrentSelect(s);
+            // set selected / add as multiselect if shift down
+            setCurrentSelect(s, e.isShiftDown());
             lastMouseEvent = e;
             found = true;
             return;
           }
         }
         if (!found)
-          setCurrentSelect(null);
+          setCurrentSelect(null, false);
       } else if (getCurrentShape().equals(SHAPE.POLYGON)) {
         // Add point? or create new
         ChartPanel cp = heat.getChartPanel();
@@ -1392,31 +1419,47 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   }
 
 
-  private void setCurrentSelect(SettingsShapeSelection s) {
+  private void setCurrentSelect(SettingsShapeSelection s, boolean multiSelect) {
     // deselect old
     if (currentSelect != null) {
       // finish last selection
       if (!currentSelect.isFinished())
         finishShape(currentSelect, false);
-      currentSelect.setHighlighted(false);
+
+      if (!multiSelect || s == null)
+        currentSelect.setHighlighted(false);
+
+      // list selection
+      listSelected.remove(currentSelect);
       updateAnnotation(currentSelect);
     }
     // select new
     currentSelect = s;
-    if (s != null) {
+    // deselect all
+    if (s == null) {
+      // highlighting
+      for (SettingsShapeSelection cs : listSelected) {
+        cs.setHighlighted(false);
+        updateAnnotation(cs);
+      }
+
+      listSelected.clear();
+
+      txtX.setText("");
+      txtY.setText("");
+      txtW.setText("");
+      txtH.setText("");
+    } else {
       currentSelect.setHighlighted(true);
       updateAnnotation(currentSelect);
       updateHistoPanelData();
+      // list selection
+      listSelected.add(currentSelect);
 
       txtX.setText(String.valueOf(s.getX0()));
       txtY.setText(String.valueOf(s.getY0()));
       txtW.setText(String.valueOf(s.getWidth()));
       txtH.setText(String.valueOf(s.getHeight()));
-    } else {
-      txtX.setText("");
-      txtY.setText("");
-      txtW.setText("");
-      txtH.setText("");
     }
     JFreeChart chart = heat.getChart();
     chart.fireChartChanged();
@@ -1624,21 +1667,34 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     pn.getActionMap().put("ctrl C", new AbstractAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        // copy
-        currentCopied = currentSelect;
+        try {
+          // copy
+          if (currentSelect != null)
+            currentCopied = (SettingsShapeSelection) currentSelect.copy();
+          else
+            currentCopied = null;
+
+          listCopied.clear();
+          if (listSelected.size() > 1)
+            for (SettingsShapeSelection s : listSelected)
+              listCopied.add((SettingsShapeSelection) s.copy());
+        } catch (Exception ex) {
+          logger.error("Cannot copy ROI settings", ex);
+        }
       }
     });
     pn.getActionMap().put("ctrl V", new AbstractAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        // copy
-        if (currentCopied != null) {
-          try {
-            SettingsShapeSelection copy = (SettingsShapeSelection) currentCopied.copy();
-            addNewSelection(copy);
-          } catch (Exception ex) {
-            logger.error("Cannot copy ROI settings", ex);
-          }
+        try {
+          // paste
+          if (!listCopied.isEmpty())
+            for (SettingsShapeSelection s : listSelected)
+              addNewSelection((SettingsShapeSelection) s.copy());
+          else if (currentCopied != null)
+            addNewSelection((SettingsShapeSelection) currentCopied.copy(), true);
+        } catch (Exception ex) {
+          logger.error("Cannot copy ROI settings", ex);
         }
       }
     });
