@@ -137,9 +137,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private MouseEvent lastMouseEvent;
 
   // active selection (can be deleted, shifted etc)
-  private SettingsShapeSelection currentSelect;
   // copy paste
-  private SettingsShapeSelection currentCopied;
   // list of selections
   private List<SettingsShapeSelection> listSelected = new ArrayList<SettingsShapeSelection>();
   private List<SettingsShapeSelection> listCopied = new ArrayList<SettingsShapeSelection>();
@@ -317,7 +315,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     btnDeleteAll.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         tableModel.removeAllRows();
-        currentSelect = null;
         listSelected.clear();
         settSel.removeAllSelections();
         heat.getPlot().clearAnnotations();
@@ -382,7 +379,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnFinish = new JButton("Finish shape");
     panel_1.add(btnFinish);
-    btnFinish.addActionListener(e -> finishShape(currentSelect, false));
+    btnFinish.addActionListener(e -> finishShape(getCurrentSelect(), false));
 
     btnChoose = new JToggleButton("Choose/Zoom");
     panel_1.add(btnChoose);
@@ -665,8 +662,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnDelete.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        deleteSelection(currentSelect);
-        setCurrentSelect(null, false);
+        listSelected.stream().forEach(s -> {
+          deleteSelection(s);
+        });
+        listSelected.clear();
+        repaintChart();
       }
     });
     btnChoose.addItemListener(new ItemListener() {
@@ -715,18 +715,32 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   }
 
 
+  /**
+   * 
+   * @return Current selection (first in list) or null
+   */
+  private SettingsShapeSelection getCurrentSelect() {
+    if (listSelected == null || listSelected.isEmpty())
+      return null;
+    return listSelected.get(0);
+  }
+
 
   private void requestFocusOnChart() {
     getContentPane().requestFocusInWindow();
   }
 
 
+  /**
+   * Show ordered data in a dialog
+   */
   private void showDataDialog() {
-    if (currentSelect != null) {
-      SelectionTableRow row = currentSelect.getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
+    if (getCurrentSelect() != null) {
+      SelectionTableRow row =
+          getCurrentSelect().getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
       List<Double> d = row.getData();
       if (d != null) {
-        DataDialog dialog = new DataDialog("Data of ROI " + currentSelect.getOrderNumber(), d);
+        DataDialog dialog = new DataDialog("Data of ROI " + getCurrentSelect().getOrderNumber(), d);
         dialog.setVisible(true);
       }
     }
@@ -741,17 +755,15 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   private void applyCoordinates(float x, float y) {
     if (cbAll.isSelected()) {
       if (settSel != null) {
-        for (SettingsShapeSelection sel : settSel.getSelections()) {
-          sel.setPosition(x, y);
-        }
+        settSel.getSelections().stream().forEach(s -> s.setPosition(x, y));
         updateAndRepaintAll();
       }
     } else {
       // only selected
-      if (currentSelect != null) {
-        currentSelect.setPosition(x, y);
-        updateSelection(currentSelect, true);
-      }
+      listSelected.stream().forEach(s -> {
+        s.setPosition(x, y);
+        updateSelection(s, true);
+      });
     }
   }
 
@@ -790,10 +802,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       }
     } else {
       // only selected
-      if (currentSelect != null) {
-        currentSelect.setSize(w, h);
-        updateSelection(currentSelect, true);
-      }
+      listSelected.stream().forEach(s -> {
+        s.setSize(w, h);
+        updateSelection(s, true);
+      });
     }
   }
 
@@ -826,11 +838,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         updateAndRepaintAll();
       }
     } else {
-      // reflect selected
-      if (currentSelect != null) {
-        currentSelect.translate(dx, dy);
-        updateSelection(currentSelect, true);
-      }
+      // only selected
+      listSelected.stream().forEach(s -> {
+        s.translate(dx, dy);
+        updateSelection(s, true);
+      });
     }
   }
 
@@ -844,11 +856,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         updateAndRepaintAll();
       }
     } else {
-      // reflect selected
-      if (currentSelect != null) {
-        currentSelect.reflectH();
-        updateSelection(currentSelect, true);
-      }
+      // only selected
+      listSelected.stream().forEach(s -> {
+        s.reflectH();
+        updateSelection(s, true);
+      });
     }
   }
 
@@ -862,11 +874,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         updateAndRepaintAll();
       }
     } else {
-      // reflect selected
-      if (currentSelect != null) {
-        currentSelect.reflectV();
-        updateSelection(currentSelect, true);
-      }
+      // only selected
+      listSelected.stream().forEach(s -> {
+        s.reflectV();
+        updateSelection(s, true);
+      });
     }
   }
 
@@ -887,13 +899,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         }
         updateAndRepaintAll();
       }
-    } else {
-      // rotate selected
-      if (currentSelect != null) {
-        currentSelect.rotate(degAngle);
-        updateSelection(currentSelect, true);
-      }
-    }
+    } else
+      // only selected
+      listSelected.stream().forEach(s -> {
+        s.rotate(degAngle);
+        updateSelection(s, true);
+      });
   }
 
 
@@ -925,6 +936,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
    * Set new data to histogram
    */
   private void updateHistoPanelData() {
+    SettingsShapeSelection currentSelect = getCurrentSelect();
     if (!histoPos.equals(Position.HIDE) && currentSelect != null) {
       SelectionTableRow row = currentSelect.getDefaultTableRow(cbAlphaMapAsExclusion.isSelected());
       List<Double> d = row.getData();
@@ -951,13 +963,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       updateSelection(true);
 
       // concentration insert dialog for QUANTIFIER
-      if (currentSelect.getRoi().equals(ROI.QUANTIFIER)) {
+      if (s.getRoi().equals(ROI.QUANTIFIER)) {
         // open dialog
         try {
           lastConcentration = Double.valueOf(
               JOptionPane.showInputDialog("concentration", String.valueOf(lastConcentration)));
           logger.info("Concentration input for shape selection was {}", lastConcentration);
-          currentSelect.setConcentration(lastConcentration);
+          s.setConcentration(lastConcentration);
         } catch (Exception ex) {
           logger.warn(
               "Invalid concentration input for shape selection! Input any floating point number or integer.");
@@ -1029,49 +1041,51 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
    * @param key hold position and enlarge or shrink
    */
   protected void shiftCurrentRectX(int i, KEY key) {
-    if (currentSelect == null)
-      return;
-    // translate to data space
-    ChartPanel cp = heat.getChartPanel();
-    float val = (float) ChartLogics.screenValueToPlotValue(cp, i).getX();
-    // shift
-    if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0))) {
-      try {
-        val = i * Module.floatFromTxt(txtShiftX);
-      } catch (Exception e) {
+    // all selected
+    listSelected.stream().forEach(s -> {
+      // translate to data space
+      ChartPanel cp = heat.getChartPanel();
+      float val = (float) ChartLogics.screenValueToPlotValue(cp, i).getX();
+      // shift
+      if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0))) {
+        try {
+          val = i * Module.floatFromTxt(txtShiftX);
+        } catch (Exception e) {
+        }
+        s.translate(val, 0);
       }
-      currentSelect.translate(val, 0);
-    }
-    // enlarge?
-    if (key.equals(KEY.ENLARGE))
-      currentSelect.grow(Math.abs(val), 0);
-    if (key.equals(KEY.SHRINK))
-      currentSelect.grow(-Math.abs(val), 0);
+      // enlarge?
+      if (key.equals(KEY.ENLARGE))
+        s.grow(Math.abs(val), 0);
+      if (key.equals(KEY.SHRINK))
+        s.grow(-Math.abs(val), 0);
 
-    updateSelection(true);
+      updateSelection(s, true);
+    });
   }
 
   protected void shiftCurrentRectY(int i, KEY key) {
-    if (currentSelect == null)
-      return;
-    // translate to data space
-    ChartPanel cp = heat.getChartPanel();
-    float val = (float) ChartLogics.screenValueToPlotValue(cp, i).getY();
-    // shift
-    if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0))) {
-      try {
-        val = i * Module.floatFromTxt(txtShiftY);
-      } catch (Exception e) {
+    // all selected
+    listSelected.stream().forEach(s -> {
+      // translate to data space
+      ChartPanel cp = heat.getChartPanel();
+      float val = (float) ChartLogics.screenValueToPlotValue(cp, i).getY();
+      // shift
+      if (!((key.equals(KEY.ENLARGE) && i > 0) || (key.equals(KEY.SHRINK) && i < 0))) {
+        try {
+          val = i * Module.floatFromTxt(txtShiftY);
+        } catch (Exception e) {
+        }
+        s.translate(0, val);
       }
-      currentSelect.translate(0, val);
-    }
-    // enlarge?
-    if (key.equals(KEY.ENLARGE))
-      currentSelect.grow(0, Math.abs(val));
-    if (key.equals(KEY.SHRINK))
-      currentSelect.grow(0, -Math.abs(val));
+      // enlarge?
+      if (key.equals(KEY.ENLARGE))
+        s.grow(0, Math.abs(val));
+      if (key.equals(KEY.SHRINK))
+        s.grow(0, -Math.abs(val));
 
-    updateSelection(true);
+      updateSelection(s, true);
+    });
   }
 
   /**
@@ -1130,11 +1144,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
               if (i.length > 0) {
                 SettingsShapeSelection cs = getSelections().get(i[0]);
                 if (i.length == 1)
-                  if (!cs.equals(currentSelect))
+                  if (!cs.equals(getCurrentSelect()))
                     setCurrentSelect(cs, false);
                   else if (i.length > 1) {
                     // select first
-                    if (!cs.equals(currentSelect))
+                    if (!cs.equals(getCurrentSelect()))
                       setCurrentSelect(cs, false);
                     // clear and add all selected rows
                     listSelected.clear();
@@ -1147,7 +1161,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
           }
         };
         table.getSelectionModel().addListSelectionListener(sellist);
-        // table.getColumnModel().getSelectionModel().addListSelectionListener(sellist);
 
 
         // add all
@@ -1261,7 +1274,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
    * 
    */
   protected void updateSelection(boolean updateStats) {
-    updateSelection(currentSelect, updateStats);
+    updateSelection(getCurrentSelect(), updateStats);
   }
 
   /**
@@ -1286,7 +1299,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       // update table
       tableModel.fireTableDataChanged();
       // update histo
-      if (s.equals(currentSelect))
+      if (s.equals(getCurrentSelect()))
         updateHistoPanelData();
     }
     // update annotation of current only
@@ -1309,6 +1322,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   @Override
   public void mouseDragged(MouseEvent e) {
+    SettingsShapeSelection currentSelect = getCurrentSelect();
     // no selected?
     if (currentSelect == null)
       isPressed = false;
@@ -1371,6 +1385,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   @Override
   public void mouseClicked(MouseEvent e) {
+    SettingsShapeSelection currentSelect = getCurrentSelect();
     if (e.getButton() == MouseEvent.BUTTON1) {
       if (getBtnChoose().isSelected()) {
         // select or zoom
@@ -1419,24 +1434,21 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
   }
 
 
+  /**
+   * First selection is always the newest
+   * 
+   * @param s
+   * @param multiSelect
+   */
   private void setCurrentSelect(SettingsShapeSelection s, boolean multiSelect) {
-    // deselect old
-    if (currentSelect != null) {
-      // finish last selection
-      if (!currentSelect.isFinished())
-        finishShape(currentSelect, false);
+    SettingsShapeSelection currentSelect = getCurrentSelect();
+    // finish last selection
+    if (currentSelect != null && !currentSelect.isFinished())
+      finishShape(currentSelect, false);
 
-      if (!multiSelect || s == null)
-        currentSelect.setHighlighted(false);
-
-      // list selection
-      listSelected.remove(currentSelect);
-      updateAnnotation(currentSelect);
-    }
-    // select new
-    currentSelect = s;
     // deselect all
-    if (s == null) {
+    // deselect old
+    if (s == null || !multiSelect) {
       // highlighting
       for (SettingsShapeSelection cs : listSelected) {
         cs.setHighlighted(false);
@@ -1449,12 +1461,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       txtY.setText("");
       txtW.setText("");
       txtH.setText("");
-    } else {
-      currentSelect.setHighlighted(true);
-      updateAnnotation(currentSelect);
+    }
+    if (s != null) {
+      // add to list selection
+      listSelected.add(0, s);
+      s.setHighlighted(true);
+      updateAnnotation(s);
       updateHistoPanelData();
-      // list selection
-      listSelected.add(currentSelect);
 
       txtX.setText(String.valueOf(s.getX0()));
       txtY.setText(String.valueOf(s.getY0()));
@@ -1511,6 +1524,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   @Override
   public void mouseReleased(MouseEvent e) {
+    SettingsShapeSelection currentSelect = getCurrentSelect();
     if (e.getButton() == MouseEvent.BUTTON1 && isPressed) {
       //
       isPressed = false;
@@ -1668,14 +1682,8 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       @Override
       public void actionPerformed(ActionEvent e) {
         try {
-          // copy
-          if (currentSelect != null)
-            currentCopied = (SettingsShapeSelection) currentSelect.copy();
-          else
-            currentCopied = null;
-
           listCopied.clear();
-          if (listSelected.size() > 1)
+          if (!listSelected.isEmpty())
             for (SettingsShapeSelection s : listSelected)
               listCopied.add((SettingsShapeSelection) s.copy());
         } catch (Exception ex) {
@@ -1687,12 +1695,11 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       @Override
       public void actionPerformed(ActionEvent e) {
         try {
+          deselectAll();
           // paste
           if (!listCopied.isEmpty())
-            for (SettingsShapeSelection s : listSelected)
-              addNewSelection((SettingsShapeSelection) s.copy());
-          else if (currentCopied != null)
-            addNewSelection((SettingsShapeSelection) currentCopied.copy(), true);
+            for (SettingsShapeSelection s : listCopied)
+              addNewSelection((SettingsShapeSelection) s.copy(), true);
         } catch (Exception ex) {
           logger.error("Cannot copy ROI settings", ex);
         }
@@ -1725,6 +1732,15 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       }
     });
   }
+
+  protected void deselectAll() {
+    listSelected.forEach(s -> {
+      s.setHighlighted(false);
+      updateAnnotation(s);
+    });
+    listSelected.clear();
+  }
+
 
   @Override
   public void mouseEntered(MouseEvent e) {}
