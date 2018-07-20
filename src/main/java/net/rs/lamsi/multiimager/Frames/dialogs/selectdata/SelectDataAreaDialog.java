@@ -78,6 +78,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramPanel;
 import net.rs.lamsi.multiimager.test.TestQuantifier;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
+import weka.gui.WrapLayout;
 
 
 public class SelectDataAreaDialog extends JFrame implements MouseListener, MouseMotionListener {
@@ -240,16 +241,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     FlowLayout flowLayout = (FlowLayout) pnSouthMenu.getLayout();
     flowLayout.setAlignment(FlowLayout.RIGHT);
 
-    JButton btnOk = new JButton("Ok");
-    btnOk.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        // apply
-        applySelections();
-        dispatchEvent(new WindowEvent(thisframe, WindowEvent.WINDOW_CLOSING));
-      }
-    });
-    pnSouthMenu.add(btnOk);
-
     JButton btnCancel = new JButton("Cancel");
     btnCancel.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -281,7 +272,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     contentPane.add(pnNorthMenuContainer, BorderLayout.NORTH);
     pnNorthMenuContainer.setLayout(new BorderLayout(0, 0));
 
-    JPanel pnNorthMenu = new JPanel();
+    JPanel pnNorthMenu = new JPanel(new WrapLayout());
     pnNorthMenuContainer.add(pnNorthMenu, BorderLayout.NORTH);
 
     JButton btnToggleHisto = new JButton("toggle histo");
@@ -353,7 +344,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     btnUpdateStats.setToolTipText("Updates statistics (is usually performed automatically)");
     pnNorthMenu.add(btnUpdateStats);
 
-    JPanel panel_1 = new JPanel();
+    JPanel panel_1 = new JPanel(new WrapLayout());
     pnNorthMenuContainer.add(panel_1, BorderLayout.CENTER);
 
     cbtnColor = new JColorPickerButton((Component) null);
@@ -387,8 +378,8 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     JButton btnDelete = new JButton("Delete");
     panel_1.add(btnDelete);
 
-    panel_2 = new JPanel();
-    FlowLayout flowLayout_5 = (FlowLayout) panel_2.getLayout();
+    panel_2 = new JPanel(new WrapLayout());
+    WrapLayout flowLayout_5 = (WrapLayout) panel_2.getLayout();
     flowLayout_5.setHgap(10);
     pnNorthMenuContainer.add(panel_2, BorderLayout.SOUTH);
 
@@ -403,6 +394,25 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     flowLayout_3.setHgap(0);
     flowLayout_3.setVgap(0);
     panel_2.add(panel_5);
+
+
+    JButton btnCopy = new JButton("");
+    panel_5.add(btnCopy);
+    btnCopy.setToolTipText("Copy");
+    btnCopy.addActionListener(e -> copy());
+    btnCopy.setPreferredSize(new Dimension(31, 31));
+    btnCopy
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_copy.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
+
+    JButton btnPaste = new JButton("");
+    panel_5.add(btnPaste);
+    btnPaste.setToolTipText("Copy");
+    btnPaste.addActionListener(e -> paste());
+    btnPaste.setPreferredSize(new Dimension(31, 31));
+    btnPaste
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_paste.png"))
+            .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
 
     btnRotateCcw = new JButton("");
     panel_5.add(btnRotateCcw);
@@ -705,13 +715,36 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       @Override
       public void windowClosed(WindowEvent e) {
         super.windowClosed(e);
-        // show selected excluded rects
-        applySelections();
       }
     };
     this.addWindowListener(wl);
 
     requestFocusOnChart();
+  }
+
+
+  private void paste() {
+    try {
+      deselectAll();
+      // paste
+      if (!listCopied.isEmpty())
+        for (SettingsShapeSelection s : listCopied)
+          addNewSelection((SettingsShapeSelection) s.copy(), true);
+    } catch (Exception ex) {
+      logger.error("Cannot copy ROI settings", ex);
+    }
+  }
+
+
+  private void copy() {
+    try {
+      listCopied.clear();
+      if (!listSelected.isEmpty())
+        for (SettingsShapeSelection s : listSelected)
+          listCopied.add((SettingsShapeSelection) s.copy());
+    } catch (Exception ex) {
+      logger.error("Cannot copy ROI settings", ex);
+    }
   }
 
 
@@ -1109,15 +1142,6 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       JFreeChart chart = heat.getChart();
       chart.fireChartChanged();
     }
-  }
-
-  /**
-   * give all selections to img end of dialog
-   */
-  protected void applySelections() {
-    // TODO
-    // directly changing selections or apply here after closing the frame
-    // listeners?
   }
 
   public void startDialog(DataCollectable2D img) {
@@ -1681,28 +1705,13 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     pn.getActionMap().put("ctrl C", new AbstractAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        try {
-          listCopied.clear();
-          if (!listSelected.isEmpty())
-            for (SettingsShapeSelection s : listSelected)
-              listCopied.add((SettingsShapeSelection) s.copy());
-        } catch (Exception ex) {
-          logger.error("Cannot copy ROI settings", ex);
-        }
+        copy();
       }
     });
     pn.getActionMap().put("ctrl V", new AbstractAction() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        try {
-          deselectAll();
-          // paste
-          if (!listCopied.isEmpty())
-            for (SettingsShapeSelection s : listCopied)
-              addNewSelection((SettingsShapeSelection) s.copy(), true);
-        } catch (Exception ex) {
-          logger.error("Cannot copy ROI settings", ex);
-        }
+        paste();
       }
     });
 
