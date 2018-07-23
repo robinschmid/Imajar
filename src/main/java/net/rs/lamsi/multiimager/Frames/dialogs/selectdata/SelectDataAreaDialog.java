@@ -275,10 +275,20 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     JPanel pnNorthMenu = new JPanel(new WrapLayout());
     pnNorthMenuContainer.add(pnNorthMenu, BorderLayout.NORTH);
 
-    JButton btnToggleHisto = new JButton("toggle histo");
+    JButton btnToggleHisto = new JButton("");
+    btnToggleHisto.setToolTipText("Toggle histogram of selected ROI");
+    btnToggleHisto.setPreferredSize(new Dimension(40, 40));
+    btnToggleHisto
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_histo.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     btnToggleHisto.addActionListener(e -> toggleHisto());
 
-    btnShowData = new JButton("show data");
+    btnShowData = new JButton("");
+    btnShowData.setToolTipText("Show data");
+    btnShowData.setPreferredSize(new Dimension(41, 41));
+    btnShowData.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_data_list.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     btnShowData.addActionListener(e -> showDataDialog());
     pnNorthMenu.add(btnShowData);
     pnNorthMenu.add(btnToggleHisto);
@@ -302,7 +312,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     cbMarkDp.addItemListener(e -> showMarkingMap(cbMarkDp.isSelected()));
     pnNorthMenu.add(cbMarkDp);
 
-    JButton btnDeleteAll = new JButton("Delete All");
+    JButton btnDeleteAll = new JButton("");
+    btnDeleteAll.setToolTipText("Delete all");
+    btnDeleteAll.setPreferredSize(new Dimension(41, 41));
+    btnDeleteAll
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_clear.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     btnDeleteAll.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         tableModel.removeAllRows();
@@ -314,7 +329,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     });
     pnNorthMenu.add(btnDeleteAll);
 
-    JButton btnExportData = new JButton("Export data");
+    JButton btnExportData = new JButton("");
+    btnExportData.setToolTipText("Export data");
+    btnExportData.setPreferredSize(new Dimension(41, 41));
+    btnExportData
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_export.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     btnExportData
         .setToolTipText("Export all selected/not excluded data points as raw or processed data.");
     btnExportData.addActionListener(new ActionListener() {
@@ -323,7 +343,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       }
     });
 
-    btnRegression = new JButton("Regression");
+    btnRegression = new JButton("");
+    btnRegression.setToolTipText("Build regression");
+    btnRegression.setPreferredSize(new Dimension(41, 41));
+    btnRegression
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_regression.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     btnRegression.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         // get data for regression
@@ -339,7 +364,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     pnNorthMenu.add(btnRegression);
     pnNorthMenu.add(btnExportData);
 
-    JButton btnUpdateStats = new JButton("Update stats");
+    JButton btnUpdateStats = new JButton("");
+    btnUpdateStats.setToolTipText("Update statistics of all ROIs");
+    btnUpdateStats.setPreferredSize(new Dimension(41, 41));
+    btnUpdateStats.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_update_stats.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     btnUpdateStats.addActionListener(e -> updateAllStats());
     btnUpdateStats.setToolTipText("Updates statistics (is usually performed automatically)");
     pnNorthMenu.add(btnUpdateStats);
@@ -368,14 +398,29 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
 
 
-    JButton btnFinish = new JButton("Finish shape");
+    JButton btnFinish = new JButton("");
+    btnFinish.setToolTipText("Finish shape");
+    btnFinish.setPreferredSize(new Dimension(41, 41));
+    btnFinish.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_finish_roi.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     panel_1.add(btnFinish);
     btnFinish.addActionListener(e -> finishShape(getCurrentSelect(), false));
 
-    btnChoose = new JToggleButton("Choose/Zoom");
+    btnChoose = new JToggleButton("");
+    btnChoose.setToolTipText("Toggle choose ROI and zoom / create ROI");
+    btnChoose.setPreferredSize(new Dimension(41, 41));
+    btnChoose.setIcon(
+        new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_choose_zoom.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     panel_1.add(btnChoose);
 
-    JButton btnDelete = new JButton("Delete");
+    JButton btnDelete = new JButton("");
+    btnDelete.setToolTipText("Delete selected ROIs");
+    btnDelete.setPreferredSize(new Dimension(41, 41));
+    btnDelete
+        .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_delete.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     panel_1.add(btnDelete);
 
     panel_2 = new JPanel(new WrapLayout());
@@ -398,7 +443,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnCopy = new JButton("");
     panel_5.add(btnCopy);
-    btnCopy.setToolTipText("Copy");
+    btnCopy.setToolTipText("Copy (CTRL+C)");
     btnCopy.addActionListener(e -> copy());
     btnCopy.setPreferredSize(new Dimension(31, 31));
     btnCopy
@@ -407,7 +452,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnPaste = new JButton("");
     panel_5.add(btnPaste);
-    btnPaste.setToolTipText("Copy");
+    btnPaste.setToolTipText("Paste  (CTRL+V)");
     btnPaste.addActionListener(e -> paste());
     btnPaste.setPreferredSize(new Dimension(31, 31));
     btnPaste
@@ -485,14 +530,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnLeft = new JButton("");
     panel_3.add(btnLeft);
-    btnLeft.setToolTipText("Rotate");
+    btnLeft.setToolTipText("Left (LEFT ARROW)");
     btnLeft.setPreferredSize(new Dimension(31, 31));
     btnLeft.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_left.png"))
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
 
     txtShiftX = new JTextField();
-    txtShiftX.setToolTipText("Translate x");
+    txtShiftX.setToolTipText("Translate x (LEFT/RIGHT ARROW)");
     panel_3.add(txtShiftX);
     txtShiftX.setText("15");
     txtShiftX.setHorizontalAlignment(SwingConstants.CENTER);
@@ -500,7 +545,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnRight = new JButton("");
     panel_3.add(btnRight);
-    btnRight.setToolTipText("Rotate");
+    btnRight.setToolTipText("Right (RIGHT ARROW)");
     btnRight.setPreferredSize(new Dimension(31, 31));
     btnRight.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_right.png"))
@@ -513,7 +558,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_2.add(panel_6);
 
     btnDown = new JButton("");
-    btnDown.setToolTipText("Rotate");
+    btnDown.setToolTipText("Down  (DOWN ARROW)");
     btnDown.setPreferredSize(new Dimension(31, 31));
     panel_6.add(btnDown);
     btnDown.setIcon(
@@ -521,14 +566,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
             .getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
 
     txtShiftY = new JTextField();
-    txtShiftY.setToolTipText("Translate y");
+    txtShiftY.setToolTipText("Translate y (UP/DOWN ARROW)");
     txtShiftY.setText("15");
     txtShiftY.setHorizontalAlignment(SwingConstants.CENTER);
     txtShiftY.setColumns(4);
     panel_6.add(txtShiftY);
 
     btnUp = new JButton("");
-    btnUp.setToolTipText("Rotate");
+    btnUp.setToolTipText("Up (UP ARROW)");
     btnUp.setPreferredSize(new Dimension(31, 31));
     btnUp.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_arrow_up.png"))
@@ -545,10 +590,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     panel_7.add(lblXywh);
 
     txtX = new JTextField();
-    txtX.setToolTipText("X coordinate");
+    txtX.setToolTipText("X coordinate (press ENTER to apply)");
     txtX.setText("0");
     txtX.setHorizontalAlignment(SwingConstants.CENTER);
-    txtX.setColumns(4);
+    txtX.setColumns(6);
     panel_7.add(txtX);
     txtX.addActionListener(e -> {
       try {
@@ -560,10 +605,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     });
 
     txtY = new JTextField();
-    txtY.setToolTipText("Y coordinate");
+    txtY.setToolTipText("Y coordinate (press ENTER to apply)");
     txtY.setText("0");
     txtY.setHorizontalAlignment(SwingConstants.CENTER);
-    txtY.setColumns(4);
+    txtY.setColumns(6);
     panel_7.add(txtY);
     txtY.addActionListener(e -> {
       try {
@@ -592,10 +637,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     });
 
     txtW = new JTextField();
-    txtW.setToolTipText("Width");
+    txtW.setToolTipText("Width (press ENTER to apply)");
     txtW.setText("0");
     txtW.setHorizontalAlignment(SwingConstants.CENTER);
-    txtW.setColumns(4);
+    txtW.setColumns(6);
     panel_7.add(txtW);
     txtW.addActionListener(e -> {
       try {
@@ -607,10 +652,10 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     });
 
     txtH = new JTextField();
-    txtH.setToolTipText("Height");
+    txtH.setToolTipText("Height (press ENTER to apply)");
     txtH.setText("0");
     txtH.setHorizontalAlignment(SwingConstants.CENTER);
-    txtH.setColumns(4);
+    txtH.setColumns(6);
     panel_7.add(txtH);
     txtH.addActionListener(e -> {
       try {
