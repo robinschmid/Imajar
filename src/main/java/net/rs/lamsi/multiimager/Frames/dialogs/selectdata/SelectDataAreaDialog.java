@@ -127,6 +127,8 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
   // mystuff
+  private CreateMultiRoiDialog multiRoiDialog = new CreateMultiRoiDialog();
+
   private Heatmap heat;
   private DataCollectable2D img;
   // save the relation in hashmap
@@ -422,6 +424,12 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
         .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_delete.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     panel_1.add(btnDelete);
+
+
+    JButton btnCreateMulti = new JButton("Create multiple");
+    btnCreateMulti.addActionListener(e -> createMultiple());
+    btnCreateMulti.setToolTipText("Create multiple ROIs");
+    panel_1.add(btnCreateMulti);
 
     panel_2 = new JPanel(new WrapLayout());
     WrapLayout flowLayout_5 = (WrapLayout) panel_2.getLayout();
@@ -765,6 +773,20 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
     this.addWindowListener(wl);
 
     requestFocusOnChart();
+  }
+
+
+  private void createMultiple() {
+    multiRoiDialog.start(list -> {
+      if (list != null) {
+        list.stream().forEach(e -> {
+          e.setCurrentImage(img);
+          e.setRoi(getCurrentRoiMode());
+          addNewSelection(e, true);
+          finishShape(e, false);
+        });
+      }
+    });
   }
 
 
