@@ -79,9 +79,8 @@ public class HeatmapFactory {
 
   // creates jfreechart plot for heatmap
   private static Heatmap createChart(Image2D img, IXYZDataset dataset) throws Exception {
-    return createChart(img, (SettingsPaintScale) img.getSettingsByClass(SettingsPaintScale.class),
-        (SettingsGeneralImage) img.getSettingsByClass(SettingsGeneralImage.class), dataset, "x",
-        "y");
+    return createChart(img, (SettingsPaintScale) img.getPaintScaleSettings(),
+        img.getSettings().getSettImage(), dataset, "x", "y");
   }
 
   // erstellt ein JFreeChart Plot der heatmap
@@ -109,8 +108,10 @@ public class HeatmapFactory {
       yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
       yAxis.setLowerMargin(0.0);
       yAxis.setUpperMargin(0.0);
-      // XYBlockRenderer
-      FullImageRenderer renderer = new FullImageRenderer();
+      // Renderer for IXYZDataset dataset
+      ImageRenderer renderer = new ImageRenderer();
+      renderer.setBlockWidth(img.getMaxBlockWidth(true));
+      renderer.setBlockHeight(img.getMaxBlockHeight(true));
 
       // PaintScale für farbe? TODO mit Settings!
       // TODO upper and lower value setzen!!!!
