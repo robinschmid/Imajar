@@ -287,7 +287,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnShowData = new JButton("");
     btnShowData.setToolTipText("Show data");
-    btnShowData.setPreferredSize(new Dimension(41, 41));
+    btnShowData.setPreferredSize(new Dimension(40, 40));
     btnShowData.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_data_list.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
@@ -316,7 +316,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnDeleteAll = new JButton("");
     btnDeleteAll.setToolTipText("Delete all");
-    btnDeleteAll.setPreferredSize(new Dimension(41, 41));
+    btnDeleteAll.setPreferredSize(new Dimension(40, 40));
     btnDeleteAll
         .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_clear.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
@@ -333,7 +333,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnExportData = new JButton("");
     btnExportData.setToolTipText("Export data");
-    btnExportData.setPreferredSize(new Dimension(41, 41));
+    btnExportData.setPreferredSize(new Dimension(40, 40));
     btnExportData
         .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_export.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
@@ -347,7 +347,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnRegression = new JButton("");
     btnRegression.setToolTipText("Build regression");
-    btnRegression.setPreferredSize(new Dimension(41, 41));
+    btnRegression.setPreferredSize(new Dimension(40, 40));
     btnRegression
         .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_regression.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
@@ -368,7 +368,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnUpdateStats = new JButton("");
     btnUpdateStats.setToolTipText("Update statistics of all ROIs");
-    btnUpdateStats.setPreferredSize(new Dimension(41, 41));
+    btnUpdateStats.setPreferredSize(new Dimension(40, 40));
     btnUpdateStats.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_update_stats.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
@@ -402,7 +402,7 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     JButton btnFinish = new JButton("");
     btnFinish.setToolTipText("Finish shape");
-    btnFinish.setPreferredSize(new Dimension(41, 41));
+    btnFinish.setPreferredSize(new Dimension(40, 40));
     btnFinish.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_finish_roi.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
@@ -411,15 +411,18 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
 
     btnChoose = new JToggleButton("");
     btnChoose.setToolTipText("Toggle choose ROI and zoom / create ROI");
-    btnChoose.setPreferredSize(new Dimension(41, 41));
+    btnChoose.setPreferredSize(new Dimension(40, 40));
     btnChoose.setIcon(
         new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_choose_zoom.png"))
+            .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
+    btnChoose.setSelectedIcon(new ImageIcon(
+        new ImageIcon(Module.class.getResource("/img/btn_action_choose_zoom_selected.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
     panel_1.add(btnChoose);
 
     JButton btnDelete = new JButton("");
     btnDelete.setToolTipText("Delete selected ROIs");
-    btnDelete.setPreferredSize(new Dimension(41, 41));
+    btnDelete.setPreferredSize(new Dimension(40, 40));
     btnDelete
         .setIcon(new ImageIcon(new ImageIcon(Module.class.getResource("/img/btn_action_delete.png"))
             .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
