@@ -77,6 +77,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramPanel;
 import net.rs.lamsi.multiimager.test.TestQuantifier;
 import net.rs.lamsi.utils.DialogLoggerUtil;
+import net.rs.lamsi.utils.math.Precision;
 import net.rs.lamsi.utils.useful.dialogs.DialogLinearRegression;
 import weka.gui.WrapLayout;
 
@@ -1563,10 +1564,14 @@ public class SelectDataAreaDialog extends JFrame implements MouseListener, Mouse
       updateAnnotation(s);
       updateHistoPanelData();
 
-      txtX.setText(String.valueOf(s.getX0()));
-      txtY.setText(String.valueOf(s.getY0()));
-      txtW.setText(String.valueOf(s.getWidth()));
-      txtH.setText(String.valueOf(s.getHeight()));
+      String x = Precision.toString(s.getX0(), 7);
+      String y = Precision.toString(s.getY0(), 7);
+      String w = Precision.toString(s.getWidth(), 7);
+      String h = Precision.toString(s.getHeight(), 7);
+      txtX.setText(String.valueOf(x));
+      txtY.setText(String.valueOf(y));
+      txtW.setText(String.valueOf(w));
+      txtH.setText(String.valueOf(h));
     }
     JFreeChart chart = heat.getChart();
     chart.fireChartChanged();
