@@ -16,12 +16,10 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
   private static final long serialVersionUID = 1L;
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  protected ImageGroupMD group;
-
   public ImageMerge(ImageGroupMD group, SettingsImageMerge settings, String title)
       throws Exception {
     super(settings);
-    this.group = group;
+    this.imageGroup = group;
     if (!settings.isInitialised())
       settings.init(group.getProject(), title);
   }
@@ -38,7 +36,7 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
     try { // TODO
       return null;
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
       return null;
     }
   }
@@ -53,8 +51,8 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
    */
   public float getWidth(boolean raw) {
     float max = 0;
-    for (int i = 0; i < group.image2dCount(); i++) {
-      Image2D img = (Image2D) group.get(i);
+    for (int i = 0; i < imageGroup.image2dCount(); i++) {
+      Image2D img = (Image2D) imageGroup.get(i);
       if (max < img.getWidth(raw))
         max = img.getWidth(raw);
     }
@@ -69,8 +67,8 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
    */
   public float getHeight(boolean raw) {
     float max = 0;
-    for (int i = 0; i < group.image2dCount(); i++) {
-      Image2D img = (Image2D) group.get(i);
+    for (int i = 0; i < imageGroup.image2dCount(); i++) {
+      Image2D img = (Image2D) imageGroup.get(i);
       if (max < img.getHeight(raw))
         max = img.getHeight(raw);
     }
@@ -84,8 +82,8 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
    */
   public int getWidthAsMaxDP() {
     int max = 0;
-    for (int i = 0; i < group.image2dCount(); i++) {
-      Image2D img = (Image2D) group.get(i);
+    for (int i = 0; i < imageGroup.image2dCount(); i++) {
+      Image2D img = (Image2D) imageGroup.get(i);
       if (max < img.getWidthAsMaxDP())
         max = img.getWidthAsMaxDP();
     }
@@ -99,8 +97,8 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
    */
   public int getHeightAsMaxDP() {
     int max = 0;
-    for (int i = 0; i < group.image2dCount(); i++) {
-      Image2D img = (Image2D) group.get(i);
+    for (int i = 0; i < imageGroup.image2dCount(); i++) {
+      Image2D img = (Image2D) imageGroup.get(i);
       if (max < img.getHeightAsMaxDP())
         max = img.getHeightAsMaxDP();
     }
@@ -132,14 +130,6 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
 
   public String getShortTitle() {
     return getTitle();
-  }
-
-  public ImageGroupMD getGroup() {
-    return group;
-  }
-
-  public void setGroup(ImageGroupMD group) {
-    this.group = group;
   }
 
   // a name for lists

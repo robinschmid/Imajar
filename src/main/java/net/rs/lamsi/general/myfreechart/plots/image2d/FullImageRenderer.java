@@ -3,6 +3,7 @@ package net.rs.lamsi.general.myfreechart.plots.image2d;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import org.jfree.chart.axis.ValueAxis;
@@ -269,6 +270,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
     DataCollectable2DDataset data = null;
+    AffineTransform at = null;
     if (dataset instanceof DataCollectable2DDataset) {
       logger.debug("draw image of DataCollectable2DDataset");
       data = (DataCollectable2DDataset) dataset;
@@ -280,6 +282,9 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       data = list.getDataset(series);
       DataCollectable2D img = data.getImage();
       setImage(img);
+
+      // affine transform for this image
+      at = list.getSettings(series).getAffineTransform();
     }
 
     if (data != null) {
@@ -334,6 +339,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
     Range range = rangeAxis.getRange();
     c = 0;
     int cAll = 0;
+    
     // draw full image
     for (int l = 0; l < data.getLineCount(); l++) {
       lastx1 = -1;
@@ -362,6 +368,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         // try to get intensity - NaN == no data point
         double z = data.getZ(false, l, dp);
         if (!Double.isNaN(z)) {
+          agfsf
           double x = data.getX(false, l, dp);
           double y = data.getY(false, l, dp);
 
