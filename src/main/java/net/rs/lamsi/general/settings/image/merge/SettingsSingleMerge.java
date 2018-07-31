@@ -7,10 +7,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.settings.Settings;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
 
 public class SettingsSingleMerge extends Settings {
   private static final long serialVersionUID = 1L;
 
+  private boolean visible;
   // distance to shift as x y unit
   private float dx;
   private float dy;
@@ -19,27 +22,34 @@ public class SettingsSingleMerge extends Settings {
   // rotation anchor
   private Point2D.Float anchor;
 
-  public SettingsSingleMerge(float dx, float dy, float angle, Point2D.Float anchor) {
+  // add or normal?
+  private BlendingMode blendMode = BlendingMode.NORMAL;
+  private float transparency = 1f;
+
+  public SettingsSingleMerge(float dx, float dy, float angle, Point2D.Float anchor,
+      boolean visible) {
     super("SettingsImageMerge", "/Settings/operations/", "setMerge");
     this.dx = dx;
     this.dy = dy;
     this.angle = angle;
     this.anchor = anchor;
+    this.visible = visible;
   }
 
-  public SettingsSingleMerge(float dx, float dy, float angle) {
-    this(dx, dy, angle, new Point2D.Float(0.5f, 0.5f));
+  public SettingsSingleMerge(float dx, float dy, float angle, boolean visible) {
+    this(dx, dy, angle, new Point2D.Float(0.5f, 0.5f), visible);
   }
 
   public SettingsSingleMerge() {
-    this(0, 0, 0);
+    this(0, 0, 0, true);
   }
 
-  public void setAll(float dx, float dy, float angle, Point2D.Float anchor) {
+  public void setAll(float dx, float dy, float angle, Point2D.Float anchor, boolean visible) {
     this.dx = dx;
     this.dy = dy;
     this.angle = angle;
     this.anchor = anchor;
+    this.visible = visible;
   }
 
   @Override
@@ -48,6 +58,9 @@ public class SettingsSingleMerge extends Settings {
     dy = 0;
     angle = 0;
     anchor = new Point2D.Float(0.5f, 0.5f);
+    visible = true;
+    blendMode = BlendingMode.NORMAL;
+    transparency = 1f;
   }
 
   // ##########################################################
@@ -59,6 +72,9 @@ public class SettingsSingleMerge extends Settings {
     toXML(elParent, doc, "angle", angle);
     toXML(elParent, doc, "anchor.x", anchor.x);
     toXML(elParent, doc, "anchor.y", anchor.y);
+    toXML(elParent, doc, "visible", visible);
+    toXML(elParent, doc, "overlay", blendMode);
+    toXML(elParent, doc, "transparency", transparency);
   }
 
   @Override
@@ -80,6 +96,12 @@ public class SettingsSingleMerge extends Settings {
           ax = floatFromXML(nextElement);
         else if (paramName.equals("anchor.y"))
           ay = floatFromXML(nextElement);
+        else if (paramName.equals("visible"))
+          visible = booleanFromXML(nextElement);
+        else if (paramName.equals("overlay"))
+          blendMode = BlendingMode.valueOf(nextElement.getTextContent());
+        else if (paramName.equals("transparency"))
+          transparency = floatFromXML(nextElement);
       }
     }
     anchor = new Point2D.Float(ax, ay);
@@ -117,6 +139,35 @@ public class SettingsSingleMerge extends Settings {
     this.anchor = anchor;
   }
 
+  public boolean isVisible() {
+    return visible;
+  }
+
+  public void setVisible(boolean visible) {
+    this.visible = visible;
+  }
+
+  public float getTransparency() {
+    return transparency;
+  }
+
+  public void setTransparency(float transparency) {
+    this.transparency = transparency;
+  }
+
+  /**
+   * Transparency and blend mode
+   * 
+   * @return
+   */
+  public BlendComposite getBlendComposite() {
+    return BlendComposite.getInstance(blendMode, transparency);
+  }
+
+  public void setBlendingMode(BlendingMode blendMode) {
+    this.blendMode = blendMode;
+  }
+
   public AffineTransform getAffineTransform() {
     // angle
     double angle = Math.toRadians(this.angle);
@@ -127,5 +178,9 @@ public class SettingsSingleMerge extends Settings {
 
   public void setAnchor(float x, float y) {
     anchor.setLocation(x, y);
+  }
+
+  public BlendingMode getBlendMode() {
+    return blendMode;
   }
 }

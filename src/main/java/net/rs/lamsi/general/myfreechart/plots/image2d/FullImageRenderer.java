@@ -287,7 +287,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       settMerge = list.getSettings(series);
     }
 
-    if (data != null) {
+    if (data != null && (settMerge == null || settMerge.isVisible())) {
       // height
       double yy0 = rangeAxis.valueToJava2D(0, dataArea, plot.getRangeAxisEdge());
       double yy1 = rangeAxis.valueToJava2D(avgBlockHeight, dataArea, plot.getRangeAxisEdge());
@@ -376,6 +376,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
           if (settMerge != null) {
             x += settMerge.getDX();
             y += settMerge.getDY();
+            g2.setComposite(settMerge.getBlendComposite());
           }
 
           // check whether block is in range of axes
@@ -490,6 +491,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
             if (settMerge != null) {
               x += settMerge.getDX();
               y += settMerge.getDY();
+              g2.setComposite(settMerge.getBlendComposite());
             }
 
             currentPaint = this.getPaintScale(series).getPaint(z);
