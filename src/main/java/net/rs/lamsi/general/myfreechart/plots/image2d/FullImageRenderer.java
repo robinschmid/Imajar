@@ -3,7 +3,6 @@ package net.rs.lamsi.general.myfreechart.plots.image2d;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import org.jfree.chart.axis.ValueAxis;
@@ -29,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
+import net.rs.lamsi.general.settings.image.merge.SettingsSingleMerge;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
@@ -270,7 +270,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       PlotRenderingInfo info, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       XYDataset dataset, int series, int item, CrosshairState crosshairState, int pass) {
     DataCollectable2DDataset data = null;
-    AffineTransform at = null;
+    SettingsSingleMerge settMerge = null;
     if (dataset instanceof DataCollectable2DDataset) {
       logger.debug("draw image of DataCollectable2DDataset");
       data = (DataCollectable2DDataset) dataset;
@@ -284,7 +284,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       setImage(img);
 
       // affine transform for this image
-      at = list.getSettings(series).getAffineTransform();
+      settMerge = list.getSettings(series);
     }
 
     if (data != null) {
@@ -303,12 +303,12 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         logger.info("All data points: Equal widths");
         // draw with one block width and height
         drawImage(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState, data, series,
-            bw, bh);
+            bw, bh, settMerge);
       } else {
         logger.info("All data points: Different widths");
         // draw with one block height but different widths
         drawImageFixedBlockHeight(g2, state, dataArea, plot, domainAxis, rangeAxis, crosshairState,
-            data, series, bw, bh);
+            data, series, bw, bh, settMerge);
       }
     } else {
       logger.error("no data for series {} in dataset", series);
@@ -332,14 +332,15 @@ public class FullImageRenderer extends AbstractXYItemRenderer
    */
   private void drawImage(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, CrosshairState crosshairState,
-      DataCollectable2DDataset data, int series, double bw, double bh) {
+      DataCollectable2DDataset data, int series, double bw, double bh,
+      SettingsSingleMerge settMerge) {
     float width = img.getAvgBlockWidth(true);
     float height = img.getAvgBlockHeight(true);
     Range domain = domainAxis.getRange();
     Range range = rangeAxis.getRange();
     c = 0;
     int cAll = 0;
-    
+
     // draw full image
     for (int l = 0; l < data.getLineCount(); l++) {
       lastx1 = -1;
@@ -368,9 +369,14 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         // try to get intensity - NaN == no data point
         double z = data.getZ(false, l, dp);
         if (!Double.isNaN(z)) {
-          agfsf
           double x = data.getX(false, l, dp);
           double y = data.getY(false, l, dp);
+
+          // translate by settings
+          if (settMerge != null) {
+            x += settMerge.getDX();
+            y += settMerge.getDY();
+          }
 
           // check whether block is in range of axes
           if (inRanges(x, y, x + width, y + height, domain, range)) {
@@ -429,7 +435,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   private void drawImageFixedBlockHeight(Graphics2D g2, XYItemRendererState state,
       Rectangle2D dataArea, XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis,
       CrosshairState crosshairState, DataCollectable2DDataset data, int series, double bw,
-      double bh) {
+      double bh, SettingsSingleMerge settMerge) {
     // draw full image
     Paint lastPaint = null;
     // last
@@ -479,6 +485,12 @@ public class FullImageRenderer extends AbstractXYItemRenderer
           if (!Double.isNaN(z)) {
             double x = data.getX(false, l, dp);
             double y = data.getY(false, l, dp);
+
+            // translate by settings
+            if (settMerge != null) {
+              x += settMerge.getDX();
+              y += settMerge.getDY();
+            }
 
             currentPaint = this.getPaintScale(series).getPaint(z);
             cxx0 = domainAxis.valueToJava2D(x + this.xOffset, dataArea, plot.getDomainAxisEdge());

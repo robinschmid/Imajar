@@ -1,4 +1,4 @@
-package net.rs.lamsi.general.settings.merge;
+package net.rs.lamsi.general.settings.image.merge;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -119,9 +119,13 @@ public class SettingsSingleMerge extends Settings {
 
   public AffineTransform getAffineTransform() {
     // angle
-    double angle = Math.toRadians(degreeAngle);
-    AffineTransform at = AffineTransform.getRotateInstance(angle, getCenterX(), getCenterY());
+    double angle = Math.toRadians(this.angle);
+    AffineTransform at = AffineTransform.getRotateInstance(angle, 0, 0);
     at.translate(dx, dy);
-    return;
+    return at;
+  }
+
+  public void setAnchor(float x, float y) {
+    anchor.setLocation(x, y);
   }
 }

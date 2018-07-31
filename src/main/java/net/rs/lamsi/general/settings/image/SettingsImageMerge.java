@@ -11,9 +11,9 @@ import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory.THEME;
+import net.rs.lamsi.general.settings.image.merge.SettingsSingleMerge;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
-import net.rs.lamsi.general.settings.merge.SettingsSingleMerge;
 
 public class SettingsImageMerge extends SettingsContainerCollectable2D {
   // do not change the version!

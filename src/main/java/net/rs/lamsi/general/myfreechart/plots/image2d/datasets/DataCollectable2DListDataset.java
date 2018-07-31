@@ -8,7 +8,7 @@ import org.jfree.data.RangeInfo;
 import org.jfree.data.xy.AbstractXYZDataset;
 import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
-import net.rs.lamsi.general.settings.merge.SettingsSingleMerge;
+import net.rs.lamsi.general.settings.image.merge.SettingsSingleMerge;
 
 /**
  * getX getY and getZ are deprecated
