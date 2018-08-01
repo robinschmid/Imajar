@@ -76,6 +76,7 @@ import net.sf.mzmine.datamodel.PeakList;
 import net.sf.mzmine.datamodel.PeakListRow;
 import net.sf.mzmine.datamodel.RawDataFile;
 import net.sf.mzmine.datamodel.impl.MZmineProjectListenerAdapter;
+import net.sf.mzmine.main.MZmineCore;
 
 
 /*
@@ -1066,6 +1067,8 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
               MZIon ion = settImage.getMZIon();
               ion.setMz(mz);
               ion.setPm(pm);
+              NumberFormat f = MZmineCore.getConfiguration().getMZFormat();
+              ion.setName("mz=" + f.format(mz) + "+-" + f.format(pm));
 
 
               // Image Con
@@ -1628,16 +1631,18 @@ public class ImageVsSpecViewPanel extends JPanel implements Runnable {
       // trigger? or continuous data
       settImage.setTriggered(selectedModeMiddle == MODE_IMAGE_DISCON);
 
-      try {
-        settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
-        settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));
-      } catch (Exception e) {
-        settSplitCon.setSplitMode(XUNIT.DP);
+      if (settSplitCon != null) {
+        try {
+          settSplitCon.setSplitMode((XUNIT) getComboSplitUnit().getSelectedItem());
+          settSplitCon.setStartX(Module.floatFromTxt(getTxtSplitStartX()));
+        } catch (Exception e) {
+          settSplitCon.setSplitMode(XUNIT.DP);
+        }
+        if (settSplitCon.getSplitMode() == XUNIT.DP)
+          settSplitCon.setSplitAfterDP(Module.intFromTxt(getTxtTimePerLine()));
+        else
+          settSplitCon.setSplitAfterX(Module.floatFromTxt(getTxtTimePerLine()));
       }
-      if (settSplitCon.getSplitMode() == XUNIT.DP)
-        settSplitCon.setSplitAfterDP(Module.intFromTxt(getTxtTimePerLine()));
-      else
-        settSplitCon.setSplitAfterX(Module.floatFromTxt(getTxtTimePerLine()));
     } catch (Exception ex) {
       logger.error("", ex);
       JOptionPane.showMessageDialog(window.getFrame(),
