@@ -30,11 +30,12 @@ public class MergeTableModel extends AbstractTableModel {
 
   public Object getValueAt(int row, int col) {
     try {
+      String groupName = settMerge.getImageList().get(row).getImageGroup().getName();
       if (col == 0)
-        return settMerge.getImageList().get(row).getImageGroup().getName();
+        return groupName;
 
       //
-      SettingsSingleMerge s = settMerge.getMergeSettings(row);
+      SettingsSingleMerge s = settMerge.getMergeSettings(groupName);
       switch (col) {
         case 1:
           return s.getDX();
@@ -80,7 +81,7 @@ public class MergeTableModel extends AbstractTableModel {
         value.getClass());
 
 
-    SettingsSingleMerge s = settMerge.getMergeSettings(row);
+    SettingsSingleMerge s = settMerge.getMergeSettingsAt(row);
     switch (col) {
       case 1:
         s.setDX((float) value);

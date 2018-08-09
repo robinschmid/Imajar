@@ -289,7 +289,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       setImage(img);
 
       // affine transform for this image
-      settMerge = list.getSettings(series);
+      settMerge = list.getSettings(img.getImageGroup().getName());
     }
 
     if (data != null && (settMerge == null || settMerge.isVisible())) {

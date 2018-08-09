@@ -2,11 +2,14 @@ package net.rs.lamsi.general.settings.image;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
@@ -19,9 +22,11 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
   // do not change the version!
   private static final long serialVersionUID = 1L;
   // merge title settings
+  // title of the image
   protected String title = "";
   protected List<DataCollectable2D> list;
-  protected List<SettingsSingleMerge> settings;
+  // group name, settings
+  protected TreeMap<String, SettingsSingleMerge> settings;
 
 
   public SettingsImageMerge() {
@@ -53,10 +58,10 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
       return;
     } else {
       // create settings
-      settings = new ArrayList<>();
+      settings = new TreeMap<>();
       for (DataCollectable2D d : list) {
         SettingsSingleMerge s = new SettingsSingleMerge();
-        settings.add(s);
+        settings.put(d.getImageGroup().getName(), s);
       }
     }
   }
@@ -68,10 +73,20 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
   @Override
   public void appendSettingsValuesToXML(Element elParent, Document doc) {
     toXML(elParent, doc, "title", title);
+
+    for (Map.Entry<String, SettingsSingleMerge> e : settings.entrySet()) {
+      // add group name
+      toXML(elParent, doc, "groupName", e.getKey());
+      // settings
+      e.getValue().appendSettingsToXML(elParent, doc);
+    }
   }
 
   @Override
   public void loadValuesFromXML(Element el, Document doc) {
+    SettingsSingleMerge sm = new SettingsSingleMerge();
+    List<String> groupNames = new ArrayList<>();
+    List<SettingsSingleMerge> sett = new ArrayList<>();
     NodeList list = el.getChildNodes();
     for (int i = 0; i < list.getLength(); i++) {
       if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
@@ -79,7 +94,30 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
         String paramName = nextElement.getNodeName();
         if (paramName.equals("title"))
           title = nextElement.getTextContent();
+        else if (paramName.equals("groupName"))
+          groupNames.add(nextElement.getTextContent());
+        else if (isSettingsNode(nextElement, sm.getSuperClass())) {
+          SettingsSingleMerge sm2 = new SettingsSingleMerge();
+          sm2.loadValuesFromXML(nextElement, doc);
+          sett.add(sm2);
+        }
       }
+    }
+
+    settings.clear();
+    for (int i = 0; i < sett.size(); i++) {
+      settings.put(groupNames.get(i), sett.get(i));
+    }
+  }
+
+  @Override
+  public void applyToImage(Collectable2D img) throws Exception {
+    if (img instanceof ImageMerge) {
+      SettingsImageMerge that = ((ImageMerge) img).getSettings();
+      that.getMergeSettings().clear();
+
+      for (Map.Entry<String, SettingsSingleMerge> e : settings.entrySet())
+        that.getMergeSettings().put(e.getKey(), (SettingsSingleMerge) e.getValue().copy());
     }
   }
 
@@ -101,14 +139,23 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
     return list.get(i);
   }
 
-  public List<SettingsSingleMerge> getMergeSettings() {
+  /**
+   * Group name as ID
+   * 
+   * @return
+   */
+  public TreeMap<String, SettingsSingleMerge> getMergeSettings() {
     return settings;
   }
 
-  public SettingsSingleMerge getMergeSettings(int i) {
-    if (settings == null || settings.size() <= i)
-      return null;
-    return settings.get(i);
+  public SettingsSingleMerge getMergeSettings(String groupName) {
+    return settings.get(groupName);
   }
 
+  public SettingsSingleMerge getMergeSettingsAt(int i) {
+    if (list == null || list.size() <= i)
+      return null;
+    String gname = list.get(i).getImageGroup().getName();
+    return settings.get(gname);
+  }
 }

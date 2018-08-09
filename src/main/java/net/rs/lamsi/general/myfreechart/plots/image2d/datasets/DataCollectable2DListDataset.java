@@ -2,6 +2,7 @@ package net.rs.lamsi.general.myfreechart.plots.image2d.datasets;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import org.jfree.data.DomainInfo;
 import org.jfree.data.Range;
 import org.jfree.data.RangeInfo;
@@ -19,7 +20,7 @@ public class DataCollectable2DListDataset extends AbstractXYZDataset
   private static final long serialVersionUID = 1L;
 
   private List<DataCollectable2DDataset> list;
-  private List<SettingsSingleMerge> settings;
+  private TreeMap<String, SettingsSingleMerge> settings;
 
   public DataCollectable2DListDataset(ImageMerge image) {
     super();
@@ -104,7 +105,7 @@ public class DataCollectable2DListDataset extends AbstractXYZDataset
     return list.get(series);
   }
 
-  public SettingsSingleMerge getSettings(int series) {
-    return settings.get(series);
+  public SettingsSingleMerge getSettings(String groupName) {
+    return settings.get(groupName);
   }
 }
