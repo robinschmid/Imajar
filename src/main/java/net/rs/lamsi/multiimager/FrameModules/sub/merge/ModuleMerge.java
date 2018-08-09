@@ -49,6 +49,10 @@ public class ModuleMerge extends Collectable2DSettingsModule<SettingsImageMerge,
 
     JButton btnApply = new JButton("Redraw");
     btnApply.addActionListener(e -> repaintChart());
+
+    JButton btnRefreshTable = new JButton("Refresh table");
+    btnRefreshTable.addActionListener(e -> tableModel.fireTableDataChanged());
+    panel_1.add(btnRefreshTable);
     panel_1.add(btnApply);
   }
 

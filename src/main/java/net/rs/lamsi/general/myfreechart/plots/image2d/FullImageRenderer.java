@@ -3,11 +3,15 @@ package net.rs.lamsi.general.myfreechart.plots.image2d;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.event.RendererChangeEvent;
+import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.chart.plot.CrosshairState;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
@@ -28,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DDataset;
 import net.rs.lamsi.general.myfreechart.plots.image2d.datasets.DataCollectable2DListDataset;
+import net.rs.lamsi.general.myfreechart.plots.image2d.merge.ImageMergeItem;
 import net.rs.lamsi.general.settings.image.merge.SettingsSingleMerge;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
@@ -42,7 +47,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
   protected SettingsAlphaMap sett;
 
   protected DataCollectable2D img;
-  private boolean useImageAsXYItem = true;
+  private boolean useImageAsXYItem = false;
 
 
   /**
@@ -390,7 +395,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
             // paint
             drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState,
-                xx0, xx0 + bw, yy0, yy0 - bh, p);
+                xx0, xx0 + bw, yy0, yy0 - bh, p, settMerge);
             cAll++;
           }
         }
@@ -508,7 +513,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
           // paint previous dp
           drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState,
-              lxx0, xx1, lyy0, lyy0 - bh, lastPaint);
+              lxx0, xx1, lyy0, lyy0 - bh, lastPaint, settMerge);
         }
 
         // convert current to last
@@ -521,7 +526,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       if (lastPaint != null) {
         // paint dp
         drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, lxx0,
-            lxx0 + bw, lyy0, lyy0 - bh, lastPaint);
+            lxx0 + bw, lyy0, lyy0 - bh, lastPaint, settMerge);
       }
       // reset
       g2.setComposite(BlendComposite.Normal);
@@ -531,7 +536,8 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
-      CrosshairState crosshairState, double xx0, double xx1, double yy0, double yy1, Paint p) {
+      CrosshairState crosshairState, double xx0, double xx1, double yy0, double yy1, Paint p,
+      SettingsSingleMerge settMerge) {
     Rectangle2D block;
 
     // round to full pixel
@@ -563,12 +569,13 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
     lastx1 = xx1;
     // paint
-    drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, block, p);
+    drawBlockItem(g2, state, dataArea, plot, domainAxis, rangeAxis, data, crosshairState, block, p,
+        settMerge);
   }
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
-      CrosshairState crosshairState, Rectangle2D block, Paint p) {
+      CrosshairState crosshairState, Rectangle2D block, Paint p, SettingsSingleMerge settMerge) {
 
     // do only paint if inside rect
     if (block.getWidth() > 0 && block.getHeight() > 0 && dataArea.intersects(block)) {
@@ -590,8 +597,8 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         EntityCollection entities = state.getEntityCollection();
         if (entities != null) {
           Rectangle2D intersect = block.createIntersection(dataArea);
-          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
-              intersect.getCenterY());
+          addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(), intersect.getCenterY(),
+              settMerge);
         }
       }
     }
@@ -599,7 +606,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
 
   protected void drawBlockItem(Graphics2D g2, XYItemRendererState state, Rectangle2D dataArea,
       XYPlot plot, ValueAxis domainAxis, ValueAxis rangeAxis, DataCollectable2DDataset data,
-      int series, int line, int dp, CrosshairState crosshairState) {
+      int series, int line, int dp, CrosshairState crosshairState, SettingsSingleMerge settMerge) {
 
     // try to get intensity - NaN == no data point
     double z = data.getZ(false, line, dp);
@@ -674,11 +681,57 @@ public class FullImageRenderer extends AbstractXYItemRenderer
           if (entities != null) {
             Rectangle2D intersect = block.createIntersection(dataArea);
             addEntity(entities, intersect, data, 0, 0, intersect.getCenterX(),
-                intersect.getCenterY());
+                intersect.getCenterY(), settMerge);
           }
         }
       }
     }
+  }
+
+  /**
+   * Adds an entity to the collection. Note the the {@code entityX} and {@code entityY} coordinates
+   * are in Java2D space, should already be adjusted for the plot orientation, and will only be used
+   * if {@code hotspot} is {@code null}.
+   *
+   * @param entities the entity collection being populated.
+   * @param hotspot the entity area (if {@code null} a default will be used).
+   * @param dataset the dataset.
+   * @param series the series.
+   * @param item the item.
+   * @param entityX the entity x-coordinate (in Java2D space, only used if {@code hotspot} is
+   *        {@code null}).
+   * @param entityY the entity y-coordinate (in Java2D space, only used if {@code hotspot} is
+   *        {@code null}).
+   */
+  protected void addEntity(EntityCollection entities, Shape hotspot, XYDataset dataset, int series,
+      int item, double entityX, double entityY, SettingsSingleMerge settMerge) {
+
+    if (!getItemCreateEntity(series, item)) {
+      return;
+    }
+
+    // if not hotspot is provided, we create a default based on the
+    // provided data coordinates (which are already in Java2D space)
+    if (hotspot == null) {
+      double r = getDefaultEntityRadius();
+      double w = r * 2;
+      hotspot = new Ellipse2D.Double(entityX - r, entityY - r, w, w);
+    }
+    String tip = null;
+    XYToolTipGenerator generator = getToolTipGenerator(series, item);
+    if (generator != null) {
+      tip = generator.generateToolTip(dataset, series, item);
+    }
+    String url = null;
+    if (getURLGenerator() != null) {
+      url = getURLGenerator().generateURL(dataset, series, item);
+    }
+    XYItemEntity entity;
+    if (settMerge != null)
+      entity = new ImageMergeItem(hotspot, dataset, series, item, tip, url, settMerge, null);
+    else
+      entity = new XYItemEntity(hotspot, dataset, series, item, tip, url);
+    entities.add(entity);
   }
 
   /**

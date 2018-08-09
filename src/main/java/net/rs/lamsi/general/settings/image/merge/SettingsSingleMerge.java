@@ -183,4 +183,13 @@ public class SettingsSingleMerge extends Settings {
   public BlendingMode getBlendMode() {
     return blendMode;
   }
+
+  public void translate(double x, double y) {
+    this.translate((float) x, (float) y);
+  }
+
+  public void translate(float x, float y) {
+    setDX(dx + x);
+    setDY(dy + y);
+  }
 }
