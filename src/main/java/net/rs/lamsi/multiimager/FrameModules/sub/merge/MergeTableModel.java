@@ -12,10 +12,9 @@ public class MergeTableModel extends AbstractTableModel {
   private static final String[] columnNames =
       {"Group", "dx", "dy", "angle", "ax", "ay", "visible", "blend", "transparency"};
   private static final Class[] classes = {String.class, Float.class, Float.class, Float.class,
-      Float.class, Float.class, Boolean.class, String.class, Float.class};
+      Float.class, Float.class, Boolean.class, BlendingMode.class, Float.class};
 
   private SettingsImageMerge settMerge;
-
 
   public int getColumnCount() {
     return columnNames.length;
@@ -102,7 +101,7 @@ public class MergeTableModel extends AbstractTableModel {
         s.setVisible((boolean) value);
         break;
       case 7:
-        s.setBlendingMode(BlendingMode.valueOf(String.valueOf(value)));
+        s.setBlendingMode((BlendingMode) value);
         break;
       case 8:
         s.setTransparency((float) value);
