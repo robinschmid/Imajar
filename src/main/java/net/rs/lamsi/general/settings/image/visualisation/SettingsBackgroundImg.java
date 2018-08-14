@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.interf.GroupSettings;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
 
 public class SettingsBackgroundImg extends Settings implements GroupSettings {
   // do not change the version!
@@ -27,6 +28,8 @@ public class SettingsBackgroundImg extends Settings implements GroupSettings {
   protected Dimension dimOriginal;
   protected AffineTransform at;
 
+  // blending mode of overlayed images
+  protected BlendingMode blend = BlendingMode.NORMAL;
   //
   protected boolean isVisible = false;
   protected File pathBGImage = null;
@@ -47,6 +50,7 @@ public class SettingsBackgroundImg extends Settings implements GroupSettings {
     toXML(elParent, doc, "bgWidth", bgWidth);
     toXML(elParent, doc, "offset", offset);
     toXML(elParent, doc, "angle", angle);
+    toXML(elParent, doc, "blend", blend);
   }
 
   @Override
@@ -66,6 +70,8 @@ public class SettingsBackgroundImg extends Settings implements GroupSettings {
           angle = doubleFromXML(nextElement);
         else if (paramName.equals("offset"))
           offset = point2DDoubleFromXML(nextElement);
+        else if (paramName.equals("blend"))
+          blend = BlendingMode.valueOf(nextElement.getTextContent());
       }
     }
   }
@@ -86,6 +92,7 @@ public class SettingsBackgroundImg extends Settings implements GroupSettings {
     dimOriginal = null;
     angle = 0;
     at = null;
+    blend = BlendingMode.NORMAL;
   }
 
   private void updateAT() {
@@ -126,6 +133,14 @@ public class SettingsBackgroundImg extends Settings implements GroupSettings {
         return 1.0;
       }
     }
+  }
+
+  public BlendingMode getBlend() {
+    return blend;
+  }
+
+  public void setBlend(BlendingMode blend) {
+    this.blend = blend;
   }
 
   /**

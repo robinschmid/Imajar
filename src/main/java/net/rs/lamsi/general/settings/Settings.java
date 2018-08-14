@@ -39,6 +39,7 @@ import net.rs.lamsi.general.framework.modules.ModuleTree;
 import net.rs.lamsi.general.heatmap.Heatmap;
 import net.rs.lamsi.general.settings.gui2d.SettingsBasicStroke;
 import net.rs.lamsi.general.settings.image.SettingsCollectable2DPlaceHolder;
+import net.rs.lamsi.general.settings.image.needy.SettingsCollectable2DLink;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.listener.SettingsChangedListener;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -309,6 +310,14 @@ public abstract class Settings implements Serializable {
         paramElement.setAttribute("left", "" + r.getLeft());
         paramElement.setAttribute("bottom", "" + r.getBottom());
         paramElement.setAttribute("right", "" + r.getRight());
+      } else if (SettingsCollectable2DLink.class.isInstance(o)) {
+        SettingsCollectable2DLink c = (SettingsCollectable2DLink) o;
+        // save name, group, project
+        paramElement.setTextContent(c.getTitle());
+        if (c.getGroup() != null && !c.getGroup().isEmpty())
+          paramElement.setAttribute("group", c.getGroup());
+        if (c.getProject() != null && !c.getProject().isEmpty())
+          paramElement.setAttribute("project", c.getProject());
       } else if (Collectable2D.class.isInstance(o)) {
         // collectable2d and placeholderlinks
         Collectable2D c = (Collectable2D) o;
@@ -665,6 +674,21 @@ public abstract class Settings implements Serializable {
         new SettingsCollectable2DPlaceHolder(title, group, project));
   }
 
+
+  /**
+   * A link to a c2d
+   * 
+   * @param el
+   * @return null if no value was found
+   */
+  public static SettingsCollectable2DLink c2dLinkFromXML(final Element el) {
+    String title = el.getTextContent();
+    String group = el.getAttribute("group");
+    String project = el.getAttribute("project");
+    return new SettingsCollectable2DLink(title, group, project);
+  }
+
+
   /**
    * 
    * @param el
@@ -776,7 +800,6 @@ public abstract class Settings implements Serializable {
     }
     return null;
   }
-
 
   /**
    * hashed map is the super class of the class in the xml node node name

@@ -351,7 +351,10 @@ public class ImageGroupMD implements Serializable {
    * @return
    */
   public int image2dCount() {
-    return Math.min(getData().size(), images.size());
+    if (getData() == null)
+      return images.size();
+    else
+      return Math.min(getData().size(), images.size());
   }
 
   public List<Collectable2D> getImages() {
@@ -481,6 +484,19 @@ public class ImageGroupMD implements Serializable {
   public Collectable2D getImageByTitle(String title) {
     for (Collectable2D c : images)
       if (c.getTitle().equals(title))
+        return c;
+    return null;
+  }
+
+  /**
+   * get image by unique title
+   * 
+   * @param title
+   * @return
+   */
+  public Collectable2D getImageByTitleStartsWith(String startTitle) {
+    for (Collectable2D c : images)
+      if (c.getTitle().startsWith(startTitle))
         return c;
     return null;
   }
