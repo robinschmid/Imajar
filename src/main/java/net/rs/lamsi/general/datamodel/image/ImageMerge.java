@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
 import net.rs.lamsi.general.settings.image.SettingsImageMerge;
+import net.rs.lamsi.general.settings.image.merge.SettingsSingleMerge;
 import net.rs.lamsi.general.settings.image.sub.SettingsZoom;
 import net.rs.lamsi.general.settings.image.visualisation.themes.SettingsThemesContainer;
 
@@ -51,10 +52,12 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
    */
   public float getWidth(boolean raw) {
     float max = 0;
-    for (int i = 0; i < imageGroup.image2dCount(); i++) {
-      Image2D img = (Image2D) imageGroup.get(i);
-      if (max < img.getWidth(raw))
-        max = img.getWidth(raw);
+    int i = 0;
+    for (DataCollectable2D img : settings.getImageList()) {
+      SettingsSingleMerge sett = settings.getMergeSettings(img.getImageGroup().getName());
+      float w = img.getWidth() + sett.getDX();
+      if (max < w)
+        max = w;
     }
     return max;
   }
@@ -67,10 +70,12 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
    */
   public float getHeight(boolean raw) {
     float max = 0;
-    for (int i = 0; i < imageGroup.image2dCount(); i++) {
-      Image2D img = (Image2D) imageGroup.get(i);
-      if (max < img.getHeight(raw))
-        max = img.getHeight(raw);
+    int i = 0;
+    for (DataCollectable2D img : settings.getImageList()) {
+      SettingsSingleMerge sett = settings.getMergeSettings(img.getImageGroup().getName());
+      float h = img.getHeight() + sett.getDY();
+      if (max < h)
+        max = h;
     }
     return max;
   }
