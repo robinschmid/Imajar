@@ -980,13 +980,14 @@ public class ImageLogicRunner {
 
       // final group of merges
       ImageGroupMD mergeGroup = new ImageGroupMD();
+      mergeGroup.setGroupName("merge");
       mergeGroup.setProject(project);
       // for each title
       for (Collectable2D c : g0.getImages()) {
         if (c instanceof DataCollectable2D) {
           SettingsImageMerge sett = new SettingsImageMerge();
           try {
-            ImageMerge m = new ImageMerge(mergeGroup, sett, c.getTitle());
+            ImageMerge m = new ImageMerge(mergeGroup, sett, c.getTitle(), true);
             mergeGroup.add(m);
           } catch (Exception e) {
             logger.error("Create image merge failed for img {}", c.getTitle(), e);
@@ -996,6 +997,7 @@ public class ImageLogicRunner {
       logger.debug("Created {} merge images", mergeGroup.size());
 
       // add group to tree
+      project.add(mergeGroup);
       addGroup(mergeGroup, project);
     }
   }

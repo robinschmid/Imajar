@@ -41,27 +41,51 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
   /**
    * 
    * @param project
+   * @throws Exception
+   */
+  public void init(ImagingProject project) throws Exception {
+    init(project, title);
+  }
+
+  /**
+   * 
+   * @param project
    * @param title exact title of images to merge
    * @throws Exception
    */
   public void init(ImagingProject project, String title) throws Exception {
-    this.title = title;
-    list = new ArrayList<>();
-    for (ImageGroupMD g : project.getGroups()) {
-      Collectable2D img = g.getImageByTitle(title);
-      if (img != null && img instanceof DataCollectable2D) {
-        list.add((DataCollectable2D) img);
+    // Treemap already init?
+    if (settings != null && !settings.isEmpty()) {
+      list = new ArrayList<>();
+      // find images in groups
+      for (Map.Entry<String, SettingsSingleMerge> e : settings.entrySet()) {
+        ImageGroupMD g = project.getGroupByName(e.getKey());
+        Collectable2D img = g.getImageByTitle(title);
+        if (img != null && img instanceof DataCollectable2D) {
+          list.add((DataCollectable2D) img);
+        }
       }
-    }
-    if (list.isEmpty()) {
-      list = null;
-      return;
     } else {
-      // create settings
-      settings = new TreeMap<>();
-      for (DataCollectable2D d : list) {
-        SettingsSingleMerge s = new SettingsSingleMerge();
-        settings.put(d.getImageGroup().getName(), s);
+      // create new list of images
+      // create new settings
+      this.title = title;
+      list = new ArrayList<>();
+      for (ImageGroupMD g : project.getGroups()) {
+        Collectable2D img = g.getImageByTitle(title);
+        if (img != null && img instanceof DataCollectable2D) {
+          list.add((DataCollectable2D) img);
+        }
+      }
+      if (list.isEmpty()) {
+        list = null;
+        return;
+      } else {
+        // create settings
+        settings = new TreeMap<>();
+        for (DataCollectable2D d : list) {
+          SettingsSingleMerge s = new SettingsSingleMerge();
+          settings.put(d.getImageGroup().getName(), s);
+        }
       }
     }
   }
@@ -104,7 +128,10 @@ public class SettingsImageMerge extends SettingsContainerCollectable2D {
       }
     }
 
-    settings.clear();
+    if (settings == null)
+      settings = new TreeMap<>();
+    else
+      settings.clear();
     for (int i = 0; i < sett.size(); i++) {
       settings.put(groupNames.get(i), sett.get(i));
     }
