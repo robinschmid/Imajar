@@ -25,6 +25,7 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
@@ -37,6 +38,7 @@ import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.settings.Settings;
 import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.image.SettingsImage2D;
+import net.rs.lamsi.general.settings.image.SettingsImageMerge;
 import net.rs.lamsi.general.settings.image.SettingsImageOverlay;
 import net.rs.lamsi.general.settings.image.SettingsImagingProject;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
@@ -176,58 +178,60 @@ public class Image2DImportExportUtil {
 
     // export xmatrix
     // intensity matrix
-    if (MDDataset.class.isInstance(images[0].getData())) {
-      if (((MDDataset) images[0].getData()).hasXData()) {
-        String xmatrix = images[0].toXCSV(true, SEPARATION, false);
-        try {
-          parameters.setFileNameInZip(new File(folder, "xmatrix.csv").getPath());
-          out.putNextEntry(null, parameters);
-          byte[] data = xmatrix.getBytes();
-          out.write(data, 0, data.length);
-          out.closeEntry();
-        } catch (ZipException e) {
-          // TODO Auto-generated catch block
-          logger.error("", e);
-        } catch (IOException e) {
-          // TODO Auto-generated catch block
-          logger.error("", e);
+    if (images != null && images.length > 0) {
+      if (MDDataset.class.isInstance(images[0].getData())) {
+        if (((MDDataset) images[0].getData()).hasXData()) {
+          String xmatrix = images[0].toXCSV(true, SEPARATION, false);
+          try {
+            parameters.setFileNameInZip(new File(folder, "xmatrix.csv").getPath());
+            out.putNextEntry(null, parameters);
+            byte[] data = xmatrix.getBytes();
+            out.write(data, 0, data.length);
+            out.closeEntry();
+          } catch (ZipException e) {
+            // TODO Auto-generated catch block
+            logger.error("", e);
+          } catch (IOException e) {
+            // TODO Auto-generated catch block
+            logger.error("", e);
+          }
         }
       }
-    }
-    if (task != null)
-      task.addProgressStep(1.0 / steps);
-    // for all images:
-    NumberFormat format = new DecimalFormat("0000");
-    int c = 0;
-    for (Image2D img : images) {
-      c++;
-      String num = format.format(c) + "_";
-      try {
-        // export ymatrix
-        String matrix = img.toICSV(true, SEPARATION, false);
-        parameters.setFileNameInZip(new File(folder, num + img.getTitle() + ".csv").getPath());
-        out.putNextEntry(null, parameters);
-        byte[] data = matrix.getBytes();
-        out.write(data, 0, data.length);
-        out.closeEntry();
-        if (task != null)
-          task.addProgressStep(1.0 / steps);
+      if (task != null)
+        task.addProgressStep(1.0 / steps);
+      // for all images:
+      NumberFormat format = new DecimalFormat("0000");
+      int c = 0;
+      for (Image2D img : images) {
+        c++;
+        String num = format.format(c) + "_";
+        try {
+          // export ymatrix
+          String matrix = img.toICSV(true, SEPARATION, false);
+          parameters.setFileNameInZip(new File(folder, num + img.getTitle() + ".csv").getPath());
+          out.putNextEntry(null, parameters);
+          byte[] data = matrix.getBytes();
+          out.write(data, 0, data.length);
+          out.closeEntry();
+          if (task != null)
+            task.addProgressStep(1.0 / steps);
 
-        // export settings
-        Settings sett = img.getSettings();
-        parameters.setFileNameInZip(
-            new File(folder, num + img.getTitle() + "." + sett.getFileEnding()).getPath());
-        out.putNextEntry(null, parameters);
-        sett.saveToXML(out);
-        out.closeEntry();
-        if (task != null)
-          task.addProgressStep(1.0 / steps);
-      } catch (ZipException e) {
-        logger.error("", e);
-      } catch (IOException e) {
-        logger.error("", e);
-      } catch (Exception e) {
-        logger.error("", e);
+          // export settings
+          Settings sett = img.getSettings();
+          parameters.setFileNameInZip(
+              new File(folder, num + img.getTitle() + "." + sett.getFileEnding()).getPath());
+          out.putNextEntry(null, parameters);
+          sett.saveToXML(out);
+          out.closeEntry();
+          if (task != null)
+            task.addProgressStep(1.0 / steps);
+        } catch (ZipException e) {
+          logger.error("", e);
+        } catch (IOException e) {
+          logger.error("", e);
+        } catch (Exception e) {
+          logger.error("", e);
+        }
       }
     }
     // for all overlays
@@ -236,8 +240,11 @@ public class Image2DImportExportUtil {
       try {
         // export settings
         Settings sett = img.getSettings();
-        parameters.setFileNameInZip(
-            new File(folder, img.getTitle() + "." + sett.getFileEnding()).getPath());
+        String title = img.getTitle();
+        if (sett instanceof SettingsImageMerge)
+          title = title.substring(0, title.length() - " merged".length());
+
+        parameters.setFileNameInZip(new File(folder, title + "." + sett.getFileEnding()).getPath());
         out.putNextEntry(null, parameters);
         sett.saveToXML(out);
         out.closeEntry();
@@ -346,7 +353,8 @@ public class Image2DImportExportUtil {
     // read files from zip
     Map<String, InputStream> files = ZipUtil.readZip(f);
     try {
-      return readGroup(files, task);
+      ImageGroupMD g = readGroup(files, task);
+      return g;
     } catch (Exception ex) {
       throw (ex);
     } finally {
@@ -520,9 +528,10 @@ public class Image2DImportExportUtil {
 
     // create group, read overlays, ....
     // add new Image to image group
+    ImageGroupMD group = null;
     if (lines.size() > 0) {
       DatasetLinesMD data = new DatasetLinesMD(lines);
-      ImageGroupMD group = data.createImageGroup();
+      group = data.createImageGroup();
       // add bg image
       if (bgimg != null) {
         group.setBackgroundImage(bgimg, bgFile);
@@ -531,70 +540,95 @@ public class Image2DImportExportUtil {
       // set settings to images
       for (int i = 0; i < group.getImages().size(); i++)
         ((Image2D) group.getImages().get(i)).setSettings(settings.get(i));
-
-
-      // image overlays
-      // settings
-      SettingsImageOverlay tmpov = new SettingsImageOverlay();
-      SettingsSPImage tmpspimg = new SettingsSPImage();
-
-      // y data
-      for (String fileName : files.keySet()) {
-        // overlays
-        if (fileName.endsWith(tmpov.getFileEnding())) {
-          logger.info("reading overlay file {}", fileName);
-
-          //
-          InputStream isSett = files.get(fileName);
-          SettingsImageOverlay settov = new SettingsImageOverlay();
-          settov.loadFromXML(isSett);
-
-          ImageOverlay newov;
-          try {
-            newov = new ImageOverlay(group, settov);
-            group.add(newov);
-          } catch (Exception e) {
-            logger.error("", e);
-          }
-          // finished image overlay
-          if (task != null)
-            task.addProgressStep(1.0 / steps);
-        }
-
-        // single particle images
-        if (fileName.endsWith(tmpspimg.getFileEnding())) {
-          logger.info("reading overlay file {}", fileName);
-
-          //
-          InputStream isSett = files.get(fileName);
-          SettingsSPImage settspimg = new SettingsSPImage();
-          settspimg.loadFromXML(isSett);
-
-          try {
-            SingleParticleImage newspImage = new SingleParticleImage(null, settspimg);
-            group.add(newspImage);
-          } catch (Exception e) {
-            logger.error("", e);
-          }
-          // finished image overlay
-          if (task != null)
-            task.addProgressStep(1.0 / steps);
-        }
-      }
-      // load group settings
-      InputStream isSett =
-          files.get(FileAndPathUtil.getRealFileName("group", group.getSettings().getFileEnding()));
-      if (isSett != null) {
-        logger.info("reading group settings file of: {}", group);
-        group.getSettings().loadFromXML(isSett);
-      }
-      // finished group settings
-      if (task != null)
-        task.addProgressStep(1.0 / steps);
-      // return group
-      return group;
+    } else {
+      group = new ImageGroupMD();
     }
-    return null;
+
+    // image overlays
+    // settings
+    SettingsImageOverlay tmpov = new SettingsImageOverlay();
+    SettingsImageMerge tmpmerge = new SettingsImageMerge();
+    SettingsSPImage tmpspimg = new SettingsSPImage();
+
+    // y data
+    for (String fileName : files.keySet()) {
+      // overlays
+      if (fileName.endsWith(tmpov.getFileEnding())) {
+        logger.info("reading overlay file {}", fileName);
+
+        //
+        InputStream isSett = files.get(fileName);
+        SettingsImageOverlay settov = new SettingsImageOverlay();
+        settov.loadFromXML(isSett);
+
+        ImageOverlay newov;
+        try {
+          newov = new ImageOverlay(group, settov);
+          group.add(newov);
+        } catch (Exception e) {
+          logger.error("", e);
+        }
+        // finished image overlay
+        if (task != null)
+          task.addProgressStep(1.0 / steps);
+      }
+
+      // single particle images
+      if (fileName.endsWith(tmpspimg.getFileEnding())) {
+        logger.info("reading single particle image file {}", fileName);
+
+        //
+        InputStream isSett = files.get(fileName);
+        SettingsSPImage settspimg = new SettingsSPImage();
+        settspimg.loadFromXML(isSett);
+
+        try {
+          SingleParticleImage newspImage = new SingleParticleImage(null, settspimg);
+          group.add(newspImage);
+        } catch (Exception e) {
+          logger.error("", e);
+        }
+        // finished image overlay
+        if (task != null)
+          task.addProgressStep(1.0 / steps);
+      }
+
+      // image merge
+      if (fileName.endsWith(tmpmerge.getFileEnding())) {
+        logger.info("reading image merge file {}", fileName);
+
+        //
+        InputStream isSett = files.get(fileName);
+        SettingsImageMerge settMerge = new SettingsImageMerge();
+        settMerge.loadFromXML(isSett);
+
+        try {
+          String title = FileAndPathUtil.getFileNameFromPath(fileName);
+          ImageMerge newMerge = new ImageMerge(group, settMerge, title, false);
+          group.add(newMerge);
+        } catch (Exception e) {
+          logger.error("", e);
+        }
+        // finished image overlay
+        if (task != null)
+          task.addProgressStep(1.0 / steps);
+      }
+    }
+    // load group settings
+    InputStream isSett =
+        files.get(FileAndPathUtil.getRealFileName("group", group.getSettings().getFileEnding()));
+    if (isSett != null) {
+      logger.info("reading group settings file of: {}", group);
+      group.getSettings().loadFromXML(isSett);
+    }
+    // finished group settings
+    if (task != null)
+      task.addProgressStep(1.0 / steps);
+    // return group
+
+    if (group.size() == 0)
+      return null;
+    return group;
   }
 
 
@@ -640,13 +674,26 @@ public class Image2DImportExportUtil {
         try {
           logger.debug("NEXT Import group {}", e.getKey());
           ImageGroupMD group = readGroup(folder, task);
-          if (group != null)
+          if (group != null) {
             project.add(group);
+          }
         } catch (Exception ex) {
           logger.error("Can't import group {}", e.getKey(), ex);
         }
       }
     }
+
+    // init imagemerge
+    if (project != null)
+      for (ImageGroupMD g : project.getGroups())
+        for (Collectable2D c : g.getImages())
+          if (c instanceof ImageMerge)
+            try {
+              ((ImageMerge) c).getSettings().init(project);
+            } catch (Exception e) {
+              logger.error("Cannot init merge: {}", c.getTitle(), e);
+            }
+    // return
     return project;
   }
 

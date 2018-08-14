@@ -17,11 +17,11 @@ public class ImageMerge extends Collectable2D<SettingsImageMerge> implements Ser
   private static final long serialVersionUID = 1L;
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  public ImageMerge(ImageGroupMD group, SettingsImageMerge settings, String title)
+  public ImageMerge(ImageGroupMD group, SettingsImageMerge settings, String title, boolean init)
       throws Exception {
     super(settings);
     this.imageGroup = group;
-    if (!settings.isInitialised())
+    if (init)
       settings.init(group.getProject(), title);
   }
 

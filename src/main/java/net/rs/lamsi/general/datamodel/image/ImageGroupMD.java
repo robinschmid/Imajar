@@ -352,7 +352,7 @@ public class ImageGroupMD implements Serializable {
    */
   public int image2dCount() {
     if (getData() == null)
-      return images.size();
+      return 0;
     else
       return Math.min(getData().size(), images.size());
   }
