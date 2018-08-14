@@ -9,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -24,6 +25,7 @@ import net.rs.lamsi.general.framework.modules.Collectable2DSettingsModule;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
+import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite.BlendingMode;
 
 public class ModuleBackgroundImg
     extends Collectable2DSettingsModule<SettingsBackgroundImg, Collectable2D> {
@@ -37,6 +39,7 @@ public class ModuleBackgroundImg
   // action listener for update
   private ActionListener al;
   private JButton btnAddImage;
+  private JComboBox<BlendingMode> comboBlend;
   //
 
   // AUTOGEN
@@ -49,7 +52,7 @@ public class ModuleBackgroundImg
 
     JPanel panel = new JPanel();
     getPnContent().add(panel, BorderLayout.CENTER);
-    panel.setLayout(new MigLayout("", "[][][grow]", "[][][bottom][][]"));
+    panel.setLayout(new MigLayout("", "[][grow][grow]", "[][][bottom][][]"));
 
     btnAddImage = new JButton("Add image");
     btnAddImage.addActionListener(new ActionListener() {
@@ -71,6 +74,12 @@ public class ModuleBackgroundImg
     txtPath.setText("No background image selected");
     panel.add(txtPath, "cell 1 0 2 1,growx");
     txtPath.setColumns(10);
+
+    JLabel lblBlend = new JLabel("Blend");
+    panel.add(lblBlend, "cell 0 1,alignx trailing");
+
+    comboBlend = new JComboBox<>(BlendingMode.values());
+    panel.add(comboBlend, "cell 1 1,growx");
 
     JLabel lblOffset = new JLabel("Offset");
     panel.add(lblOffset, "cell 0 2,alignx trailing");
@@ -141,6 +150,7 @@ public class ModuleBackgroundImg
     getTxtWidth().getDocument().addDocumentListener(dl);
     getTxtAngle().getDocument().addDocumentListener(dl);
     cbActive.addItemListener(il);
+    comboBlend.addItemListener(il);
   }
 
   // ################################################################################################
@@ -162,6 +172,8 @@ public class ModuleBackgroundImg
     getTxtY().setText(String.valueOf(s.getOffset().getY()));
     getTxtWidth().setText(String.valueOf(s.getBgWidth()));
 
+    getComboBlend().setSelectedItem(s.getBlend());
+
     // finished
     ImageLogicRunner.setIS_UPDATING(true);
     // ImageEditorWindow.getEditor().fireUpdateEvent(true);
@@ -176,6 +188,7 @@ public class ModuleBackgroundImg
         s.setOffset(doubleFromTxt(getTxtX()), doubleFromTxt(getTxtY()));
         s.setBgWidth((doubleFromTxt(getTxtWidth())));
         s.setVisible(getCbActive().isSelected());
+        s.setBlend((BlendingMode) comboBlend.getSelectedItem());
 
       } catch (Exception ex) {
         logger.error("", ex);
@@ -209,5 +222,9 @@ public class ModuleBackgroundImg
 
   public JCheckBox getCbActive() {
     return cbActive;
+  }
+
+  public JComboBox getComboBlend() {
+    return comboBlend;
   }
 }

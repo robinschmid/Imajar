@@ -1,6 +1,5 @@
 package net.rs.lamsi.general.myfreechart.plots.image2d;
 
-import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
@@ -36,6 +35,7 @@ import net.rs.lamsi.general.myfreechart.plots.image2d.merge.ImageMergeItem;
 import net.rs.lamsi.general.settings.image.merge.SettingsSingleMerge;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
+import net.rs.lamsi.general.settings.image.visualisation.SettingsBackgroundImg;
 import net.rs.lamsi.utils.useful.graphics2d.blending.BlendComposite;
 
 public class FullImageRenderer extends AbstractXYItemRenderer
@@ -343,9 +343,19 @@ public class FullImageRenderer extends AbstractXYItemRenderer
     float height = img.getAvgBlockHeight(true);
     Range domain = domainAxis.getRange();
     Range range = rangeAxis.getRange();
+
+    BlendComposite blend = BlendComposite.Normal;
+
+    // Blend from background image settings
+    SettingsBackgroundImg sbg =
+        (SettingsBackgroundImg) img.getSettingsByClass(SettingsBackgroundImg.class);
+    if (sbg != null && sbg.isVisible())
+      blend = BlendComposite.getInstance(sbg.getBlend());
+
     c = 0;
     int cAll = 0;
 
+    g2.setComposite(blend);
     // draw full image
     for (int l = 0; l < data.getLineCount(); l++) {
       lastx1 = -1;
@@ -356,17 +366,16 @@ public class FullImageRenderer extends AbstractXYItemRenderer
           if (sett.isActive() && dpstate.isFalse()) {
             // do not paint if false
             continue;
-          } else if (sett.isDrawMarks() && dpstate.isMarked()) {
-            // paint with transparency if marked
-            boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
+          } else if (sett.isDrawMarks() && dpstate.isMarked() && sett.getAlpha() < 1.f) {
+            // paint with transparency if marked by roi
             // skip paint if alpha = 0
-            if (markAlpha && sett.getAlpha() < 0.0001)
+            if (sett.getAlpha() < 0.0001)
               continue;
             // set transparency if used
-            if (markAlpha)
-              g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
-            else // reset
-              g2.setComposite(BlendComposite.Normal);
+            g2.setComposite(blend.derive(sett.getAlpha()));
+          } else {
+            // reset
+            g2.setComposite(blend);
           }
         }
         // not in map so paint... if
@@ -400,7 +409,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
           }
         }
         // reset
-        g2.setComposite(BlendComposite.Normal);
+        // g2.setComposite(BlendComposite.Normal);
       }
     }
     logger.debug("drawn dp={} of all {} data points", c, cAll);
@@ -453,6 +462,15 @@ public class FullImageRenderer extends AbstractXYItemRenderer
     double cyy0 = -1;
     boolean currentNoDP = false;
 
+    BlendComposite blend = BlendComposite.Normal;
+
+    // Blend from background image settings
+    SettingsBackgroundImg sbg =
+        (SettingsBackgroundImg) img.getSettingsByClass(SettingsBackgroundImg.class);
+    if (sbg != null && sbg.isVisible())
+      blend = BlendComposite.getInstance(sbg.getBlend());
+
+    g2.setComposite(blend);
     for (int l = 0; l < data.getLineCount(); l++) {
       lastx1 = -1;
       // reset last
@@ -467,19 +485,22 @@ public class FullImageRenderer extends AbstractXYItemRenderer
         cyy0 = -1;
 
         // only if in map or if there is no map
-        if (isMapActive()) {
+        if (sett != null) {
           State dpstate = sett.getMapValue(l, dp);
-          if (dpstate.isFalse()) {
+          if (isMapActive() && dpstate.isFalse()) {
             // do not paint this block if false
             currentNoDP = true;
+          } else if (dpstate.isMarked() && sett.getAlpha() < 1.f) {
+            // skip paint if alpha = 0
+            if (sett.getAlpha() < 0.0001)
+              currentNoDP = true;
+            else {
+              // set transparency if used
+              g2.setComposite(blend.derive(sett.getAlpha()));
+            }
           } else {
-            // paint with transparency if marked
-            boolean markAlpha = dpstate.isMarked() && sett.getAlpha() < 1.f;
-            // set transparency if used
-            if (markAlpha)
-              g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sett.getAlpha()));
-            else // reset
-              g2.setComposite(BlendComposite.Normal);
+            // reset
+            g2.setComposite(blend);
           }
         }
         // current is a dp
@@ -531,6 +552,7 @@ public class FullImageRenderer extends AbstractXYItemRenderer
       // reset
       g2.setComposite(BlendComposite.Normal);
     }
+
   }
 
 
