@@ -68,8 +68,8 @@ public class TestImagerWithSingleParticleData {
           window.getLogicRunner().addGroup(img, project2);
 
           // simulated
-          SingleParticleImage spimg =
-              TestImageFactory.createPerfectSingleParticleImg(10, 100000, 100, 1000, 50000, 4);
+          SingleParticleImage spimg = TestImageFactory.createPerfectSingleParticleImg(10, 100000,
+              100, 1000, 50000, 2, true);
           ImageGroupMD g = spimg.getImageGroup();
           ImagingProject spp = new ImagingProject("Simulated sp image");
           spp.add(g);

@@ -22,13 +22,13 @@ public class TestSingleParticle {
   @Before
   public void setUp() throws Exception {
     // lines, dp per line, nano particles per line, noise, intensity
-    img =
-        TestImageFactory.createPerfectSingleParticleImg(lines, dp, particles, noise, intensity, 2);
+    img = TestImageFactory.createPerfectSingleParticleImg(lines, dp, particles, noise, intensity, 2,
+        false);
     data = img.updateFilteredDataCountsArray();
     datasel = img.getSPDataArraySelected();
 
-    imgSplit4 =
-        TestImageFactory.createPerfectSingleParticleImg(lines, dp, particles, noise, intensity, 4);
+    imgSplit4 = TestImageFactory.createPerfectSingleParticleImg(lines, dp, particles, noise,
+        intensity, 4, false);
     dataSplit4 = imgSplit4.updateFilteredDataCountsArray();
     dataselSplit4 = imgSplit4.getSPDataArraySelected();
   }

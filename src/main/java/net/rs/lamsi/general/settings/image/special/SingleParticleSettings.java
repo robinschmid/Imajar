@@ -18,6 +18,12 @@ public class SingleParticleSettings extends Settings {
   private double noiseLevel;
   // how many pixel for split events where one NP is split in two/n windows
   private int splitPixel;
+
+  // decluster
+  private boolean applyDeclustering;
+  // max allowed consecutive pixel > noiseLevel.
+  // > max is considered a cluster and is removed
+  private int maxAllowedDP;
   //
   private Range window;
   // count events in number of pixel
@@ -40,25 +46,31 @@ public class SingleParticleSettings extends Settings {
     window = null;
     noiseLevel = 0;
     splitPixel = 2;
+    maxAllowedDP = 4;
     transform = Transformation.NONE;
     isCountPixel = false;
+    applyDeclustering = false;
     reductionMode = Mode.MAX;
   }
 
 
-  public boolean setAll(double noiseLevel, int splitPixel, Range window, int numberOfPixel,
-      boolean isCountPixel, Mode reductionMode) {
+  public boolean setAll(double noiseLevel, int splitPixel, int maxAllowedDP,
+      boolean applyDeclustering, Range window, int numberOfPixel, boolean isCountPixel,
+      Mode reductionMode) {
     boolean diff =
         Double.compare(this.noiseLevel, noiseLevel) != 0 || (this.window == null && window != null)
             || (this.window != null && !this.window.equals(window))
             || this.numberOfPixel != numberOfPixel || this.splitPixel != splitPixel
-            || this.isCountPixel != isCountPixel || !this.reductionMode.equals(reductionMode);
+            || this.isCountPixel != isCountPixel || !this.reductionMode.equals(reductionMode)
+            || this.maxAllowedDP != maxAllowedDP || this.applyDeclustering != applyDeclustering;
     this.noiseLevel = noiseLevel;
     this.splitPixel = splitPixel;
+    this.maxAllowedDP = maxAllowedDP;
     this.window = window;
     this.numberOfPixel = numberOfPixel;
     this.isCountPixel = isCountPixel;
     this.reductionMode = reductionMode;
+    this.applyDeclustering = applyDeclustering;
     return diff;
   }
 
@@ -68,7 +80,7 @@ public class SingleParticleSettings extends Settings {
       return false;
     else {
       SingleParticleSettings that = (SingleParticleSettings) o;
-      return that.getSplitPixel() == this.getSplitPixel()
+      return that.getSplitPixel() == this.getSplitPixel() && this.maxAllowedDP == that.maxAllowedDP
           && Double.compare(that.getNoiseLevel(), this.getNoiseLevel()) == 0
           && that.getWindow().equals(this.getWindow());
     }
@@ -91,6 +103,8 @@ public class SingleParticleSettings extends Settings {
     toXML(elParent, doc, "transform", transform);
     toXML(elParent, doc, "isCountPixel", isCountPixel);
     toXML(elParent, doc, "reductionMode", reductionMode);
+    toXML(elParent, doc, "maxAllowedDP", maxAllowedDP);
+    toXML(elParent, doc, "applyDeclustering", applyDeclustering);
   }
 
   @Override
@@ -118,11 +132,23 @@ public class SingleParticleSettings extends Settings {
           transform = Transformation.valueOf(nextElement.getTextContent());
         else if (paramName.equals("transform"))
           reductionMode = Mode.valueOf(nextElement.getTextContent());
+        else if (paramName.equals("maxAllowedDP"))
+          maxAllowedDP = intFromXML(nextElement);
+        else if (paramName.equals("applyDeclustering"))
+          applyDeclustering = booleanFromXML(nextElement);
       }
     }
 
     if (!Double.isNaN(lower) && !Double.isNaN(upper))
       setWindow(lower, upper);
+  }
+
+  public boolean isApplyDeclustering() {
+    return applyDeclustering;
+  }
+
+  public void setApplyDeclustering(boolean applyDeclustering) {
+    this.applyDeclustering = applyDeclustering;
   }
 
   /**
@@ -146,6 +172,19 @@ public class SingleParticleSettings extends Settings {
     boolean changed = window == null ? true : !window.equals(w);
     this.window = w;
     return changed;
+  }
+
+  /**
+   * Maximum allowed consecutive data points > noise. More are considered a cluster and deleted
+   * 
+   * @return
+   */
+  public int getMaxAllowedDP() {
+    return maxAllowedDP;
+  }
+
+  public void setMaxAllowedDP(int maxAllowedDP) {
+    this.maxAllowedDP = maxAllowedDP;
   }
 
   /**

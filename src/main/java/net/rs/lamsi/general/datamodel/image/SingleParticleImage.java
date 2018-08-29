@@ -43,6 +43,11 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   protected int lastSolvedEvents = 0;
   protected int solvedEventsSelected = 0;
   protected int solvedEvents = 0;
+  // clusters need to be deleted
+  // Cluster has more than X consecutive data points > noise
+  protected int lastSolvedClusters = 0;
+  protected int deletedClusters = 0;
+  protected int deletedClustersSelected = 0;
 
   protected int selectedDP = 0;
 
@@ -89,6 +94,12 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
       // get data matrix of selected DP
       selectedFilteredData = getImage().toIMatrixOfSelected(true);
       logger.debug("image matrix generation");
+      // filter out clusters
+      if (sett.isApplyDeclustering()) {
+        selectedFilteredData =
+            filterOutClusters(sett, selectedFilteredData, getImage().isRotated());
+        deletedClustersSelected = lastSolvedClusters;
+      }
       // filter out split events
       selectedFilteredData = filterOutSplitPixelEventsAndTransform(sett, selectedFilteredData,
           getImage().isRotated(), Transformation.NONE);
@@ -153,6 +164,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     // filter split pixel eventstimer
     logger.debug("toIMatrixOfSelected from img");
     logger.debug("Start SPI counter: Data filtering and transform to {}", sett.getTransform());
+
+    // filter out clusters
+    if (sett.isApplyDeclustering()) {
+      filteredData = filterOutClusters(sett, filteredData, getImage().isRotated());
+      deletedClusters = lastSolvedClusters;
+    }
+    // filter out split pixel
     filteredData = filterOutSplitPixelEventsAndTransform(sett, filteredData, getImage().isRotated(),
         sett.getTransform());
     solvedEvents = lastSolvedEvents;
@@ -188,6 +206,160 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     } else
       logger.info("SPI counter: no window defined");
     logger.info("Particles in window {};  n={}", window, particles);
+  }
+
+
+  /**
+   * Filter out clusters with more than maxDP conseutive data points > noise level
+   * 
+   * @param data [lines][dp]
+   * @param rotated if true data is used as [dp][lines]
+   * @return
+   */
+  private double[][] filterOutClusters(SingleParticleSettings sett, double[][] data,
+      boolean rotated) {
+
+    double noise = sett.getNoiseLevel();
+    int maxDP = sett.getMaxAllowedDP();
+    // short circuit if pixel is 0 -> no filter applied
+    if (maxDP < sett.getSplitPixel()) {
+      logger.info("Clusters were not removed maxDP<split pixel ({}<{})", maxDP,
+          sett.getSplitPixel());
+      return data;
+    } else {
+      int solved = 0;
+      int lastSelectedDPCount = 0;
+      if (data != null && data.length > 0) {
+        logger.debug("Filter out clusters (rotated={}) on {}x{} lines x dp (noise={}, max={})",
+            rotated, data.length, data[0].length, noise, maxDP);
+
+        // create results array
+        int maxlength = 0;
+        double[][] result = new double[data.length][];
+        for (int i = 0; i < data.length; i++) {
+          result[i] = new double[data[i].length];
+          if (data[i].length > maxlength)
+            maxlength = i;
+        }
+
+        // [lines][dp]
+        // find minimum value as background
+        double min = Double.MAX_VALUE;
+        // second smallest
+        double min2 = min;
+        for (int l = 0; l < data.length; l++) {
+          for (int dp = 0; dp < data[l].length; dp++) {
+            double v = data[l][dp];
+            if (!Double.isNaN(v)) {
+              if (v < min)
+                min = v;
+              else if (v > min && v < min2)
+                min2 = v;
+            }
+          }
+        }
+
+        // rotated?
+        if (!rotated) {
+          // safety: filter out min value by setting noise to at least min2
+          if (noise <= min)
+            noise = min2;
+
+          int clusterStart = -1;
+          // for lines and dp
+          // delete cluster
+          for (int l = 0; l < data.length; l++) {
+            clusterStart = -1;
+            for (int dp = 0; dp < data[l].length; dp++) {
+              double current = data[l][dp];
+              // end cluster if >maxDP and dropped down to noise, or end of line
+              if (clusterStart != -1 && dp - clusterStart > maxDP + 1
+                  && (Double.isNaN(current) || current < noise || dp == data[l].length - 1)) {
+                // finish this cluster
+                int end = (Double.isNaN(current) || current < noise) ? dp - 1 : dp;
+                for (int i = clusterStart; i < end; i++) {
+                  result[l][i] = min;
+                }
+                solved++;
+                clusterStart = -1;
+              }
+
+              // is < noise?
+              if (Double.isNaN(current) || current < noise) {
+                if (clusterStart != -1)
+                  for (int i = clusterStart; i < dp; i++)
+                    result[l][i] = data[l][i];
+                else
+                  // add noisy pixel
+                  result[l][dp] = current;
+
+                // reset
+                clusterStart = -1;
+              }
+              // start new clsuter
+              if (clusterStart == -1 && (!Double.isNaN(current) && current < noise)) {
+                clusterStart = dp;
+              }
+
+              // count non-NaN
+              if (!Double.isNaN(current))
+                lastSelectedDPCount++;
+            }
+          }
+        } else {
+          // rotated [dp][line]
+          int clusterStart = -1;
+          // for lines and dp accumulate pixel and add the sum to result
+          for (int l = 0; l < maxlength; l++) {
+            clusterStart = -1;
+            for (int dp = 0; dp < data.length; dp++) {
+              if (l < data[dp].length) {
+                double current = data[dp][l];
+                // end cluster if >maxDP and dropped down to noise, or end of line
+                if (clusterStart != -1 && dp - clusterStart > maxDP + 1
+                    && (Double.isNaN(current) || current < noise || dp == data[l].length - 1)) {
+                  // finish this cluster
+                  int end = (Double.isNaN(current) || current < noise) ? dp - 1 : dp;
+                  for (int i = clusterStart; i < end; i++) {
+                    result[i][l] = min;
+                  }
+                  solved++;
+                  clusterStart = -1;
+                }
+
+                // is < noise?
+                if (Double.isNaN(current) || current < noise) {
+                  if (clusterStart != -1)
+                    for (int i = clusterStart; i < dp; i++)
+                      result[i][l] = data[i][l];
+                  else
+                    // add noisy pixel
+                    result[dp][l] = current;
+
+                  // reset
+                  clusterStart = -1;
+                }
+                // start new clsuter
+                if (clusterStart == -1 && (!Double.isNaN(current) && current < noise)) {
+                  clusterStart = dp;
+                }
+
+                // count non-NaN
+                if (!Double.isNaN(current))
+                  lastSelectedDPCount++;
+              }
+            }
+          }
+        }
+
+        logger.info("Cluster filter: result {} data points: solved events={}", lastSelectedDPCount,
+            solved);
+        lastSolvedClusters = solved;
+        // return
+        return result;
+      } else
+        return null;
+    }
   }
 
   /**

@@ -177,7 +177,7 @@ public class TestImageFactory {
    * @return
    */
   public static SingleParticleImage createPerfectSingleParticleImg(int rows, int dp,
-      int particlesPerLine, int noise, int intensity, int splitPixel) {
+      int particlesPerLine, int noise, int intensity, int splitPixel, boolean addCluster) {
 
     Random rand = new Random(System.currentTimeMillis());
     double f = 0.6;
@@ -201,6 +201,20 @@ public class TestImageFactory {
       }
       lines[i] = new ScanLineMD(data);
     }
+    // place cluster
+    if (addCluster) {
+      // first is always a cluster:
+      for (ScanLineMD l : lines) {
+        double[] data = l.getIntensity().get(0);
+        int clusterPixel = splitPixel * 8;
+        // place at middle
+        int i = (dp - clusterPixel) / 2;
+        // add
+        for (int x = 0; x < clusterPixel; x++)
+          data[i + x] = intensity / 2;
+      }
+    }
+    // first is always a cluster:
     // add more particles
     for (ScanLineMD l : lines) {
       double[] data = l.getIntensity().get(0);
@@ -231,7 +245,8 @@ public class TestImageFactory {
     // create spimg
     SingleParticleImage spimg = new SingleParticleImage(img.getFirstImage2D());
     SingleParticleSettings sett = spimg.getSettings().getSettSingleParticle();
-    sett.setAll(noise + 1, splitPixel, new Range(intensity - 2, intensity + 2), 1, true, Mode.MAX);
+    sett.setAll(noise + 1, splitPixel, splitPixel * 2, true,
+        new Range(intensity - 2, intensity + 2), 1, true, Mode.MAX);
     // add to group
     img.add(spimg);
     return spimg;
