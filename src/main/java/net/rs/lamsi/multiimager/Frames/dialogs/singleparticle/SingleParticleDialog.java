@@ -1,6 +1,7 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.singleparticle;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -40,6 +41,7 @@ import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 public class SingleParticleDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
+  private SwingWorker<JFreeChart, Void> worker[];
   private final JPanel contentPanel = new JPanel();
   private SingleParticleImage img;
   private DelayedDocumentListener ddlUpdate;
@@ -62,6 +64,9 @@ public class SingleParticleDialog extends JFrame {
   private JTextField txtSplitPixel;
 
   private static final DecimalFormat form = new DecimalFormat("0.0");
+  private JTextField txtMaxDPDecluster;
+  private JCheckBox cbDecluster;
+  private JLabel lblUpdating;
 
   /**
    * Launch the application.
@@ -106,6 +111,16 @@ public class SingleParticleDialog extends JFrame {
         center1.add(box, BorderLayout.SOUTH);
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
         {
+          JPanel updating = new JPanel();
+          box.add(updating);
+          {
+            lblUpdating = new JLabel("UPDATING");
+            lblUpdating.setForeground(Color.RED);
+            lblUpdating.setFont(new Font("Tahoma", Font.BOLD, 14));
+            updating.add(lblUpdating);
+          }
+        }
+        {
           JPanel pnSplitFilter = new JPanel();
           box.add(pnSplitFilter);
           {
@@ -144,6 +159,35 @@ public class SingleParticleDialog extends JFrame {
             JButton btnUpdate = new JButton("update");
             btnUpdate.addActionListener(e -> update());
             pnSplitFilter.add(btnUpdate);
+          }
+        }
+        {
+          JPanel panel = new JPanel();
+          box.add(panel);
+          {
+            JLabel lblDeclusterSettings = new JLabel("Decluster settings:");
+            lblDeclusterSettings.setFont(new Font("Tahoma", Font.BOLD, 11));
+            panel.add(lblDeclusterSettings);
+          }
+          {
+            JLabel lblMax = new JLabel("max dp");
+            panel.add(lblMax);
+          }
+          {
+            txtMaxDPDecluster = new JTextField();
+            txtMaxDPDecluster.setToolTipText(
+                "MAximum consecutive data points > noise level. All data points are set to the data minimum if more data points are clustered together.");
+            txtMaxDPDecluster.setText("0");
+            txtMaxDPDecluster.setColumns(10);
+            panel.add(txtMaxDPDecluster);
+          }
+          {
+            Component horizontalStrut = Box.createHorizontalStrut(20);
+            panel.add(horizontalStrut);
+          }
+          {
+            cbDecluster = new JCheckBox("apply declustering");
+            panel.add(cbDecluster);
           }
         }
         {
@@ -390,6 +434,9 @@ public class SingleParticleDialog extends JFrame {
 
     txtSplitPixel.getDocument().addDocumentListener(ddlUpdate);
     txtNoiseLevel.getDocument().addDocumentListener(ddlUpdate);
+    txtMaxDPDecluster.getDocument().addDocumentListener(ddlUpdate);
+
+    cbDecluster.addItemListener(e -> update());
 
     // add gaussian?
     cbGaussianFit.addItemListener(e -> updateGaussian());
@@ -446,8 +493,6 @@ public class SingleParticleDialog extends JFrame {
     }
   }
 
-
-
   /**
    * Create new histograms
    * 
@@ -455,6 +500,7 @@ public class SingleParticleDialog extends JFrame {
    */
   private void updateHistograms() {
     if (img != null) {
+      logger.debug("Updating histograms in single particle dialog");
       double binwidth2 = Double.NaN;
       double binShift2 = Double.NaN;
       try {
@@ -465,10 +511,22 @@ public class SingleParticleDialog extends JFrame {
       if (!Double.isNaN(binwidth2)) {
         SingleParticleSettings sett;
         try {
+          // init worker
+          if (worker == null)
+            worker = new SwingWorker[2];
+
+          for (SwingWorker<JFreeChart, Void> w : worker) {
+            if (w != null && !w.isDone())
+              w.cancel(true);
+          }
+          // set updating
+          lblUpdating.setText("UPDATING");
+          lblUpdating.setForeground(Color.RED);
+
           sett = (SingleParticleSettings) getSettings().copy();
           final double binwidth = binwidth2;
           final double binShift = Math.abs(binShift2);
-          new SwingWorker<JFreeChart, Void>() {
+          worker[0] = new SwingWorker<JFreeChart, Void>() {
             @Override
             protected JFreeChart doInBackground() throws Exception {
               double noise = sett.getNoiseLevel();
@@ -498,6 +556,9 @@ public class SingleParticleDialog extends JFrame {
 
             @Override
             protected void done() {
+              if (isCancelled())
+                return;
+
               JFreeChart histo;
               try {
                 Range x = null, y = null;
@@ -513,6 +574,7 @@ public class SingleParticleDialog extends JFrame {
                 pnHisto = new EChartPanel(histo, true, true, true, true, true);
                 histo.getLegend().setVisible(true);
 
+                checkIsUpdating();
                 southwest.removeAll();
                 southwest.add(pnHisto, BorderLayout.CENTER);
                 updateAnnotations();
@@ -524,9 +586,10 @@ public class SingleParticleDialog extends JFrame {
                 logger.error("", e);
               }
             }
-          }.execute();
+          };
+          worker[0].execute();
 
-          new SwingWorker<JFreeChart, Void>() {
+          worker[1] = new SwingWorker<JFreeChart, Void>() {
             @Override
             protected JFreeChart doInBackground() throws Exception {
               double noise = sett.getNoiseLevel();
@@ -554,12 +617,20 @@ public class SingleParticleDialog extends JFrame {
 
             @Override
             protected void done() {
+              if (isCancelled())
+                return;
+
               // set stats
               double perc =
                   (img.getSelectedDPFiltered() / (double) img.getTotalDataPoints()) * 100.0;
-              lbStats.setText("Stats: Solved events=" + img.getSolvedEventsSelected() + " in "
+              // stats
+              String stats = "Stats: ";
+              if (sett.isApplyDeclustering())
+                stats += "Filtered clusters=" + img.getDeletedClustersSelected() + ";  ";
+              stats += "Solved events=" + img.getSolvedEventsSelected() + " in "
                   + img.getSelectedDPFiltered() + " selected of " + img.getTotalDataPoints()
-                  + " total data points (" + form.format(perc) + "%)");
+                  + " total data points (" + form.format(perc) + "%)";
+              lbStats.setText(stats);
               // add histo
               JFreeChart histo;
               try {
@@ -576,6 +647,7 @@ public class SingleParticleDialog extends JFrame {
                 pnHistoFiltered = new EChartPanel(histo, true, true, true, true, true);
                 histo.getLegend().setVisible(true);
 
+                checkIsUpdating();
                 southeast.removeAll();
                 southeast.add(pnHistoFiltered, BorderLayout.CENTER);
                 updateAnnotations();
@@ -587,12 +659,25 @@ public class SingleParticleDialog extends JFrame {
                 logger.error("", e);
               }
             }
-          }.execute();
+          };
+          worker[1].execute();
         } catch (Exception e1) {
           logger.error("", e1);
         }
 
       }
+    }
+  }
+
+  protected void checkIsUpdating() {
+    boolean isDone = true;
+    for (SwingWorker<JFreeChart, Void> w : worker) {
+      if (!w.isDone())
+        isDone = false;
+    }
+    if (isDone) {
+      lblUpdating.setText("DONE");
+      lblUpdating.setForeground(Color.green);
     }
   }
 
@@ -653,19 +738,21 @@ public class SingleParticleDialog extends JFrame {
       double noise = sett.getNoiseLevel();
       Range window = sett.getWindow();
 
-      XYPlot[] plots =
-          new XYPlot[] {pnHisto.getChart().getXYPlot(), pnHistoFiltered.getChart().getXYPlot()};
+      if (window != null) {
+        XYPlot[] plots =
+            new XYPlot[] {pnHisto.getChart().getXYPlot(), pnHistoFiltered.getChart().getXYPlot()};
 
-      for (XYPlot p : plots) {
-        // remove old
-        p.clearDomainMarkers();
+        for (XYPlot p : plots) {
+          // remove old
+          p.clearDomainMarkers();
 
-        if (cbAnnotations.isSelected()) {
-          // add
-          p.addDomainMarker(new ValueMarker(window.getLowerBound(), p.getDomainCrosshairPaint(),
-              p.getDomainCrosshairStroke()));
-          p.addDomainMarker(new ValueMarker(window.getUpperBound(), p.getDomainCrosshairPaint(),
-              p.getDomainCrosshairStroke()));
+          if (cbAnnotations.isSelected()) {
+            // add
+            p.addDomainMarker(new ValueMarker(window.getLowerBound(), p.getDomainCrosshairPaint(),
+                p.getDomainCrosshairStroke()));
+            p.addDomainMarker(new ValueMarker(window.getUpperBound(), p.getDomainCrosshairPaint(),
+                p.getDomainCrosshairStroke()));
+          }
         }
       }
     }
@@ -693,6 +780,8 @@ public class SingleParticleDialog extends JFrame {
     try {
       sett.setNoiseLevel(Module.doubleFromTxt(txtNoiseLevel));
       sett.setSplitPixel(Module.intFromTxt(txtSplitPixel));
+      sett.setMaxAllowedDP(Module.intFromTxt(txtMaxDPDecluster));
+      sett.setApplyDeclustering(cbDecluster.isSelected());
     } catch (Exception e) {
     }
   }
@@ -700,6 +789,8 @@ public class SingleParticleDialog extends JFrame {
   private void settingsToPanel(SingleParticleSettings sett) {
     txtSplitPixel.setText(String.valueOf(sett.getSplitPixel()));
     txtNoiseLevel.setText(String.valueOf(sett.getNoiseLevel()));
+    txtMaxDPDecluster.setText(String.valueOf(sett.getMaxAllowedDP()));
+    cbDecluster.setSelected(sett.isApplyDeclustering());
   }
 
 
@@ -765,5 +856,17 @@ public class SingleParticleDialog extends JFrame {
 
   public JTextField getTxtNoiseLevel() {
     return txtNoiseLevel;
+  }
+
+  public JTextField getTxtMaxDPDecluster() {
+    return txtMaxDPDecluster;
+  }
+
+  public JCheckBox getCbDecluster() {
+    return cbDecluster;
+  }
+
+  public JLabel getLblUpdating() {
+    return lblUpdating;
   }
 }

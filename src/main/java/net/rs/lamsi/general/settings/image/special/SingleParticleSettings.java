@@ -81,8 +81,9 @@ public class SingleParticleSettings extends Settings {
     else {
       SingleParticleSettings that = (SingleParticleSettings) o;
       return that.getSplitPixel() == this.getSplitPixel() && this.maxAllowedDP == that.maxAllowedDP
+          && this.applyDeclustering == that.applyDeclustering
           && Double.compare(that.getNoiseLevel(), this.getNoiseLevel()) == 0
-          && that.getWindow().equals(this.getWindow());
+          && (that.getWindow() == this.getWindow() || that.getWindow().equals(this.getWindow()));
     }
   }
 

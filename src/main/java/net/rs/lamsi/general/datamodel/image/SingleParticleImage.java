@@ -225,6 +225,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     if (maxDP < sett.getSplitPixel()) {
       logger.info("Clusters were not removed maxDP<split pixel ({}<{})", maxDP,
           sett.getSplitPixel());
+      lastSolvedClusters = -1;
       return data;
     } else {
       int solved = 0;
@@ -266,11 +267,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
             noise = min2;
 
           int clusterStart = -1;
+          boolean added = false;
           // for lines and dp
           // delete cluster
           for (int l = 0; l < data.length; l++) {
             clusterStart = -1;
             for (int dp = 0; dp < data[l].length; dp++) {
+              added = false;
               double current = data[l][dp];
               // end cluster if >maxDP and dropped down to noise, or end of line
               if (clusterStart != -1 && dp - clusterStart > maxDP + 1
@@ -280,12 +283,14 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                 for (int i = clusterStart; i < end; i++) {
                   result[l][i] = min;
                 }
+                added = true;
                 solved++;
                 clusterStart = -1;
               }
 
               // is < noise?
-              if (Double.isNaN(current) || current < noise) {
+              if (!added
+                  && (Double.isNaN(current) || current < noise || dp == data[l].length - 1)) {
                 if (clusterStart != -1)
                   for (int i = clusterStart; i < dp; i++)
                     result[l][i] = data[l][i];
@@ -312,7 +317,9 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
           // for lines and dp accumulate pixel and add the sum to result
           for (int l = 0; l < maxlength; l++) {
             clusterStart = -1;
+            boolean added = false;
             for (int dp = 0; dp < data.length; dp++) {
+              added = false;
               if (l < data[dp].length) {
                 double current = data[dp][l];
                 // end cluster if >maxDP and dropped down to noise, or end of line
@@ -323,12 +330,14 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
                   for (int i = clusterStart; i < end; i++) {
                     result[i][l] = min;
                   }
+                  added = true;
                   solved++;
                   clusterStart = -1;
                 }
 
                 // is < noise?
-                if (Double.isNaN(current) || current < noise) {
+                if (!added
+                    && (Double.isNaN(current) || current < noise || dp == data[l].length - 1)) {
                   if (clusterStart != -1)
                     for (int i = clusterStart; i < dp; i++)
                       result[i][l] = data[i][l];
@@ -838,5 +847,13 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
   public int getSolvedEvents() {
     return solvedEvents;
+  }
+
+  public int getDeletedClusters() {
+    return deletedClusters;
+  }
+
+  public int getDeletedClustersSelected() {
+    return deletedClustersSelected;
   }
 }

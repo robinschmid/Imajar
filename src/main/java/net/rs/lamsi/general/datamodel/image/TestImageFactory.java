@@ -211,7 +211,7 @@ public class TestImageFactory {
         int i = (dp - clusterPixel) / 2;
         // add
         for (int x = 0; x < clusterPixel; x++)
-          data[i + x] = intensity / 2;
+          data[i + x] = intensity;
       }
     }
     // first is always a cluster:

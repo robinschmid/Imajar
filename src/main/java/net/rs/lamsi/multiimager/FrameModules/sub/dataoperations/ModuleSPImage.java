@@ -247,6 +247,7 @@ public class ModuleSPImage
   public void addAutoupdater(ActionListener al, ChangeListener cl, DocumentListener dl,
       ColorChangedListener ccl, ItemListener il) {
     txtLower.getDocument().addDocumentListener(dl);
+
     txtUpper.getDocument().addDocumentListener(dl);
     txtNoiseLevel.getDocument().addDocumentListener(dl);
     txtSplitPixel.getDocument().addDocumentListener(dl);
