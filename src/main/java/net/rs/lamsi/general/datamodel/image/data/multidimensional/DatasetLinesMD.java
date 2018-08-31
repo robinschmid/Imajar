@@ -246,7 +246,9 @@ public class DatasetLinesMD extends MDDataset implements Serializable {
       // calc
       totalDPCount = 0;
       for (ScanLineMD l : lines) {
-        totalDPCount += l.getDPCount();
+        for (double d : l.getIntensity().get(0))
+          if (!Double.isNaN(d))
+            totalDPCount++;
       }
     }
     return totalDPCount;

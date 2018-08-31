@@ -237,18 +237,24 @@ public class ModuleSPImage
           currentImage.getTitle());
       if (s != null && !s.isEmpty()) {
         writeAllToSettings();
+        logger.info("Creating snapshot image of single particle image");
         Image2D img = currentImage.createSnapshotImage();
-        img.getSettings().getSettImage().setTitle(s);
-        // test with current group
-        if (currentImage.getImageGroup().getData().hasSameDataDimensionsAs(img.getData()))
-          ImageEditorWindow.getEditor().getLogicRunner().addImage(img,
-              currentImage.getImageGroup());
-        else {
-          // create new Group
-          ImageGroupMD g = currentImage.getImageGroup();
-          ImageEditorWindow.getEditor().getLogicRunner().addImage(img, g.getProject().getName(),
-              g.getName() + "(SNAP)");
-        }
+        if (img != null) {
+          img.getSettings().getSettImage().setTitle(s);
+          // test with current group
+          if (currentImage.getImageGroup().getData().hasSameDataDimensionsAs(img.getData())) {
+            logger.info("Adding snapshot image to group {}", currentImage.getImageGroup());
+            ImageEditorWindow.getEditor().getLogicRunner().addImage(img,
+                currentImage.getImageGroup());
+          } else {
+            // create new Group
+            ImageGroupMD g = currentImage.getImageGroup();
+            logger.info("Creating a new group {} for snapshot image", g.getName() + "(SNAP)");
+            ImageEditorWindow.getEditor().getLogicRunner().addImage(img, g.getProject().getName(),
+                g.getName() + "(SNAP)");
+          }
+        } else
+          logger.info("No snapshot created");
       }
     }
   }
