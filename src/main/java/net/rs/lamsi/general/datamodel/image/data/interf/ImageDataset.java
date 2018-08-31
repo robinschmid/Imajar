@@ -244,4 +244,10 @@ public abstract class ImageDataset implements Serializable {
 
   public abstract float getY0();
 
+  /**
+   * If data set has no x data each data point is evenly spaced
+   * 
+   * @return
+   */
+  public abstract boolean hasXData();
 }

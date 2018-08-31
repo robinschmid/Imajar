@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -22,6 +23,8 @@ import org.jfree.data.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
+import net.rs.lamsi.general.datamodel.image.Image2D;
+import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.framework.listener.ColorChangedListener;
 import net.rs.lamsi.general.framework.listener.DelayedDocumentListener;
@@ -31,6 +34,7 @@ import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.myfreechart.listener.history.ZoomHistory;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.multiimager.Frames.ImageLogicRunner;
 import net.rs.lamsi.multiimager.Frames.dialogs.singleparticle.SingleParticleDialog;
 
@@ -66,6 +70,7 @@ public class ModuleSPImage
   private JLabel lblMaxDpnoisedecluster;
   private JLabel lblDeclusteringbeforeTransform;
   private JCheckBox cbDecluster;
+  private JButton btnCreateSnapshotImage;
 
   // AUTOGEN
 
@@ -195,6 +200,11 @@ public class ModuleSPImage
     cbCountParticles = new JCheckBox("count particles in window");
     panel.add(cbCountParticles, "cell 0 15 2 1");
 
+    btnCreateSnapshotImage = new JButton("Create snapshot image");
+    btnCreateSnapshotImage.addActionListener(e -> createSnapshotImage());
+    btnCreateSnapshotImage.setToolTipText("Creates an image with the selected settings");
+    panel.add(btnCreateSnapshotImage, "cell 0 16 4 1,growx");
+
 
     ddlCenterPM = new DelayedDocumentListener() {
       @Override
@@ -215,6 +225,32 @@ public class ModuleSPImage
     txtPM.getDocument().addDocumentListener(ddlCenterPM);
 
     setMaxPresets(15);
+  }
+
+  /**
+   * 
+   */
+  public void createSnapshotImage() {
+    if (currentImage != null) {
+      // get name input per dialog
+      String s = JOptionPane.showInputDialog(ImageEditorWindow.getEditor(), "Input image name:",
+          currentImage.getTitle());
+      if (s != null && !s.isEmpty()) {
+        writeAllToSettings();
+        Image2D img = currentImage.createSnapshotImage();
+        img.getSettings().getSettImage().setTitle(s);
+        // test with current group
+        if (currentImage.getImageGroup().getData().hasSameDataDimensionsAs(img.getData()))
+          ImageEditorWindow.getEditor().getLogicRunner().addImage(img,
+              currentImage.getImageGroup());
+        else {
+          // create new Group
+          ImageGroupMD g = currentImage.getImageGroup();
+          ImageEditorWindow.getEditor().getLogicRunner().addImage(img, g.getProject().getName(),
+              g.getName() + "(SNAP)");
+        }
+      }
+    }
   }
 
   /**

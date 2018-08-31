@@ -1,21 +1,28 @@
 package net.rs.lamsi.general.datamodel.image;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.DoubleStream;
 import javax.swing.Icon;
 import org.jfree.data.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.datamodel.image.data.twodimensional.XYIDataMatrix;
 import net.rs.lamsi.general.datamodel.image.interf.Collectable2D;
 import net.rs.lamsi.general.datamodel.image.interf.DataCollectable2D;
+import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.settings.image.SettingsSPImage;
 import net.rs.lamsi.general.settings.image.selection.SettingsSelections;
 import net.rs.lamsi.general.settings.image.special.SingleParticleSettings;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage.Transformation;
+import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
+import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 // XY raw data!
@@ -580,6 +587,55 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
 
 
   /**
+   * Create snapshot image with current settings. e.g. single particle distribution with 50 nm. Copy
+   * is not in a group and has its own dataset
+   * 
+   * @return image or null
+   */
+  public Image2D createSnapshotImage() {
+    if (getImage().isRotated()) {
+      logger.warn("Please set rotation to 0 to create snapshot image");
+      DialogLoggerUtil.showMessageDialog(ImageEditorWindow.getEditor(), "NO success",
+          "Please set rotation to 0° to create snapshot image");
+      return null;
+    } else {
+      try {
+
+        double[][] data = toXYCountsArray(getSettings().getSettSingleParticle());
+        // has x data
+        boolean hasX = getImage().getData().hasXData();
+
+        // convert to lines
+        List<ScanLineMD> lines = new ArrayList<>(data.length);
+        for (int l = 0; l < data.length; l++) {
+          if (hasX) {
+            float[] x = new float[data[l].length];
+            for (int i = 0; i < data[l].length; i++) {
+              if (x != null)
+                x[i] = getImage().getX(true, l, i);
+            }
+            lines.add(new ScanLineMD(x, data[l]));
+          } else {
+            lines.add(new ScanLineMD(data[l]));
+          }
+        }
+        Image2D nimg = new Image2D(new DatasetLinesMD(lines));
+        nimg.getSettings().replaceSettings(getPaintScaleSettings().copy());
+        // settings
+        SingleParticleSettings sp = getSettings().getSettSingleParticle();
+        SettingsGeneralImage s = nimg.getSettings().getSettImage();
+        s.setReduction(sp.getNumberOfPixel());
+        s.setReductionMode(Mode.SUM);
+        s.setUseReduction(sp.isCountPixel());
+        return nimg;
+      } catch (Exception e) {
+        logger.error("Cannot create snapshot image of single particle image", e);
+        return null;
+      }
+    }
+  }
+
+  /**
    * returns an easy icon
    * 
    * @param maxw
@@ -856,4 +912,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
   public int getDeletedClustersSelected() {
     return deletedClustersSelected;
   }
+
+
+
 }

@@ -135,7 +135,8 @@ public class ImageLogicRunner {
   // ############################################################################################
   // Add, select, renew, delete images
   /**
-   * add and remove image from jList gets automatically removed from vector<Image2D>
+   * add to group and to tree and remove image from jList gets automatically removed from
+   * vector<Image2D>
    * 
    * @param gid parent node id
    */
@@ -155,6 +156,12 @@ public class ImageLogicRunner {
       group.setGroupName(gid);
       addGroup(group, projectName);
     }
+  }
+
+  public void addImage(Collectable2D i, ImageGroupMD group) {
+    if (group.getProject() == null)
+      logger.error("Cannot add group {} (has no project)", group.getName());
+    addImage(i, group.getProject().getName(), group.getName());
   }
 
   /**
@@ -202,7 +209,7 @@ public class ImageLogicRunner {
    */
   public void addGroup(ImageGroupMD group, ImagingProject project) {
     // only one image? do not create subnodes
-    if (group == null || group.getImages().size() == 0) {
+    if (group == null || group.getImages().isEmpty()) {
       return;
     }
     // project was already added?

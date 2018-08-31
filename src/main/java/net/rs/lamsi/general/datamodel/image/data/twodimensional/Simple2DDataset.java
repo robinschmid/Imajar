@@ -41,19 +41,19 @@ public class Simple2DDataset extends ImageDataset {
 
   @Override
   public int getLineLength(int i) {
-    return intensity != null || intensity.length < i ? intensity[i].length : 0;
+    return intensity != null && i < intensity.length ? intensity[i].length : 0;
   }
 
   @Override
   public float getX(int line, int dpi) {
-    return intensity != null || intensity.length < line || intensity[line].length < dpi
+    return intensity != null && line < intensity.length && dpi < intensity[line].length
         ? dpi * pixelWidth
         : 0;
   }
 
   @Override
   public double getI(int index, int line, int dpi) {
-    return intensity != null || intensity.length < line || intensity[line].length < dpi
+    return intensity != null && line < intensity.length && dpi < intensity[line].length
         ? intensity[line][dpi]
         : 0;
   }
@@ -68,6 +68,10 @@ public class Simple2DDataset extends ImageDataset {
     return 0;
   }
 
+  @Override
+  public boolean hasXData() {
+    return false;
+  }
 
 
   @Override
