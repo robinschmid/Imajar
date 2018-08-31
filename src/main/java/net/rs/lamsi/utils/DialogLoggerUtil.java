@@ -212,7 +212,7 @@ public class DialogLoggerUtil {
         Thread.sleep(time);
       } catch (InterruptedException e) {
         // TODO Auto-generated catch block
-        logger.error("",e);
+        logger.error("", e);
       } finally {
         this.setVisible(false);
         this.dispose();
@@ -328,7 +328,9 @@ public class DialogLoggerUtil {
       tree.setSelectionPaths(selections);
       if (message != null && !message.isEmpty()) {
         // message
-        getContentPane().add(new JTextArea(message), BorderLayout.NORTH);
+        JTextArea t = new JTextArea(message);
+        t.setEditable(false);
+        getContentPane().add(t, BorderLayout.NORTH);
       }
 
       // add mouse listener
@@ -371,10 +373,11 @@ public class DialogLoggerUtil {
       });
       pn.add(btnCancel);
 
-      setSize(200, 400);
+      setSize(500, 400);
       setModalityType(ModalityType.APPLICATION_MODAL);
       centerOnScreen(this, true);
       //
+      getRootPane().setDefaultButton(btnOK);
       setVisible(true);
       getContentPane().validate();
     }
