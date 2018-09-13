@@ -210,7 +210,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
       return i;
     else {
       // intensity factor
-
       i *= sett.getIntensityFactor();
 
       // transformation

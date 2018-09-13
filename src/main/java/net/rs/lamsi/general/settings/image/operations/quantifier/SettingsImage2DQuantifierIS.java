@@ -56,7 +56,7 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
   protected boolean onlySelected = false, useISMinimumAsThreshold = true;
 
   // the mode to replace/set a value if Intensity(IS) <= threshold
-  protected THRESHOLD_MODE mode = THRESHOLD_MODE.REPLACE_AVG;
+  protected THRESHOLD_MODE thresholdMode = THRESHOLD_MODE.REPLACE_AVG;
 
 
 
@@ -88,32 +88,37 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
       // error - not in dimension - return NaN
       if (Double.isNaN(is))
         return Double.NaN;
-      if (is == 0) {
-        // thresholding
-        double t =
-            useISMinimumAsThreshold ? imgIS.getSettings().getSettPaintScale().getMinIAbs(imgIS)
-                : threshold;
+      // thresholding
 
-        if (is < t) {
-          // handle <threshold with mode
-          switch (mode) {
-            case REPLACE_AVG:
-              is = imgIS.getAverageIntensity(onlySelected);
-              break;
-            case REPLACE_MAX:
-              is = imgIS.getMaxIntensity(onlySelected);
-              break;
-            case REPLACE_MIN:
-              is = imgIS.getMinIntensity(onlySelected);
-              break;
-            case REPLACE_MIN_NON_ZERO:
-              is = imgIS.getMinNonZeroIntensity(onlySelected);
-              break;
-            case SET_TO_VALUE:
-              return replacementValue;
-            case SET_TO_ZERO:
-              return 0;
-          }
+      boolean replace = (is == 0);
+      // smaller then threshold
+      if (!replace)
+        replace = is < (useISMinimumAsThreshold
+            ? imgIS.getSettings().getSettPaintScale().getMinIAbs(imgIS)
+            : threshold);
+
+      if (replace) {
+        // handle <threshold with mode
+        switch (thresholdMode) {
+          case REPLACE_AVG:
+            is = imgIS.getAverageIntensity(onlySelected);
+            break;
+          case REPLACE_MAX:
+            is = imgIS.getMaxIntensity(onlySelected);
+            break;
+          case REPLACE_MIN:
+            is = imgIS.getMinIntensity(onlySelected);
+            break;
+          case REPLACE_MIN_NON_ZERO:
+            is = imgIS.getMinNonZeroIntensity(onlySelected);
+            break;
+          case SET_TO_VALUE:
+            return replacementValue;
+          case SET_TO_ZERO:
+            return 0;
+        }
+        if (is == 0) {
+          return 0;
         }
       }
 
@@ -190,7 +195,7 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
     toXML(elParent, doc, "threshold", threshold);
     toXML(elParent, doc, "replacementValue", replacementValue);
     toXML(elParent, doc, "onlySelected", onlySelected);
-    toXML(elParent, doc, "mode", mode);
+    toXML(elParent, doc, "mode", thresholdMode);
     if (imgIS != null)
       toXML(elParent, doc, "externalSTDImage", imgIS);
     else if (link != null)
@@ -210,7 +215,7 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
         else if (paramName.equals("factor"))
           concentrationFactor = doubleFromXML(nextElement);
         else if (paramName.equals("mode"))
-          mode = THRESHOLD_MODE.getMode(nextElement.getTextContent());
+          thresholdMode = THRESHOLD_MODE.getMode(nextElement.getTextContent());
         else if (paramName.equals("threshold"))
           threshold = doubleFromXML(nextElement);
         else if (paramName.equals("replacementValue"))
@@ -256,7 +261,7 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
   }
 
   public THRESHOLD_MODE getISMode() {
-    return mode;
+    return thresholdMode;
   }
 
   public void setThreshold(double threshold) {
@@ -280,6 +285,6 @@ public class SettingsImage2DQuantifierIS extends SettingsImage2DQuantifier {
   }
 
   public void setMode(THRESHOLD_MODE mode) {
-    this.mode = mode;
+    this.thresholdMode = mode;
   }
 }

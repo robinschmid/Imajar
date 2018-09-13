@@ -62,7 +62,7 @@ public class Precision {
    * 
    * @param value
    * @param sig
-   * @param mode
+   * @param thresholdMode
    * @return A String of the value rounded to sig number of significant digits (figures)
    */
   public static String toString(double value, int sig, int maxLength) {
