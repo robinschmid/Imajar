@@ -67,6 +67,7 @@ public class SingleParticleDialog extends JFrame {
   private JTextField txtMaxDPDecluster;
   private JCheckBox cbDecluster;
   private JLabel lblUpdating;
+  private JCheckBox cbIncludeZeroBins;
 
   /**
    * Launch the application.
@@ -201,6 +202,12 @@ public class SingleParticleDialog extends JFrame {
         {
           JPanel pnHistoSett = new JPanel();
           box.add(pnHistoSett);
+          {
+            cbIncludeZeroBins = new JCheckBox("include zero-bins");
+            cbIncludeZeroBins.setToolTipText(
+                "BIns with zero intensity are usually excluded. Check to include all bins in the dataset.");
+            pnHistoSett.add(cbIncludeZeroBins);
+          }
           {
             cbExcludeSmallerNoise = new JCheckBox("exclude <noise level");
             cbExcludeSmallerNoise.setSelected(true);
@@ -440,6 +447,8 @@ public class SingleParticleDialog extends JFrame {
 
     // add gaussian?
     cbGaussianFit.addItemListener(e -> updateGaussian());
+
+    cbIncludeZeroBins.addItemListener(e -> updateHistograms());
   }
 
 
@@ -545,8 +554,9 @@ public class SingleParticleDialog extends JFrame {
               DoubleFunction<Double> f =
                   cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
 
-              JFreeChart chart = EChartFactory.createHistogram(data, "I", binwidth,
-                  r.getLowerBound() - binShift, r.getUpperBound(), f);
+              JFreeChart chart =
+                  EChartFactory.createHistogram(data, "I", binwidth, r.getLowerBound() - binShift,
+                      r.getUpperBound(), f, cbIncludeZeroBins.isSelected());
               // add gaussian?
               if (cbGaussianFit.isSelected()) {
                 addGaussianCurve(chart.getXYPlot());
@@ -606,7 +616,8 @@ public class SingleParticleDialog extends JFrame {
                   cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
 
               JFreeChart chart = EChartFactory.createHistogram(filtered, "I", binwidth,
-                  r.getLowerBound() - binShift, r.getUpperBound(), f);
+                  r.getLowerBound() - binShift, r.getUpperBound(), f,
+                  cbIncludeZeroBins.isSelected());
 
               // add gaussian?
               if (cbGaussianFit.isSelected()) {
@@ -868,5 +879,9 @@ public class SingleParticleDialog extends JFrame {
 
   public JLabel getLblUpdating() {
     return lblUpdating;
+  }
+
+  public JCheckBox getCbIncludeZeroBins() {
+    return cbIncludeZeroBins;
   }
 }

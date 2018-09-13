@@ -60,6 +60,7 @@ public class TestSingleParticle {
   @Test
   public void testSPDataArraySelected() {
     // data is split pixel corrected
+
     int sum = (int) Arrays.stream(datasel).mapToInt(v -> v > noise + 1 ? 1 : 0).sum();
     assertEquals("Number of particles was not correct", sum, particles * lines);
 

@@ -214,14 +214,27 @@ public class EChartFactory {
     return createHistogram(data, binwidth, null);
   }
 
+  /**
+   * Zero bins are excluded
+   * 
+   * @param data
+   * @param binwidth
+   * @param yAxisLabel
+   * @return
+   */
   public static JFreeChart createHistogram(double[] data, double binwidth, String yAxisLabel) {
-    Range r = getBounds(data);
-    return createHistogram(data, binwidth, yAxisLabel, r.getLowerBound(), r.getUpperBound(),
-        val -> val);
+    return createHistogram(data, binwidth, yAxisLabel, false);
   }
 
   public static JFreeChart createHistogram(double[] data, double binwidth, String yAxisLabel,
-      double min, double max, DoubleFunction<Double> function) {
+      boolean includeZeroBins) {
+    Range r = getBounds(data);
+    return createHistogram(data, binwidth, yAxisLabel, r.getLowerBound(), r.getUpperBound(),
+        val -> val, includeZeroBins);
+  }
+
+  public static JFreeChart createHistogram(double[] data, double binwidth, String yAxisLabel,
+      double min, double max, DoubleFunction<Double> function, boolean includeZeroBins) {
     if (data != null && data.length > 0) {
       double datawidth = (max - min);
       int cbin = (int) Math.ceil(datawidth / binwidth);
@@ -238,7 +251,7 @@ public class EChartFactory {
       int sum = 0;
       XYSeries series = new XYSeries("histo", true, true);
       for (int i = 0; i < bins.length; i++) {
-        if (bins[i] > 0) {
+        if (includeZeroBins || bins[i] > 0) {
           double x = function.apply(min + (binwidth / 2.0) + i * binwidth).doubleValue();
           series.add(x, bins[i]);
           sum += bins[i];
@@ -326,22 +339,21 @@ public class EChartFactory {
   }
 
   public static JFreeChart createHistogram(double[] data, String yAxisLabel, double min, double max,
-      DoubleFunction<Double> function) {
-    int bin = (int) Math.sqrt(data.length);
-    Range r = getBounds(data);
-    return createHistogram(data, r.getLength() / bin, yAxisLabel, min, max, function);
+      boolean includeZeroBin) {
+    return createHistogram(data, yAxisLabel, min, max, val -> val, includeZeroBin);
   }
 
-  /**
-   * 
-   * @param data
-   * @param yAxisLabel
-   * @param width automatic width if parameter is <=0
-   * @return
-   */
-  public static JFreeChart createHistogram(double[] data, String yAxisLabel, double width) {
-    Range range = getBounds(data);
-    return createHistogram(data, yAxisLabel, width, range.getLowerBound(), range.getUpperBound());
+  public static JFreeChart createHistogram(double[] data, String yAxisLabel, double min, double max,
+      DoubleFunction<Double> function) {
+    return createHistogram(data, yAxisLabel, min, max, function, false);
+  }
+
+  public static JFreeChart createHistogram(double[] data, String yAxisLabel, double min, double max,
+      DoubleFunction<Double> function, boolean includeZeroBin) {
+    int bin = (int) Math.sqrt(data.length);
+    Range r = getBounds(data);
+    return createHistogram(data, r.getLength() / bin, yAxisLabel, min, max, function,
+        includeZeroBin);
   }
 
   /**
@@ -352,11 +364,25 @@ public class EChartFactory {
    * @return
    */
   public static JFreeChart createHistogram(double[] data, String yAxisLabel, double width,
-      double min, double max) {
+      boolean includeZeroHistogram) {
+    Range range = getBounds(data);
+    return createHistogram(data, yAxisLabel, width, range.getLowerBound(), range.getUpperBound(),
+        includeZeroHistogram);
+  }
+
+  /**
+   * 
+   * @param data
+   * @param yAxisLabel
+   * @param width automatic width if parameter is <=0
+   * @return
+   */
+  public static JFreeChart createHistogram(double[] data, String yAxisLabel, double width,
+      double min, double max, boolean includeZeroHistogram) {
     if (width <= 0)
-      return createHistogram(data, yAxisLabel, min, max);
+      return createHistogram(data, yAxisLabel, min, max, includeZeroHistogram);
     else {
-      return createHistogram(data, width, yAxisLabel, min, max, val -> val);
+      return createHistogram(data, width, yAxisLabel, min, max, val -> val, includeZeroHistogram);
     }
   }
 
@@ -369,11 +395,11 @@ public class EChartFactory {
    * @return
    */
   public static JFreeChart createHistogram(double[] data, String yAxisLabel, double width,
-      double min, double max, DoubleFunction<Double> function) {
+      double min, double max, DoubleFunction<Double> function, boolean includeZeroHistogram) {
     if (width <= 0)
-      return createHistogram(data, yAxisLabel, min, max, function);
+      return createHistogram(data, yAxisLabel, min, max, function, includeZeroHistogram);
     else {
-      return createHistogram(data, width, yAxisLabel, min, max, function);
+      return createHistogram(data, width, yAxisLabel, min, max, function, includeZeroHistogram);
     }
   }
 

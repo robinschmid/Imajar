@@ -344,7 +344,7 @@ public class HistogramPanel extends JPanel {
           pnHisto.getChart().getXYPlot().getDomainAxis().setRange(x, xe);
       }
     } catch (Exception e2) {
-      logger.error("",e2);
+      logger.error("", e2);
     }
   }
 
@@ -357,7 +357,7 @@ public class HistogramPanel extends JPanel {
           pnHisto.getChart().getXYPlot().getRangeAxis().setRange(y, ye);
       }
     } catch (Exception e2) {
-      logger.error("",e2);
+      logger.error("", e2);
     }
   }
 
@@ -397,7 +397,7 @@ public class HistogramPanel extends JPanel {
                   cbThirdSQRT.isSelected() ? val -> Math.cbrt(val) : val -> val;
 
               JFreeChart chart = EChartFactory.createHistogram(dat, "I", binwidth,
-                  r.getLowerBound() - binShift, r.getUpperBound(), f);
+                  r.getLowerBound() - binShift, r.getUpperBound(), f, false);
               // add gaussian?
               if (cbGaussianFit.isSelected()) {
                 addGaussianCurve(chart.getXYPlot());
@@ -434,7 +434,7 @@ public class HistogramPanel extends JPanel {
             }
           }.execute();
         } catch (Exception e1) {
-          logger.error("",e1);
+          logger.error("", e1);
         }
 
       }
@@ -469,7 +469,7 @@ public class HistogramPanel extends JPanel {
 
       EChartFactory.addGaussianFit(p, data, 0, gMin, gMax, sigDigits, true);
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
