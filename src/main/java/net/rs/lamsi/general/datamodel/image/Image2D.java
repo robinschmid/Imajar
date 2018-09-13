@@ -225,7 +225,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
       // apply IS
       SettingsImage2DQuantifierIS isq = settings.getInternalQuantifierIS();
-      if (isq != null) {
+      if (isq != null && isq.isActive()) {
         i = isq.calcIntensity(this, l, dp, i);
       }
       // quantify

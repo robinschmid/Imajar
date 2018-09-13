@@ -73,7 +73,8 @@ public class PaintScaleGenerator {
         realmin = realmax - 0.001;
       }
       // with minimum and maximum bounds
-      LookupPaintScale paintScale = new LookupPaintScale(min, max, Color.lightGray);
+      LookupPaintScale paintScale =
+          new LookupPaintScale(Double.NEGATIVE_INFINITY, Double.MAX_VALUE, Color.lightGray);
       // Index
       int i = 0;
       // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
@@ -207,11 +208,14 @@ public class PaintScaleGenerator {
       // with minimum and maximum bounds
       double lower = min;
       double upper = max;
+      LookupPaintScale paintScale;
       if (forLegend) {
         lower = realmin;
         upper = realmax;
-      }
-      LookupPaintScale paintScale = new LookupPaintScale(lower, upper, Color.lightGray);
+        paintScale = new LookupPaintScale(lower, upper, Color.lightGray);
+      } else
+        paintScale =
+            new LookupPaintScale(Double.NEGATIVE_INFINITY, Double.MAX_VALUE, Color.lightGray);
       Color c = null;
       if (firstTransparent)
         c = transparent;
@@ -273,11 +277,15 @@ public class PaintScaleGenerator {
       // with minimum and maximum bounds
       double lower = min;
       double upper = max;
+      LookupPaintScale paintScale;
       if (forLegend) {
         lower = realmin;
         upper = realmax;
-      }
-      LookupPaintScale paintScale = new LookupPaintScale(lower, upper, Color.lightGray);
+        paintScale = new LookupPaintScale(lower, upper, Color.lightGray);
+      } else
+        paintScale =
+            new LookupPaintScale(Double.NEGATIVE_INFINITY, Double.MAX_VALUE, Color.lightGray);
+
       Color c = null;
       if (firstTransparent)
         c = transparent;
@@ -285,11 +293,11 @@ public class PaintScaleGenerator {
         // non inverted
         int i = 0;
         if (isInverted)
-          i = steps < size ? steps - 1 : size - 1;
+          i = size - 1;
         c = list.get(i);
       }
       paintScale.add(Double.NEGATIVE_INFINITY, c);
-      paintScale.add(realmin - Double.MIN_VALUE, c);
+      // paintScale.add(realmin - Double.MIN_VALUE, c);
 
 
       // add list
@@ -303,7 +311,7 @@ public class PaintScaleGenerator {
       // add one point to the minimum value in dataset (Changed from 0-> min because can be <0)
       if (lastTransparent)
         c = transparent;
-      paintScale.add(realmax + Double.MIN_VALUE, c);
+      // paintScale.add(realmax + Double.MIN_VALUE, c);
       paintScale.add(Double.MAX_VALUE, c);
 
       //
