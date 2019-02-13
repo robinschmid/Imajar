@@ -4,10 +4,13 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
 import net.rs.lamsi.general.datamodel.image.TestImageFactory;
 
+
+@Ignore
 public class TestSingleParticle {
   private final int intensity = 500;
   private final int lines = 10;
