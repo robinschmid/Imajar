@@ -9,12 +9,14 @@ public class XYIDataMatrix {
 
   // min max
   protected Range rx, ry, ri;
+  private boolean rotated;
 
-  public XYIDataMatrix(float[][] x, float[][] y, double[][] i) {
+  public XYIDataMatrix(float[][] x, float[][] y, double[][] i, boolean rotated) {
     super();
     this.x = x;
     this.y = y;
     this.i = i;
+    this.setRotated(rotated);
 
     updateStats();
   }
@@ -178,6 +180,16 @@ public class XYIDataMatrix {
   public Range getXRange() {
     return rx;
   }
+
+  public boolean isRotated() {
+    return rotated;
+  }
+
+
+  public void setRotated(boolean rotated) {
+    this.rotated = rotated;
+  }
+
 
   /**
    * Creates a one dimensional array for [x,y,z][dp]

@@ -602,6 +602,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
+  @Override
   public int getLineCount(int dp) {
     return getLineCount(dp, settings.getSettImage().getRotationOfData(),
         settings.getSettImage().isReflectHorizontal());
@@ -842,6 +843,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @param useSettings rotation and imaging mode
    * @return
    */
+  @Override
   public XYIDataMatrix toXYIDataMatrix(boolean raw, boolean useSettings) {
     logger.debug("toXYIDataMatrix(raw={}, rotation={}) on image {}", raw, useSettings, getTitle());
     if (useSettings) {
@@ -864,7 +866,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
           y[c][r] = !Double.isNaN(tmp) ? getY(raw, c, r) : Float.NaN;
         }
       }
-      return new XYIDataMatrix(x, y, z);
+      return new XYIDataMatrix(x, y, z, isRotated());
     } else {
       int cols = data.getLinesCount();
 
@@ -885,7 +887,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
           y[c][r] = getYRaw(raw, c);
         }
       }
-      return new XYIDataMatrix(x, y, z);
+      return new XYIDataMatrix(x, y, z, false);
     }
   }
 
@@ -1325,10 +1327,12 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   }
 
 
+  @Override
   public String getTitle() {
     return settings.getSettImage().getTitle();
   }
 
+  @Override
   public String getShortTitle() {
     String s = settings.getSettImage().getShortTitle();
     return s.length() > 0 ? s : getTitle();
@@ -1370,6 +1374,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * @param classsettings
    * @return
    */
+  @Override
   public Settings getSettingsByClass(Class classsettings) {
     // return dataset settings
     if (DatasetSettings.class.isAssignableFrom(classsettings)) {
@@ -1538,6 +1543,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
+  @Override
   public int getWidthAsMaxDP() {
     SettingsGeneralImage sg = settings.getSettImage();
     return (sg.getRotationOfData() == -90 || sg.getRotationOfData() == 90
@@ -1549,6 +1555,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @return
    */
+  @Override
   public int getHeightAsMaxDP() {
     SettingsGeneralImage sg = settings.getSettImage();
     return (sg.getRotationOfData() == -90 || sg.getRotationOfData() == 90
@@ -1929,6 +1936,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   }
 
   // a name for lists
+  @Override
   public String toListName() {
     return settings.getSettImage().toListName();
   }

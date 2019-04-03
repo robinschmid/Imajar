@@ -366,6 +366,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
     JButton btnApplyCropMarks = new JButton("Apply crop marks");
     btnApplyCropMarks.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // get crop marks from displayed plot (heatmap)
         // current zoom bounds
@@ -382,6 +383,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
     JButton btnDeleteCropMarks = new JButton("Delete crop marks");
     btnDeleteCropMarks.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // only delete crop marks in settings
         getSettings().deleteCropMarks();
@@ -538,13 +540,18 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
         if (getRbRotation180().isSelected())
           rotation = 180;
 
-
+        // TODO
+        // add despiking components
+        boolean useDespiking;
+        int[] despikeMatrix;
+        double despikeFactor;
 
         settings.setAll(getTxtTitle().getText(), getTxtShortTitle().getText(),
             cbShortTitle.isSelected(), floatFromTxt(txtXPosTitle), floatFromTxt(txtYPosTitle),
             floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), imagingMode,
             getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation,
-            getCbBiaryData().isSelected(), getCbInterpolate().isSelected(),
+            getCbBiaryData().isSelected(), //
+            useDespiking, despikeFactor, despikeMatrix, getCbInterpolate().isSelected(),
             intFromTxt(getTxtInterpolate()), getCbBlurRadius().isSelected(),
             doubleFromTxt(getTxtBlurRadius()), getCbKeepAspectRatio().isSelected(),
             cbReduce.isSelected(), intFromTxt(txtReduce), (Mode) comboReduce.getSelectedItem());

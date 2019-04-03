@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jfree.chart.plot.XYPlot;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -16,6 +18,7 @@ import net.rs.lamsi.general.heatmap.dataoperations.DPReduction;
 import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
+import net.rs.lamsi.general.processing.dataoperations.SpikeRemover;
 
 
 public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
@@ -105,6 +108,12 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   // Metadata
   protected String metadata = "";
 
+  // despiking detects spikes in ablation direction
+  protected boolean useDespiking;
+  protected int[] despikeMatrix;
+  protected double despikeFactor;
+
+
   // interpolation and data reduction
   protected boolean useInterpolation;
   protected int interpolation;
@@ -155,17 +164,26 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     reduction = 1;
     useReduction = false;
     reductionMode = Mode.AVG;
+
+
+    useDespiking = false;
+    despikeMatrix = new int[] {0, 2, 5, 9};
+    despikeFactor = 50;
   }
 
 
   public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos,
       float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz,
-      boolean reflectVert, int rotationOfData, boolean isBinaryData, boolean useInterpolation,
+      boolean reflectVert, int rotationOfData, boolean isBinaryData, //
+      boolean useDespiking, double despikeFactor, int[] despikeMatrix, boolean useInterpolation,
       int interpolation, boolean useBlur, double blurRadius, boolean keepAspectRatio,
       boolean useReduction, int reduction, Mode redMode) {
     this.velocity = velocity;
     this.spotsize = spotsize;
     this.isBinaryData = isBinaryData;
+    this.useDespiking = useDespiking;
+    this.despikeFactor = despikeFactor;
+    this.despikeMatrix = despikeMatrix;
     rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
     this.interpolation = interpolation;
     this.useInterpolation = useInterpolation;
@@ -214,6 +232,11 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     toXML(elParent, doc, "intensityFactor", intensityFactor);
     toXML(elParent, doc, "trans", trans);
 
+    toXML(elParent, doc, "useDespiking", useDespiking);
+    toXML(elParent, doc, "despikeMatrix",
+        Stream.of(despikeMatrix).map(String::valueOf).collect(Collectors.joining(",")));
+    toXML(elParent, doc, "despikeFactor", despikeFactor);
+
     toXML(elParent, doc, "reduction", reduction);
     toXML(elParent, doc, "useReduction", useReduction);
     toXML(elParent, doc, "reductionMode", reductionMode);
@@ -241,6 +264,16 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
           isTriggered = booleanFromXML(nextElement);
         else if (paramName.equals("isBinaryData"))
           isBinaryData = booleanFromXML(nextElement);
+
+
+        else if (paramName.equals("despikeFactor"))
+          despikeFactor = doubleFromXML(nextElement);
+        else if (paramName.equals("useDespiking"))
+          useDespiking = booleanFromXML(nextElement);
+        else if (paramName.equals("despikeMatrix"))
+          despikeMatrix = Stream.of(nextElement.getTextContent().split(","))
+              .mapToInt(Integer::parseInt).toArray();
+
         else if (paramName.equals("reduction"))
           reduction = intFromXML(nextElement);
         else if (paramName.equals("useReduction"))
@@ -306,10 +339,12 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     return spotsize;
   }
 
+  @Override
   public boolean isKeepAspectRatio() {
     return keepAspectRatio;
   }
 
+  @Override
   public void setKeepAspectRatio(boolean keepAspectRatio) {
     this.keepAspectRatio = keepAspectRatio;
   }
@@ -535,6 +570,10 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
    */
   public List<PostProcessingOp> getPostProcessingOp() {
     List<PostProcessingOp> op = new LinkedList<>();
+    // spike remover first
+    if (useDespiking)
+      op.add(new SpikeRemover(isRotated(), despikeMatrix, despikeFactor));
+
     // xor
     boolean inter = isUseInterpolation() && getInterpolation() > 1;
     boolean red = isUseReduction() && getReduction() > 1;

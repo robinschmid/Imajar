@@ -79,8 +79,8 @@ public class HeatmapFactory {
 
   // creates jfreechart plot for heatmap
   private static Heatmap createChart(Image2D img, IXYZDataset dataset) throws Exception {
-    return createChart(img, (SettingsPaintScale) img.getPaintScaleSettings(),
-        img.getSettings().getSettImage(), dataset, "x", "y");
+    return createChart(img, img.getPaintScaleSettings(), img.getSettings().getSettImage(), dataset,
+        "x", "y");
   }
 
   // erstellt ein JFreeChart Plot der heatmap
@@ -292,10 +292,11 @@ public class HeatmapFactory {
   private static IXYZDataset createDataset(Image2D image) {
     SettingsGeneralImage sett = image.getSettings().getSettImage();
     double[][] dat = null;
+
     // interpolation
-    int f = (int) sett.getInterpolation();
+    int f = sett.getInterpolation();
     // reduction
-    int red = (int) (1 / sett.getInterpolation());
+    int red = 1 / sett.getInterpolation();
 
     // applies cropping filter if needed
     if (sett.isUseInterpolation() && (f > 1 || red > 1)) {
@@ -304,6 +305,7 @@ public class HeatmapFactory {
       // interpolate to array [3][n]
       dat = DataInterpolator.interpolateToArray(data, sett.getInterpolation());
     } else {
+
       // get rotated and reflected dataset
       dat = image.toXYIArray(false, true);
     }

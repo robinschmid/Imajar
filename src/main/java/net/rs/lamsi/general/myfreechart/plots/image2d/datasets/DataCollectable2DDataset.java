@@ -177,6 +177,11 @@ public class DataCollectable2DDataset extends AbstractXYZDataset implements Doma
         if (tz == null)
           return false;
 
+        if (tx == null)
+          tx = x;
+        if (ty == null)
+          ty = y;
+
         // selections
         SettingsSelections sel = img.getSelections();
         float bw = img.getAvgBlockWidth(true);
