@@ -101,6 +101,8 @@ public abstract class Settings implements Serializable {
    * @param listener
    */
   public void addChangeListener(SettingsChangedListener listener) {
+    if (listener == null)
+      return;
     if (changeListener == null)
       changeListener = new ArrayList<SettingsChangedListener>();
     changeListener.add(listener);
