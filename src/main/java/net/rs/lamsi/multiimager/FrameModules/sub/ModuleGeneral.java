@@ -10,6 +10,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import java.util.stream.Stream;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -24,6 +25,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.plot.XYPlot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +87,12 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
   private JTextField txtReduce;
   private JCheckBox cbReduce;
   private JComboBox<Mode> comboReduce;
+  private JCheckBox cbDespiking;
+  private JTextField txtDespikeFactor;
+  private JTextField txtDespikeMatrix;
+  private JPanel panel_3;
+  private JLabel lblFactor;
+  private JLabel lblMatrix;
 
   /**
    * Create the panel.
@@ -99,7 +107,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
     JPanel pnTitleANdLaser = new JPanel();
     pnNorth.add(pnTitleANdLaser, BorderLayout.NORTH);
-    pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][][][][][][][]"));
+    pnTitleANdLaser.setLayout(new MigLayout("", "[][grow]", "[][][][][][][][][][][][][][][]"));
 
     JLabel lblTitle = new JLabel("title");
     pnTitleANdLaser.add(lblTitle, "cell 0 0,alignx trailing");
@@ -164,45 +172,71 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
         "Check if X and Y have the same dimension units. Uncheck to get maximum scaling.");
     pnTitleANdLaser.add(cbKeepAspectRatio, "cell 0 7 2 1");
 
+    cbDespiking = new JCheckBox("despiking");
+    cbDespiking
+        .setToolTipText("Remove spikes in ablation direction. Replace by sorrounding average");
+    pnTitleANdLaser.add(cbDespiking, "cell 0 9");
+
+    panel_3 = new JPanel();
+    pnTitleANdLaser.add(panel_3, "flowx,cell 1 9");
+    panel_3.setLayout(new MigLayout("", "[][]", "[][]"));
+
+    lblFactor = new JLabel("factor");
+    panel_3.add(lblFactor, "cell 0 0,alignx center");
+
+    lblMatrix = new JLabel("iteration matrix");
+    panel_3.add(lblMatrix, "cell 1 0,alignx center");
+
+    txtDespikeFactor = new JTextField();
+    txtDespikeFactor.setHorizontalAlignment(SwingConstants.CENTER);
+    panel_3.add(txtDespikeFactor, "cell 0 1");
+    txtDespikeFactor.setText("25");
+    txtDespikeFactor.setColumns(6);
+
+    txtDespikeMatrix = new JTextField();
+    panel_3.add(txtDespikeMatrix, "cell 1 1");
+    txtDespikeMatrix.setText("0,3,8,3,0");
+    txtDespikeMatrix.setColumns(10);
+
     cbInterpolate = new JCheckBox("interpolate");
     cbInterpolate.setToolTipText("Use bilinear interpolation.");
-    pnTitleANdLaser.add(cbInterpolate, "cell 0 9");
+    pnTitleANdLaser.add(cbInterpolate, "cell 0 10");
 
     txtInterpolate = new JTextField();
     txtInterpolate.setToolTipText("Use bilinear interpolation (factor has to be an integer).");
     txtInterpolate.setText("1");
-    pnTitleANdLaser.add(txtInterpolate, "cell 1 9,alignx left");
+    pnTitleANdLaser.add(txtInterpolate, "cell 1 10,alignx left");
     txtInterpolate.setColumns(10);
 
     cbReduce = new JCheckBox("reduce");
     cbReduce.setToolTipText(
         "Reduce the data points in each scanning line by a factor. Define the mode how to reduce to data.");
-    pnTitleANdLaser.add(cbReduce, "cell 0 10");
+    pnTitleANdLaser.add(cbReduce, "cell 0 11");
 
     txtReduce = new JTextField();
     txtReduce.setToolTipText("Factor to reduce the data points of each scanning line");
     txtReduce.setText("1");
     txtReduce.setColumns(10);
-    pnTitleANdLaser.add(txtReduce, "flowx,cell 1 10,alignx left");
+    pnTitleANdLaser.add(txtReduce, "flowx,cell 1 11,alignx left");
 
     cbBlurRadius = new JCheckBox("use blur radius");
     cbBlurRadius.setToolTipText(
         "Approximation of the Gaussian blur by applying a box blur three times. Always performs \"crop data to minimum\".");
-    pnTitleANdLaser.add(cbBlurRadius, "cell 0 11");
+    pnTitleANdLaser.add(cbBlurRadius, "cell 0 12");
 
     txtBlurRadius = new JTextField();
     txtBlurRadius
         .setToolTipText("Use bicubic interpolation for values >1 or reduce data by factors <1.");
     txtBlurRadius.setText("1");
     txtBlurRadius.setColumns(10);
-    pnTitleANdLaser.add(txtBlurRadius, "cell 1 11,alignx left");
+    pnTitleANdLaser.add(txtBlurRadius, "cell 1 12,alignx left");
 
     JButton btnCommentary = new JButton("Commentary");
-    pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 12");
+    pnTitleANdLaser.add(btnCommentary, "flowy,cell 0 13");
     btnCommentary.setToolTipText("Commentary with dates");
 
     JButton btnMetadata = new JButton("Metadata");
-    pnTitleANdLaser.add(btnMetadata, "cell 1 12");
+    pnTitleANdLaser.add(btnMetadata, "cell 1 13");
     btnMetadata.setAlignmentY(Component.BOTTOM_ALIGNMENT);
     btnMetadata.setAlignmentX(Component.RIGHT_ALIGNMENT);
     btnMetadata.setToolTipText("Metadata such as used instruments and methods");
@@ -210,7 +244,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     cbBiaryData = new JCheckBox("binary data");
     cbBiaryData.setSelected(true);
     cbBiaryData.setToolTipText("Is data binary? Like binary map export from multi view window.");
-    pnTitleANdLaser.add(cbBiaryData, "cell 0 13 2 1");
+    pnTitleANdLaser.add(cbBiaryData, "cell 0 14 2 1");
 
     txtXPosTitle = new JTextField();
     txtXPosTitle.setToolTipText("X position in percent");
@@ -237,7 +271,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     comboReduce.setToolTipText("Mode to reduce the data points of each line");
     comboReduce.setModel(new DefaultComboBoxModel<Mode>(Mode.values()));
     comboReduce.setSelectedIndex(1);
-    pnTitleANdLaser.add(comboReduce, "cell 1 10");
+    pnTitleANdLaser.add(comboReduce, "cell 1 11");
 
     // ########################################################
     // add MODULESplitContinous Image TODO
@@ -433,6 +467,10 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     getCbBlurRadius().addItemListener(il);
     getTxtBlurRadius().getDocument().addDocumentListener(dl);
 
+    getCbDespiking().addItemListener(il);
+    getTxtDespikeFactor().getDocument().addDocumentListener(dl);
+    getTxtDespikeMatrix().getDocument().addDocumentListener(dl);
+
     comboTransform.addItemListener(il);
 
     getCbReduce().addItemListener(il);
@@ -478,6 +516,11 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
       cbReduce.setSelected(si.isUseReduction());
       comboReduce.setSelectedItem(si.getReductionMode());
 
+      txtDespikeFactor.setText(String.valueOf(si.getDespikeFactor()));
+      int[] matrixInt = si.getDespikeMatrix();
+      String matrix = matrixInt == null ? "" : StringUtils.join(matrixInt, ',');
+      txtDespikeMatrix.setText(matrix);
+      cbDespiking.setSelected(si.isUseDespiking());
       //
       this.getTxtTitle().setText(si.getTitle());
       this.getTxtSpotsize().setText(String.valueOf(si.getSpotsize()));
@@ -542,9 +585,11 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
         // TODO
         // add despiking components
-        boolean useDespiking = true;
-        int[] despikeMatrix = new int[] {0, 3, 9, 3, 0};
-        double despikeFactor = 20;
+        boolean useDespiking = cbDespiking.isSelected();
+        // remove spaces, split by , and create array of integer
+        int[] despikeMatrix = Stream.of(txtDespikeMatrix.getText().replaceAll(" ", "").split(","))
+            .filter(s -> !s.isEmpty()).mapToInt(Integer::parseInt).toArray();
+        double despikeFactor = doubleFromTxt(txtDespikeFactor);
 
         settings.setAll(getTxtTitle().getText(), getTxtShortTitle().getText(),
             cbShortTitle.isSelected(), floatFromTxt(txtXPosTitle), floatFromTxt(txtYPosTitle),
@@ -695,5 +740,17 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
   public JComboBox getComboReduce() {
     return comboReduce;
+  }
+
+  public JTextField getTxtDespikeFactor() {
+    return txtDespikeFactor;
+  }
+
+  public JTextField getTxtDespikeMatrix() {
+    return txtDespikeMatrix;
+  }
+
+  public JCheckBox getCbDespiking() {
+    return cbDespiking;
   }
 }

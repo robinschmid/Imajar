@@ -559,6 +559,30 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     this.reductionMode = reductionMode;
   }
 
+  public boolean isUseDespiking() {
+    return useDespiking;
+  }
+
+  public void setUseDespiking(boolean useDespiking) {
+    this.useDespiking = useDespiking;
+  }
+
+  public int[] getDespikeMatrix() {
+    return despikeMatrix;
+  }
+
+  public void setDespikeMatrix(int[] despikeMatrix) {
+    this.despikeMatrix = despikeMatrix;
+  }
+
+  public double getDespikeFactor() {
+    return despikeFactor;
+  }
+
+  public void setDespikeFactor(double despikeFactor) {
+    this.despikeFactor = despikeFactor;
+  }
+
   public void setUseReduction(boolean useReduction) {
     this.useReduction = useReduction;
   }
