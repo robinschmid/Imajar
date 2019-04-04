@@ -407,12 +407,12 @@ public class Image2DImportExportUtil {
               for (int i = 0; i < sep.length; i++) {
                 x[i] = new ArrayList<Float>();
                 if (sep[i].length() > 0)
-                  x[i].add(Float.valueOf(sep[i]));
+                  x[i].add(Float.parseFloat(sep[i]));
               }
             } else {
               for (int i = 0; i < x.length && i < sep.length; i++) {
                 if (sep[i].length() > 0)
-                  x[i].add(Float.valueOf(sep[i]));
+                  x[i].add(Float.parseFloat(sep[i]));
               }
             }
           }
@@ -463,13 +463,13 @@ public class Image2DImportExportUtil {
                 for (int i = 0; i < sep.length; i++) {
                   y[i] = new ArrayList<Double>();
                   if (sep[i].length() > 0)
-                    y[i].add(Double.valueOf(sep[i]));
+                    y[i].add(Double.parseDouble(sep[i]));
                 }
               } else {
                 // add data
                 for (int i = 0; i < y.length && i < sep.length; i++) {
                   if (sep[i].length() > 0)
-                    y[i].add(Double.valueOf(sep[i]));
+                    y[i].add(Double.parseDouble(sep[i]));
                 }
               }
             }
@@ -798,7 +798,7 @@ public class Image2DImportExportUtil {
                   && (sett.getEndLine() == 0 || i < sett.getEndLine()); i++) {
                 float xv = Float.NaN;
                 try {
-                  xv = Float.valueOf(sep[i]);
+                  xv = Float.parseFloat(sep[i]);
                 } catch (Exception e) {
                 }
                 if (x[c] == null) {
@@ -893,24 +893,24 @@ public class Image2DImportExportUtil {
                   case X_MATRIX_STANDARD:
                   case ONLY_Y:
                     if ((sett.getStartLine() == 0 || i + 1 >= sett.getStartLine())) {
-                      y[line].add(Double.valueOf(sep[i]));
+                      y[line].add(parseIntensity(sep[i]));
                       line++;
                     }
                     break;
                   case XYXY_ALTERN:
                     if (sett.getStartLine() == 0 || i / 2 + 1 >= sett.getStartLine()) {
                       if (i % 2 == 1) {
-                        y[line].add(Double.valueOf(sep[i]));
+                        y[line].add(Double.parseDouble(sep[i]));
                         line++;
                       } else if (f == 0) {
                         // first as 0
                         if (x[line].size() == 0) {
                           x[line].add(0.f);
-                          startXValue[line] = Float.valueOf(sep[i]);
+                          startXValue[line] = Float.parseFloat(sep[i]);
                         }
                         // relative to startX
                         else
-                          x[line].add(Float.valueOf(sep[i]) - startXValue[line]);
+                          x[line].add(Float.parseFloat(sep[i]) - startXValue[line]);
                       }
                     }
                     break;
@@ -920,16 +920,16 @@ public class Image2DImportExportUtil {
                       // first as 0
                       if (x[0].size() == 0) {
                         x[0].add(0.f);
-                        startXValue[0] = Float.valueOf(sep[i]);
+                        startXValue[0] = Float.parseFloat(sep[i]);
                       }
                       // relative to startX
                       else
-                        x[0].add(Float.valueOf(sep[i]) - startXValue[0]);
+                        x[0].add(Float.parseFloat(sep[i]) - startXValue[0]);
                     }
                     // add y
                     if (i != 0) {
                       if (sett.getStartLine() == 0 || i >= sett.getStartLine()) {
-                        y[line].add(Double.valueOf(sep[i]));
+                        y[line].add(Double.parseDouble(sep[i]));
                         line++;
                       }
                     }
@@ -994,6 +994,19 @@ public class Image2DImportExportUtil {
   }
 
 
+  /**
+   * Parses double and fills in 0 for empty
+   * 
+   * @param sep
+   * @return
+   */
+  private static double parseIntensity(String sep) {
+    if (sep == null || sep.isEmpty())
+      return -1000d;
+    return Double.parseDouble(sep);
+  }
+
+
   // one file per line
   // load text files with separation
   // time SEPARATION intensity
@@ -1012,9 +1025,9 @@ public class Image2DImportExportUtil {
     // parent directory as raw file path
     File parent = files[0].getParentFile();
     if (SettingsImageDataImportTxt.class.isInstance(sett)) {
-      if (((SettingsImageDataImportTxt) sett).isFilesInSeparateFolders())
+      if (sett.isFilesInSeparateFolders())
         parent = parent.getParentFile();
-      else if (((SettingsImageDataImportTxt) sett).getModeImport() == IMPORT.CONTINOUS_DATA_TXT_CSV)
+      else if (sett.getModeImport() == IMPORT.CONTINOUS_DATA_TXT_CSV)
         parent = files[0];
     }
     // for all images
@@ -1196,7 +1209,7 @@ public class Image2DImportExportUtil {
             if (!sett.isNoXData()) {
               x = new ArrayList<Float>();
               // startX for hardsplit
-              startX = sett.isShiftXValues() ? Float.valueOf(sep[firstCol]) : 0;
+              startX = sett.isShiftXValues() ? Float.parseFloat(sep[firstCol]) : 0;
             }
             // Image creation
             for (int img = 0; img < iList.length; img++) {
@@ -1208,7 +1221,7 @@ public class Image2DImportExportUtil {
             // hardsplit continuous with time data: erase startX
             if (!wasStartErased && XUNIT.s.equals(sett.getSplitUnit())
                 && ((int) (sett.getSplitStart() * 1000)) != 0) {
-              float cx = Float.valueOf(sep[firstCol]);
+              float cx = Float.parseFloat(sep[firstCol]);
               // x still < than start time?
               if (cx - startX < sett.getSplitStart())
                 dp = 0;
@@ -1219,7 +1232,7 @@ public class Image2DImportExportUtil {
             } else if (!scanLinesSkipped) {
               cDP++;
               if (XUNIT.s.equals(sett.getSplitUnit())) {
-                float cx = Float.valueOf(sep[firstCol]);
+                float cx = Float.parseFloat(sep[firstCol]);
                 scanLinesSkipped =
                     (cx - startX) >= sett.getSplitAfter() * (sett.getStartLine() - 1);
               } else {
@@ -1236,8 +1249,8 @@ public class Image2DImportExportUtil {
             // has X data?
             if (!sett.isNoXData()) {
               if (x.size() == 0)
-                startX = sett.isShiftXValues() ? Float.valueOf(sep[firstCol]) : 0;
-              x.add(Float.valueOf(sep[firstCol]) - startX);
+                startX = sett.isShiftXValues() ? Float.parseFloat(sep[firstCol]) : 0;
+              x.add(Float.parseFloat(sep[firstCol]) - startX);
             }
             // add Data Points to all images
             int img = 0;
@@ -1256,7 +1269,7 @@ public class Image2DImportExportUtil {
                 }
               }
               if (!isExcluded) {
-                iList[img].add(Double.valueOf(sep[s]));
+                iList[img].add(Double.parseDouble(sep[s]));
                 img++;
               }
             }
@@ -1465,7 +1478,7 @@ public class Image2DImportExportUtil {
 
         try {
           // insert x
-          float xv = Float.valueOf(sep[0]);
+          float xv = Float.parseFloat(sep[0]);
           xv *= factor;
           if (Float.isNaN(startx))
             startx = xv;
@@ -1473,7 +1486,7 @@ public class Image2DImportExportUtil {
 
           // insert data
           for (int i = 1; i < sep.length; i++) {
-            double value = Double.valueOf(sep[i]);
+            double value = Double.parseDouble(sep[i]);
             z[i - 1].add(value);
           }
         } catch (Exception ex) {
@@ -1931,7 +1944,7 @@ public class Image2DImportExportUtil {
           for (int i = valueindex + sett.getStartLine(); i < sep.length
               && (sett.getEndLine() == 0 || i - valueindex < sett.getEndLine()); i++) {
             try {
-              iList[i - valueindex - sett.getStartLine()].add(Double.valueOf(sep[i]));
+              iList[i - valueindex - sett.getStartLine()].add(Double.parseDouble(sep[i]));
             } catch (Exception ex) {
               iList[i - valueindex - sett.getStartLine()].add(-1.0);
             }
@@ -1977,7 +1990,7 @@ public class Image2DImportExportUtil {
           for (int i = valueindex + sett.getStartLine(); i < sep.length
               && (sett.getEndLine() == 0 || i - valueindex < sett.getEndLine()); i++) {
             try {
-              x[i - valueindex - sett.getStartLine()].add(Float.valueOf(sep[i]));
+              x[i - valueindex - sett.getStartLine()].add(Float.parseFloat(sep[i]));
             } catch (Exception ex) {
               x[i - valueindex - sett.getStartLine()].add(-1.f);
             }
@@ -2146,13 +2159,13 @@ public class Image2DImportExportUtil {
                     break;
 
                   if (indexTime != -1 && t == 0)
-                    x.add(Float.valueOf(time));
+                    x.add(Float.parseFloat(time));
 
                   String intensity = sep[i + columnsPerScanAndElement * t + indexIntensity];
                   if (intensity.length() == 0)
                     break;
 
-                  z.add(Double.valueOf(intensity));
+                  z.add(Double.parseDouble(intensity));
                 } catch (Exception e) {
                   logger.error("", e);
                 }
@@ -2254,7 +2267,7 @@ public class Image2DImportExportUtil {
           xList.add(x);
           // add Datapoints to all images
           for (int img = 0; img < iList.length; img++) {
-            double y = Double.valueOf(sep[img + 2]);
+            double y = Double.parseDouble(sep[img + 2]);
             // add Datapoint
             iList[img].add(y);
           }
@@ -2370,7 +2383,7 @@ public class Image2DImportExportUtil {
 
     float val = 0;
     for (int i = split.length - 1; i >= 0; i--) {
-      val += Float.valueOf(split[i]) * (F[split.length - 1 - i]);
+      val += Float.parseFloat(split[i]) * (F[split.length - 1 - i]);
     }
     return val;
   }
