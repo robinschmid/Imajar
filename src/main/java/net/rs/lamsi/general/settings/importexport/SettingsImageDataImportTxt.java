@@ -23,7 +23,7 @@ public class SettingsImageDataImportTxt extends Settings {
   }
   public static enum ModeData {
     // mode of data: onlyY, one X, alternating
-    X_MATRIX_STANDARD, XYYY, XYXY_ALTERN, ONLY_Y, XYZ
+    X_MATRIX_STANDARD, XYYY, XYXY_ALTERN, ONLY_Y, ONLY_Y_ROTATED, XYZ
   }
 
   protected String sSeparation = ",";

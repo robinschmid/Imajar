@@ -542,9 +542,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
         // TODO
         // add despiking components
-        boolean useDespiking;
-        int[] despikeMatrix;
-        double despikeFactor;
+        boolean useDespiking = true;
+        int[] despikeMatrix = new int[] {0, 3, 9, 3, 0};
+        double despikeFactor = 20;
 
         settings.setAll(getTxtTitle().getText(), getTxtShortTitle().getText(),
             cbShortTitle.isSelected(), floatFromTxt(txtXPosTitle), floatFromTxt(txtYPosTitle),
