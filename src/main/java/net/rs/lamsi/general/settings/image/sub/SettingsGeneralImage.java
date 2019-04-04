@@ -19,6 +19,7 @@ import net.rs.lamsi.general.heatmap.dataoperations.DPReduction.Mode;
 import net.rs.lamsi.general.heatmap.dataoperations.FastGaussianBlur;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 import net.rs.lamsi.general.processing.dataoperations.SpikeRemover;
+import net.rs.lamsi.general.processing.dataoperations.SpikeRemoverNegative;
 
 
 public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
@@ -128,6 +129,8 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
   protected Transformation trans = Transformation.NONE;
 
+  private boolean useDespikingNegative;
+
 
   public SettingsGeneralImage(String path, String fileEnding) {
     super("SettingsGeneralImage", path, fileEnding);
@@ -175,13 +178,14 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos,
       float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz,
       boolean reflectVert, int rotationOfData, boolean isBinaryData, //
-      boolean useDespiking, double despikeFactor, int[] despikeMatrix, boolean useInterpolation,
-      int interpolation, boolean useBlur, double blurRadius, boolean keepAspectRatio,
-      boolean useReduction, int reduction, Mode redMode) {
+      boolean useDespiking, boolean useDespikingNegative, double despikeFactor, int[] despikeMatrix,
+      boolean useInterpolation, int interpolation, boolean useBlur, double blurRadius,
+      boolean keepAspectRatio, boolean useReduction, int reduction, Mode redMode) {
     this.velocity = velocity;
     this.spotsize = spotsize;
     this.isBinaryData = isBinaryData;
     this.useDespiking = useDespiking;
+    this.setUseDespikingNegative(useDespikingNegative);
     this.despikeFactor = despikeFactor;
     this.despikeMatrix = despikeMatrix;
     rotation.setAll(imagingMode, reflectHoriz, reflectVert, rotationOfData);
@@ -233,6 +237,7 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     toXML(elParent, doc, "trans", trans);
 
     toXML(elParent, doc, "useDespiking", useDespiking);
+    toXML(elParent, doc, "useDespikingNegative", useDespikingNegative);
     toXML(elParent, doc, "despikeMatrix",
         Stream.of(despikeMatrix).map(String::valueOf).collect(Collectors.joining(",")));
     toXML(elParent, doc, "despikeFactor", despikeFactor);
@@ -268,6 +273,8 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
         else if (paramName.equals("despikeFactor"))
           despikeFactor = doubleFromXML(nextElement);
+        else if (paramName.equals("useDespikingNegative"))
+          useDespikingNegative = booleanFromXML(nextElement);
         else if (paramName.equals("useDespiking"))
           useDespiking = booleanFromXML(nextElement);
         else if (paramName.equals("despikeMatrix"))
@@ -595,8 +602,10 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   public List<PostProcessingOp> getPostProcessingOp() {
     List<PostProcessingOp> op = new LinkedList<>();
     // spike remover first
-    if (useDespiking)
-      op.add(new SpikeRemover(isRotated(), despikeMatrix, despikeFactor));
+    if (useDespiking) {
+      SpikeRemover remover = new SpikeRemover(isRotated(), despikeMatrix, despikeFactor);
+      op.add(useDespikingNegative ? new SpikeRemoverNegative(remover) : remover);
+    }
 
     // xor
     boolean inter = isUseInterpolation() && getInterpolation() > 1;
@@ -612,6 +621,14 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
       op.add(new FastGaussianBlur(getBlurRadius()));
     }
     return op;
+  }
+
+  public boolean isUseDespikingNegative() {
+    return useDespikingNegative;
+  }
+
+  public void setUseDespikingNegative(boolean useDespikingNegative) {
+    this.useDespikingNegative = useDespikingNegative;
   }
 
 }

@@ -93,6 +93,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
   private JPanel panel_3;
   private JLabel lblFactor;
   private JLabel lblMatrix;
+  private JLabel label;
+  private JCheckBox cbDespikingNegative;
 
   /**
    * Create the panel.
@@ -179,22 +181,29 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
     panel_3 = new JPanel();
     pnTitleANdLaser.add(panel_3, "flowx,cell 1 9");
-    panel_3.setLayout(new MigLayout("", "[][]", "[][]"));
+    panel_3.setLayout(new MigLayout("", "[][][]", "[][]"));
+
+    label = new JLabel("-");
+    panel_3.add(label, "cell 0 0,alignx center");
 
     lblFactor = new JLabel("factor");
-    panel_3.add(lblFactor, "cell 0 0,alignx center");
+    panel_3.add(lblFactor, "cell 1 0,alignx center");
 
     lblMatrix = new JLabel("iteration matrix");
-    panel_3.add(lblMatrix, "cell 1 0,alignx center");
+    panel_3.add(lblMatrix, "cell 2 0,alignx center");
+
+    cbDespikingNegative = new JCheckBox("");
+    cbDespikingNegative.setToolTipText("Negative image: Only show removed \"spikes\".");
+    panel_3.add(cbDespikingNegative, "cell 0 1");
 
     txtDespikeFactor = new JTextField();
     txtDespikeFactor.setHorizontalAlignment(SwingConstants.CENTER);
-    panel_3.add(txtDespikeFactor, "cell 0 1");
+    panel_3.add(txtDespikeFactor, "cell 1 1");
     txtDespikeFactor.setText("25");
     txtDespikeFactor.setColumns(6);
 
     txtDespikeMatrix = new JTextField();
-    panel_3.add(txtDespikeMatrix, "cell 1 1");
+    panel_3.add(txtDespikeMatrix, "cell 2 1");
     txtDespikeMatrix.setText("0,3,8,3,0");
     txtDespikeMatrix.setColumns(10);
 
@@ -467,6 +476,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     getCbBlurRadius().addItemListener(il);
     getTxtBlurRadius().getDocument().addDocumentListener(dl);
 
+    getCbDespikingNegative().addItemListener(il);
     getCbDespiking().addItemListener(il);
     getTxtDespikeFactor().getDocument().addDocumentListener(dl);
     getTxtDespikeMatrix().getDocument().addDocumentListener(dl);
@@ -521,6 +531,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
       String matrix = matrixInt == null ? "" : StringUtils.join(matrixInt, ',');
       txtDespikeMatrix.setText(matrix);
       cbDespiking.setSelected(si.isUseDespiking());
+      getCbDespikingNegative().setSelected(si.isUseDespikingNegative());
       //
       this.getTxtTitle().setText(si.getTitle());
       this.getTxtSpotsize().setText(String.valueOf(si.getSpotsize()));
@@ -586,6 +597,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
         // TODO
         // add despiking components
         boolean useDespiking = cbDespiking.isSelected();
+        boolean useDespikingNegative = getCbDespikingNegative().isSelected();
         // remove spaces, split by , and create array of integer
         int[] despikeMatrix = Stream.of(txtDespikeMatrix.getText().replaceAll(" ", "").split(","))
             .filter(s -> !s.isEmpty()).mapToInt(Integer::parseInt).toArray();
@@ -596,10 +608,11 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
             floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), imagingMode,
             getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation,
             getCbBiaryData().isSelected(), //
-            useDespiking, despikeFactor, despikeMatrix, getCbInterpolate().isSelected(),
-            intFromTxt(getTxtInterpolate()), getCbBlurRadius().isSelected(),
-            doubleFromTxt(getTxtBlurRadius()), getCbKeepAspectRatio().isSelected(),
-            cbReduce.isSelected(), intFromTxt(txtReduce), (Mode) comboReduce.getSelectedItem());
+            useDespiking, useDespikingNegative, despikeFactor, despikeMatrix,
+            getCbInterpolate().isSelected(), intFromTxt(getTxtInterpolate()),
+            getCbBlurRadius().isSelected(), doubleFromTxt(getTxtBlurRadius()),
+            getCbKeepAspectRatio().isSelected(), cbReduce.isSelected(), intFromTxt(txtReduce),
+            (Mode) comboReduce.getSelectedItem());
 
         // update intensity processing
         update = update || settings.setIntensityFactor(doubleFromTxt(getTxtIntensityFactor()));
@@ -752,5 +765,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
   public JCheckBox getCbDespiking() {
     return cbDespiking;
+  }
+
+  public JCheckBox getCbDespikingNegative() {
+    return cbDespikingNegative;
   }
 }

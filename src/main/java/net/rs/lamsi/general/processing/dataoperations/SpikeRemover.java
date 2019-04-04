@@ -1,6 +1,5 @@
 package net.rs.lamsi.general.processing.dataoperations;
 
-import java.util.Arrays;
 import net.rs.lamsi.general.heatmap.dataoperations.PostProcessingOp;
 
 public class SpikeRemover extends PostProcessingOp {
@@ -152,9 +151,9 @@ public class SpikeRemover extends PostProcessingOp {
 
   @Override
   public double[][] processItensity(double[][] z, double[][] target) {
-    target = Arrays.copyOf(z, z.length);
-    // if (true)
-    // return target;
+    for (int i = 0; i < z.length; i++)
+      for (int j = 0; j < z[i].length; j++)
+        target[i][j] = z[i][j];
 
     for (int distance : despikeMatrix)
       if (!isRotated)
@@ -167,7 +166,7 @@ public class SpikeRemover extends PostProcessingOp {
 
   @Override
   public float[][] processXY(float[][] x, float[][] target) {
-    return target;
+    return x;
   }
 
   @Override
