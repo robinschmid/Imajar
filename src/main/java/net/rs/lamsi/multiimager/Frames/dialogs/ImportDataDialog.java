@@ -121,6 +121,7 @@ public class ImportDataDialog extends JDialog {
   private Component horizontalStrut;
   private JLabel lblSkipBetweenTitles;
   private JTextField txtSkipRowsTitlesToData;
+  private JRadioButton rbPresetArne;
 
 
   /**
@@ -189,6 +190,11 @@ public class ImportDataDialog extends JDialog {
               rbiCAPQOneRow = new JRadioButton("iCAP-Q - all in one row");
               buttonGroup_2.add(rbiCAPQOneRow);
               panel_1.add(rbiCAPQOneRow, "cell 0 1");
+            }
+            {
+              rbPresetArne = new JRadioButton("arne");
+              buttonGroup_2.add(rbPresetArne);
+              panel_1.add(rbPresetArne, "cell 1 1 2 1");
             }
             {
               rbShimadzuICPMS = new JRadioButton("Sh");
@@ -351,6 +357,7 @@ public class ImportDataDialog extends JDialog {
         }
         cbContinousData = new JCheckBox("Continous data (one file=one image)");
         cbContinousData.addItemListener(new ItemListener() {
+          @Override
           public void itemStateChanged(ItemEvent e) {
             getCbFilesInSeparateFolders().setVisible(!((JCheckBox) e.getSource()).isSelected());
             getPnContinuousSplit().setVisible(((JCheckBox) e.getSource()).isSelected());
@@ -571,6 +578,7 @@ public class ImportDataDialog extends JDialog {
         {
           JButton okButton = new JButton("Open");
           okButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
               // create settings
               createSettingsForImport();
@@ -581,6 +589,7 @@ public class ImportDataDialog extends JDialog {
           {
             btnSavePreset = new JButton("Save Preset");
             btnSavePreset.addActionListener(new ActionListener() {
+              @Override
               public void actionPerformed(ActionEvent e) {
                 try {
                   SettingsImageDataImportTxt sett = createSettingsForImport();
@@ -597,6 +606,7 @@ public class ImportDataDialog extends JDialog {
           {
             btnLoadPreset = new JButton("Load Preset");
             btnLoadPreset.addActionListener(new ActionListener() {
+              @Override
               public void actionPerformed(ActionEvent e) {
                 try {
                   SettingsImageDataImportTxt sett = new SettingsImageDataImportTxt();
@@ -617,6 +627,7 @@ public class ImportDataDialog extends JDialog {
         {
           JButton cancelButton = new JButton("Cancel");
           cancelButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
               // close
               setVisible(false);
@@ -640,7 +651,7 @@ public class ImportDataDialog extends JDialog {
   protected void setAllViaExistingSettings(SettingsImageDataImportTxt sett) {
     // set active tab
     if (SettingsImageDataImportTxt.class.isInstance(sett)) {
-      SettingsImageDataImportTxt s = (SettingsImageDataImportTxt) sett;
+      SettingsImageDataImportTxt s = sett;
       // filename
       getTxtStartsWith().setText(s.getFilter().getStartsWith());
       getTxtEndsWith().setText(s.getFilter().getExt());
@@ -808,6 +819,24 @@ public class ImportDataDialog extends JDialog {
           }
           rbElement2.setSelected(true);
           break;
+        case PRESETS_ARNE:
+          getTabbedPane().setSelectedComponent(getTabMSPresets());
+
+          // seperation
+          if (sep.equals(","))
+            getComboSeparationSpecial().setSelectedIndex(0);
+          else if (sep.equals(" "))
+            getComboSeparationSpecial().setSelectedIndex(1);
+          else if (sep.equals(" "))
+            getComboSeparationSpecial().setSelectedIndex(2);
+          else if (sep.equals(";"))
+            getComboSeparationSpecial().setSelectedIndex(3);
+          else {
+            getComboSeparationSpecial().setSelectedIndex(4);
+            getTxtSpecialSeparation().setText(sep);
+          }
+          rbPresetArne.setSelected(true);
+          break;
       }
     } else {
       // xlsx?
@@ -940,6 +969,10 @@ public class ImportDataDialog extends JDialog {
             null, filter, false, startLine, endLine, startDP, endDP);
       } else if (rbElement2.isSelected()) {
         IMPORT importMode = IMPORT.PRESETS_THERMO_ELEMENT2;
+        settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation,
+            null, filter, false, startLine, endLine, startDP, endDP);
+      } else if (rbPresetArne.isSelected()) {
+        IMPORT importMode = IMPORT.PRESETS_ARNE;
         settingsDataImport = new SettingsImageDataImportTxt(importMode, checkformeta, separation,
             null, filter, false, startLine, endLine, startDP, endDP);
       }
@@ -1123,5 +1156,9 @@ public class ImportDataDialog extends JDialog {
 
   public JTextField getTxtSkipFirstRows() {
     return txtSkipFirstRows;
+  }
+
+  public JRadioButton getRbPresetArne() {
+    return rbPresetArne;
   }
 }

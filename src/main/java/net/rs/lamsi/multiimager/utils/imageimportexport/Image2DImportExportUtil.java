@@ -749,6 +749,8 @@ public class Image2DImportExportUtil {
         return importFromShimadzuICPMS2ToImage(files, sett, task);
       case PRESETS_THERMO_ELEMENT2:
         return importFromThermoElement2ToImage(files, sett, task);
+      case PRESETS_ARNE:
+        return ArneImport.parse(files, sett, task);
     }
 
     return null;
