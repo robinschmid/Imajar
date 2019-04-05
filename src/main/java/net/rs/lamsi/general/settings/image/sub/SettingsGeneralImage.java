@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.plot.XYPlot;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -113,6 +113,8 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   protected boolean useDespiking;
   protected int[] despikeMatrix;
   protected double despikeFactor;
+  private boolean useDespikingNegative;
+  private boolean isDespikingRotated;
 
 
   // interpolation and data reduction
@@ -129,7 +131,6 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
   protected Transformation trans = Transformation.NONE;
 
-  private boolean useDespikingNegative;
 
 
   public SettingsGeneralImage(String path, String fileEnding) {
@@ -169,22 +170,26 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     reductionMode = Mode.AVG;
 
 
+    useDespikingNegative = false;
+    isDespikingRotated = false;
     useDespiking = false;
-    despikeMatrix = new int[] {0, 2, 5, 9};
-    despikeFactor = 50;
+    despikeMatrix = new int[] {0, 2, 5, 2, 0};
+    despikeFactor = 40;
   }
 
 
   public void setAll(String title, String shortTitle, boolean useShortTitle, float xPos, float yPos,
       float velocity, float spotsize, IMAGING_MODE imagingMode, boolean reflectHoriz,
       boolean reflectVert, int rotationOfData, boolean isBinaryData, //
-      boolean useDespiking, boolean useDespikingNegative, double despikeFactor, int[] despikeMatrix,
-      boolean useInterpolation, int interpolation, boolean useBlur, double blurRadius,
-      boolean keepAspectRatio, boolean useReduction, int reduction, Mode redMode) {
+      boolean useDespiking, boolean isDespikingRotated, boolean useDespikingNegative,
+      double despikeFactor, int[] despikeMatrix, boolean useInterpolation, int interpolation,
+      boolean useBlur, double blurRadius, boolean keepAspectRatio, boolean useReduction,
+      int reduction, Mode redMode) {
     this.velocity = velocity;
     this.spotsize = spotsize;
     this.isBinaryData = isBinaryData;
     this.useDespiking = useDespiking;
+    this.setDespikingRotated(isDespikingRotated);
     this.setUseDespikingNegative(useDespikingNegative);
     this.despikeFactor = despikeFactor;
     this.despikeMatrix = despikeMatrix;
@@ -236,10 +241,12 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     toXML(elParent, doc, "intensityFactor", intensityFactor);
     toXML(elParent, doc, "trans", trans);
 
+    toXML(elParent, doc, "isDespikingRotated", isDespikingRotated());
     toXML(elParent, doc, "useDespiking", useDespiking);
     toXML(elParent, doc, "useDespikingNegative", useDespikingNegative);
-    toXML(elParent, doc, "despikeMatrix",
-        Stream.of(despikeMatrix).map(String::valueOf).collect(Collectors.joining(",")));
+    String matrix = despikeMatrix == null || despikeMatrix.length == 0 ? ""
+        : StringUtils.join(despikeMatrix, ',');
+    toXML(elParent, doc, "despikeMatrix", matrix);
     toXML(elParent, doc, "despikeFactor", despikeFactor);
 
     toXML(elParent, doc, "reduction", reduction);
@@ -273,6 +280,8 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
         else if (paramName.equals("despikeFactor"))
           despikeFactor = doubleFromXML(nextElement);
+        else if (paramName.equals("isDespikingRotated"))
+          setDespikingRotated(booleanFromXML(nextElement));
         else if (paramName.equals("useDespikingNegative"))
           useDespikingNegative = booleanFromXML(nextElement);
         else if (paramName.equals("useDespiking"))
@@ -329,6 +338,7 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
   public Transformation getTransform() {
     return trans;
   }
+
 
   public DoubleFunction<Double> getTransformFunction() {
     return trans.getFunction();
@@ -603,7 +613,8 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
     List<PostProcessingOp> op = new LinkedList<>();
     // spike remover first
     if (useDespiking) {
-      SpikeRemover remover = new SpikeRemover(isRotated(), despikeMatrix, despikeFactor);
+      SpikeRemover remover =
+          new SpikeRemover(isRotated() ^ isDespikingRotated, despikeMatrix, despikeFactor);
       op.add(useDespikingNegative ? new SpikeRemoverNegative(remover) : remover);
     }
 
@@ -629,6 +640,14 @@ public class SettingsGeneralImage extends SettingsGeneralCollecable2D {
 
   public void setUseDespikingNegative(boolean useDespikingNegative) {
     this.useDespikingNegative = useDespikingNegative;
+  }
+
+  public boolean isDespikingRotated() {
+    return isDespikingRotated;
+  }
+
+  public void setDespikingRotated(boolean isDespikingRotated) {
+    this.isDespikingRotated = isDespikingRotated;
   }
 
 }

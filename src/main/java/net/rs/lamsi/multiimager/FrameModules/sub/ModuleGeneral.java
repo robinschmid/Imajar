@@ -93,8 +93,8 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
   private JPanel panel_3;
   private JLabel lblFactor;
   private JLabel lblMatrix;
-  private JLabel label;
   private JCheckBox cbDespikingNegative;
+  private JCheckBox cbRotateDespike;
 
   /**
    * Create the panel.
@@ -181,31 +181,33 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
     panel_3 = new JPanel();
     pnTitleANdLaser.add(panel_3, "flowx,cell 1 9");
-    panel_3.setLayout(new MigLayout("", "[][][]", "[][]"));
-
-    label = new JLabel("-");
-    panel_3.add(label, "cell 0 0,alignx center");
+    panel_3.setLayout(new MigLayout("", "[][]", "[][][][]"));
 
     lblFactor = new JLabel("factor");
-    panel_3.add(lblFactor, "cell 1 0,alignx center");
+    panel_3.add(lblFactor, "cell 0 0,alignx center");
 
     lblMatrix = new JLabel("iteration matrix");
-    panel_3.add(lblMatrix, "cell 2 0,alignx center");
-
-    cbDespikingNegative = new JCheckBox("");
-    cbDespikingNegative.setToolTipText("Negative image: Only show removed \"spikes\".");
-    panel_3.add(cbDespikingNegative, "cell 0 1");
+    panel_3.add(lblMatrix, "cell 1 0,alignx center");
 
     txtDespikeFactor = new JTextField();
     txtDespikeFactor.setHorizontalAlignment(SwingConstants.CENTER);
-    panel_3.add(txtDespikeFactor, "cell 1 1");
+    panel_3.add(txtDespikeFactor, "cell 0 1");
     txtDespikeFactor.setText("25");
     txtDespikeFactor.setColumns(6);
 
     txtDespikeMatrix = new JTextField();
-    panel_3.add(txtDespikeMatrix, "cell 2 1");
+    panel_3.add(txtDespikeMatrix, "cell 1 1");
     txtDespikeMatrix.setText("0,3,8,3,0");
     txtDespikeMatrix.setColumns(10);
+
+    cbDespikingNegative = new JCheckBox("negative");
+    cbDespikingNegative.setToolTipText("Negative image: Only show removed \"spikes\".");
+    panel_3.add(cbDespikingNegative, "cell 0 2 2 1");
+
+    cbRotateDespike = new JCheckBox("rotate");
+    cbRotateDespike.setToolTipText(
+        "Rotate filter direction into ablation direction. (Only needed if data was imported rotated)");
+    panel_3.add(cbRotateDespike, "cell 0 3 2 1");
 
     cbInterpolate = new JCheckBox("interpolate");
     cbInterpolate.setToolTipText("Use bilinear interpolation.");
@@ -476,6 +478,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
     getCbBlurRadius().addItemListener(il);
     getTxtBlurRadius().getDocument().addDocumentListener(dl);
 
+    getCbRotateDespike().addItemListener(il);
     getCbDespikingNegative().addItemListener(il);
     getCbDespiking().addItemListener(il);
     getTxtDespikeFactor().getDocument().addDocumentListener(dl);
@@ -530,6 +533,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
       int[] matrixInt = si.getDespikeMatrix();
       String matrix = matrixInt == null ? "" : StringUtils.join(matrixInt, ',');
       txtDespikeMatrix.setText(matrix);
+      getCbRotateDespike().setSelected(si.isUseDespiking());
       cbDespiking.setSelected(si.isUseDespiking());
       getCbDespikingNegative().setSelected(si.isUseDespikingNegative());
       //
@@ -596,6 +600,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
         // TODO
         // add despiking components
+        boolean isDespikingRotated = getCbRotateDespike().isSelected();
         boolean useDespiking = cbDespiking.isSelected();
         boolean useDespikingNegative = getCbDespikingNegative().isSelected();
         // remove spaces, split by , and create array of integer
@@ -608,7 +613,7 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
             floatFromTxt(getTxtVelocity()), floatFromTxt(getTxtSpotsize()), imagingMode,
             getBtnReflectHorizontal().isSelected(), getBtnReflectVertical().isSelected(), rotation,
             getCbBiaryData().isSelected(), //
-            useDespiking, useDespikingNegative, despikeFactor, despikeMatrix,
+            useDespiking, isDespikingRotated, useDespikingNegative, despikeFactor, despikeMatrix,
             getCbInterpolate().isSelected(), intFromTxt(getTxtInterpolate()),
             getCbBlurRadius().isSelected(), doubleFromTxt(getTxtBlurRadius()),
             getCbKeepAspectRatio().isSelected(), cbReduce.isSelected(), intFromTxt(txtReduce),
@@ -769,5 +774,9 @@ public class ModuleGeneral extends Collectable2DSettingsModule<SettingsGeneralIm
 
   public JCheckBox getCbDespikingNegative() {
     return cbDespikingNegative;
+  }
+
+  public JCheckBox getCbRotateDespike() {
+    return cbRotateDespike;
   }
 }
