@@ -132,6 +132,14 @@
 
 
 	<dependencies>
+		<!-- https://mvnrepository.com/artifact/com.alanmrace/jimzmlparser -->
+<dependency>
+    <groupId>com.alanmrace</groupId>
+    <artifactId>jimzmlparser</artifactId>
+    <version>1.0.5</version>
+</dependency>
+		
+	
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -163,7 +171,6 @@
 			<version>2.4</version>
 		</dependency>
 
-		<!-- moved jimzML to private repository -->
 		<dependency>
 			<groupId>io.github.mzmine</groupId>
 			<artifactId>mzmine2</artifactId>
