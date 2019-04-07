@@ -91,6 +91,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImageSetupDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
+import net.rs.lamsi.multiimager.Frames.dialogs.ImzMLImportDialog;
 import net.rs.lamsi.multiimager.Frames.multiimageframe.MultiImageFrame;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -112,6 +113,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
   private static ImageEditorWindow thisFrame;
   private ImageLogicRunner logicRunner;
   private ImportDataDialog importDataDialog;
+  private ImzMLImportDialog importImzMLDialog;
   private DialogPreferences preferencesDialog;
   private ImageSetupDialog imageSetupDialog;
 
@@ -197,6 +199,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     WindowStyleUtil.changeWindowStyle(null, WindowStyleUtil.STYLE_SYSTEM);
     EventQueue.invokeLater(new Runnable() {
+      @Override
       public void run() {
         try {
           ImageEditorWindow window = new ImageEditorWindow();
@@ -246,6 +249,11 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     importDataDialog.setVisible(false);
     listFrames.add(importDataDialog);
 
+    importImzMLDialog = new ImzMLImportDialog();
+    WindowStyleUtil.changeWindowStyle(importImzMLDialog, WindowStyleUtil.STYLE_SYSTEM);
+    importImzMLDialog.setVisible(false);
+    listFrames.add(importImzMLDialog);
+
     DialogDataSaver exportDataDialog = DialogDataSaver.createInst(SettingsHolder.getSettings());
     WindowStyleUtil.changeWindowStyle(exportDataDialog, WindowStyleUtil.STYLE_SYSTEM);
     exportDataDialog.setVisible(false);
@@ -260,6 +268,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     // open save project
     JMenuItem mntmOpenProject = new JMenuItem("Open project");
     mntmOpenProject.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent arg0) {
         // load in logicRunner
         logicRunner.loadProjectFromFile();
@@ -270,6 +279,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmSaveProject = new JMenuItem("Save project file");
     mntmSaveProject.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent arg0) {
         // save in logicRunner
         logicRunner.saveProjectToFile();
@@ -281,6 +291,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     // open save image2d
     JMenuItem mntmOpenImage = new JMenuItem("Open image");
     mntmOpenImage.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent arg0) {
         // load in logicRunner
         logicRunner.loadImage2DFromFile();
@@ -292,6 +303,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmSaveImage = new JMenuItem("Save image file");
     mntmSaveImage.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent arg0) {
         // save in logicRunner
         logicRunner.saveImage2DToFile();
@@ -306,6 +318,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmSaveDataAs = new JMenuItem("Export data");
     mntmSaveDataAs.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // open data export dialog
         Collectable2D img = logicRunner.getSelectedImage();
@@ -322,6 +335,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmExportGraphics = new JMenuItem("Export graphics");
     mntmExportGraphics.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // open graph export dialog
         logicRunner.openExportHeatGraphicsDialog();
@@ -330,6 +344,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmExportDataReport = new JMenuItem("Export data report");
     mntmExportDataReport.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         logicRunner.exportDataReport();
       }
@@ -343,12 +358,23 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mnImportData = new JMenuItem("Import data");
     mnImportData.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // opens the import data frame
         importDataDialog.setVisible(true);
       }
     });
     mnFile.add(mnImportData);
+
+    JMenuItem mnImportImzML = new JMenuItem("Import from imzML");
+    mnImportImzML.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // opens the import data frame
+        importImzMLDialog.setVisible(true);
+      }
+    });
+    mnFile.add(mnImportImzML);
 
     // ######################################################################
     // add image2D history TODO
@@ -372,6 +398,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
             JMenuItem mnImportData = new JMenuItem(FileAndPathUtil.eraseFormat(f.getName()) + "; "
                 + f.getParentFile().getAbsolutePath());
             mnImportData.addActionListener(new ActionListener() {
+              @Override
               public void actionPerformed(ActionEvent e) {
                 // choose project dialog
                 ImagingProject project = null;
@@ -475,6 +502,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     menuRbImagingAnalysis = new JRadioButtonMenuItem("Imaging analysis");
     buttonGroup_1.add(menuRbImagingAnalysis);
     menuRbImagingAnalysis.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         JRadioButtonMenuItem rb = (JRadioButtonMenuItem) e.getSource();
         if (rb.isSelected())
@@ -487,6 +515,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     menuRbDirectImagingAnalysis = new JRadioButtonMenuItem("Direct imaging analysis (DIA)");
     buttonGroup_1.add(menuRbDirectImagingAnalysis);
     menuRbDirectImagingAnalysis.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         JRadioButtonMenuItem rb = (JRadioButtonMenuItem) e.getSource();
         if (rb.isSelected())
@@ -500,6 +529,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmMultiImageExplorer = new JMenuItem("Multi image explorer");
     mntmMultiImageExplorer.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // select image list TODO
         TreePath path = DialogLoggerUtil.showTreeDialogAndChoose(thisFrame,
@@ -521,6 +551,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem mntmSelectData = new JMenuItem("Select data");
     mntmSelectData.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         openDataSelectionDialog();
       }
@@ -532,6 +563,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JMenuItem btnOpenPrefDialog = new JMenuItem("General preferences");
     btnOpenPrefDialog.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent arg0) {
         // opens the preferences dialog
         preferencesDialog.setVisible(true);
@@ -544,6 +576,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     JRadioButtonMenuItem rdbtnmntmSystemStyle = new JRadioButtonMenuItem("System style");
     rdbtnmntmSystemStyle.setSelected(true);
     rdbtnmntmSystemStyle.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         JRadioButtonMenuItem rb = (JRadioButtonMenuItem) e.getSource();
         if (rb.isSelected())
@@ -555,6 +588,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JRadioButtonMenuItem rdbtnmntmJavaStyle = new JRadioButtonMenuItem("Java style");
     rdbtnmntmJavaStyle.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         JRadioButtonMenuItem rb = (JRadioButtonMenuItem) e.getSource();
         if (rb.isSelected())
@@ -570,6 +604,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     cbCreateImageIcons = new JCheckBoxMenuItem("Create image icons");
     cbCreateImageIcons.setToolTipText("Creating image icons for the tree view uses RAM");
     cbCreateImageIcons.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         SettingsHolder.getSettings().getSetGeneralPreferences()
             .setGeneratesIcons(cbCreateImageIcons.isSelected());
@@ -580,6 +615,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     cbMenuNorth = new JCheckBoxMenuItem("Show quick menu bar");
     cbMenuNorth.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         getPnNorthMenu().setVisible(cbMenuNorth.isSelected());
       }
@@ -694,6 +730,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JButton btnLoad = new JButton("Load");
     btnLoad.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // load in logicRunner
         logicRunner.loadProjectFromFile();
@@ -703,6 +740,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JButton btnSave = new JButton("Save");
     btnSave.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         logicRunner.saveProjectToFile();
       }
@@ -711,6 +749,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JButton btnRemove = new JButton("Remove");
     btnRemove.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         moduleTreeImages.removeSelectedObjects();
         logicRunner.setSelectedImageAndShow(null);
@@ -761,6 +800,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JButton btnMultiImage = new JButton("");
     btnMultiImage.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         // show dialog with mutliple image view
         ImageGroupMD img = getModuleTreeImages().getSelectedGroup();
@@ -804,6 +844,7 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
 
     JToggleButton tglbtnIsrunning = new JToggleButton("isRunning");
     tglbtnIsrunning.addItemListener(new ItemListener() {
+      @Override
       public void itemStateChanged(ItemEvent e) {
         try {
           long sleep = Long.valueOf(getTxtDirectTime().getText());

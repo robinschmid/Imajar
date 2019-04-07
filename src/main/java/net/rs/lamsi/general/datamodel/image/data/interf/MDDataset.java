@@ -59,6 +59,7 @@ public abstract class MDDataset extends ImageDataset implements Serializable {
    * 
    * @return
    */
+  @Override
   public abstract boolean hasXData();
 
   /**
@@ -87,6 +88,8 @@ public abstract class MDDataset extends ImageDataset implements Serializable {
     if (dataFile != null) {
       g.getSettings().setName((dataFile.getName()));
       g.getSettings().setPathData(dataFile.getAbsolutePath());
+      if (g.size() == 1)
+        g.getFirstImage2D().getSettings().getSettImage().setTitle(dataFile.getName());
     }
     return g;
   }

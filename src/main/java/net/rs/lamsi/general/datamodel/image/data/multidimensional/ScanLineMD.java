@@ -131,7 +131,10 @@ public class ScanLineMD implements Serializable {
   }
 
   public void setX(List<Float> lx) {
-    x = Floats.toArray(lx);
+    if (lx == null)
+      x = null;
+    else
+      x = Floats.toArray(lx);
   }
 
   /**

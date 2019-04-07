@@ -25,7 +25,6 @@ import net.rs.lamsi.general.datamodel.image.ImageMerge;
 import net.rs.lamsi.general.datamodel.image.ImageOverlay;
 import net.rs.lamsi.general.datamodel.image.ImagingProject;
 import net.rs.lamsi.general.datamodel.image.SingleParticleImage;
-import net.rs.lamsi.general.datamodel.image.data.interf.ImageDataset;
 import net.rs.lamsi.general.datamodel.image.data.interf.MDDataset;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetContinuousMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
@@ -47,12 +46,14 @@ import net.rs.lamsi.general.settings.image.sub.SettingsImage2DSetup;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale.ValueMode;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt;
+import net.rs.lamsi.general.settings.importexport.SettingsImzMLImageImport;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramData;
 import net.rs.lamsi.multiimager.Frames.dialogs.analytics.HistogramDialog;
 import net.rs.lamsi.multiimager.utils.imageimportexport.DataExportUtil;
 import net.rs.lamsi.multiimager.utils.imageimportexport.Image2DImportExportUtil;
+import net.rs.lamsi.multiimager.utils.imageimportexport.ImportImzML;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
@@ -60,6 +61,7 @@ import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 import net.rs.lamsi.utils.threads.EasyTask;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import net.rs.lamsi.utils.useful.FileNameExtFilter;
 
 public class ImageLogicRunner {
 
@@ -612,6 +614,108 @@ public class ImageLogicRunner {
     }
   }
 
+
+  public void importDataToImage(SettingsImzMLImageImport settingsDataImport) {
+    JFileChooser fc = preferences.getFcImportImzML();
+    fc.setFileFilter(preferences.getFileTFimzML());
+    // choose files
+    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+      // many folders or files
+      File[] files = fc.getSelectedFiles();
+
+      // set mother directory as NEW Project
+      String newProject =
+          files.length == 1 ? files[0].getName() : files[0].getParentFile().getName();
+      newProject = FileAndPathUtil.eraseFormat(newProject);
+
+      // choose project dialog
+      ImagingProject project =
+          DialogChooseProject.choose(treeImg.getSelectedProject(), treeImg, newProject);
+      if (project == null)
+        project = new ImagingProject(newProject);
+
+      if (files.length > 0) {
+        importImzMLToImage(settingsDataImport, files, project);
+      }
+      // save changed path
+      preferences.saveChanges();
+
+      // run garbage collection
+      System.gc();
+    }
+  }
+
+  // Import data direct with files
+  public ProgressUpdateTask importImzMLToImage(final SettingsImzMLImageImport settingsDataImport,
+      final File[] files, final ImagingProject project) {
+    // load image
+    try {
+      if (files.length > 0) {
+        ProgressUpdateTask task = new ProgressUpdateTask(files.length) {
+          // Load all Files
+          @Override
+          protected Boolean doInBackground2() throws Exception {
+            try {
+              boolean state = false;
+              ArrayList<File> imzml = new ArrayList<>();
+              // go into sub folders to find data
+              // load each folder as one set of images
+              for (File f : files) {
+                if (f.isDirectory()) {
+                  // get all files in this folder TODO change csv to settings
+                  // each file[] element is for one image
+                  List<File[]> sub = FileAndPathUtil.findFilesInDir(f,
+                      new FileNameExtFilter("", "imzml"), true, false);
+
+                  for (File[] i : sub) {
+                    for (File imz : i) {
+                      imzml.add(imz);
+                    }
+                  }
+                } else if (preferences.getFileTFimzML().accept(f))
+                  imzml.add(f);
+              }
+
+              setProgress(0);
+              setProgressSteps(imzml.size());
+              for (File imzFile : imzml) {
+                state = true;
+                // load them as image set
+                ImageGroupMD imgs = ImportImzML.parse(imzFile, settingsDataImport, this);
+
+                // add to project
+                if (project != null && imgs != null) {
+                  setUpImage2D(imgs);
+                  project.add(imgs);
+                }
+
+                logger.debug("Imported image {}", imzFile.getName());
+                if (imgs.getImages().size() > 0) {
+                  // add img to list
+                  addGroup(imgs, project);
+                }
+              }
+              return state;
+            } catch (Exception e) {
+              logger.error("Import text data to image failed", e);
+              DialogLoggerUtil.showErrorDialog(window, "Import failed", e);
+              return false;
+            }
+          }
+        };
+        task.execute();
+        return task;
+      }
+
+    } catch (
+
+    Exception e) {
+      logger.error("", e);
+      DialogLoggerUtil.showErrorDialog(window, "Import of imzML failed", e);
+    }
+    return null;
+  }
+
   /**
    * Import from data file txt, csv, xlsx or set up the direct imaging analysis
    * 
@@ -640,7 +744,7 @@ public class ImageLogicRunner {
 
         if (files.length > 0) {
           // open the files
-          SettingsImageDataImportTxt sett = (SettingsImageDataImportTxt) settingsDataImport;
+          SettingsImageDataImportTxt sett = settingsDataImport;
 
           // import or start direct image analysis?
           if (window.getCurrentView() == ImageEditorWindow.VIEW_IMAGING_ANALYSIS) {
@@ -1186,9 +1290,8 @@ public class ImageLogicRunner {
           }
 
           // create image
-          int index = ((MDDataset) selectedImage.getImageGroup().getData()).addDimension(data);
-          Image2D result =
-              new Image2D((ImageDataset) selectedImage.getImageGroup().getData(), index);
+          int index = selectedImage.getImageGroup().getData().addDimension(data);
+          Image2D result = new Image2D(selectedImage.getImageGroup().getData(), index);
 
           result.getSettings().getSettImage().setTitle(file.getName());
           result.getSettings().getSettImage().setRAWFilepath(file.getAbsolutePath());

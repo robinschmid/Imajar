@@ -12,10 +12,9 @@ public class SettingsImzMLImageImport extends Settings {
   private static final long serialVersionUID = 1L;
   //
   // [entry][center , window]
-  private double[][] importList;
-
-  private boolean useWindow = false;
-  private double window = 0.02;
+  private double[][] importListImzML;
+  private boolean useImzMLWindow = false;
+  private double imzMLWindow = 0.02;
 
 
   public SettingsImzMLImageImport() {
@@ -25,26 +24,31 @@ public class SettingsImzMLImageImport extends Settings {
 
   @Override
   public void resetAll() {
-    importList = new double[0][0];
-    useWindow = false;
-    window = 0.02;
+    importListImzML = new double[0][0];
+    useImzMLWindow = false;
+    imzMLWindow = 0.02;
   }
 
+  public void setAll(double[][] importListImzML, boolean useImzMLWindow, double imzMLWindow) {
+    this.importListImzML = importListImzML;
+    this.useImzMLWindow = useImzMLWindow;
+    this.imzMLWindow = imzMLWindow;
+  }
 
   // ##########################################################
   // xml input/output
   @Override
   public void appendSettingsValuesToXML(Element elParent, Document doc) {
     StringBuilder s = new StringBuilder();
-    for (int i = 0; i < importList.length; i++) {
-      s.append(StringUtils.join(importList[i], ','));
-      if (i < importList.length - 1)
+    for (int i = 0; i < importListImzML.length; i++) {
+      s.append(StringUtils.join(importListImzML[i], ','));
+      if (i < importListImzML.length - 1)
         s.append(";");
     }
 
     toXML(elParent, doc, "importList", s.toString());
-    toXML(elParent, doc, "useWindow", useWindow);
-    toXML(elParent, doc, "window", window);
+    toXML(elParent, doc, "useWindow", useImzMLWindow);
+    toXML(elParent, doc, "window", imzMLWindow);
   }
 
   @Override
@@ -55,17 +59,17 @@ public class SettingsImzMLImageImport extends Settings {
         Element nextElement = (Element) list.item(i);
         String paramName = nextElement.getNodeName();
         if (paramName.equals("useWindow"))
-          useWindow = booleanFromXML(nextElement);
+          useImzMLWindow = booleanFromXML(nextElement);
         else if (paramName.equals("window"))
-          window = doubleFromXML(nextElement);
+          imzMLWindow = doubleFromXML(nextElement);
         else if (paramName.equals("importList")) {
           String s = nextElement.getTextContent();
           String[] values = s.split(";");
-          importList = new double[values.length][2];
+          importListImzML = new double[values.length][2];
           for (int j = 0; j < values.length; j++) {
             String[] sep = values[j].split(",");
-            importList[j][0] = Double.parseDouble(sep[0]);
-            importList[j][1] = Double.parseDouble(sep[1]);
+            importListImzML[j][0] = Double.parseDouble(sep[0]);
+            importListImzML[j][1] = Double.parseDouble(sep[1]);
           }
         }
       }
@@ -73,27 +77,27 @@ public class SettingsImzMLImageImport extends Settings {
   }
 
   public double[][] getImportList() {
-    return importList;
+    return importListImzML;
   }
 
   public void setImportList(double[][] importList) {
-    this.importList = importList;
+    this.importListImzML = importList;
   }
 
   public boolean isUseWindow() {
-    return useWindow;
+    return useImzMLWindow;
   }
 
   public void setUseWindow(boolean useWindow) {
-    this.useWindow = useWindow;
+    this.useImzMLWindow = useWindow;
   }
 
   public double getWindow() {
-    return window;
+    return imzMLWindow;
   }
 
   public void setWindow(double window) {
-    this.window = window;
+    this.imzMLWindow = window;
   }
 
 }

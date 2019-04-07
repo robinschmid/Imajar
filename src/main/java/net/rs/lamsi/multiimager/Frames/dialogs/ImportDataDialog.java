@@ -26,7 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
@@ -122,14 +121,6 @@ public class ImportDataDialog extends JDialog {
   private JLabel lblSkipBetweenTitles;
   private JTextField txtSkipRowsTitlesToData;
   private JRadioButton rbPresetArne;
-  private JPanel tabIMZML;
-  private JPanel panel_7;
-  private JButton btnOpenMzList;
-  private JCheckBox cbUseMZWindow;
-  private JTextField txtIMZMLWindow;
-  private JScrollPane scrollPane_1;
-  private JTextArea txtIMZMLList;
-  private JButton btnSaveMzList;
 
 
   /**
@@ -414,44 +405,6 @@ public class ImportDataDialog extends JDialog {
             txtSplitStart.setText("0");
             pnContinuousSplit.add(txtSplitStart, "cell 1 2,growx");
             txtSplitStart.setColumns(6);
-          }
-        }
-      }
-      {
-        tabIMZML = new JPanel();
-        tabbedPane.addTab("imzML", null, tabIMZML, null);
-        tabIMZML.setLayout(new BorderLayout(0, 0));
-        {
-          panel_7 = new JPanel();
-          tabIMZML.add(panel_7, BorderLayout.NORTH);
-          {
-            btnOpenMzList = new JButton("Open mz list");
-            panel_7.add(btnOpenMzList);
-          }
-          {
-            btnSaveMzList = new JButton("Save mz list");
-            panel_7.add(btnSaveMzList);
-          }
-          {
-            cbUseMZWindow = new JCheckBox("override mz window with");
-            panel_7.add(cbUseMZWindow);
-          }
-          {
-            txtIMZMLWindow = new JTextField();
-            txtIMZMLWindow.setText("0.01");
-            panel_7.add(txtIMZMLWindow);
-            txtIMZMLWindow.setColumns(10);
-          }
-        }
-        {
-          scrollPane_1 = new JScrollPane();
-          tabIMZML.add(scrollPane_1, BorderLayout.CENTER);
-          {
-            txtIMZMLList = new JTextArea();
-            txtIMZMLList.setToolTipText(
-                "Enter m/z center values (one per row) and optionally the m/z window width separated by a comma: center,window width");
-            txtIMZMLList.setText("200,0.02");
-            scrollPane_1.setViewportView(txtIMZMLList);
           }
         }
       }
@@ -1199,15 +1152,4 @@ public class ImportDataDialog extends JDialog {
     return rbPresetArne;
   }
 
-  public JCheckBox getCbUseMZWindow() {
-    return cbUseMZWindow;
-  }
-
-  public JTextField getTxtIMZMLWindow() {
-    return txtIMZMLWindow;
-  }
-
-  public JTextArea getTxtIMZMLList() {
-    return txtIMZMLList;
-  }
 }

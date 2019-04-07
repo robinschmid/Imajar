@@ -1,45 +1,94 @@
 package net.rs.lamsi.multiimager.utils.imageimportexport;
 
 import java.io.File;
-import java.util.ArrayList;
-import net.rs.lamsi.general.datamodel.image.Image2D;
+import java.io.IOException;
+import java.util.Arrays;
+import com.alanmrace.jimzmlparser.imzml.ImzML;
+import com.alanmrace.jimzmlparser.mzml.Spectrum;
+import com.alanmrace.jimzmlparser.parser.ImzMLHandler;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
+import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
 import net.rs.lamsi.general.settings.importexport.SettingsImzMLImageImport;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class ImportImzML {
 
-  public static ImageGroupMD[] parse(File[] files, SettingsImzMLImageImport sett,
-      ProgressUpdateTask task) throws Exception {
+  public static ImageGroupMD parse(File f, SettingsImzMLImageImport sett, ProgressUpdateTask task)
+      throws Exception {
     // images
-    ArrayList<ImageGroupMD> groups = new ArrayList<ImageGroupMD>();
+    double[][] mz = sett.getImportList();
+    double window = sett.getWindow();
+    boolean useWindow = sett.isUseWindow();
 
     // all files
-    for (File f : files) {
-      ImageGroupMD group = parseFile(f, sett);
+    try {
+      ImzML imzml = ImzMLHandler.parseimzML(f.getAbsolutePath(), true);
 
-      // newly loaded group size is 1 and dimensions are the same?
-      if (!groups.isEmpty() && group.size() == 1
-          && group.getData().hasSameDataDimensionsAs(groups.get(0).getData())) {
-        // add to data set
-        groups.get(0).getData().addDimension((Image2D) group.get(0));
-        // add image to first group
-        groups.get(0).add(group.get(0));
-      }
-      // else - add to group list
-      else {
-        if (group != null)
-          groups.add(group);
-      }
+      //
+      ScanLineMD[] lines = new ScanLineMD[imzml.getHeight()];
+      for (int y = 0; y < imzml.getHeight(); y++) {
+        // image, x
+        double[][] dimensions = new double[mz.length][imzml.getWidth()];
+        for (int x = 0; x < imzml.getWidth(); x++) {
+          double[] intensities =
+              getIntensities(imzml.getSpectrum(x + 1, y + 1), mz, window, useWindow);
 
+          for (int i = 0; i < intensities.length; i++) {
+            dimensions[i][x] = intensities[i];
+          }
+        }
+        lines[y] = new ScanLineMD(null, dimensions);
+      }
       if (task != null)
         task.addProgressStep(1.0);
+
+      // Generate Image2D from scanLines
+      DatasetLinesMD dataset = new DatasetLinesMD(lines);
+      return dataset.createImageGroup(f);
+    } catch (Exception e) {
+      return null;
     }
+  }
 
-    // return image
-    ImageGroupMD imgArray[] = new ImageGroupMD[groups.size()];
-    imgArray = groups.toArray(imgArray);
-    return imgArray;
 
+  private static double[] getIntensities(Spectrum s, double[][] list, double window,
+      boolean useWindow) {
+    double[] intensities = new double[list.length];
+    Arrays.fill(intensities, Double.NaN);
+    try {
+      double[] i = s.getIntensityArray();
+      double[] mz = s.getmzArray();
+      for (int j = 0; j < list.length; j++) {
+        try {
+          double currentWindow = useWindow || list[j][1] == 0 ? window : list[j][1];
+          intensities[j] = getMaxIntensity(mz, i, list[j][0], currentWindow);
+        } catch (Exception e) {
+          intensities[j] = Double.NaN;
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return intensities;
+  }
+
+  /**
+   * maximum intensity in range centermz+-pm
+   * 
+   * @param mz
+   * @param i
+   * @param centermz
+   * @param pm
+   * @return
+   */
+  private static double getMaxIntensity(double[] mz, double[] i, double centermz, double pm) {
+    double max = 0;
+    for (int x = 0; x < mz.length; x++) {
+      if (mz[x] >= centermz - pm && mz[x] <= centermz + pm)
+        if (i[x] > max)
+          max = i[x];
+    }
+    return max;
   }
 }

@@ -249,7 +249,7 @@ public class TxtWriter {
       }
       out.flush();
     } catch (IOException ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -263,7 +263,7 @@ public class TxtWriter {
       out.append(s);
       out.flush();
     } catch (IOException ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -284,7 +284,7 @@ public class TxtWriter {
       closeDatOutput();
       out = new BufferedWriter(new FileWriter(file));
     } catch (IOException e) {
-      logger.error("",e);
+      logger.error("", e);
     }
   }
 
@@ -297,7 +297,7 @@ public class TxtWriter {
         out.close();
       out = null;
     } catch (IOException ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -315,6 +315,40 @@ public class TxtWriter {
    */
   public void writeDataArrayToFile(File file, Object[][] model, String sep) {
     writeDataArrayToFile(file.getAbsolutePath(), model, sep);
+  }
+
+  /**
+   * write data array to file. mode[row][col].
+   * 
+   * @param file
+   * @param model
+   * @param sep
+   */
+  public void writeDataArrayToFile(String file, double[][] model, String sep) {
+    try {
+      StringBuilder s = new StringBuilder();
+
+      for (int r = 0; r < model.length; r++) {
+        for (int c = 0; c < model[r].length; c++) {
+          s.append(model[r][c]);
+          if (c != model[r].length - 1)
+            s.append(sep);
+        }
+        s.append("\n");
+      }
+      // StringSelection transferable = new StringSelection(s.toString());
+
+      // open new file
+      openNewFileOutput(file);
+
+      // write string
+      write(s.toString());
+
+      // close
+      closeDatOutput();
+    } catch (Exception ex) {
+      logger.error("", ex);
+    }
   }
 
   /**
@@ -347,7 +381,7 @@ public class TxtWriter {
       // close
       closeDatOutput();
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -381,7 +415,7 @@ public class TxtWriter {
       // close
       closeDatOutput();
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 
@@ -409,7 +443,7 @@ public class TxtWriter {
       // write string
       write(s.toString());
     } catch (Exception ex) {
-      logger.error("",ex);
+      logger.error("", ex);
     }
   }
 

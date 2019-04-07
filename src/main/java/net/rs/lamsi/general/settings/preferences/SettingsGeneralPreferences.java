@@ -31,13 +31,14 @@ public class SettingsGeneralPreferences extends Settings {
   // private File fcOpen, fcImportPicture, fcImport, fcSave;
 
   // Filechooser
+  private final JFileChooser fcImportImzML = new JFileChooser();
   private final JFileChooser fcOpen = new JFileChooser();
   private final JFileChooser fcImportPicture = new JFileChooser();
   private final JFileChooser fcImport = new JFileChooser();
   private final JFileChooser fcSave = new JFileChooser();
   private final JFileChooser fcExportPicture = new JFileChooser();
   private final FileTypeFilter fileTFImage2D, filePictureExport, fileTFProject, fileTFtxt,
-      fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx;
+      fileTFtxtcsv, fileTFcsv, fileTFxls, fileTFxlsx, fileTFimzML;
   private final FileTypeFilter filePicture;
 
   // save a history of image2d imports/exports
@@ -64,6 +65,11 @@ public class SettingsGeneralPreferences extends Settings {
     fcSave.addChoosableFileFilter(fileTFProject);
     fcSave.setFileFilter(fileTFProject);
     fcSave.setMultiSelectionEnabled(false);
+
+    getFcImportImzML()
+        .addChoosableFileFilter(fileTFimzML = new FileTypeFilter("imzML", "Import imzML file"));
+    getFcImportImzML().setMultiSelectionEnabled(true);
+    getFcImportImzML().setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
     String[] txtcsv = {"txt", "csv"};
     fcImport.addChoosableFileFilter(
@@ -120,6 +126,7 @@ public class SettingsGeneralPreferences extends Settings {
     toXML(elParent, doc, "fcExportPicture",
         fcImportPicture.getCurrentDirectory().getAbsolutePath());
     toXML(elParent, doc, "fcImport", fcImport.getCurrentDirectory().getAbsolutePath());
+    toXML(elParent, doc, "fcImportImzML", fcImportImzML.getCurrentDirectory().getAbsolutePath());
     toXML(elParent, doc, "fcSave", fcSave.getCurrentDirectory().getAbsolutePath());
     // image 2d import/export history
     for (int i = 0; i < img2DHistory.size(); i++)
@@ -146,6 +153,8 @@ public class SettingsGeneralPreferences extends Settings {
           fcImportPicture.setCurrentDirectory(new File(nextElement.getTextContent()));
         else if (paramName.equals("fcExportPicture"))
           fcExportPicture.setCurrentDirectory(new File(nextElement.getTextContent()));
+        else if (paramName.equals("fcImportImzML"))
+          fcImportImzML.setCurrentDirectory(new File(nextElement.getTextContent()));
         else if (paramName.equals("fcImport"))
           fcImport.setCurrentDirectory(new File(nextElement.getTextContent()));
         else if (paramName.equals("fcSave"))
@@ -252,6 +261,10 @@ public class SettingsGeneralPreferences extends Settings {
     return fileTFtxtcsv;
   }
 
+  public FileTypeFilter getFileTFimzML() {
+    return fileTFimzML;
+  }
+
   public FileTypeFilter getFileTFcsv() {
     return fileTFcsv;
   }
@@ -281,6 +294,11 @@ public class SettingsGeneralPreferences extends Settings {
 
   public FileTypeFilter getFileTFProject() {
     return fileTFProject;
+  }
+
+
+  public JFileChooser getFcImportImzML() {
+    return fcImportImzML;
   }
 
 }

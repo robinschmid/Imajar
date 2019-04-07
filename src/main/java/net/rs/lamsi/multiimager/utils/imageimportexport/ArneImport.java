@@ -28,6 +28,7 @@ public class ArneImport {
     for (File f : files) {
       ImageGroupMD group = parseFile(f, sett);
 
+
       // newly loaded group size is 1 and dimensions are the same?
       if (!groups.isEmpty() && group.size() == 1
           && group.getData().hasSameDataDimensionsAs(groups.get(0).getData())) {
