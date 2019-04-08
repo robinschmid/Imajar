@@ -43,6 +43,7 @@ public class SettingsGeneralPreferences extends Settings {
 
   // save a history of image2d imports/exports
   private Vector<File> img2DHistory = new Vector<File>(HISTORY_SIZE);
+  private Vector<File> imzmlListHistory = new Vector<File>();
 
 
 
@@ -110,6 +111,8 @@ public class SettingsGeneralPreferences extends Settings {
     generatesIcons = true;
     if (img2DHistory != null)
       img2DHistory.removeAllElements();
+    if (imzmlListHistory != null)
+      imzmlListHistory.removeAllElements();
   }
 
   // ##########################################################
@@ -131,6 +134,8 @@ public class SettingsGeneralPreferences extends Settings {
     // image 2d import/export history
     for (int i = 0; i < img2DHistory.size(); i++)
       toXML(elParent, doc, "img2DHistory_" + i, img2DHistory.get(i).getAbsolutePath());
+    for (int i = 0; i < imzmlListHistory.size(); i++)
+      toXML(elParent, doc, "imzmlListHistory_" + i, imzmlListHistory.get(i).getAbsolutePath());
 
   }
 
@@ -161,6 +166,10 @@ public class SettingsGeneralPreferences extends Settings {
           fcSave.setCurrentDirectory(new File(nextElement.getTextContent()));
         else if (paramName.startsWith("img2DHistory")) {
           img2DHistory.addElement(new File(nextElement.getTextContent()));
+        } else if (paramName.startsWith("imzmlListHistory")) {
+          File file = new File(nextElement.getTextContent());
+          if (file.exists())
+            imzmlListHistory.addElement(file);
         }
       }
     }
@@ -193,6 +202,36 @@ public class SettingsGeneralPreferences extends Settings {
       fireChangeEvent();
     }
   }
+
+  /**
+   * adds the path of an imzml mz list
+   * 
+   * @param path
+   */
+  public boolean addMZListForImzMLPath(File path, boolean saveChanges) {
+    boolean added = false;
+    // already inserted?
+    if (!imzmlListHistory.contains(path)) {
+      added = true;
+      imzmlListHistory.add(0, path);
+      if (saveChanges)
+        saveChanges();
+      // fire event
+      fireChangeEvent();
+    }
+
+    return added;
+  }
+
+  /**
+   * Last loaded lists of mz values to extract from imzML
+   * 
+   * @return
+   */
+  public Vector<File> getImzmlListHistory() {
+    return imzmlListHistory;
+  }
+
 
   /**
    * saves the changes to the general pref file

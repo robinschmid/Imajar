@@ -2,6 +2,7 @@ package net.rs.lamsi.multiimager.utils.imageimportexport;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import com.alanmrace.jimzmlparser.imzml.ImzML;
 import com.alanmrace.jimzmlparser.mzml.Spectrum;
@@ -20,6 +21,7 @@ public class ImportImzML {
     double[][] mz = sett.getImportList();
     double window = sett.getWindow();
     boolean useWindow = sett.isUseWindow();
+    String[] titles = createTitles(mz, window, useWindow);
 
     // all files
     try {
@@ -45,10 +47,21 @@ public class ImportImzML {
 
       // Generate Image2D from scanLines
       DatasetLinesMD dataset = new DatasetLinesMD(lines);
-      return dataset.createImageGroup(f);
+      ImageGroupMD group = dataset.createImageGroup(f, titles);
+      return group;
     } catch (Exception e) {
       return null;
     }
+  }
+
+
+  private static String[] createTitles(double[][] mz, double window, boolean useWindow) {
+    String[] titles = new String[mz.length];
+    for (int i = 0; i < titles.length; i++) {
+      double realWindow = useWindow || mz[i][1] == 0 ? window : mz[i][1];
+      titles[i] = MessageFormat.format("mz={0} ({1} width)", mz[i][0], realWindow);
+    }
+    return titles;
   }
 
 

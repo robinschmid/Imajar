@@ -2,24 +2,36 @@ package net.rs.lamsi.multiimager.Frames.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import net.rs.lamsi.general.framework.modules.SettingsModule;
+import net.rs.lamsi.general.settings.SettingsHolder;
 import net.rs.lamsi.general.settings.importexport.SettingsImzMLImageImport;
+import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
@@ -28,11 +40,14 @@ import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
 public class ImzMLImportDialog extends JDialog {
 
+  private SettingsGeneralPreferences preferences;
   private JFileChooser fc = new JFileChooser();
   private final JPanel contentPanel = new JPanel();
   private JTextField txtMZWindow;
   private JCheckBox cbUseMZWindow;
   private JTextArea txtMZList;
+  private JList<String> txtLastFiles;
+  private List<File> lastFiles;
 
   /**
    * Launch the application.
@@ -51,6 +66,7 @@ public class ImzMLImportDialog extends JDialog {
    * Create the dialog.
    */
   public ImzMLImportDialog() {
+    preferences = SettingsHolder.getSettings().getSetGeneralPreferences();
     fc.addChoosableFileFilter(new FileTypeFilter("csv", "Comma separated file"));
     setBounds(100, 100, 450, 300);
     getContentPane().setLayout(new BorderLayout());
@@ -87,13 +103,52 @@ public class ImzMLImportDialog extends JDialog {
       }
     }
     {
-      JScrollPane scrollPane = new JScrollPane();
-      scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-      contentPanel.add(scrollPane, BorderLayout.CENTER);
+      JPanel panel_1 = new JPanel();
+      contentPanel.add(panel_1, BorderLayout.CENTER);
+      panel_1.setLayout(new GridLayout(1, 0, 0, 0));
       {
-        txtMZList = new JTextArea();
-        txtMZList.setText("200,0.02");
-        scrollPane.setViewportView(txtMZList);
+        JPanel panel = new JPanel();
+        panel_1.add(panel);
+        panel.setLayout(new BorderLayout(0, 0));
+        {
+          JScrollPane scrollPane = new JScrollPane();
+          panel.add(scrollPane, BorderLayout.CENTER);
+          scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+          {
+            txtLastFiles = new JList<>();
+            txtLastFiles.setModel(new DefaultListModel<String>());
+            txtLastFiles.setToolTipText("Open last used files by a double click");
+            scrollPane.setViewportView(txtLastFiles);
+            txtLastFiles.addMouseListener(new ActionJList(txtLastFiles));
+          }
+        }
+        {
+          JLabel lblNewLabel = new JLabel("Last loaded lists (double click)");
+          panel.add(lblNewLabel, BorderLayout.NORTH);
+          lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+          lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 12));
+        }
+      }
+      {
+        JPanel panel = new JPanel();
+        panel_1.add(panel);
+        panel.setLayout(new BorderLayout(0, 0));
+        {
+          JScrollPane scrollPane = new JScrollPane();
+          panel.add(scrollPane, BorderLayout.CENTER);
+          scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+          {
+            txtMZList = new JTextArea();
+            txtMZList.setText("200,0.02");
+            scrollPane.setViewportView(txtMZList);
+          }
+        }
+        {
+          JLabel lblMzListcenterwindow = new JLabel("m/z list (center,window)");
+          lblMzListcenterwindow.setHorizontalAlignment(SwingConstants.CENTER);
+          lblMzListcenterwindow.setFont(new Font("Tahoma", Font.BOLD, 12));
+          panel.add(lblMzListcenterwindow, BorderLayout.NORTH);
+        }
       }
     }
     {
@@ -112,27 +167,15 @@ public class ImzMLImportDialog extends JDialog {
         buttonPane.add(cancelButton);
       }
     }
+    updateLastLoadedLists();
   }
 
   private void loadList() {
     if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       File f = fc.getSelectedFile();
-      TxtWriter writer = new TxtWriter();
-      Vector<String> lines = writer.readLines(f);
-
-      // append or replace
-      Object[] options = {"Append", "Replace"};
-      int n = JOptionPane.showOptionDialog(this, "Append or replace?", "Append or replace?",
-          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-      boolean append = n == 0;
-
-      if (!append)
-        txtMZList.setText("");
-      else
-        txtMZList.append("\n");
-
-      for (String s : lines)
-        txtMZList.append(s + "\n");
+      openListFile(f);
+      preferences.addMZListForImzMLPath(f, true);
+      updateLastLoadedLists();
     }
   }
 
@@ -144,7 +187,37 @@ public class ImzMLImportDialog extends JDialog {
       writer.openNewFileOutput(file);
       writer.write(txtMZList.getText());
       writer.closeDatOutput();
+      preferences.addMZListForImzMLPath(new File(file), true);
+      updateLastLoadedLists();
     }
+  }
+
+  private void updateLastLoadedLists() {
+    lastFiles = preferences.getImzmlListHistory();
+    for (File f : lastFiles)
+      ((DefaultListModel) txtLastFiles.getModel())
+          .addElement(MessageFormat.format("\n{0} ({1})", f.getName(), f.getAbsolutePath()));
+
+  }
+
+
+  private void openListFile(File f) {
+    TxtWriter writer = new TxtWriter();
+    Vector<String> lines = writer.readLines(f);
+
+    // append or replace
+    Object[] options = {"Append", "Replace"};
+    int n = JOptionPane.showOptionDialog(this, "Append or replace?", "Append or replace?",
+        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+    boolean append = n == 0;
+
+    if (!append)
+      txtMZList.setText("");
+    else
+      txtMZList.append("\n");
+
+    for (String s : lines)
+      txtMZList.append(s + "\n");
   }
 
   private void importImzMLData() {
@@ -192,5 +265,30 @@ public class ImzMLImportDialog extends JDialog {
 
   public JTextArea getTxtMZList() {
     return txtMZList;
+  }
+
+  public JList<String> getTxtLastFiles() {
+    return txtLastFiles;
+  }
+
+
+  class ActionJList extends MouseAdapter {
+    protected JList<String> list;
+
+    public ActionJList(JList<String> l) {
+      list = l;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      if (e.getClickCount() == 2) {
+        int index = list.locationToIndex(e.getPoint());
+        if (index >= 0) {
+          list.ensureIndexIsVisible(index);
+          File f = lastFiles.get(index);
+          openListFile(f);
+        }
+      }
+    }
   }
 }
