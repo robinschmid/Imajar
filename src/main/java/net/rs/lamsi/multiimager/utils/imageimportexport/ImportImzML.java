@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.alanmrace.jimzmlparser.imzml.ImzML;
 import com.alanmrace.jimzmlparser.mzml.Spectrum;
 import com.alanmrace.jimzmlparser.parser.ImzMLHandler;
@@ -14,6 +16,7 @@ import net.rs.lamsi.general.settings.importexport.SettingsImzMLImageImport;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 
 public class ImportImzML {
+  private static final Logger logger = LoggerFactory.getLogger(ImportImzML.class);
 
   public static ImageGroupMD parse(File f, SettingsImzMLImageImport sett, ProgressUpdateTask task)
       throws Exception {
@@ -22,10 +25,14 @@ public class ImportImzML {
     double window = sett.getWindow();
     boolean useWindow = sett.isUseWindow();
     String[] titles = createTitles(mz, window, useWindow);
+    int specCount = 0;
 
     // all files
     try {
+      logger.info("Open imzML: " + f.getAbsolutePath());
       ImzML imzml = ImzMLHandler.parseimzML(f.getAbsolutePath(), true);
+      logger.info("DONE: open imzML: " + f.getAbsolutePath());
+      logger.info("Width={}  Height={}", imzml.getWidth(), imzml.getHeight());
 
       //
       ScanLineMD[] lines = new ScanLineMD[imzml.getHeight()];
@@ -33,9 +40,19 @@ public class ImportImzML {
         // image, x
         double[][] dimensions = new double[mz.length][imzml.getWidth()];
         for (int x = 0; x < imzml.getWidth(); x++) {
-          double[] intensities =
-              getIntensities(imzml.getSpectrum(x + 1, y + 1), mz, window, useWindow);
-
+          Spectrum spec = imzml.getSpectrum(x + 1, y + 1);
+          // logger.info("x={} y={} , spec={}", x, y, spec);
+          double[] intensities;
+          if (spec != null) {
+            intensities = getIntensities(spec, mz, window, useWindow);
+            specCount++;
+          } else {
+            intensities = new double[mz.length];
+            for (int i = 0; i < intensities.length; i++) {
+              intensities[i] = Double.NaN;
+            }
+          }
+          //
           for (int i = 0; i < intensities.length; i++) {
             dimensions[i][x] = intensities[i];
           }
@@ -45,11 +62,15 @@ public class ImportImzML {
       if (task != null)
         task.addProgressStep(1.0);
 
+      logger.info("{} spectra imported", specCount);
+
+      logger.info("Creating images now");
       // Generate Image2D from scanLines
       DatasetLinesMD dataset = new DatasetLinesMD(lines);
       ImageGroupMD group = dataset.createImageGroup(f, titles);
       return group;
     } catch (Exception e) {
+      logger.error("Error in imzML import", e);
       return null;
     }
   }
@@ -81,7 +102,7 @@ public class ImportImzML {
         }
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Cannot load intensities ", e);
     }
     return intensities;
   }
