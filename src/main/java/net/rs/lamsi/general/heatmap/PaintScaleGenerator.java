@@ -81,7 +81,7 @@ public class PaintScaleGenerator {
       Color firstc = null;
       Color lastc = null;
       // Invisible or White / Black or min color
-      // color as min for one sided monochrome
+      // color as min for one sided
       if (settings.isMonochrom() && (settings.isUsesWAsMin() ^ settings.isUsesBAsMax())) {
         Color c = settings.getMinColor();
         firstc = settings.isInverted() ? (settings.isUsesBAsMax() ? Color.BLACK : c)
