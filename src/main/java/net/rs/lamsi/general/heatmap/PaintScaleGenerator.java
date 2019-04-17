@@ -120,7 +120,7 @@ public class PaintScaleGenerator {
         lastc = transparent;
 
       // add first two color steps
-      paintScale.add(min, firstc);
+      paintScale.add(Double.NEGATIVE_INFINITY, firstc);
       paintScale.add(realmin, firstc);
       i++;
 
@@ -136,6 +136,7 @@ public class PaintScaleGenerator {
         paintScale.add(realmax + Double.MIN_VALUE, lastc);
         paintScale.add(max, lastc);
       }
+      paintScale.add(Double.POSITIVE_INFINITY, lastc);
 
       //
       return paintScale;
@@ -229,7 +230,7 @@ public class PaintScaleGenerator {
 
       // add list
       for (int i = 1; i < steps; i++) {
-        float p = i / (float) (steps - 1.f);
+        float p = i / (steps - 1.f);
         double v = (float) (realmin + (realmax - realmin) * p);
         if (!isInverted)
           p = 1.f - p;
