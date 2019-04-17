@@ -89,6 +89,7 @@ import net.rs.lamsi.multiimager.Frames.dialogs.CroppingDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogChooseProject;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogDataSaver;
 import net.rs.lamsi.multiimager.Frames.dialogs.DialogPreferences;
+import net.rs.lamsi.multiimager.Frames.dialogs.EMPAImportDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImageSetupDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImportDataDialog;
 import net.rs.lamsi.multiimager.Frames.dialogs.ImzMLImportDialog;
@@ -187,6 +188,8 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
   private JPanel pnNorth;
   private JPanel pnNorthMenu;
 
+  private EMPAImportDialog importEMPADialog;
+
   /**
    * Launch the application.
    */
@@ -253,6 +256,11 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
     WindowStyleUtil.changeWindowStyle(importImzMLDialog, WindowStyleUtil.STYLE_SYSTEM);
     importImzMLDialog.setVisible(false);
     listFrames.add(importImzMLDialog);
+
+    importEMPADialog = new EMPAImportDialog();
+    WindowStyleUtil.changeWindowStyle(importEMPADialog, WindowStyleUtil.STYLE_SYSTEM);
+    importEMPADialog.setVisible(false);
+    listFrames.add(importEMPADialog);
 
     DialogDataSaver exportDataDialog = DialogDataSaver.createInst(SettingsHolder.getSettings());
     WindowStyleUtil.changeWindowStyle(exportDataDialog, WindowStyleUtil.STYLE_SYSTEM);
@@ -375,6 +383,16 @@ public class ImageEditorWindow extends JFrame implements Runnable, ImportantWind
       }
     });
     mnFile.add(mnImportImzML);
+
+    JMenuItem mnImportEMPA = new JMenuItem("Import for EMPA");
+    mnImportEMPA.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        // opens the import data frame
+        importEMPADialog.setVisible(true);
+      }
+    });
+    mnFile.add(mnImportEMPA);
 
     // ######################################################################
     // add image2D history TODO
