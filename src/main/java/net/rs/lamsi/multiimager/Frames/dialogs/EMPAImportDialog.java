@@ -17,6 +17,7 @@ import java.nio.ByteOrder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -56,6 +57,8 @@ import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
 import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
+import net.rs.lamsi.utils.threads.ProgressUpdateTask;
+import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 public class EMPAImportDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -71,6 +74,10 @@ public class EMPAImportDialog extends JFrame {
   private int[] currentXYZ;
   private int[] maxXYZ;
 
+  // only if load to memory
+  // data x y z dp
+  private double[][][][] data = null;
+
   private DecimalFormat[] format;
   private String currentName;
 
@@ -84,12 +91,16 @@ public class EMPAImportDialog extends JFrame {
 
   private JTextField txtY;
 
+  private ProgressUpdateTask task;
+  private boolean allFilesImported;
+
   /**
    * Launch the application.
    */
   public static void main(String[] args) {
     try {
       EMPAImportDialog dialog = new EMPAImportDialog();
+      ProgressDialog.initDialog(dialog);
       dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
       dialog.setVisible(true);
     } catch (Exception e) {
@@ -226,9 +237,18 @@ public class EMPAImportDialog extends JFrame {
 
   private void showSpectrumAt(int x, int y, int z) {
     try {
-      File f = getFileName(x, y, z);
-      if (f != null && f.exists()) {
-
+      if (data != null) {
+        try {
+          createChart(data[x][y][z]);
+        } catch (Exception e) {
+          logger.error("", e);
+        }
+      } else {
+        File f = getFileName(x, y, z);
+        if (f != null && f.exists()) {
+          double[] data = importData(currentFile);
+          createChart(data);
+        }
       }
     } catch (Exception e) {
       logger.warn("Cannot show spectrum for xyz {}, {}, {}", x, y, z);
@@ -262,10 +282,76 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private void importEmpaData(File file) {
+    data = null;
+    currentFile = file;
+    parseCurrentFile();
+    // show spectrum
+    double[] spec = importData(currentFile);
+    createChart(spec);
+    if (cbInMemory.isSelected()) {
+      // load all to memory in background
+      loadAllData(currentFile);
+    }
+  }
+
+  private void loadAllData(File file) {
+    data = null;
     currentFile = file;
     parseCurrentFile();
 
-    double[] data = importData(currentFile);
+    if (task != null && task.isStarted())
+      task.cancel(false);
+
+    final int totalFiles = (maxXYZ[0] + 1) * (maxXYZ[1] + 1) * (maxXYZ[2] + 1);
+    task = new ProgressUpdateTask<double[][][][]>(totalFiles) {
+
+      @Override
+      protected double[][][][] doInBackground2() throws Exception {
+        double[][][][] data = new double[maxXYZ[0] + 1][maxXYZ[1] + 1][maxXYZ[2] + 1][];
+
+        for (int x = 0; x <= maxXYZ[0]; x++) {
+          if (isCancelled())
+            break;
+          for (int y = 0; y <= maxXYZ[1]; y++) {
+            if (isCancelled())
+              break;
+            for (int z = 0; z <= maxXYZ[2]; z++) {
+              if (isCancelled())
+                break;
+              data[x][y][z] = importData(getFileName(x, y, z));
+              addProgressStep(1.0);
+            }
+          }
+        }
+
+        logger.info("Import finished");
+        setAllFilesImported(true);
+        if (isCancelled())
+          return null;
+        else
+          return data;
+      }
+    };
+    task.execute();
+    task.addDoneListener(() -> {
+      try {
+        Object result = task.get();
+        if (result != null) {
+          data = (double[][][][]) result;
+          logger.info("Import finished and data set to memory");
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    });
+
+  }
+
+  public void setAllFilesImported(boolean allFilesImported) {
+    this.allFilesImported = allFilesImported;
+  }
+
+  private void createChart(double[] data) {
     XYSeries series = new XYSeries("data");
     for (int i = 0; i < data.length; i++) {
       series.add(i, data[i]);
@@ -298,12 +384,12 @@ public class EMPAImportDialog extends JFrame {
   private void extractImages(double center, double width) {
     if (currentFile != null) {
       extractImagesXY(center, width);
-
     }
   }
 
   private void extractImagesXY(double center, double width) {
     logger.info("Extract xy images");
+
     ScanLineMD[] lines;
     DecimalFormat f = new DecimalFormat("0");
     String titles[] = new String[maxXYZ[2] + 1];
@@ -340,25 +426,32 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private double extractIntensity(double center, double width, int x, int y, int z) {
-    File file = getFileName(x, y, z);
-    if (file != null && file.exists()) {
-      // for test only as x is integers so far
-      int lower = (int) (center - width / 2);
-      int upper = (int) (lower + width);
+    // for test only as x is integers so far
+    int lower = (int) (center - width / 2);
+    int upper = (int) (lower + width);
 
-      double data[] = importData(file);
-      if (data.length < lower) {
+
+    final double spec[];
+    if (data != null) {
+      spec = data[x][y][z];
+    } else {
+      File file = getFileName(x, y, z);
+      if (file != null && file.exists()) {
+        spec = importData(file);
+      } else
         return Double.NaN;
-      } else {
-        double max = Double.NEGATIVE_INFINITY;
-        for (int i = lower; i <= upper && i < data.length; i++)
-          if (max < data[i])
-            max = data[i];
+    }
 
-        return max;
-      }
-    } else
+    if (spec.length < lower) {
       return Double.NaN;
+    } else {
+      double max = Double.NEGATIVE_INFINITY;
+      for (int i = lower; i <= upper && i < spec.length; i++)
+        if (max < spec[i])
+          max = spec[i];
+
+      return max;
+    }
   }
 
   private void parseCurrentFile() {
@@ -413,6 +506,7 @@ public class EMPAImportDialog extends JFrame {
         logger.warn("Cannot parse xyz coordinates from file: " + currentFile.getAbsolutePath(), e);
       }
     }
+    data = null;
     System.out.println("max " + Arrays.toString(maxXYZ));
     logger.info("max " + Arrays.toString(maxXYZ));
   }
