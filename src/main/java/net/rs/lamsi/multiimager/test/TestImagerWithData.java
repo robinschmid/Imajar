@@ -29,6 +29,7 @@ public class TestImagerWithData {
     }
     // start MultiImager application
     EventQueue.invokeLater(new Runnable() {
+      @Override
       public void run() {
         try {
           ImageEditorWindow window = new ImageEditorWindow();
@@ -68,10 +69,10 @@ public class TestImagerWithData {
           ImageGroupMD img = TestImageFactory.createNonNormalImage(4);
 
           project = null;
-          window.getLogicRunner().addGroup(img, project);
+          window.getLogicRunner().addGroup(img, project, false);
 
           img = TestImageFactory.createOverlayTest();
-          window.getLogicRunner().addGroup(img, project);
+          window.getLogicRunner().addGroup(img, project, false);
         } catch (Exception ex) {
           ex.printStackTrace();
         }

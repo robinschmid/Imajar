@@ -156,7 +156,7 @@ public class ImageLogicRunner {
       // create image group
       group = new ImageGroupMD(i);
       group.setGroupName(gid);
-      addGroup(group, projectName);
+      addGroup(group, projectName, true);
     }
   }
 
@@ -191,16 +191,17 @@ public class ImageLogicRunner {
    * @param group
    * @param projectName
    */
-  public void addGroup(ImageGroupMD group, String projectName) {
+  public void addGroup(ImageGroupMD group, String projectName, boolean addToProject) {
     ImagingProject project = treeImg.getProject(projectName);
     if (projectName != null && project == null) {
       // create new project
       project = new ImagingProject(projectName);
-      project.add(group);
       addProject(project, false);
+      addGroup(group, project, true);
+    } else {
+      // add group
+      addGroup(group, project, addToProject);
     }
-    // add group
-    addGroup(group, project);
   }
 
   /**
@@ -209,7 +210,7 @@ public class ImageLogicRunner {
    * @param group
    * @param project
    */
-  public void addGroup(ImageGroupMD group, ImagingProject project) {
+  public void addGroup(ImageGroupMD group, ImagingProject project, boolean addToProject) {
     // only one image? do not create subnodes
     if (group == null || group.getImages().isEmpty()) {
       return;
@@ -218,6 +219,9 @@ public class ImageLogicRunner {
     else if (project != null && project.getNode() == null)
       addProject(project, false);
 
+    // add to project
+    if (addToProject)
+      project.add(group);
 
     // add group
     DefaultMutableTreeNode parentPr = project != null ? project.getNode() : treeImg.getRoot();
@@ -267,7 +271,7 @@ public class ImageLogicRunner {
     // add all groups
     if (addsGroups)
       for (int i = 0; i < project.size(); i++)
-        addGroup(project.get(i), project);
+        addGroup(project.get(i), project, false);
 
     return node;
   }
@@ -593,7 +597,7 @@ public class ImageLogicRunner {
             if (img != null) {
               if (project != null)
                 project.add(img);
-              addGroup(img, project);
+              addGroup(img, project, false);
               preferences.addImage2DImportExportPath(f, false);
 
               // replace place holders in settings
@@ -692,7 +696,7 @@ public class ImageLogicRunner {
                 logger.debug("Imported image {}", imzFile.getName());
                 if (imgs.getImages().size() > 0) {
                   // add img to list
-                  addGroup(imgs, project);
+                  addGroup(imgs, project, false);
                 }
               }
               return state;
@@ -809,7 +813,7 @@ public class ImageLogicRunner {
                     for (int coll = 0; coll < imgs.length; coll++) {
                       if (imgs[coll].getImages().size() > 0) {
                         // add img to list
-                        addGroup(imgs[coll], project);
+                        addGroup(imgs[coll], project, false);
                       }
                     }
                   }
@@ -834,7 +838,7 @@ public class ImageLogicRunner {
                 for (int coll = 0; coll < imgs.length; coll++) {
                   if (imgs[coll].getImages().size() > 0) {
                     // add img to list
-                    addGroup(imgs[coll], project);
+                    addGroup(imgs[coll], project, false);
                   }
                 }
               } catch (Exception e) {
@@ -1045,8 +1049,7 @@ public class ImageLogicRunner {
       }
 
       result.setGroupName("Combined");
-      project.add(result);
-      addGroup(result, project);
+      addGroup(result, project, true);
     } catch (Exception e1) {
       DialogLoggerUtil.showErrorDialog(window,
           "Groups were not compatible (need to have the same data dimensions", e1);
@@ -1108,8 +1111,7 @@ public class ImageLogicRunner {
       logger.debug("Created {} merge images", mergeGroup.size());
 
       // add group to tree
-      project.add(mergeGroup);
-      addGroup(mergeGroup, project);
+      addGroup(mergeGroup, project, true);
     }
   }
 
@@ -1224,8 +1226,7 @@ public class ImageLogicRunner {
             new File(g.getFirstImage2D().getSettings().getSettImage().getRAWFilepath()), titles);
         g2.setGroupName(g.getName() + "(continuous)");
 
-        g.getProject().add(g2);
-        addGroup(g2, g.getProject());
+        addGroup(g2, g.getProject(), true);
         return g2;
       }
     }

@@ -384,14 +384,14 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
       return getI(l, dp, imgMode, 0, !reflectH, !reflectV);
     } else {
       // first rotation:
-      // 90°
+      // 90ï¿½
       if (rotation == 90) {
         // rotate back to 0
         // dp -> l
         // line length(dp) -1 -l -> dp
         return getI(dp, data.getMaxDP() - 1 - l, imgMode, 0, reflectH, reflectV);
       }
-      // -90° = 270°
+      // -90ï¿½ = 270ï¿½
       else if (rotation == 270 || rotation == -90) {
         // l -> dp
         // data.linescount -1 -dp
@@ -482,7 +482,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
     if (rotation == 0 || rotation == 180 || rotation == 360) {
       return getYRaw(raw, l);
     } else {
-      // 90°
+      // 90ï¿½
       if (rotation == 90) {
         // rotate back to 0
         // dp -> l
@@ -490,7 +490,7 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
         // return getX(raw, dp, data.getMaxDP()-1-l, imgMode, 0, reflectH,reflectV);
         return getX(raw, dp, l, imgMode, 0, reflectH, !reflectV);
       }
-      // -90° = 270°
+      // -90ï¿½ = 270ï¿½
       else {
         // l -> dp
         // data.linescount -1 -dp
@@ -1850,8 +1850,8 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
         h = maxh;
       }
 
-      BufferedImage img = new BufferedImage(Math.min(maxw, w), maxh = Math.min(maxh, h),
-          BufferedImage.TYPE_INT_ARGB);
+      BufferedImage img =
+          new BufferedImage(Math.min(maxw, w), Math.min(maxh, h), BufferedImage.TYPE_INT_ARGB);
       Graphics2D g = img.createGraphics();
 
       for (int x = 0; x < w; x++) {
@@ -1865,13 +1865,13 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
             if (!Double.isNaN(z)) {
               Paint c = scale.getPaint(z);
               g.setPaint(c);
-              g.fillRect(x, maxh - y, 1, 1);
+              g.fillRect(x, h - y, 1, 1);
             }
           }
         }
       }
 
-      return new ImageIcon(img);
+      return new ImageIcon(img.getScaledInstance(maxw, maxh, BufferedImage.SCALE_FAST));
     } catch (Exception ex) {
       logger.error("", ex);
       return null;

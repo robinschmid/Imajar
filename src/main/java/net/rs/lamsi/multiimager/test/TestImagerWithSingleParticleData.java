@@ -30,6 +30,7 @@ public class TestImagerWithSingleParticleData {
     }
     // start MultiImager application
     EventQueue.invokeLater(new Runnable() {
+      @Override
       public void run() {
         try {
           ImageEditorWindow window = new ImageEditorWindow();
@@ -62,10 +63,10 @@ public class TestImagerWithSingleParticleData {
           ImageGroupMD img = TestImageFactory.createNonNormalImage(4);
 
           project2 = null;
-          window.getLogicRunner().addGroup(img, project2);
+          window.getLogicRunner().addGroup(img, project2, false);
 
           img = TestImageFactory.createOverlayTest();
-          window.getLogicRunner().addGroup(img, project2);
+          window.getLogicRunner().addGroup(img, project2, false);
 
           // simulated
           SingleParticleImage spimg = TestImageFactory.createPerfectSingleParticleImg(10, 100000,

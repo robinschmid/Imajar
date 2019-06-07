@@ -3,6 +3,7 @@ package net.rs.lamsi.utils.threads;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingWorker;
+import com.google.common.util.concurrent.AtomicDouble;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 
@@ -12,7 +13,7 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
 
   ProgressDialog progressDialog;
   private double stepwidth = 0;
-  private double progress = 0;
+  private AtomicDouble progress = new AtomicDouble(0);
   // pop up after 1 second
   private long millisDelayToPopUp = 1000;
   private long startTime = -1;
@@ -62,6 +63,7 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
   }
 
 
+  @Override
   protected T doInBackground() throws Exception {
     wasStarted();
     Thread.currentThread().setName(threadName);
@@ -85,13 +87,13 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
 
   // Steps
   public void addProgressStep(double a) {
-    setProgress(progress + getStepwidth() * a);
+    setProgress(progress.get() + getStepwidth() * a);
   }
 
   public void setProgress(double progress) {
     double p = Math.min(progress, 100);
     p = Math.max(0, p);
-    this.progress = p;
+    this.progress.getAndSet(progress);
     super.setProgress((int) p);
 
     // open dialog?
@@ -108,7 +110,7 @@ public abstract class ProgressUpdateTask<T> extends SwingWorker<T, Void> {
   }
 
   public double getProgressDouble() {
-    return progress;
+    return progress.get();
   }
 
   public void setProgressSteps(int steps) {
