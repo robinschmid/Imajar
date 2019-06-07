@@ -1,6 +1,7 @@
 package net.rs.lamsi.multiimager.Frames.dialogs;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -128,7 +129,7 @@ public class EMPAImportDialog extends JFrame {
     preferences = SettingsHolder.getSettings().getSetGeneralPreferences();
     fc.addChoosableFileFilter(new FileTypeFilter("bin", "binary"));
     fc.setMultiSelectionEnabled(false);
-    setBounds(100, 100, 450, 300);
+    setBounds(100, 100, 1024, 600);
     getContentPane().setLayout(new BorderLayout());
     contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
     getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -138,6 +139,7 @@ public class EMPAImportDialog extends JFrame {
       contentPanel.add(panel, BorderLayout.NORTH);
       {
         cbInMemory = new JCheckBox("In memory");
+        cbInMemory.setSelected(true);
         panel.add(cbInMemory);
 
         JButton btnLoadData = new JButton("Load data");
@@ -147,17 +149,17 @@ public class EMPAImportDialog extends JFrame {
         txtX = new JTextField();
         txtX.setText("0");
         panel.add(txtX);
-        txtX.setColumns(4);
+        txtX.setColumns(3);
 
         txtY = new JTextField();
         txtY.setText("0");
         panel.add(txtY);
-        txtY.setColumns(4);
+        txtY.setColumns(3);
 
         txtZ = new JTextField();
         txtZ.setText("0");
         panel.add(txtZ);
-        txtZ.setColumns(4);
+        txtZ.setColumns(3);
 
 
         JButton btnSetXYZ = new JButton("load XYZ");
@@ -179,6 +181,7 @@ public class EMPAImportDialog extends JFrame {
         panel.add(new JLabel("Extract intensities as"));
         intensityMode = new JComboBox<>(ExtractMode.values());
         intensityMode.setSelectedItem(ExtractMode.MAX);
+        intensityMode.setPreferredSize(new Dimension(60, intensityMode.getPreferredSize().height));
         panel.add(intensityMode);
 
         // JButton btnPre = new JButton("Previous");
@@ -196,7 +199,7 @@ public class EMPAImportDialog extends JFrame {
         txtMZWindow = new JTextField();
         txtMZWindow.setText("50");
         panel.add(txtMZWindow);
-        txtMZWindow.setColumns(10);
+        txtMZWindow.setColumns(4);
       }
     }
     {
@@ -230,7 +233,7 @@ public class EMPAImportDialog extends JFrame {
           }
         }
         {
-          JLabel lblMzListcenterwindow = new JLabel("m/z list (center,window)");
+          JLabel lblMzListcenterwindow = new JLabel("m/z list (title,center,window)");
           lblMzListcenterwindow.setHorizontalAlignment(SwingConstants.CENTER);
           lblMzListcenterwindow.setFont(new Font("Tahoma", Font.BOLD, 12));
           panel.add(lblMzListcenterwindow, BorderLayout.NORTH);
@@ -319,15 +322,15 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private void importEmpaData() {
-    String fileName = "D:\\Daten\\empa\\sub\\Davide_High_Pt_2_000_000_01.bin";
-    currentFile = new File(fileName);
-    importEmpaData(currentFile);
-
-
-    // if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-    // currentFile = fc.getSelectedFile();
+    // String fileName = "D:\\Daten\\empa\\sub\\Davide_High_Pt_2_000_000_01.bin";
+    // currentFile = new File(fileName);
     // importEmpaData(currentFile);
-    // }
+
+
+    if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      currentFile = fc.getSelectedFile();
+      importEmpaData(currentFile);
+    }
   }
 
   private void importEmpaData(File file) {
