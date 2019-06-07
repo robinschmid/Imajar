@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -65,6 +66,10 @@ import weka.gui.WrapLayout;
 public class EMPAImportDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
+  private enum ExtractMode {
+    MAX, SUM;
+  }
+
   public static final String[] ELEMENTS =
       new String[] {"Li,5188,80", "Na,9397,80", "Si,10370,80", "S,11100,80", "Ca,13040,80",
           "Cu,15580,80", "Zn,15960,80", "Se,17550,80", "Mo,19140,80", "Sn,21510,80"};
@@ -99,6 +104,8 @@ public class EMPAImportDialog extends JFrame {
 
   private ProgressUpdateTask task;
   private boolean allFilesImported;
+
+  private JComboBox<ExtractMode> intensityMode;
 
   /**
    * Launch the application.
@@ -168,6 +175,11 @@ public class EMPAImportDialog extends JFrame {
         JButton btnCreateImagesFromList = new JButton("create images from list");
         btnCreateImagesFromList.addActionListener(e -> createImagesFromList());
         panel.add(btnCreateImagesFromList);
+
+        panel.add(new JLabel("Extract intensities as"));
+        intensityMode = new JComboBox<>(ExtractMode.values());
+        intensityMode.setSelectedItem(ExtractMode.MAX);
+        panel.add(intensityMode);
 
         // JButton btnPre = new JButton("Previous");
         // btnPre.addActionListener(e -> previousFile());
@@ -428,6 +440,7 @@ public class EMPAImportDialog extends JFrame {
   private void extractImagesXY(String title, double center, double width) {
     logger.info("Extract xy images");
     boolean validTitle = title != null && !title.isEmpty();
+    ExtractMode mode = (ExtractMode) intensityMode.getSelectedItem();
 
     ScanLineMD[] lines;
     DecimalFormat f = new DecimalFormat("0");
@@ -447,7 +460,7 @@ public class EMPAImportDialog extends JFrame {
 
       for (int x = 0; x <= maxXYZ[0]; x++) {
         for (int z = 0; z <= maxXYZ[2]; z++) {
-          intensities[z][x] = extractIntensity(center, width, x, y, z);
+          intensities[z][x] = extractIntensity(mode, center, width, x, y, z);
         }
       }
       lines[y] = new ScanLineMD(null, intensities);
@@ -495,11 +508,11 @@ public class EMPAImportDialog extends JFrame {
     }
   }
 
-  private double extractIntensity(double center, double width, int x, int y, int z) {
+  private double extractIntensity(ExtractMode mode, double center, double width, int x, int y,
+      int z) {
     // for test only as x is integers so far
     int lower = (int) (center - width / 2);
     int upper = (int) (lower + width);
-
 
     final double spec[];
     if (data != null) {
@@ -515,12 +528,20 @@ public class EMPAImportDialog extends JFrame {
     if (spec.length < lower) {
       return Double.NaN;
     } else {
-      double max = Double.NEGATIVE_INFINITY;
-      for (int i = lower; i <= upper && i < spec.length; i++)
-        if (max < spec[i])
-          max = spec[i];
-
-      return max;
+      switch (mode) {
+        case SUM:
+          double sum = 0;
+          for (int i = lower; i <= upper && i < spec.length; i++)
+            sum += spec[i];
+          return sum;
+        case MAX:
+        default:
+          double max = Double.NEGATIVE_INFINITY;
+          for (int i = lower; i <= upper && i < spec.length; i++)
+            if (max < spec[i])
+              max = spec[i];
+          return max;
+      }
     }
   }
 
