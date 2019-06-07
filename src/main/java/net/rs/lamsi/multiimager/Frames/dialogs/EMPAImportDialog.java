@@ -18,6 +18,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -62,6 +63,10 @@ import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
 
 public class EMPAImportDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
+
+  public static final String[] ELEMENTS =
+      new String[] {"Li,5188,80", "Na,9397,80", "Si,10370,80", "S,11100,80", "Ca,13040,80",
+          "Cu,15580,80", "Zn,15960,80", "Se,17550,80", "Mo,19140,80", "Sn,21510,80"};
 
   private SettingsGeneralPreferences preferences;
   private JFileChooser fc = new JFileChooser();
@@ -146,6 +151,7 @@ public class EMPAImportDialog extends JFrame {
         panel.add(txtZ);
         txtZ.setColumns(4);
 
+
         JButton btnSetXYZ = new JButton("load XYZ");
         btnSetXYZ.addActionListener(e -> {
           try {
@@ -157,6 +163,10 @@ public class EMPAImportDialog extends JFrame {
           }
         });
         panel.add(btnSetXYZ);
+
+        JButton btnCreateImagesFromList = new JButton("create images from list");
+        btnCreateImagesFromList.addActionListener(e -> createImagesFromList());
+        panel.add(btnCreateImagesFromList);
 
         // JButton btnPre = new JButton("Previous");
         // btnPre.addActionListener(e -> previousFile());
@@ -171,7 +181,7 @@ public class EMPAImportDialog extends JFrame {
       }
       {
         txtMZWindow = new JTextField();
-        txtMZWindow.setText("30");
+        txtMZWindow.setText("50");
         panel.add(txtMZWindow);
         txtMZWindow.setColumns(10);
       }
@@ -205,7 +215,7 @@ public class EMPAImportDialog extends JFrame {
           scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
           {
             txtMZList = new JTextArea();
-            txtMZList.setText("200,0.02");
+            txtMZList.setText(Arrays.stream(ELEMENTS).collect(Collectors.joining("\n")));
             scrollPane.setViewportView(txtMZList);
           }
         }
@@ -232,6 +242,34 @@ public class EMPAImportDialog extends JFrame {
         cancelButton.setActionCommand("Cancel");
         buttonPane.add(cancelButton);
       }
+    }
+  }
+
+  private void createImagesFromList() {
+    String[] lines = txtMZList.getText().split("\n");
+    ArrayList<String> titles = new ArrayList<>();
+    ArrayList<double[]> values = new ArrayList<>();
+    try {
+      for (String s : lines) {
+        String[] sep = s.replaceAll(" ", "").split(",");
+        titles.add(sep[0]);
+
+        double[] v = new double[2];
+        v[0] = Double.parseDouble(sep[1]);
+        v[1] = sep.length > 2 ? Double.parseDouble(sep[2]) : 0;
+        values.add(v);
+      }
+    } catch (Exception e) {
+      DialogLoggerUtil.showErrorDialog(this,
+          "Enter values as mz center, mz window (mz window is optional)", e);
+      return;
+    }
+    double window = SettingsModule.doubleFromTxt(txtMZWindow);
+
+    // create images
+    for (double[] centerPM : values) {
+      double width = centerPM[1] > 0 ? centerPM[1] : window;
+      extractImages(centerPM[0], width);
     }
   }
 
@@ -269,8 +307,7 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private void importEmpaData() {
-    String fileName =
-        "D:\\Daten2\\empa xray LA tof ms\\Imajar_WWU_davide_empa\\Davide_High_Pt_2_000_000_01.bin";
+    String fileName = "D:\\Daten\\empa\\bin data\\Davide_High_Pt_2_000_000_01.bin";
     currentFile = new File(fileName);
     importEmpaData(currentFile);
 
