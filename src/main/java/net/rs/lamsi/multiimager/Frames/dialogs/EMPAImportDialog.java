@@ -3,7 +3,6 @@ package net.rs.lamsi.multiimager.Frames.dialogs;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
@@ -61,6 +60,7 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
+import weka.gui.WrapLayout;
 
 public class EMPAImportDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -127,7 +127,7 @@ public class EMPAImportDialog extends JFrame {
     getContentPane().add(contentPanel, BorderLayout.CENTER);
     contentPanel.setLayout(new BorderLayout(0, 0));
     {
-      JPanel panel = new JPanel();
+      JPanel panel = new JPanel(new WrapLayout(WrapLayout.CENTER));
       contentPanel.add(panel, BorderLayout.NORTH);
       {
         cbInMemory = new JCheckBox("In memory");
@@ -188,12 +188,9 @@ public class EMPAImportDialog extends JFrame {
       }
     }
     {
-      JPanel panel_1 = new JPanel();
-      contentPanel.add(panel_1, BorderLayout.CENTER);
-      panel_1.setLayout(new GridLayout(1, 0, 0, 0));
       {
         JPanel panel = new JPanel();
-        panel_1.add(panel);
+        contentPanel.add(panel, BorderLayout.CENTER);
         panel.setLayout(new BorderLayout(0, 0));
         {
           pnChartView = new JPanel(new BorderLayout());
@@ -208,7 +205,7 @@ public class EMPAImportDialog extends JFrame {
       }
       {
         JPanel panel = new JPanel();
-        panel_1.add(panel);
+        contentPanel.add(panel, BorderLayout.EAST);
         panel.setLayout(new BorderLayout(0, 0));
         {
           JScrollPane scrollPane = new JScrollPane();
