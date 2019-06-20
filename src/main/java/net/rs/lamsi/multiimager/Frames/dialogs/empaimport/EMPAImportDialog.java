@@ -48,6 +48,7 @@ import net.rs.lamsi.general.datamodel.image.Image2D;
 import net.rs.lamsi.general.datamodel.image.ImageGroupMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.DatasetLinesMD;
 import net.rs.lamsi.general.datamodel.image.data.multidimensional.ScanLineMD;
+import net.rs.lamsi.general.framework.layout.WrapLayout;
 import net.rs.lamsi.general.framework.modules.SettingsModule;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Button;
@@ -65,7 +66,6 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
-import weka.gui.WrapLayout;
 
 public class EMPAImportDialog extends JFrame {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -130,6 +130,12 @@ public class EMPAImportDialog extends JFrame {
 
   private double[] fits;
   private double[] fitsMZtoDP;
+
+  private JCheckBox cbX;
+
+  private JCheckBox cbY;
+
+  private JCheckBox cbZ;
 
   /**
    * Launch the application.
@@ -199,6 +205,17 @@ public class EMPAImportDialog extends JFrame {
         });
         panel.add(btnSetXYZ);
 
+        cbX = new JCheckBox("x");
+        cbX.setSelected(true);
+        panel.add(cbX);
+
+        cbY = new JCheckBox("y");
+        cbY.setSelected(true);
+        panel.add(cbY);
+
+        cbZ = new JCheckBox("z");
+        cbZ.setSelected(true);
+        panel.add(cbZ);
 
         JButton btnCreateImagesFromList = new JButton("create images from list");
         btnCreateImagesFromList.addActionListener(e -> createImagesFromList());
@@ -262,7 +279,7 @@ public class EMPAImportDialog extends JFrame {
           }
         }
         {
-          JPanel pnTableMenu = new JPanel();
+          JPanel pnTableMenu = new JPanel(new WrapLayout(WrapLayout.CENTER));
           panel.add(pnTableMenu, BorderLayout.NORTH);
           {
             JButton btnToggleCal = new JButton("Toggle cal");
@@ -440,7 +457,6 @@ public class EMPAImportDialog extends JFrame {
 
   private void nextFile() {
     if (currentFile != null) {
-
     }
   }
 
@@ -574,10 +590,22 @@ public class EMPAImportDialog extends JFrame {
 
   private void extractImages(String title, double centerMZ, double widthMZ) {
     if (currentFile != null) {
-      extractImagesXY(title, centerMZ, widthMZ);
+      if (cbX.isSelected())
+        extractImagesYZ(title, centerMZ, widthMZ);
+      if (cbY.isSelected())
+        extractImagesXZ(title, centerMZ, widthMZ);
+      if (cbZ.isSelected())
+        extractImagesXY(title, centerMZ, widthMZ);
     }
   }
 
+  /**
+   * Extract images
+   * 
+   * @param title
+   * @param centerMZ
+   * @param widthMZ
+   */
   private void extractImagesXY(String title, double centerMZ, double widthMZ) {
     logger.info("Extract xy images");
     boolean validTitle = title != null && !title.isEmpty();
@@ -588,7 +616,7 @@ public class EMPAImportDialog extends JFrame {
     String titles[] = new String[maxXYZ[2] + 1];
     for (int i = 0; i < titles.length; i++) {
       titles[i] = (validTitle ? title + " " : "") + "z=" + i + " of " + f.format(centerMZ)
-          + " (xwidth=" + f.format(widthMZ) + ")";
+          + " (mzwidth=" + f.format(widthMZ) + ")";
     }
     // create lines
     double centerDP = mzToDP(centerMZ);
@@ -596,7 +624,6 @@ public class EMPAImportDialog extends JFrame {
 
     lines = new ScanLineMD[maxXYZ[1] + 1];
     for (int y = 0; y <= maxXYZ[1]; y++) {
-      logger.info("Line {}", y);
       // z as image dimensions
       double[][] intensities = new double[maxXYZ[2] + 1][maxXYZ[0] + 1];
       for (double[] v : intensities)
@@ -604,7 +631,7 @@ public class EMPAImportDialog extends JFrame {
 
       for (int x = 0; x <= maxXYZ[0]; x++) {
         for (int z = 0; z <= maxXYZ[2]; z++) {
-          intensities[z][x] = extractIntensity(mode, centerMZ, widthMZ, x, y, z);
+          intensities[z][x] = extractIntensity(mode, centerDP, widthDP, x, y, z);
         }
       }
       lines[y] = new ScanLineMD(null, intensities);
@@ -613,7 +640,7 @@ public class EMPAImportDialog extends JFrame {
     DatasetLinesMD dataset = new DatasetLinesMD(lines);
     ImageGroupMD tmpgroup = dataset.createImageGroup(currentFile, titles);
     String gtitle = (validTitle ? title + " " : "") + "z-stack of " + f.format(centerMZ)
-        + " (xwidth=" + f.format(widthMZ) + ")";
+        + " (mzwidth=" + f.format(widthMZ) + ")";
     tmpgroup.setGroupName(gtitle);
     int z = 0;
     for (Image2D img : tmpgroup.getImagesOnly()) {
@@ -624,6 +651,122 @@ public class EMPAImportDialog extends JFrame {
 
     // add all images to separate z-pane groups
     addAllImagesToZGroups(tmpgroup);
+
+    // add the z-stack group
+    ImageEditorWindow.getEditor().getLogicRunner().addGroup(tmpgroup, currentName, true);
+    logger.info("Creating images now");
+  }
+
+  /**
+   * Extract images YZ
+   * 
+   * @param title
+   * @param centerMZ
+   * @param widthMZ
+   */
+  private void extractImagesYZ(String title, double centerMZ, double widthMZ) {
+    logger.info("Extract yz images");
+    boolean validTitle = title != null && !title.isEmpty();
+    ExtractMode mode = (ExtractMode) intensityMode.getSelectedItem();
+
+    ScanLineMD[] lines;
+    DecimalFormat f = new DecimalFormat("0.000");
+    String titles[] = new String[maxXYZ[2] + 1];
+    for (int i = 0; i < titles.length; i++) {
+      titles[i] = (validTitle ? title + " " : "") + "x=" + i + " of " + f.format(centerMZ)
+          + " (mzwidth=" + f.format(widthMZ) + ")";
+    }
+    // create lines
+    double centerDP = mzToDP(centerMZ);
+    double widthDP = mzToDP(widthMZ);
+
+    lines = new ScanLineMD[maxXYZ[2] + 1];
+    for (int z = 0; z <= maxXYZ[2]; z++) {
+      // z as image dimensions
+      double[][] intensities = new double[maxXYZ[0] + 1][maxXYZ[1] + 1];
+      for (double[] v : intensities)
+        Arrays.fill(v, Double.NaN);
+
+      for (int y = 0; y <= maxXYZ[1]; y++) {
+        for (int x = 0; x <= maxXYZ[0]; x++) {
+          intensities[x][y] = extractIntensity(mode, centerDP, widthDP, x, y, z);
+        }
+      }
+      lines[z] = new ScanLineMD(null, intensities);
+    }
+    // Generate Image2D from scanLines
+    DatasetLinesMD dataset = new DatasetLinesMD(lines);
+    ImageGroupMD tmpgroup = dataset.createImageGroup(currentFile, titles);
+    String gtitle = (validTitle ? title + " " : "") + "x-stack of " + f.format(centerMZ)
+        + " (mzwidth=" + f.format(widthMZ) + ")";
+    tmpgroup.setGroupName(gtitle);
+    int z = 0;
+    for (Image2D img : tmpgroup.getImagesOnly()) {
+      String st = (validTitle ? title + " " : "") + "x=" + z;
+      img.getSettings().getSettImage().setShortTitle(st);
+      z++;
+    }
+
+    // add all images to separate z-pane groups
+    addAllImagesToXGroups(tmpgroup);
+
+    // add the z-stack group
+    ImageEditorWindow.getEditor().getLogicRunner().addGroup(tmpgroup, currentName, true);
+    logger.info("Creating images now");
+  }
+
+  /**
+   * Extract images XZ
+   * 
+   * @param title
+   * @param centerMZ
+   * @param widthMZ
+   */
+  private void extractImagesXZ(String title, double centerMZ, double widthMZ) {
+    logger.info("Extract xz images");
+    boolean validTitle = title != null && !title.isEmpty();
+    ExtractMode mode = (ExtractMode) intensityMode.getSelectedItem();
+
+    ScanLineMD[] lines;
+    DecimalFormat f = new DecimalFormat("0.000");
+    String titles[] = new String[maxXYZ[2] + 1];
+    for (int i = 0; i < titles.length; i++) {
+      titles[i] = (validTitle ? title + " " : "") + "y=" + i + " of " + f.format(centerMZ)
+          + " (mzwidth=" + f.format(widthMZ) + ")";
+    }
+    // create lines
+    double centerDP = mzToDP(centerMZ);
+    double widthDP = mzToDP(widthMZ);
+
+    lines = new ScanLineMD[maxXYZ[2] + 1];
+    for (int z = 0; z <= maxXYZ[2]; z++) {
+      // z as image dimensions
+      double[][] intensities = new double[maxXYZ[1] + 1][maxXYZ[0] + 1];
+      for (double[] v : intensities)
+        Arrays.fill(v, Double.NaN);
+
+      for (int x = 0; x <= maxXYZ[0]; x++) {
+        for (int y = 0; y <= maxXYZ[1]; y++) {
+          intensities[y][x] = extractIntensity(mode, centerDP, widthDP, x, y, z);
+        }
+      }
+      lines[z] = new ScanLineMD(null, intensities);
+    }
+    // Generate Image2D from scanLines
+    DatasetLinesMD dataset = new DatasetLinesMD(lines);
+    ImageGroupMD tmpgroup = dataset.createImageGroup(currentFile, titles);
+    String gtitle = (validTitle ? title + " " : "") + "y-stack of " + f.format(centerMZ)
+        + " (mzwidth=" + f.format(widthMZ) + ")";
+    tmpgroup.setGroupName(gtitle);
+    int z = 0;
+    for (Image2D img : tmpgroup.getImagesOnly()) {
+      String st = (validTitle ? title + " " : "") + "y=" + z;
+      img.getSettings().getSettImage().setShortTitle(st);
+      z++;
+    }
+
+    // add all images to separate z-pane groups
+    addAllImagesToYGroups(tmpgroup);
 
     // add the z-stack group
     ImageEditorWindow.getEditor().getLogicRunner().addGroup(tmpgroup, currentName, true);
@@ -650,13 +793,51 @@ public class EMPAImportDialog extends JFrame {
   private void addAllImagesToZGroups(ImageGroupMD tmpgroup) {
     int z = 0;
     for (Image2D img : tmpgroup.getImagesOnly()) {
-      boolean addGroupToProject = false;
       String groupname = "z=" + z;
       try {
         // add clone to a group
         Image2D clone = img.getCopy();
         ImageEditorWindow.getEditor().getLogicRunner().addImage(clone, currentName, groupname);
+      } catch (Exception e) {
+        logger.error("Cannot copy image {}", img.getTitle(), e);
+      }
+      z++;
+    }
+  }
 
+  /**
+   * All different images of the same x pane in one group
+   * 
+   * @param tmpgroup
+   */
+  private void addAllImagesToXGroups(ImageGroupMD tmpgroup) {
+    int z = 0;
+    for (Image2D img : tmpgroup.getImagesOnly()) {
+      String groupname = "x=" + z;
+      try {
+        // add clone to a group
+        Image2D clone = img.getCopy();
+        ImageEditorWindow.getEditor().getLogicRunner().addImage(clone, currentName, groupname);
+      } catch (Exception e) {
+        logger.error("Cannot copy image {}", img.getTitle(), e);
+      }
+      z++;
+    }
+  }
+
+  /**
+   * All different images of the same y pane in one group
+   * 
+   * @param tmpgroup
+   */
+  private void addAllImagesToYGroups(ImageGroupMD tmpgroup) {
+    int z = 0;
+    for (Image2D img : tmpgroup.getImagesOnly()) {
+      String groupname = "y=" + z;
+      try {
+        // add clone to a group
+        Image2D clone = img.getCopy();
+        ImageEditorWindow.getEditor().getLogicRunner().addImage(clone, currentName, groupname);
       } catch (Exception e) {
         logger.error("Cannot copy image {}", img.getTitle(), e);
       }
