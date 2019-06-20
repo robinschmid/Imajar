@@ -1,8 +1,10 @@
 package net.rs.lamsi.multiimager.Frames.dialogs.empaimport;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import net.rs.lamsi.utils.mywriterreader.TxtWriter;
 
 public class EmpaTableModel extends AbstractTableModel {
 
@@ -81,6 +83,31 @@ public class EmpaTableModel extends AbstractTableModel {
       }
     } catch (Exception e) {
     }
+  }
+
+  public void loadTableData(File file) {
+    TxtWriter writer = new TxtWriter();
+    String[] data = writer.readLines(file).toArray(new String[0]);
+    if (data != null) {
+      rows.clear();
+      loadTableData(data);
+    }
+  }
+
+  public void saveTableData(File file) {
+    TxtWriter writer = new TxtWriter();
+    Object[][] data = new Object[rows.size() + 1][EmpaColumn.values().length];
+    int i = 0;
+    for (EmpaColumn v : EmpaColumn.values()) {
+      data[0][i] = v.getTitle();
+      i++;
+    }
+
+    for (i = 0; i < rows.size(); i++) {
+      data[1 + i] = rows.get(i).toObjectArray();
+    }
+
+    writer.writeDataArrayToFile(file, data, ",");
   }
 
 }

@@ -93,6 +93,7 @@ public class EMPAImportDialog extends JFrame {
 
   private SettingsGeneralPreferences preferences;
   private JFileChooser fc = new JFileChooser();
+  private JFileChooser fcCsv = new JFileChooser();
   private final JPanel contentPanel = new JPanel();
   private JTextField txtMZWindow;
   private JCheckBox cbUseMZWindow;
@@ -151,6 +152,8 @@ public class EMPAImportDialog extends JFrame {
     preferences = SettingsHolder.getSettings().getSetGeneralPreferences();
     fc.addChoosableFileFilter(new FileTypeFilter("bin", "binary"));
     fc.setMultiSelectionEnabled(false);
+    fcCsv.addChoosableFileFilter(new FileTypeFilter("csv", "comma separated values"));
+    fcCsv.setMultiSelectionEnabled(false);
     setBounds(100, 100, 1024, 600);
     getContentPane().setLayout(new BorderLayout());
     contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -369,9 +372,19 @@ public class EMPAImportDialog extends JFrame {
       createChart(lastData);
   }
 
-  private void loadTableData() {}
+  private void loadTableData() {
+    if (fcCsv.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      tableModel.loadTableData(fcCsv.getSelectedFile());
+    }
+  }
 
-  private void saveTableData() {}
+  private void saveTableData() {
+    if (fcCsv.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+      File f = fcCsv.getSelectedFile();
+      f = FileAndPathUtil.getRealFilePath(f, "csv");
+      tableModel.saveTableData(f);
+    }
+  }
 
   private void createImagesFromList() {
     double window = SettingsModule.doubleFromTxt(txtMZWindow);

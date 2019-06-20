@@ -134,4 +134,9 @@ public class EmpaTableRow {
     this.isotope = isotope;
   }
 
+  public Object[] toObjectArray() {
+    return new Object[] {isUseAsMZCalibration(), isCreateImage(), getIsotope(), getDp(), getMz(),
+        getWidth(), getRelative()};
+  }
+
 }
