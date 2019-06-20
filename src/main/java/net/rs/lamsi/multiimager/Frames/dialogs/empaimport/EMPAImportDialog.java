@@ -1,6 +1,7 @@
-package net.rs.lamsi.multiimager.Frames.dialogs;
+package net.rs.lamsi.multiimager.Frames.dialogs.empaimport;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -15,10 +16,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -29,13 +29,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
@@ -53,11 +56,11 @@ import net.rs.lamsi.general.myfreechart.gestures.ChartGesture.Event;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureEvent;
 import net.rs.lamsi.general.myfreechart.gestures.ChartGestureHandler;
 import net.rs.lamsi.general.myfreechart.swing.EChartPanel;
+import net.rs.lamsi.general.myfreechart.themes.ChartThemeFactory;
+import net.rs.lamsi.general.myfreechart.themes.MyStandardChartTheme;
 import net.rs.lamsi.general.settings.SettingsHolder;
-import net.rs.lamsi.general.settings.importexport.SettingsImzMLImageImport;
 import net.rs.lamsi.general.settings.preferences.SettingsGeneralPreferences;
 import net.rs.lamsi.multiimager.Frames.ImageEditorWindow;
-import net.rs.lamsi.utils.DialogLoggerUtil;
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.threads.ProgressUpdateTask;
@@ -71,20 +74,34 @@ public class EMPAImportDialog extends JFrame {
     MAX, SUM;
   }
 
-  public static final String[] ELEMENTS =
-      new String[] {"Li,5188,80", "Na,9397,80", "Si,10370,80", "S,11100,80", "Ca,13040,80",
-          "Cu,15580,80", "Zn,15960,80", "Se,17550,80", "Mo,19140,80", "Sn,21510,80"};
+  public static final String[] STANDARD_CAL = new String[] {
+      "﻿m/z cal,create img,isotope,dp,mz,width,relative", "true,true,7Li,5185,7.0155,0,1.00",
+      "true,true,23Na,9397,22.9892,0,1.00", "true,true,28Si,10376,27.9764,0,1.00",
+      "true,true,32S,11094,31.9715,0,1.00", "true,true,40Ca,12550,39.962,0,1.00",
+      "true,true,63Cu,15580,62.929,0,1.00", "true,true,65Cu,15847,64.9272,0,0.45",
+      "true,true,64Zn,15725,63.9286,0,1.00", "true,true,66Zn,15966,65.9255,0,0.57",
+      "true,true,68Zn,16207,67.9243,0,0.39", "true,false,76Se,17128,75.9187,0,0.19",
+      "true,false,77Se,17241,76.9194,0,0.15", "true,true,78Se,17353,77.9168,0,0.48",
+      "true,true,80Se,17573,79.916,0,1.00", "true,false,82Se,17793,81.9162,0,0.18",
+      "true,true,92Mo,18842,91.9063,0,0.62", "true,true,94Mo,19045,93.9045,0,0.38",
+      "true,true,95Mo,19145,94.9053,0,0.66", "true,true,96Mo,19246,95.9041,0,0.69",
+      "true,true,97Mo,19347,96.9055,0,0.40", "true,true,98Mo,19446,97.9049,0,1.00",
+      "true,true,100Mo,19643,99.9069,0,0.40", "true,true,116Sn,21152,115.9012,0,0.45",
+      "true,false,117Sn,21245,116.9024,0,0.24", "true,true,118Sn,21337,117.9011,0,0.74",
+      "true,false,119Sn,21425,118.9028,0,0.26", "true,true,120Sn,21515,119.9016,0,1.00",
+      "true,false,122Sn,21695,121.9029,0,0.14", "true,false,124Sn,21868,123.9047,0,0.18"};
 
   private SettingsGeneralPreferences preferences;
   private JFileChooser fc = new JFileChooser();
   private final JPanel contentPanel = new JPanel();
   private JTextField txtMZWindow;
   private JCheckBox cbUseMZWindow;
-  private JTextArea txtMZList;
+  private JTable txtMZList;
   private JPanel pnChartView;
   private File currentFile;
   private int[] currentXYZ;
   private int[] maxXYZ;
+  private double[] lastData;
 
   // only if load to memory
   // data x y z dp
@@ -107,6 +124,11 @@ public class EMPAImportDialog extends JFrame {
   private boolean allFilesImported;
 
   private JComboBox<ExtractMode> intensityMode;
+
+  private EmpaTableModel tableModel;
+
+  private double[] fits;
+  private double[] fitsMZtoDP;
 
   /**
    * Launch the application.
@@ -174,13 +196,14 @@ public class EMPAImportDialog extends JFrame {
         });
         panel.add(btnSetXYZ);
 
+
         JButton btnCreateImagesFromList = new JButton("create images from list");
         btnCreateImagesFromList.addActionListener(e -> createImagesFromList());
         panel.add(btnCreateImagesFromList);
 
         panel.add(new JLabel("Extract intensities as"));
         intensityMode = new JComboBox<>(ExtractMode.values());
-        intensityMode.setSelectedItem(ExtractMode.MAX);
+        intensityMode.setSelectedItem(ExtractMode.SUM);
         intensityMode.setPreferredSize(new Dimension(60, intensityMode.getPreferredSize().height));
         panel.add(intensityMode);
 
@@ -197,7 +220,7 @@ public class EMPAImportDialog extends JFrame {
       }
       {
         txtMZWindow = new JTextField();
-        txtMZWindow.setText("50");
+        txtMZWindow.setText("0.8");
         panel.add(txtMZWindow);
         txtMZWindow.setColumns(4);
       }
@@ -227,16 +250,36 @@ public class EMPAImportDialog extends JFrame {
           panel.add(scrollPane, BorderLayout.CENTER);
           scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
           {
-            txtMZList = new JTextArea();
-            txtMZList.setText(Arrays.stream(ELEMENTS).collect(Collectors.joining("\n")));
+            txtMZList = new JTable();
+            tableModel = new EmpaTableModel();
+            txtMZList.setModel(tableModel);
+            tableModel.loadTableData(STANDARD_CAL);
+            updateMZCalibration();
             scrollPane.setViewportView(txtMZList);
           }
         }
         {
-          JLabel lblMzListcenterwindow = new JLabel("m/z list (title,center,window)");
-          lblMzListcenterwindow.setHorizontalAlignment(SwingConstants.CENTER);
-          lblMzListcenterwindow.setFont(new Font("Tahoma", Font.BOLD, 12));
-          panel.add(lblMzListcenterwindow, BorderLayout.NORTH);
+          JPanel pnTableMenu = new JPanel();
+          panel.add(pnTableMenu, BorderLayout.NORTH);
+          {
+            JButton btnUpdateMzCal = new JButton("Update m/z cal");
+            btnUpdateMzCal.addActionListener(e -> updateMZCalibration());
+            pnTableMenu.add(btnUpdateMzCal);
+
+            JButton btnShowCali = new JButton("Show m/z cal");
+            btnShowCali.addActionListener(e -> showMZCalibration());
+            pnTableMenu.add(btnShowCali);
+          }
+          {
+            JButton btnLoad = new JButton("Load");
+            btnLoad.addActionListener(e -> loadTableData());
+            pnTableMenu.add(btnLoad);
+          }
+          {
+            JButton btnSave = new JButton("Save");
+            btnSave.addActionListener(e -> saveTableData());
+            pnTableMenu.add(btnSave);
+          }
         }
       }
     }
@@ -258,32 +301,86 @@ public class EMPAImportDialog extends JFrame {
     }
   }
 
-  private void createImagesFromList() {
-    String[] lines = txtMZList.getText().split("\n");
-    ArrayList<String> titles = new ArrayList<>();
-    ArrayList<double[]> values = new ArrayList<>();
-    try {
-      for (String s : lines) {
-        String[] sep = s.replaceAll(" ", "").split(",");
-        titles.add(sep[0]);
-
-        double[] v = new double[2];
-        v[0] = Double.parseDouble(sep[1]);
-        v[1] = sep.length > 2 ? Double.parseDouble(sep[2]) : 0;
-        values.add(v);
+  private void showMZCalibration() {
+    updateMZCalibration();
+    JFrame window = new JFrame("Calibration");
+    XYSeries s2 = new XYSeries("cal");
+    XYSeries s1 = new XYSeries("fit");
+    List<EmpaTableRow> rows = tableModel.getRows();
+    int minDP = 0;
+    double maxDP = 0;
+    for (EmpaTableRow r : rows) {
+      if (r.isUseAsMZCalibration() && r.getDp() > 0 && r.getMz() > 0) {
+        s1.add(r.getDp(), r.getMz());
+        if (r.getDp() > maxDP)
+          maxDP = r.getDp();
       }
-    } catch (Exception e) {
-      DialogLoggerUtil.showErrorDialog(this,
-          "Enter values as mz center, mz window (mz window is optional)", e);
-      return;
     }
-    double window = SettingsModule.doubleFromTxt(txtMZWindow);
 
+    for (int i = minDP; i < maxDP; i++) {
+      double mz = dpToMZ(i);
+      s2.add(i, mz);
+    }
+    XYSeriesCollection data = new XYSeriesCollection();
+    data.addSeries(s1);
+    data.addSeries(s2);
+
+    EChartPanel chart = new EChartPanel(ChartFactory.createXYLineChart("", "dp", "m/z", data));
+    MyStandardChartTheme theme = ChartThemeFactory.createBlackNWhiteTheme();
+    theme.apply(chart.getChart());
+
+    XYLineAndShapeRenderer renderer =
+        (XYLineAndShapeRenderer) chart.getChart().getXYPlot().getRenderer();
+
+    renderer.setSeriesPaint(0, Color.BLACK);
+    renderer.setSeriesPaint(1, Color.BLACK);
+    renderer.setSeriesShapesVisible(1, false);
+    renderer.setSeriesLinesVisible(1, true);
+    renderer.setSeriesShapesVisible(0, true);
+    renderer.setSeriesLinesVisible(0, false);
+
+    window.getContentPane().add(chart, BorderLayout.CENTER);
+    window.pack();
+    window.setVisible(true);
+  }
+
+  private void updateMZCalibration() {
+    List<EmpaTableRow> rows = tableModel.getRows();
+    final WeightedObservedPoints obs = new WeightedObservedPoints();
+    final WeightedObservedPoints obsReversed = new WeightedObservedPoints();
+
+    for (EmpaTableRow r : rows) {
+      if (r.isUseAsMZCalibration() && r.getDp() > 0 && r.getMz() > 0) {
+        obs.add(r.getDp(), r.getMz());
+        obsReversed.add(r.getMz(), r.getDp());
+      }
+    }
+
+    // Instantiate a quadratic polynomial fitter.
+    final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(2);
+    fits = fitter.fit(obs.toList());
+    fitsMZtoDP = fitter.fit(obsReversed.toList());
+
+    System.out.println("a=" + fits[0] + "   b=" + fits[1] + "   c=" + fits[2]);
+    System.out.println("m/z = " + fits[0] + " + x * " + fits[1] + " + x^2 * " + fits[2]);
+    logger.info("a=" + fits[0] + "   b=" + fits[1] + "   c=" + fits[2]);
+    logger.info("m/z = " + fits[0] + " + x * " + fits[1] + " + x^2 * " + fits[2]);
+    if (lastData != null)
+      createChart(lastData);
+  }
+
+  private void loadTableData() {}
+
+  private void saveTableData() {}
+
+  private void createImagesFromList() {
+    double window = SettingsModule.doubleFromTxt(txtMZWindow);
+    List<EmpaTableRow> rows = tableModel.getRows();
     // create images
     int i = 0;
-    for (double[] centerPM : values) {
-      double width = centerPM[1] > 0 ? centerPM[1] : window;
-      extractImages(titles.get(i), centerPM[0], width);
+    for (EmpaTableRow row : rows) {
+      double width = row.getWidth() > 0 ? row.getWidth() : window;
+      extractImages(row.getIsotope(), row.getMz(), width);
       i++;
     }
   }
@@ -299,8 +396,8 @@ public class EMPAImportDialog extends JFrame {
       } else {
         File f = getFileName(x, y, z);
         if (f != null && f.exists()) {
-          double[] data = importData(currentFile);
-          createChart(data);
+          lastData = importData(currentFile);
+          createChart(lastData);
         }
       }
     } catch (Exception e) {
@@ -322,15 +419,15 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private void importEmpaData() {
-    // String fileName = "D:\\Daten\\empa\\sub\\Davide_High_Pt_2_000_000_01.bin";
-    // currentFile = new File(fileName);
+    String fileName = "D:\\Daten\\empa\\sub\\Davide_High_Pt_2_000_000_01.bin";
+    currentFile = new File(fileName);
+    importEmpaData(currentFile);
+
+
+    // if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+    // currentFile = fc.getSelectedFile();
     // importEmpaData(currentFile);
-
-
-    if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-      currentFile = fc.getSelectedFile();
-      importEmpaData(currentFile);
-    }
+    // }
   }
 
   private void importEmpaData(File file) {
@@ -345,6 +442,8 @@ public class EMPAImportDialog extends JFrame {
       loadAllData(currentFile);
     }
   }
+
+
 
   private void loadAllData(File file) {
     data = null;
@@ -405,9 +504,16 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private void createChart(double[] data) {
+    if (data == null)
+      return;
+
     XYSeries series = new XYSeries("data");
     for (int i = 0; i < data.length; i++) {
-      series.add(i, data[i]);
+      if (fits != null) {
+        double mz = dpToMZ(i);
+        series.add(mz, data[i]);
+      } else
+        series.add(i, data[i]);
     }
     XYSeriesCollection dataset = new XYSeriesCollection(series);
     JFreeChart chart = ChartFactory.createXYLineChart("", "dp", "intensity", dataset);
@@ -434,25 +540,28 @@ public class EMPAImportDialog extends JFrame {
     }
   }
 
-  private void extractImages(String title, double center, double width) {
+  private void extractImages(String title, double centerMZ, double widthMZ) {
     if (currentFile != null) {
-      extractImagesXY(title, center, width);
+      extractImagesXY(title, centerMZ, widthMZ);
     }
   }
 
-  private void extractImagesXY(String title, double center, double width) {
+  private void extractImagesXY(String title, double centerMZ, double widthMZ) {
     logger.info("Extract xy images");
     boolean validTitle = title != null && !title.isEmpty();
     ExtractMode mode = (ExtractMode) intensityMode.getSelectedItem();
 
     ScanLineMD[] lines;
-    DecimalFormat f = new DecimalFormat("0");
+    DecimalFormat f = new DecimalFormat("0.000");
     String titles[] = new String[maxXYZ[2] + 1];
     for (int i = 0; i < titles.length; i++) {
-      titles[i] = (validTitle ? title + " " : "") + "z=" + i + " of " + f.format(center)
-          + " (xwidth=" + f.format(width) + ")";
+      titles[i] = (validTitle ? title + " " : "") + "z=" + i + " of " + f.format(centerMZ)
+          + " (xwidth=" + f.format(widthMZ) + ")";
     }
     // create lines
+    double centerDP = mzToDP(centerMZ);
+    double widthDP = mzToDP(widthMZ);
+
     lines = new ScanLineMD[maxXYZ[1] + 1];
     for (int y = 0; y <= maxXYZ[1]; y++) {
       logger.info("Line {}", y);
@@ -463,7 +572,7 @@ public class EMPAImportDialog extends JFrame {
 
       for (int x = 0; x <= maxXYZ[0]; x++) {
         for (int z = 0; z <= maxXYZ[2]; z++) {
-          intensities[z][x] = extractIntensity(mode, center, width, x, y, z);
+          intensities[z][x] = extractIntensity(mode, centerMZ, widthMZ, x, y, z);
         }
       }
       lines[y] = new ScanLineMD(null, intensities);
@@ -471,8 +580,8 @@ public class EMPAImportDialog extends JFrame {
     // Generate Image2D from scanLines
     DatasetLinesMD dataset = new DatasetLinesMD(lines);
     ImageGroupMD tmpgroup = dataset.createImageGroup(currentFile, titles);
-    String gtitle = (validTitle ? title + " " : "") + "z-stack of " + f.format(center) + " (xwidth="
-        + f.format(width) + ")";
+    String gtitle = (validTitle ? title + " " : "") + "z-stack of " + f.format(centerMZ)
+        + " (xwidth=" + f.format(widthMZ) + ")";
     tmpgroup.setGroupName(gtitle);
     int z = 0;
     for (Image2D img : tmpgroup.getImagesOnly()) {
@@ -487,6 +596,18 @@ public class EMPAImportDialog extends JFrame {
     // add the z-stack group
     ImageEditorWindow.getEditor().getLogicRunner().addGroup(tmpgroup, currentName, true);
     logger.info("Creating images now");
+  }
+
+  private double dpToMZ(double dp) {
+    if (fits == null)
+      return dp;
+    return fits[0] + dp * fits[1] + dp * dp * fits[2];
+  }
+
+  private double mzToDP(double mz) {
+    if (fitsMZtoDP == null)
+      return mz;
+    return fitsMZtoDP[0] + mz * fitsMZtoDP[1] + mz * mz * fitsMZtoDP[2];
   }
 
   /**
@@ -511,6 +632,16 @@ public class EMPAImportDialog extends JFrame {
     }
   }
 
+  /**
+   * 
+   * @param mode
+   * @param center in datapoints
+   * @param width in datapoints
+   * @param x
+   * @param y
+   * @param z
+   * @return
+   */
   private double extractIntensity(ExtractMode mode, double center, double width, int x, int y,
       int z) {
     // for test only as x is integers so far
@@ -670,34 +801,6 @@ public class EMPAImportDialog extends JFrame {
     return list.toDoubleArray();
   }
 
-  public SettingsImzMLImageImport createSettings() {
-    SettingsImzMLImageImport sett = new SettingsImzMLImageImport();
-
-    String[] lines = txtMZList.getText().split("\n");
-    ArrayList<double[]> values = new ArrayList<>();
-    try {
-      for (String s : lines) {
-        String[] sep = s.replaceAll(" ", "").split(",");
-        double[] v = new double[2];
-        v[0] = Double.parseDouble(sep[0]);
-        v[1] = sep.length > 1 ? Double.parseDouble(sep[1]) : 0;
-        values.add(v);
-      }
-    } catch (Exception e) {
-      DialogLoggerUtil.showErrorDialog(this,
-          "Enter values as mz center, mz window (mz window is optional)", e);
-      return null;
-    }
-    double[][] data = new double[values.size()][];
-    for (int i = 0; i < data.length; i++) {
-      data[i] = values.get(i);
-    }
-    double window = SettingsModule.doubleFromTxt(txtMZWindow);
-
-    sett.setAll(data, cbUseMZWindow.isSelected(), window == 0 ? 0.02d : window);
-    return sett;
-  }
-
   public JCheckBox getCbUseMZWindow() {
     return cbUseMZWindow;
   }
@@ -706,7 +809,7 @@ public class EMPAImportDialog extends JFrame {
     return txtMZWindow;
   }
 
-  public JTextArea getTxtMZList() {
+  public JTable getTxtMZList() {
     return txtMZList;
   }
 
