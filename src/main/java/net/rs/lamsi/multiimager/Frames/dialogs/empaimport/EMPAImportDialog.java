@@ -265,6 +265,13 @@ public class EMPAImportDialog extends JFrame {
           JPanel pnTableMenu = new JPanel();
           panel.add(pnTableMenu, BorderLayout.NORTH);
           {
+            JButton btnToggleCal = new JButton("Toggle cal");
+            btnToggleCal.addActionListener(e -> toggleCalibration());
+            pnTableMenu.add(btnToggleCal);
+            JButton btnToggleImg = new JButton("Toggle img");
+            btnToggleImg.addActionListener(e -> toggleImg());
+            pnTableMenu.add(btnToggleImg);
+
             JButton btnUpdateMzCal = new JButton("Update m/z cal");
             btnUpdateMzCal.addActionListener(e -> updateMZCalibration());
             pnTableMenu.add(btnUpdateMzCal);
@@ -302,6 +309,18 @@ public class EMPAImportDialog extends JFrame {
         buttonPane.add(cancelButton);
       }
     }
+  }
+
+  private void toggleImg() {
+    List<EmpaTableRow> rows = tableModel.getRows();
+    boolean allselected = rows.stream().allMatch(EmpaTableRow::isCreateImage);
+    rows.stream().forEach(r -> r.setCreateImage(!allselected));
+  }
+
+  private void toggleCalibration() {
+    List<EmpaTableRow> rows = tableModel.getRows();
+    boolean allselected = rows.stream().allMatch(EmpaTableRow::isUseAsMZCalibration);
+    rows.stream().forEach(r -> r.setUseAsMZCalibration(!allselected));
   }
 
   private void showMZCalibration() {
