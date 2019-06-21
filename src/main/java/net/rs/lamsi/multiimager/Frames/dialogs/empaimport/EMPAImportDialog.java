@@ -332,12 +332,14 @@ public class EMPAImportDialog extends JFrame {
     List<EmpaTableRow> rows = tableModel.getRows();
     boolean allselected = rows.stream().allMatch(EmpaTableRow::isCreateImage);
     rows.stream().forEach(r -> r.setCreateImage(!allselected));
+    tableModel.fireTableDataChanged();
   }
 
   private void toggleCalibration() {
     List<EmpaTableRow> rows = tableModel.getRows();
     boolean allselected = rows.stream().allMatch(EmpaTableRow::isUseAsMZCalibration);
     rows.stream().forEach(r -> r.setUseAsMZCalibration(!allselected));
+    tableModel.fireTableDataChanged();
   }
 
   private void showMZCalibration() {
