@@ -467,15 +467,14 @@ public class EMPAImportDialog extends JFrame {
   }
 
   private void importEmpaData() {
-    String fileName = "D:\\Daten\\empa\\sub\\Davide_High_Pt_2_000_000_01.bin";
-    currentFile = new File(fileName);
-    importEmpaData(currentFile);
-
-
-    // if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-    // currentFile = fc.getSelectedFile();
+    // String fileName = "D:\\Daten\\empa\\sub\\Davide_High_Pt_2_000_000_01.bin";
+    // currentFile = new File(fileName);
     // importEmpaData(currentFile);
-    // }
+
+    if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      currentFile = fc.getSelectedFile();
+      importEmpaData(currentFile);
+    }
   }
 
   private void importEmpaData(File file) {
