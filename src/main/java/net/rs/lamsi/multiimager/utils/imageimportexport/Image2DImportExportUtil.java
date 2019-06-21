@@ -1502,7 +1502,7 @@ public class Image2DImportExportUtil {
     // line by line
     BufferedReader br = txtWriter.getBufferedReader(file);
     String s;
-    String[] lsep = null;;
+    String[] lsep = null;
     while ((s = br.readLine()) != null) {
       // try to separate by separation
       String[] sep = s.split(separation);
@@ -1514,7 +1514,7 @@ public class Image2DImportExportUtil {
       }
 
       // is data line?
-      if (startFound || TextAnalyzer.isNumberValue(sep[0])) {
+      if (startFound || (TextAnalyzer.isNumberValue(sep[0]) && sep[0].length() != 0)) {
         // first data line
         // load titles
         if (!startFound) {
