@@ -107,11 +107,17 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
   }
 
   @Override
-  protected void renewPreview() {
+  protected void renewPreview(SettingsExportGraphics sett) {
     // annotations
     if (heat != null)
       heat.showSelectedExcludedRects(getCbShowAnnotations().isSelected());
-    super.renewPreview();
+    super.renewPreview(sett);
+  }
+
+  @Override
+  protected void renewPreview() {
+    setAllSettings(SettingsHolder.getSettings());
+    this.renewPreview((SettingsExportGraphics) getSettings(SettingsHolder.getSettings()));
   }
 
   @Override
@@ -119,10 +125,11 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
     setAllSettings(SettingsHolder.getSettings());
     //
     if (canExport) {
-      final SettingsExportGraphics sett =
-          (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
-      final EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE) getComboExportStruc().getSelectedItem();
       try {
+        final SettingsExportGraphics sett =
+            (SettingsExportGraphics) getSettings(SettingsHolder.getSettings()).copy();
+
+        final EXPORT_STRUCTURE struc = (EXPORT_STRUCTURE) getComboExportStruc().getSelectedItem();
         if (selected == null || struc.equals(EXPORT_STRUCTURE.IMAGE)) {
           logger.debug("Writing image to file: {}", sett.getFullFilePath());
 
@@ -206,13 +213,14 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
    * @param img
    * @param title
    */
-  private void saveCollectable2DGraphics(SettingsExportGraphics sett, Collectable2D img,
+  private void saveCollectable2DGraphics(SettingsExportGraphics fsett, Collectable2D img,
       String title) {
     // change file name
-    File path = sett.getPath();
-    String fileName = sett.getFileName();
-    // import all
+    File path = fsett.getPath();
+    String fileName = fsett.getFileName();
     try {
+      SettingsExportGraphics sett = (SettingsExportGraphics) fsett.copy();
+      // import all
       // create chart
       heat = HeatmapFactory.generateHeatmap(img);
       // TODO maybe you have to put it on the chartpanel and show it?
@@ -225,18 +233,18 @@ public class HeatmapGraphicsExportDialog extends GraphicsExportDialog implements
       // export
       logger.debug("Writing image to file: {}", sett.getFullFilePath());
 
-      renewPreview();
+      renewPreview(sett);
       // title as filename
       sett.setFileName(fileName + title);
       applyMaxPathLengthToSett(sett);
       // export size
-      final SettingsExportGraphics fsett = (SettingsExportGraphics) sett.copy();
-      new GraphicsExportThread(chartPanel.getChart(), fsett).start();
+      new GraphicsExportThread(chartPanel.getChart(), sett).start();
     } catch (Exception ex) {
-      logger.error("FIle: {} is not saveable", sett.getFileName(), ex);
+      ImageGroupMD g = img.getImageGroup();
+      ImagingProject p = g != null ? g.getProject() : null;
+      logger.error("FIle: {} of group {} and project {} is not saveable", img.getTitle(),
+          g != null ? g.getName() : "NO GROUP", p != null ? p.getName() : "NO PROJECT", ex);
     }
-    // reset
-    sett.setFileName(fileName);
   }
 
   @Override

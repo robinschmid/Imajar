@@ -149,16 +149,20 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
 
   /**
    * must run on ADT Thread
+   * 
+   * @param sett
    */
   protected void renewPreview() {
+    setAllSettings(SettingsHolder.getSettings());
+    SettingsExportGraphics sett =
+        (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
+    renewPreview(sett);
+  }
+
+  protected void renewPreview(SettingsExportGraphics sett) {
     // set dimensions to chartpanel
     // set height
     try {
-
-      setAllSettings(SettingsHolder.getSettings());
-      SettingsExportGraphics sett =
-          (SettingsExportGraphics) getSettings(SettingsHolder.getSettings());
-
       DecimalFormat form = new DecimalFormat("#.###");
 
       // Size only by width?
@@ -406,6 +410,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
     {
       btnPath = new JButton("Path");
       btnPath.addActionListener(new ActionListener() {
+        @Override
         public void actionPerformed(ActionEvent e) {
           choosePath();
         }
@@ -506,6 +511,7 @@ public class GraphicsExportDialog extends JFrame implements SettingsPanel {
               }
               cbOnlyUseWidth = new JCheckBox("Only use width");
               cbOnlyUseWidth.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                   JCheckBox cb = (JCheckBox) e.getSource();
                   if (getTxtHeight() != null)
