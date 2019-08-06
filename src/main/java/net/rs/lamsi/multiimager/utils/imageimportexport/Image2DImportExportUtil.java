@@ -1929,6 +1929,7 @@ public class Image2DImportExportUtil {
 
   private static ImageGroupMD importFromThermoMP17FileToImage(File file,
       SettingsImageDataImportTxt sett) throws Exception {
+    boolean xReadIsDone = false;
     // images
     // store data in ArrayList
     ArrayList<ScanLineMD> scanLines = new ArrayList<ScanLineMD>();
@@ -2017,7 +2018,6 @@ public class Image2DImportExportUtil {
             try {
               iList[i - valueindex - sett.getStartLine()].add(Double.parseDouble(sep[i]));
             } catch (Exception ex) {
-              iList[i - valueindex - sett.getStartLine()].add(-1.0);
             }
           }
         }
@@ -2057,13 +2057,20 @@ public class Image2DImportExportUtil {
             x[i] = new ArrayList<Float>();
         }
         // add all intensities
-        if ((dp >= sett.getStartDP()) && (sett.getEndDP() == 0 || dp <= sett.getEndDP())) {
+        if (!xReadIsDone && (dp >= sett.getStartDP())
+            && (sett.getEndDP() == 0 || dp <= sett.getEndDP())) {
           for (int i = valueindex + sett.getStartLine(); i < sep.length
               && (sett.getEndLine() == 0 || i - valueindex < sett.getEndLine()); i++) {
             try {
-              x[i - valueindex - sett.getStartLine()].add(Float.parseFloat(sep[i]));
+              float xv = Float.parseFloat(sep[i]);
+              ArrayList<Float> xlist = x[i - valueindex - sett.getStartLine()];
+              // if multiple elements were exported the time is also exported multiple times
+              // only read the time data once for the first element and use for all
+              if (!xlist.isEmpty() && xv < xlist.get(xlist.size() - 1))
+                xReadIsDone = true;
+              else
+                xlist.add(xv);
             } catch (Exception ex) {
-              x[i - valueindex - sett.getStartLine()].add(-1.f);
             }
           }
         }
