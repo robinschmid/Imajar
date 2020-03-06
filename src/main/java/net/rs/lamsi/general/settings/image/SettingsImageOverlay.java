@@ -206,10 +206,6 @@ public class SettingsImageOverlay extends SettingsContainerCollectable2D {
     this.title = title;
   }
 
-  public List<Color> getColors() {
-    return colors;
-  }
-
   public void setColors(ArrayList<Color> colors) {
     this.colors = colors;
   }
