@@ -9,3 +9,6 @@
 /logging.log.1
 /logging.log
 /config.xml
+/build/
+/.idea/
+/.gradle/

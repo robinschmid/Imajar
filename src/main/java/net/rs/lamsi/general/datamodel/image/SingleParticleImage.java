@@ -596,7 +596,7 @@ public class SingleParticleImage extends DataCollectable2D<SettingsSPImage>
     if (getImage().isRotated()) {
       logger.warn("Please set rotation to 0 to create snapshot image");
       DialogLoggerUtil.showMessageDialog(ImageEditorWindow.getEditor(), "NO success",
-          "Please set rotation to 0° to create snapshot image");
+          "Please set rotation to 0 to create snapshot image");
       return null;
     } else {
       try {

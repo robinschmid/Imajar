@@ -113,7 +113,7 @@ public class HeatmapFactory {
       renderer.setBlockWidth(img.getMaxBlockWidth(true));
       renderer.setBlockHeight(img.getMaxBlockHeight(true));
 
-      // PaintScale für farbe? TODO mit Settings!
+      // PaintScale for color? TODO mit Settings!
       // TODO upper and lower value setzen!!!!
       // two ways of min or max z value:
       // min max values by filter
@@ -376,7 +376,7 @@ public class HeatmapFactory {
       if (settings.isActive(img.get(i))) {
         Image2D cimg = img.get(i);
         SettingsPaintScale ps = settings.getSettPaintScale(i);
-        // PaintScale für farbe? TODO mit Settings!
+        // PaintScale fï¿½r farbe? TODO mit Settings!
         // TODO upper and lower value setzen!!!!
         double zmin = dataset.getZMin(counter);
         double zmax = dataset.getZMax(counter);
