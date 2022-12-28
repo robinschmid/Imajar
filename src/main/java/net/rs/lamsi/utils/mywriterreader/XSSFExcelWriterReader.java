@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Vector;
 import javax.swing.JFileChooser;
+import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -18,7 +19,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.rs.lamsi.utils.FileAndPathUtil;
-import net.sf.mzmine.util.files.FileTypeFilter;
 
 
 public class XSSFExcelWriterReader {
@@ -202,7 +202,6 @@ public class XSSFExcelWriterReader {
   /**
    * exports a data[rows][columns] array
    * 
-   * @param realFilePath
    * @param data
    * @param rowsFirst true: [rows][cols] false [cols][rows]
    */
@@ -232,7 +231,6 @@ public class XSSFExcelWriterReader {
   /**
    * writes a data[rows][columns] array to the given wb
    * 
-   * @param realFilePath
    * @param data
    * @param rowsFirst true: [rows][cols] false [cols][rows]
    */
@@ -255,7 +253,6 @@ public class XSSFExcelWriterReader {
   /**
    * writes a data[rows][columns] array to the given wb
    * 
-   * @param realFilePath
    * @param data
    * @param rowsFirst true: [rows][cols] false [cols][rows]
    */
@@ -279,7 +276,6 @@ public class XSSFExcelWriterReader {
   /**
    * writes a boolean[rows][columns] array to the given sheet as binary 1:0
    * 
-   * @param realFilePath
    * @param data
    */
   public void writeBooleanArrayToSheet(XSSFSheet sheet, boolean[][] data, int ic, int ir) {
@@ -348,7 +344,6 @@ public class XSSFExcelWriterReader {
    * writes one line to a sheet
    * 
    * @param sheet
-   * @param title
    */
   public void writeLine(XSSFSheet sheet, String[] line, int ic, int ir) {
     for (int c = 0; c < line.length; c++) {
@@ -364,7 +359,6 @@ public class XSSFExcelWriterReader {
    * @param sheet
    * @param reg
    * @param dp
-   * @param quantifier
    */
   public void writeRegressionToSheet(XSSFSheet sheet, SimpleRegression reg, double[][] dp) {
     //

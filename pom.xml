@@ -31,15 +31,6 @@
 		</resources>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.10</version>
-				<configuration>
-					<downloadSources>true</downloadSources>
-					<downloadJavadocs>true</downloadJavadocs>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
@@ -65,53 +56,9 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.1</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>false</overWriteSnapshots>
-							<overWriteIfNewer>true</overWriteIfNewer>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<id>buildnumber</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<format>{0,number}</format>
-					<items>
-						<item>buildNumber</item>
-					</items>
-					<doCheck>false</doCheck>
-					<doUpdate>false</doUpdate>
-					<revisionOnScmFailure>no.scm.config.in.pom</revisionOnScmFailure>
-				</configuration>
-			</plugin>
 		</plugins>
 
-		<finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
+		<finalName>${project.artifactId}-${project.version}</finalName>
 	</build>
 
 
@@ -170,32 +117,6 @@
 			<artifactId>freehep-graphicsio</artifactId>
 			<version>2.4</version>
 		</dependency>
-
-		<dependency>
-			<groupId>io.github.mzmine</groupId>
-			<artifactId>mzmine2</artifactId>
-			<version>2.34-SNAPSHOT</version>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-jdk14</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>logback-classic</artifactId>
-					<groupId>ch.qos.logback</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 
 		<!-- START EXCEL -->
 		<dependency>
@@ -359,6 +280,18 @@
 			<artifactId>juniversalchardet</artifactId>
 			<version>2.0.0</version>
 		</dependency>
+    <!-- https://mvnrepository.com/artifact/it.unimi.dsi/fastutil -->
+    <dependency>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil</artifactId>
+        <version>8.5.11</version>
+    </dependency>
+    <dependency>
+        <groupId>nz.ac.waikato.cms.weka</groupId>
+        <artifactId>weka-stable</artifactId>
+        <version>3.8.6</version>
+    </dependency>
+
 
 		<!-- Testing -->
 		<dependency>
@@ -382,7 +315,5 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- old local mzmine <dependency> <groupId>net.sf.mzmine</groupId> <artifactId>MZmine</artifactId> 
-			<version>2.13</version> </dependency> -->
 	</dependencies>
 </project>

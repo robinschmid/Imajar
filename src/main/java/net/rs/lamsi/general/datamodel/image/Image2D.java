@@ -34,7 +34,6 @@ import net.rs.lamsi.general.settings.image.visualisation.SettingsAlphaMap.State;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
 import net.rs.lamsi.general.settings.importexport.SettingsImageDataImportTxt.ModeData;
 import net.rs.lamsi.general.settings.interf.DatasetSettings;
-import net.rs.lamsi.massimager.MyMZ.MZChromatogram;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
 
 // XY raw data!
@@ -91,60 +90,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
     this(data, 0, sett);
   }
 
-  // #####################################################################################################
-  // Generators STATIC
-  // MZChrom Generation
-  // MS image from raw data
-  public static Image2D generateImage2DFrom(SettingsPaintScale settPaintScale,
-      SettingsGeneralImage setImage, MZChromatogram[] mzchrom) {
-    // TODO mehrere MZ machen
-    // Alle Spec
-    // Erst Messpunkteanzahl ausrechnen
-    // lines listLines
-    Vector<ScanLineMD> listLines = new Vector<ScanLineMD>(mzchrom.length);
-    // Lines durchgehen
-    for (int i = 0; i < mzchrom.length; i++) {
-      int scanpoints = mzchrom[i].getItemCount();
-      float startTime = mzchrom[i].getX(0).floatValue();
-      float[] x = new float[scanpoints];
-      double[] z = new double[scanpoints];
-      // x, i datapoints
-      for (int d = 0; d < scanpoints; d++) {
-        x[d] = mzchrom[i].getX(d).floatValue() - startTime;
-        z[d] = mzchrom[i].getY(d).doubleValue();
-      }
-
-      // new line
-      listLines.add(new ScanLineMD(x, z));
-    }
-    // Image erstellen
-    return new Image2D(new DatasetLinesMD(listLines), 0,
-        new SettingsImage2D(settPaintScale, setImage));
-  }
-
-  // Discontinous MS-Image
-  // Generate Heatmap with Continous Data WIDHTOUT Triggerin every Line
-  public static Image2D generateImage2DFromCon(SettingsPaintScale settPaintScale,
-      SettingsGeneralImage setImage, SettingsImageContinousSplit settSplit,
-      MZChromatogram mzchrom) {
-    // startTime
-    float startTime = mzchrom.getX(0).floatValue();
-    // data points
-    int scanpoints = mzchrom.getItemCount();
-    float[] x = new float[scanpoints];
-    double[] z = new double[scanpoints];
-    // Daten eintragen und zwischen speichern
-    for (int i = 0; i < scanpoints; i++) {
-      x[i] = mzchrom.getX(i).floatValue() - startTime;
-      z[i] = mzchrom.getY(i).doubleValue();
-    }
-    ScanLineMD line = new ScanLineMD(x, z);
-
-    // generate Image
-    return new Image2D(new DatasetContinuousMD(line, settSplit), 0,
-        new SettingsImage2D(settPaintScale, setImage));
-  }
-
 
   /**
    * y values in respect to rotation reflection imaging mode
@@ -166,7 +111,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @param raw
    * @param l
-   * @param dp
    * @return
    */
   public float getYRaw(boolean raw, int l) {
@@ -361,7 +305,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * handles rotation, imaging mode and reflection for intensities return Double.NaN for out of
    * specified data
    * 
-   * @param raw
    * @param l
    * @param dp
    * @param imgMode
@@ -613,7 +556,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * 
    * @param dp
    * @param rotation 0-270
-   * @param reflectV reflect lines
    * @return
    */
   private int getLineCount(int dp, int rotation, boolean reflectH) {
@@ -646,7 +588,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * to xyi array in regards to the rotation, reflection and imaging mode
    * 
    * @param raw
-   * @param setImg
    * @return
    */
   public double[][] toXYIArray(boolean raw, boolean useSettings) {
@@ -661,7 +602,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * returns [rows][columns (3 : xyz)] of xyz data processed or not processed
    * 
-   * @param sett
    * @return
    */
   public Object[][] toXYIMatrix(boolean raw, boolean useSettings) {
@@ -729,7 +669,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * xyi array without rotation, reflection, imaging mode
    * 
-   * @param raw
    * @return
    */
   private double[][] toXYIArrayNoRot() {
@@ -760,7 +699,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * Creates an array of x and intensity data (raw or processed) for data export
    * 
-   * @param sett
    * @param raw
    * @param useSettings rotation, reflection, imaging mode
    * @return data [rows][columns]
@@ -893,7 +831,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
   /**
    * 
-   * @param scale
    * @return x matrix raw or processed. null if there are no x values
    */
   public Object[][] toXMatrix(boolean raw, boolean useSettings) {
@@ -929,7 +866,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * always with settings
    * 
-   * @param scale
    * @param sep separation chars
    * @return xmatrix raw by a factor as CSV string
    */
@@ -951,7 +887,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
   /**
    * 
-   * @param scale
    * @param sep separation chars
    * @return xmatrix raw by a factor as CSV string
    */
@@ -992,7 +927,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
 
   /**
    * 
-   * @param scale
    * @param sep separation chars
    * @return ymatrix raw by a factor as CSV string
    */
@@ -1178,7 +1112,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * Returns the intensity only. with boolean map as alpha map
    * 
-   * @param sett
    * @return [line][dp]
    */
   public Object[][] toIMatrix(boolean raw, State[][] map) {
@@ -1386,7 +1319,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * Given image img will be setup like this image
    * 
-   * @param img will get all settings from master image
    */
   @Override
   public void applySettingsToOtherImage(Collectable2D img2) {
@@ -1436,7 +1368,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
    * The maximum x value (left edge) --> length
    * 
    * @param raw
-   * @param line
    * @return
    */
   public float getMaxXRaw(boolean raw) {
@@ -1473,7 +1404,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * width of the image
    * 
-   * @param raw
    * @return
    */
   @Override
@@ -1497,7 +1427,6 @@ public class Image2D extends DataCollectable2D<SettingsImage2D> implements Seria
   /**
    * height of the image
    * 
-   * @param raw
    * @return
    */
   @Override

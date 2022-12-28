@@ -4,8 +4,6 @@ import java.awt.Component;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import net.rs.lamsi.general.settings.image.sub.SettingsGeneralImage;
 import net.rs.lamsi.general.settings.image.sub.SettingsMSImage;
 import net.rs.lamsi.general.settings.image.visualisation.SettingsPaintScale;
@@ -19,8 +17,11 @@ import net.rs.lamsi.general.settings.visualization.SettingsPlotSpectraLabelGener
 import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.myfilechooser.FileTypeFilter;
 import net.rs.lamsi.utils.mywriterreader.BinaryWriterReader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class SettingsHolder extends SettingsContainerSettings {
+
   // do not change the version!
   private static final long serialVersionUID = 1L;
   //
@@ -35,7 +36,6 @@ public class SettingsHolder extends SettingsContainerSettings {
     super("SettingsHolder", "/Settings/", "setall");
     // settings
     addSettings(new SettingsDataSaver("/Settings/Export/", "setds"));
-    addSettings(new SettingsChargeCalculator());
     addSettings(new SettingsGeneralValueFormatting());
 
     // visualization only for Toolset
@@ -133,10 +133,6 @@ public class SettingsHolder extends SettingsContainerSettings {
   }
 
 
-  public SettingsChargeCalculator getSetChargeCalc() {
-    return (SettingsChargeCalculator) getSettingsByClass(SettingsChargeCalculator.class);
-  }
-
   public SettingsGeneralValueFormatting getSetGeneralValueFormatting() {
     return (SettingsGeneralValueFormatting) getSettingsByClass(
         SettingsGeneralValueFormatting.class);
@@ -217,9 +213,11 @@ public class SettingsHolder extends SettingsContainerSettings {
   }
 
   @Override
-  public void appendSettingsValuesToXML(Element elParent, Document doc) {}
+  public void appendSettingsValuesToXML(Element elParent, Document doc) {
+  }
 
   @Override
-  public void loadValuesFromXML(Element el, Document doc) {}
+  public void loadValuesFromXML(Element el, Document doc) {
+  }
 
 }

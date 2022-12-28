@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
-import net.rs.lamsi.massimager.Frames.Window;
 import net.rs.lamsi.massimager.Frames.Dialogs.ZoomXYAreaDialog;
 
 import org.jfree.chart.ChartPanel;

@@ -99,10 +99,9 @@ import net.rs.lamsi.utils.FileAndPathUtil;
 import net.rs.lamsi.utils.WindowStyleUtil;
 import net.rs.lamsi.utils.useful.DebugStopWatch;
 import net.rs.lamsi.utils.useful.dialogs.ProgressDialog;
-import net.sf.mzmine.desktop.ImportantWindow;
 
 // net.rs.lamsi.multiimager.Frames.ImageEditorWindow
-public class ImageEditorWindow extends JFrame implements Runnable, ImportantWindow {
+public class ImageEditorWindow extends JFrame implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(ImageEditorWindow.class);
 
   private static SimpleAttributeSet styleWarning, styleMessage, styleImportant, styleError,

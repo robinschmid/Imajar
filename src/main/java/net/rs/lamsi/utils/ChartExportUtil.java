@@ -43,7 +43,6 @@ import net.rs.lamsi.general.dialogs.GraphicsExportDialog;
 import net.rs.lamsi.general.settings.importexport.SettingsExportGraphics;
 import net.sf.epsgraphics.ColorMode;
 import net.sf.epsgraphics.EpsGraphics;
-import net.sf.mzmine.util.files.FileAndPathUtil;
 
 /**
  * only export of charts to images
@@ -57,7 +56,6 @@ public class ChartExportUtil {
   /**
    * Add export dialog to popup menu of a chartpanel
    * 
-   * @param plotChartPanel
    */
   public static void addExportDialogToMenu(final ChartPanel cp) {
     addExportDialogToMenu(cp, e -> GraphicsExportDialog.openDialog(cp.getChart()));
